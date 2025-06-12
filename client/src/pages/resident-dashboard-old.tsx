@@ -14,7 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DealWithMerchant, Redemption, VoucherWithDeal } from "@shared/schema";
-import mapImage from "@assets/Geddy-Map-smaller_1749767170608.jpeg";
 
 export default function ResidentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -170,7 +169,7 @@ export default function ResidentDashboard() {
           <div 
             className="absolute inset-0 hero-overlay"
             style={{
-              backgroundImage: `url("${mapImage}")`,
+              backgroundImage: 'url("https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=2000&h=600&fit=crop")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -318,118 +317,118 @@ export default function ResidentDashboard() {
                       <Filter className="h-4 w-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold text-foreground">Filter Deals</h3>
                     </div>
-                    
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="restaurant">Restaurants</SelectItem>
-                        <SelectItem value="bar">Bars</SelectItem>
-                        <SelectItem value="cafe">Cafes</SelectItem>
-                        <SelectItem value="pub">Pubs</SelectItem>
-                        <SelectItem value="takeaway">Takeaway</SelectItem>
-                        <SelectItem value="fine-dining">Fine Dining</SelectItem>
-                      </SelectContent>
-                    </Select>
+                
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="restaurant">Restaurants</SelectItem>
+                    <SelectItem value="bar">Bars</SelectItem>
+                    <SelectItem value="cafe">Cafes</SelectItem>
+                    <SelectItem value="pub">Pubs</SelectItem>
+                    <SelectItem value="takeaway">Takeaway</SelectItem>
+                    <SelectItem value="fine-dining">Fine Dining</SelectItem>
+                  </SelectContent>
+                </Select>
 
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="available"
-                        checked={availableOnly}
-                        onCheckedChange={(checked) => setAvailableOnly(checked === true)}
-                      />
-                      <label htmlFor="available" className="text-sm text-muted-foreground">
-                        Available now only
-                      </label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="available"
+                    checked={availableOnly}
+                    onCheckedChange={(checked) => setAvailableOnly(checked === true)}
+                  />
+                  <label htmlFor="available" className="text-sm text-muted-foreground">
+                    Available now only
+                  </label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Deal Cards */}
+          {dealsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <div className="h-48 bg-muted" />
+                  <CardContent className="p-6 space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-2/3" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : filteredDeals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDeals.map((deal) => (
+                <DealCard 
+                  key={deal.id} 
+                  deal={deal} 
+                  onRedeem={handleCreateVoucher}
+                  isLoading={createVoucherMutation.isPending}
+                  showMerchantInfo={true}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
+                <p className="text-muted-foreground">
+                  {selectedCategory 
+                    ? `No deals available in the ${selectedCategory} category.`
+                    : 'No deals are currently available.'
+                  }
+                </p>
+                {selectedCategory && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSelectedCategory("")}
+                    className="mt-4"
+                  >
+                    View All Deals
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Membership Renewal Prompt */}
+          {user.membershipExpiry && new Date(user.membershipExpiry) < new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) && (
+            <Card className="mt-12 coastal-bg border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="bg-primary/10 p-3 rounded-lg">
+                      <Calendar className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Membership expires soon
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Renew now to continue accessing exclusive local deals
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Deal Cards */}
-              {dealsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <div className="h-48 bg-muted" />
-                      <CardContent className="p-6 space-y-3">
-                        <div className="h-4 bg-muted rounded w-1/4" />
-                        <div className="h-6 bg-muted rounded w-3/4" />
-                        <div className="h-4 bg-muted rounded w-full" />
-                        <div className="h-4 bg-muted rounded w-2/3" />
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <Button 
+                    className="coastal-gradient"
+                    onClick={() => toast({
+                      title: "Payment System Coming Soon",
+                      description: "Membership renewal will be available once payment processing is set up.",
+                    })}
+                  >
+                    Renew Membership
+                  </Button>
                 </div>
-              ) : filteredDeals.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredDeals.map((deal) => (
-                    <DealCard 
-                      key={deal.id} 
-                      deal={deal} 
-                      onRedeem={handleCreateVoucher}
-                      isLoading={createVoucherMutation.isPending}
-                      showMerchantInfo={true}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
-                    <p className="text-muted-foreground">
-                      {selectedCategory 
-                        ? `No deals available in the ${selectedCategory} category.`
-                        : 'No deals are currently available.'
-                      }
-                    </p>
-                    {selectedCategory && (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setSelectedCategory("all")}
-                        className="mt-4"
-                      >
-                        View All Deals
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Membership Renewal Prompt */}
-              {user.membershipExpiry && new Date(user.membershipExpiry) < new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) && (
-                <Card className="mt-12 coastal-bg border-primary/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-semibold text-foreground">
-                            Membership expires soon
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Renew now to continue accessing exclusive local deals
-                          </p>
-                        </div>
-                      </div>
-                      <Button 
-                        className="coastal-gradient"
-                        onClick={() => toast({
-                          title: "Payment System Coming Soon",
-                          description: "Membership renewal will be available once payment processing is set up.",
-                        })}
-                      >
-                        Renew Membership
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              </CardContent>
+            </Card>
+          )}
             </>
           )}
 
@@ -537,112 +536,114 @@ export default function ResidentDashboard() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Subscribe to create vouchers from deals and build your savings wallet.
-                    </p>
-                    
-                    {plans && (
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Individual Plans */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Individual</h4>
-                          <div className="space-y-3">
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Monthly</span>
-                                  <span className="text-lg font-bold">£{plans.individual?.monthly.price}</span>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'individual', 
-                                    subscriptionPlan: 'monthly' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Annual</span>
-                                  <div className="text-right">
-                                    <span className="text-lg font-bold">£{plans.individual?.annual.price}</span>
-                                    <div className="text-xs text-green-600">Save £20/year</div>
+                <div className="space-y-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Subscribe to create vouchers from deals and build your savings wallet.
+                      </p>
+                      
+                      {plans && (
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Individual Plans */}
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Individual</h4>
+                            <div className="space-y-3">
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Monthly</span>
+                                    <span className="text-lg font-bold">£{plans.individual?.monthly.price}</span>
                                   </div>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'individual', 
-                                    subscriptionPlan: 'annual' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
-                                </Button>
-                              </CardContent>
-                            </Card>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'individual', 
+                                      subscriptionPlan: 'monthly' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Annual</span>
+                                    <div className="text-right">
+                                      <span className="text-lg font-bold">£{plans.individual?.annual.price}</span>
+                                      <div className="text-xs text-green-600">Save £20/year</div>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'individual', 
+                                      subscriptionPlan: 'annual' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Family Plans */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Family</h4>
-                          <div className="space-y-3">
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Monthly</span>
-                                  <span className="text-lg font-bold">£{plans.family?.monthly.price}</span>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'family', 
-                                    subscriptionPlan: 'monthly' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Annual</span>
-                                  <div className="text-right">
-                                    <span className="text-lg font-bold">£{plans.family?.annual.price}</span>
-                                    <div className="text-xs text-green-600">Save £40/year</div>
+                          {/* Family Plans */}
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Family</h4>
+                            <div className="space-y-3">
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Monthly</span>
+                                    <span className="text-lg font-bold">£{plans.family?.monthly.price}</span>
                                   </div>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'family', 
-                                    subscriptionPlan: 'annual' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
-                                </Button>
-                              </CardContent>
-                            </Card>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'family', 
+                                      subscriptionPlan: 'monthly' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Annual</span>
+                                    <div className="text-right">
+                                      <span className="text-lg font-bold">£{plans.family?.annual.price}</span>
+                                      <div className="text-xs text-green-600">Save £40/year</div>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'family', 
+                                      subscriptionPlan: 'annual' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               )}
             </div>
           )}
