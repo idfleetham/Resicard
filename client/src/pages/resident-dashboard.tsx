@@ -136,13 +136,15 @@ export default function ResidentDashboard() {
     return true;
   });
 
-  // Calculate stats
-  const totalSavings = redemptions.reduce((sum, r) => sum + Number(r.value || 0), 0);
-  const thisMonthRedemptions = redemptions.filter(r => {
-    const redemptionDate = new Date(r.redeemedAt || new Date());
+  // Calculate stats from vouchers
+  const totalVouchers = vouchers.length;
+  const usedVouchers = vouchers.filter(v => v.isUsed);
+  const activeVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) > new Date());
+  const thisMonthVouchers = vouchers.filter(v => {
+    const voucherDate = new Date(v.createdAt || new Date());
     const now = new Date();
-    return redemptionDate.getMonth() === now.getMonth() && 
-           redemptionDate.getFullYear() === now.getFullYear();
+    return voucherDate.getMonth() === now.getMonth() && 
+           voucherDate.getFullYear() === now.getFullYear();
   });
 
   if (!user) {
@@ -221,9 +223,9 @@ export default function ResidentDashboard() {
                     <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Used This Month</p>
+                    <p className="text-sm text-muted-foreground">Vouchers This Month</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {thisMonthRedemptions.length}
+                      {thisMonthVouchers.length}
                     </p>
                   </div>
                 </div>
@@ -237,9 +239,9 @@ export default function ResidentDashboard() {
                     <PiggyBank className="h-6 w-6 text-amber-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Total Saved</p>
+                    <p className="text-sm text-muted-foreground">Active Vouchers</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatCurrency(totalSavings)}
+                      {activeVouchers.length}
                     </p>
                   </div>
                 </div>
@@ -266,14 +268,55 @@ export default function ResidentDashboard() {
             </Card>
           </div>
 
-          {/* Filters */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold text-foreground">Filter Deals</h3>
-                </div>
+          {/* Tab Navigation */}
+          <div className="mb-8">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab("deals")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "deals"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  Available Deals
+                </button>
+                <button
+                  onClick={() => setActiveTab("wallet")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "wallet"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  My Voucher Wallet ({activeVouchers.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("subscription")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "subscription"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  Subscription
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* Deals Tab */}
+          {activeTab === "deals" && (
+            <>
+              {/* Filters */}
+              <Card className="mb-8">
+                <CardContent className="p-6">
+                  <div className="flex flex-wrap gap-4 items-center">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold text-foreground">Filter Deals</h3>
+                    </div>
                 
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-[180px]">
@@ -325,8 +368,8 @@ export default function ResidentDashboard() {
                 <DealCard 
                   key={deal.id} 
                   deal={deal} 
-                  onRedeem={handleRedeemDeal}
-                  isLoading={redeemDealMutation.isPending}
+                  onRedeem={handleCreateVoucher}
+                  isLoading={createVoucherMutation.isPending}
                   showMerchantInfo={true}
                 />
               ))}
@@ -385,6 +428,224 @@ export default function ResidentDashboard() {
                 </div>
               </CardContent>
             </Card>
+          )}
+            </>
+          )}
+
+          {/* Voucher Wallet Tab */}
+          {activeTab === "wallet" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">My Voucher Wallet</h2>
+                <div className="text-sm text-muted-foreground">
+                  {activeVouchers.length} active • {usedVouchers.length} used
+                </div>
+              </div>
+
+              {vouchers.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No vouchers yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start creating vouchers from available deals to build your wallet.
+                    </p>
+                    <Button onClick={() => setActiveTab("deals")}>
+                      Browse Deals
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {vouchers.map((voucher) => (
+                    <Card key={voucher.id} className={`${voucher.isUsed ? 'opacity-60' : ''}`}>
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold">{voucher.dealTitle}</h3>
+                              <Badge variant={voucher.isUsed ? "secondary" : "default"}>
+                                {voucher.isUsed ? "Used" : "Active"}
+                              </Badge>
+                            </div>
+                            <p className="text-muted-foreground mb-2">{voucher.merchantName}</p>
+                            <div className="flex items-center gap-4 text-sm">
+                              <span className="font-medium">
+                                {voucher.discountType === 'percentage' 
+                                  ? `${voucher.discountValue}% off`
+                                  : `£${voucher.discountValue} off`
+                                }
+                              </span>
+                              <span className="text-muted-foreground">
+                                Expires: {formatDate(voucher.expiresAt)}
+                              </span>
+                            </div>
+                            <div className="mt-2 text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                              {voucher.voucherNumber}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {voucher.isUsed ? (
+                              <div className="text-sm text-muted-foreground">
+                                Used: {formatDate(voucher.usedAt || '')}
+                              </div>
+                            ) : new Date(voucher.expiresAt) < new Date() ? (
+                              <Badge variant="destructive">Expired</Badge>
+                            ) : (
+                              <Badge variant="outline">Ready to use</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Subscription Tab */}
+          {activeTab === "subscription" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Subscription Management</h2>
+                {subscription?.isActive && (
+                  <Badge variant="default">
+                    {subscription.type} • {subscription.plan}
+                  </Badge>
+                )}
+              </div>
+
+              {subscription?.isActive ? (
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Active Subscription</h3>
+                        <p className="text-muted-foreground">
+                          {subscription.type} plan ({subscription.plan})
+                        </p>
+                      </div>
+                      <CheckCircle className="h-8 w-8 text-green-500" />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {subscription.expiresAt && (
+                        <p>Expires: {formatDate(subscription.expiresAt)}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Subscribe to create vouchers from deals and build your savings wallet.
+                      </p>
+                      
+                      {plans && (
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Individual Plans */}
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Individual</h4>
+                            <div className="space-y-3">
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Monthly</span>
+                                    <span className="text-lg font-bold">£{plans.individual?.monthly.price}</span>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'individual', 
+                                      subscriptionPlan: 'monthly' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Annual</span>
+                                    <div className="text-right">
+                                      <span className="text-lg font-bold">£{plans.individual?.annual.price}</span>
+                                      <div className="text-xs text-green-600">Save £20/year</div>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'individual', 
+                                      subscriptionPlan: 'annual' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+
+                          {/* Family Plans */}
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Family</h4>
+                            <div className="space-y-3">
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Monthly</span>
+                                    <span className="text-lg font-bold">£{plans.family?.monthly.price}</span>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'family', 
+                                      subscriptionPlan: 'monthly' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-medium">Annual</span>
+                                    <div className="text-right">
+                                      <span className="text-lg font-bold">£{plans.family?.annual.price}</span>
+                                      <div className="text-xs text-green-600">Save £40/year</div>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    className="w-full"
+                                    onClick={() => createSubscriptionMutation.mutate({ 
+                                      subscriptionType: 'family', 
+                                      subscriptionPlan: 'annual' 
+                                    })}
+                                    disabled={createSubscriptionMutation.isPending}
+                                  >
+                                    {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
