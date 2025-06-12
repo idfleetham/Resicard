@@ -7,6 +7,15 @@ import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@sha
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// Extend the Request interface to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
+
 // Middleware to verify JWT token
 function authenticateToken(req: any, res: any, next: any) {
   const authHeader = req.headers['authorization'];
@@ -226,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Deal is no longer active" });
       }
       
-      if (deal.usageCount >= deal.usageLimit) {
+      if ((deal.usageCount || 0) >= deal.usageLimit) {
         return res.status(400).json({ message: "Deal usage limit reached" });
       }
       

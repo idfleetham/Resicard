@@ -78,9 +78,17 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = {
-      ...insertUser,
       id,
+      username: insertUser.username,
+      email: insertUser.email,
+      password: insertUser.password,
+      role: insertUser.role,
       isVerified: insertUser.role === 'resident' ? true : false, // Auto-verify residents
+      postcode: insertUser.postcode || null,
+      businessName: insertUser.businessName || null,
+      businessCategory: insertUser.businessCategory || null,
+      businessAddress: insertUser.businessAddress || null,
+      businessPhone: insertUser.businessPhone || null,
       membershipExpiry: insertUser.role === 'resident' 
         ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
         : null,
@@ -120,10 +128,19 @@ export class MemStorage implements IStorage {
   async createDeal(dealData: InsertDeal & { merchantId: number }): Promise<Deal> {
     const id = this.currentDealId++;
     const deal: Deal = {
-      ...dealData,
       id,
+      merchantId: dealData.merchantId,
+      title: dealData.title,
+      description: dealData.description,
+      category: dealData.category,
+      discountType: dealData.discountType,
+      discountValue: dealData.discountValue || null,
+      originalValue: dealData.originalValue || null,
+      usageLimit: dealData.usageLimit,
       usageCount: 0,
       isActive: true,
+      expiryDate: dealData.expiryDate,
+      terms: dealData.terms || null,
       createdAt: new Date(),
     };
     this.deals.set(id, deal);
@@ -170,8 +187,10 @@ export class MemStorage implements IStorage {
   async createRedemption(redemption: InsertRedemption): Promise<Redemption> {
     const id = this.currentRedemptionId++;
     const newRedemption: Redemption = {
-      ...redemption,
       id,
+      dealId: redemption.dealId,
+      userId: redemption.userId,
+      value: redemption.value || null,
       redeemedAt: new Date(),
     };
     

@@ -317,7 +317,13 @@ export default function ResidentDashboard() {
                       </p>
                     </div>
                   </div>
-                  <Button className="coastal-gradient">
+                  <Button 
+                    className="coastal-gradient"
+                    onClick={() => toast({
+                      title: "Payment System Coming Soon",
+                      description: "Membership renewal will be available once payment processing is set up.",
+                    })}
+                  >
                     Renew Membership
                   </Button>
                 </div>
