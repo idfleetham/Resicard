@@ -375,6 +375,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/pending-businesses", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const pendingBusinesses = await storage.getPendingBusinesses();
+      const safeBusinesses = pendingBusinesses.map(user => ({ ...user, password: undefined }));
+      res.json(safeBusinesses);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/verify-business/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const verifiedBusiness = await storage.verifyBusiness(id);
+      if (verifiedBusiness) {
+        res.json({ ...verifiedBusiness, password: undefined });
+      } else {
+        res.status(404).json({ message: "Business not found" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/reject-business/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const rejected = await storage.rejectBusiness(id);
+      if (rejected) {
+        res.json({ message: "Business rejected and removed" });
+      } else {
+        res.status(404).json({ message: "Business not found or already verified" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Analytics routes
   app.get("/api/analytics/merchant/:merchantId/revenue", authenticateToken, async (req, res) => {
     try {

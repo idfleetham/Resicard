@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import Navigation from "@/components/navigation";
 import RoleSelector from "@/components/role-selector";
 import DealCard from "@/components/deal-card";
@@ -219,6 +220,20 @@ export default function Home() {
             </div>
           </div>
         </div>
+        
+        {/* Footer */}
+        <footer className="bg-slate-100 border-t">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center text-sm text-muted-foreground">
+              <p>&copy; 2024 LocalPerks St Andrews. All rights reserved.</p>
+              <div className="mt-2 space-x-4">
+                <Link href="/admin-signup" className="hover:text-primary">
+                  Admin Portal
+                </Link>
+              </div>
+            </div>
+          </div>
+        </footer>
         
         <RoleSelector 
           isVisible={showRoleSelector} 

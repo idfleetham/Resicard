@@ -105,13 +105,33 @@ export default function AdminDashboard() {
     verifyBusinessMutation.mutate(businessId);
   };
 
-  const handleRejectBusiness = (businessId: number) => {
-    if (confirm('Are you sure you want to reject this business application? This action cannot be undone.')) {
+  // Reject business mutation
+  const rejectBusinessMutation = useMutation({
+    mutationFn: async (businessId: number) => {
+      const response = await apiRequestWithAuth('DELETE', `/api/admin/reject-business/${businessId}`);
+      return response.json();
+    },
+    onSuccess: () => {
       toast({
         title: "Business Rejected",
-        description: "The business application has been rejected.",
+        description: "The business application has been rejected and removed.",
       });
-      // In a real app, you'd implement a reject endpoint
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Rejection Failed",
+        description: error.message || "Failed to reject business",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRejectBusiness = (businessId: number) => {
+    if (confirm('Are you sure you want to reject this business application? This action cannot be undone.')) {
+      rejectBusinessMutation.mutate(businessId);
     }
   };
 
