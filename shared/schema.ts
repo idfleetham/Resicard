@@ -111,6 +111,7 @@ export type Voucher = typeof vouchers.$inferSelect;
 export const usersRelations = relations(users, ({ many }) => ({
   deals: many(deals),
   redemptions: many(redemptions),
+  vouchers: many(vouchers),
 }));
 
 export const dealsRelations = relations(deals, ({ one, many }) => ({
@@ -119,6 +120,7 @@ export const dealsRelations = relations(deals, ({ one, many }) => ({
     references: [users.id],
   }),
   redemptions: many(redemptions),
+  vouchers: many(vouchers),
 }));
 
 export const redemptionsRelations = relations(redemptions, ({ one }) => ({
@@ -132,9 +134,31 @@ export const redemptionsRelations = relations(redemptions, ({ one }) => ({
   }),
 }));
 
+export const vouchersRelations = relations(vouchers, ({ one }) => ({
+  deal: one(deals, {
+    fields: [vouchers.dealId],
+    references: [deals.id],
+  }),
+  user: one(users, {
+    fields: [vouchers.userId],
+    references: [users.id],
+  }),
+}));
+
 export type DealWithMerchant = Deal & {
   merchantName: string;
   merchantAddress: string;
 };
 
+export type VoucherWithDeal = Voucher & {
+  dealTitle: string;
+  merchantName: string;
+  discountValue: string;
+  discountType: string;
+};
+
 export type UserRole = 'resident' | 'merchant' | 'admin';
+
+export type SubscriptionType = 'individual' | 'family';
+export type SubscriptionPlan = 'monthly' | 'annual';
+export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';

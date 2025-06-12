@@ -1,4 +1,4 @@
-import { users, deals, redemptions, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type DealWithMerchant } from "@shared/schema";
+import { users, deals, redemptions, vouchers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type DealWithMerchant, type VoucherWithDeal } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 
@@ -28,6 +28,23 @@ export interface IStorage {
   getRedemptionsByUser(userId: number): Promise<Redemption[]>;
   getRedemptionsByDeal(dealId: number): Promise<Redemption[]>;
   getRedemptionsByMerchant(merchantId: number): Promise<Redemption[]>;
+  
+  // Voucher operations
+  createVoucher(voucher: InsertVoucher): Promise<Voucher>;
+  getVouchersByUser(userId: number): Promise<VoucherWithDeal[]>;
+  getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined>;
+  useVoucher(voucherNumber: string): Promise<Voucher | undefined>;
+  getActiveVouchersCount(dealId: number): Promise<number>;
+  
+  // Subscription operations
+  updateUserSubscription(userId: number, subscriptionData: {
+    subscriptionType: string;
+    subscriptionPlan: string;
+    subscriptionStatus: string;
+    membershipExpiry: Date;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  }): Promise<User | undefined>;
   
   // Analytics
   getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }>;
@@ -452,6 +469,80 @@ export class DatabaseStorage implements IStorage {
   async getMerchantRevenue(merchantId: number): Promise<number> {
     const redemptionsList = await this.getRedemptionsByMerchant(merchantId);
     return redemptionsList.reduce((sum, r) => sum + Number(r.value || 0), 0);
+  }
+
+  async createVoucher(voucher: InsertVoucher): Promise<Voucher> {
+    const [newVoucher] = await db
+      .insert(vouchers)
+      .values(voucher)
+      .returning();
+    return newVoucher;
+  }
+
+  async getVouchersByUser(userId: number): Promise<VoucherWithDeal[]> {
+    const result = await db
+      .select({
+        id: vouchers.id,
+        dealId: vouchers.dealId,
+        userId: vouchers.userId,
+        voucherNumber: vouchers.voucherNumber,
+        isUsed: vouchers.isUsed,
+        usedAt: vouchers.usedAt,
+        expiresAt: vouchers.expiresAt,
+        createdAt: vouchers.createdAt,
+        dealTitle: deals.title,
+        merchantName: users.businessName,
+        discountValue: deals.discountValue,
+        discountType: deals.discountType,
+      })
+      .from(vouchers)
+      .innerJoin(deals, eq(vouchers.dealId, deals.id))
+      .innerJoin(users, eq(deals.merchantId, users.id))
+      .where(eq(vouchers.userId, userId));
+
+    return result.map(row => ({
+      ...row,
+      merchantName: row.merchantName || '',
+      discountValue: row.discountValue || '0',
+    }));
+  }
+
+  async getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined> {
+    const [voucher] = await db.select().from(vouchers).where(eq(vouchers.voucherNumber, voucherNumber));
+    return voucher || undefined;
+  }
+
+  async useVoucher(voucherNumber: string): Promise<Voucher | undefined> {
+    const [voucher] = await db
+      .update(vouchers)
+      .set({ isUsed: true, usedAt: new Date() })
+      .where(eq(vouchers.voucherNumber, voucherNumber))
+      .returning();
+    return voucher || undefined;
+  }
+
+  async getActiveVouchersCount(dealId: number): Promise<number> {
+    const [result] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(vouchers)
+      .where(sql`${vouchers.dealId} = ${dealId} AND ${vouchers.isUsed} = false AND ${vouchers.expiresAt} > NOW()`);
+    return Number(result.count);
+  }
+
+  async updateUserSubscription(userId: number, subscriptionData: {
+    subscriptionType: string;
+    subscriptionPlan: string;
+    subscriptionStatus: string;
+    membershipExpiry: Date;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(subscriptionData)
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
   }
 
   async getPlatformStats(): Promise<{
