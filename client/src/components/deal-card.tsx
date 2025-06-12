@@ -6,9 +6,10 @@ import { Users, Calendar, Ticket } from "lucide-react";
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
 import type { DealWithMerchant } from "@shared/schema";
 import dunveganImage from "@assets/Dunny_1749765361824.jpg";
-import maishaImage from "@assets/Image 12-06-2025 at 22.55_1749765379381.jpeg";
-import tailendImage from "@assets/Image 12-06-2025 at 22.54_1749765379387.jpeg";
-import standrewsLinksImage from "@assets/Image 12-06-2025 at 22.53_1749765379387.jpeg";
+import maishaImage from "@assets/Image 12-06-2025 at 22.53_1749765379387.jpeg";
+import tailendImage from "@assets/Image 12-06-2025 at 22.53_1749765669944.jpeg";
+import standrewsLinksImage from "@assets/Image 12-06-2025 at 22.55_1749765379381.jpeg";
+import golfCityTaxisImage from "@assets/Image 12-06-2025 at 22.54_1749765379387.jpeg";
 
 interface DealCardProps {
   deal: DealWithMerchant;
@@ -35,6 +36,7 @@ export default function DealCard({
       "Maisha": maishaImage,
       "Tailend": tailendImage,
       "St Andrews Links": standrewsLinksImage,
+      "Golf City Taxis": golfCityTaxisImage,
     };
     
     // Use business-specific image if available
