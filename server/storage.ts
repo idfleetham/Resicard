@@ -318,7 +318,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(users).where(
       sql`${users.id} = ${id} AND ${users.role} = 'merchant' AND ${users.isVerified} = false`
     );
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async getDeal(id: number): Promise<Deal | undefined> {
@@ -345,7 +345,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDeal(id: number): Promise<boolean> {
     const result = await db.delete(deals).where(eq(deals.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async getDealsByMerchant(merchantId: number): Promise<Deal[]> {
@@ -367,6 +367,7 @@ export class DatabaseStorage implements IStorage {
         usageCount: deals.usageCount,
         expiryDate: deals.expiryDate,
         isActive: deals.isActive,
+        terms: deals.terms,
         createdAt: deals.createdAt,
         merchantName: users.businessName,
         merchantAddress: users.businessAddress,
@@ -397,6 +398,7 @@ export class DatabaseStorage implements IStorage {
         usageCount: deals.usageCount,
         expiryDate: deals.expiryDate,
         isActive: deals.isActive,
+        terms: deals.terms,
         createdAt: deals.createdAt,
         merchantName: users.businessName,
         merchantAddress: users.businessAddress,

@@ -11,6 +11,7 @@ import { MapPin, CheckCircle, Users, Ticket, PiggyBank, Calendar } from "lucide-
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequestWithAuth } from "@/lib/auth";
 import type { DealWithMerchant } from "@shared/schema";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 export default function Home() {
   const [showRoleSelector, setShowRoleSelector] = useState(false);
@@ -35,7 +36,7 @@ export default function Home() {
             <div 
               className="absolute inset-0 hero-overlay"
               style={{
-                backgroundImage: 'url("https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=2000&h=600&fit=crop")',
+                backgroundImage: `url("${heroImage}")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
