@@ -26,7 +26,7 @@ export default function ResidentDashboard() {
   const { data: deals = [], isLoading: dealsLoading } = useQuery({
     queryKey: ['/api/deals', selectedCategory],
     queryFn: async () => {
-      const url = selectedCategory ? `/api/deals?category=${selectedCategory}` : '/api/deals';
+      const url = selectedCategory && selectedCategory !== "all" ? `/api/deals?category=${selectedCategory}` : '/api/deals';
       const response = await fetch(url);
       return response.json() as Promise<DealWithMerchant[]>;
     },

@@ -15,7 +15,12 @@ export const users = pgTable("users", {
   businessCategory: text("business_category"),
   businessAddress: text("business_address"),
   businessPhone: text("business_phone"),
+  subscriptionType: text("subscription_type"), // 'individual' or 'family'
+  subscriptionPlan: text("subscription_plan"), // 'monthly' or 'annual'
+  subscriptionStatus: text("subscription_status").default("inactive"), // 'active', 'inactive', 'cancelled'
   membershipExpiry: timestamp("membership_expiry"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -43,6 +48,17 @@ export const redemptions = pgTable("redemptions", {
   userId: integer("user_id").notNull(),
   redeemedAt: timestamp("redeemed_at").defaultNow(),
   value: decimal("value", { precision: 10, scale: 2 }),
+});
+
+export const vouchers = pgTable("vouchers", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  userId: integer("user_id").notNull(),
+  voucherNumber: text("voucher_number").notNull().unique(),
+  isUsed: boolean("is_used").default(false),
+  usedAt: timestamp("used_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -75,12 +91,21 @@ export const insertRedemptionSchema = createInsertSchema(redemptions).pick({
   value: true,
 });
 
+export const insertVoucherSchema = createInsertSchema(vouchers).pick({
+  dealId: true,
+  userId: true,
+  voucherNumber: true,
+  expiresAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
 export type Deal = typeof deals.$inferSelect;
 export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
 export type Redemption = typeof redemptions.$inferSelect;
+export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
+export type Voucher = typeof vouchers.$inferSelect;
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
