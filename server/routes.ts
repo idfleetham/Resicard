@@ -1,0 +1,357 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { storage } from "./storage";
+import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@shared/schema";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Middleware to verify JWT token
+function authenticateToken(req: any, res: any, next: any) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.sendStatus(401);
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
+// Middleware to check if user has required role
+function requireRole(role: string) {
+  return (req: any, res: any, next: any) => {
+    if (req.user.role !== role) {
+      return res.sendStatus(403);
+    }
+    next();
+  };
+}
+
+// UK postcode validation - basic implementation for St Andrews area
+function validatePostcode(postcode: string): boolean {
+  const stAndrewsPostcodes = ['KY16', 'KY15', 'DD6', 'DD5'];
+  const postcodePrefix = postcode.toUpperCase().substring(0, 4);
+  return stAndrewsPostcodes.some(prefix => postcodePrefix.startsWith(prefix));
+}
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Validate postcode for residents
+      if (userData.role === 'resident' && userData.postcode) {
+        if (!validatePostcode(userData.postcode)) {
+          return res.status(400).json({ 
+            message: "Postcode is outside the St Andrews area (must be within 10 miles)" 
+          });
+        }
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+      });
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      res.json({
+        user: { ...user, password: undefined },
+        token,
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      res.json({
+        user: { ...user, password: undefined },
+        token,
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/auth/me", authenticateToken, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ ...user, password: undefined });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Deal routes
+  app.get("/api/deals", async (req, res) => {
+    try {
+      const { category } = req.query;
+      let deals;
+      
+      if (category) {
+        deals = await storage.getDealsByCategory(category as string);
+      } else {
+        deals = await storage.getActiveDeals();
+      }
+      
+      res.json(deals);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/deals", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealData = insertDealSchema.parse(req.body);
+      
+      const deal = await storage.createDeal({
+        ...dealData,
+        merchantId: req.user.id,
+      });
+      
+      res.json(deal);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/deals/merchant/:merchantId", authenticateToken, async (req, res) => {
+    try {
+      const merchantId = parseInt(req.params.merchantId);
+      
+      // Only allow merchants to view their own deals or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== merchantId) {
+        return res.sendStatus(403);
+      }
+      
+      const deals = await storage.getDealsByMerchant(merchantId);
+      res.json(deals);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/deals/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Verify merchant owns this deal
+      const deal = await storage.getDeal(dealId);
+      if (!deal || deal.merchantId !== req.user.id) {
+        return res.sendStatus(403);
+      }
+      
+      const updatedDeal = await storage.updateDeal(dealId, updates);
+      res.json(updatedDeal);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/deals/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      
+      // Verify merchant owns this deal
+      const deal = await storage.getDeal(dealId);
+      if (!deal || deal.merchantId !== req.user.id) {
+        return res.sendStatus(403);
+      }
+      
+      const deleted = await storage.deleteDeal(dealId);
+      res.json({ success: deleted });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Redemption routes
+  app.post("/api/redemptions", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const { dealId, value } = req.body;
+      
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      if (!deal.isActive || new Date(deal.expiryDate) < new Date()) {
+        return res.status(400).json({ message: "Deal is no longer active" });
+      }
+      
+      if (deal.usageCount >= deal.usageLimit) {
+        return res.status(400).json({ message: "Deal usage limit reached" });
+      }
+      
+      const redemption = await storage.createRedemption({
+        dealId,
+        userId: req.user.id,
+        value: value || deal.originalValue,
+      });
+      
+      res.json(redemption);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/redemptions/user/:userId", authenticateToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Only allow users to view their own redemptions or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== userId) {
+        return res.sendStatus(403);
+      }
+      
+      const redemptions = await storage.getRedemptionsByUser(userId);
+      res.json(redemptions);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/redemptions/merchant/:merchantId", authenticateToken, async (req, res) => {
+    try {
+      const merchantId = parseInt(req.params.merchantId);
+      
+      // Only allow merchants to view their own redemptions or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== merchantId) {
+        return res.sendStatus(403);
+      }
+      
+      const redemptions = await storage.getRedemptionsByMerchant(merchantId);
+      res.json(redemptions);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/pending-businesses", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const businesses = await storage.getPendingBusinesses();
+      res.json(businesses);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/verify-business/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const businessId = parseInt(req.params.id);
+      const verifiedBusiness = await storage.verifyBusiness(businessId);
+      res.json(verifiedBusiness);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/stats", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const stats = await storage.getPlatformStats();
+      res.json(stats);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/users", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const { role } = req.query;
+      let users;
+      
+      if (role) {
+        users = await storage.getUsersByRole(role as string);
+      } else {
+        const residents = await storage.getUsersByRole('resident');
+        const merchants = await storage.getUsersByRole('merchant');
+        users = [...residents, ...merchants];
+      }
+      
+      // Remove passwords from response
+      const safeUsers = users.map(user => ({ ...user, password: undefined }));
+      res.json(safeUsers);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Analytics routes
+  app.get("/api/analytics/merchant/:merchantId/revenue", authenticateToken, async (req, res) => {
+    try {
+      const merchantId = parseInt(req.params.merchantId);
+      
+      // Only allow merchants to view their own revenue or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== merchantId) {
+        return res.sendStatus(403);
+      }
+      
+      const revenue = await storage.getMerchantRevenue(merchantId);
+      res.json({ revenue });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/analytics/deal/:dealId/stats", authenticateToken, async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const stats = await storage.getDealStats(dealId);
+      res.json(stats);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}
