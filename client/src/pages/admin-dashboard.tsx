@@ -398,7 +398,7 @@ export default function AdminDashboard() {
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           <SelectItem value="restaurant">Restaurants</SelectItem>
                           <SelectItem value="bar">Bars</SelectItem>
                           <SelectItem value="cafe">Cafes</SelectItem>

@@ -16,7 +16,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DealWithMerchant, Redemption } from "@shared/schema";
 
 export default function ResidentDashboard() {
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [availableOnly, setAvailableOnly] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -72,6 +72,12 @@ export default function ResidentDashboard() {
 
   // Filter deals
   const filteredDeals = deals.filter(deal => {
+    // Category filter
+    if (selectedCategory !== "all" && deal.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Availability filter
     if (availableOnly) {
       const isExpired = new Date(deal.expiryDate) < new Date();
       const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
@@ -224,7 +230,7 @@ export default function ResidentDashboard() {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     <SelectItem value="restaurant">Restaurants</SelectItem>
                     <SelectItem value="bar">Bars</SelectItem>
                     <SelectItem value="cafe">Cafes</SelectItem>
