@@ -263,10 +263,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Redemption routes
+  // Voucher creation routes (replaces immediate redemptions)
   app.post("/api/redemptions", authenticateToken, requireRole('resident'), async (req, res) => {
     try {
-      const { dealId, value } = req.body;
+      const { dealId } = req.body;
+      const userId = req.user.id;
       
       const deal = await storage.getDeal(dealId);
       if (!deal) {
@@ -277,17 +278,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Deal is no longer active" });
       }
       
-      if ((deal.usageCount || 0) >= deal.usageLimit) {
-        return res.status(400).json({ message: "Deal usage limit reached" });
+      // Check current voucher count for this deal
+      const activeVouchersCount = await storage.getActiveVouchersCount(dealId);
+      if (activeVouchersCount >= deal.usageLimit) {
+        return res.status(400).json({ message: "Deal voucher limit reached" });
       }
       
-      const redemption = await storage.createRedemption({
+      // Generate unique voucher number
+      const voucherNumber = `${dealId}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
+      
+      // Create voucher that expires with the deal
+      const voucher = await storage.createVoucher({
         dealId,
-        userId: req.user.id,
-        value: value || deal.originalValue,
+        userId,
+        voucherNumber,
+        expiresAt: new Date(deal.expiryDate),
       });
       
-      res.json(redemption);
+      res.json({ 
+        voucher, 
+        voucherPosition: `${activeVouchersCount + 1} of ${deal.usageLimit}`,
+        message: "Voucher created successfully" 
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Voucher wallet routes
+  app.get("/api/vouchers/user/:userId", authenticateToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Only allow users to view their own vouchers or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== userId) {
+        return res.sendStatus(403);
+      }
+      
+      const vouchers = await storage.getVouchersByUser(userId);
+      res.json(vouchers);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/vouchers/use", authenticateToken, async (req, res) => {
+    try {
+      const { voucherNumber } = req.body;
+      
+      const voucher = await storage.getVoucherByNumber(voucherNumber);
+      if (!voucher) {
+        return res.status(404).json({ message: "Voucher not found" });
+      }
+      
+      if (voucher.isUsed) {
+        return res.status(400).json({ message: "Voucher already used" });
+      }
+      
+      if (new Date() > new Date(voucher.expiresAt)) {
+        return res.status(400).json({ message: "Voucher has expired" });
+      }
+      
+      const usedVoucher = await storage.useVoucher(voucherNumber);
+      res.json({ voucher: usedVoucher, message: "Voucher redeemed successfully" });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -320,6 +373,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const redemptions = await storage.getRedemptionsByMerchant(merchantId);
       res.json(redemptions);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Subscription management routes
+  app.get("/api/subscription/plans", async (req, res) => {
+    try {
+      const plans = {
+        individual: {
+          monthly: { price: 9.99, priceId: "price_individual_monthly" },
+          annual: { price: 99, priceId: "price_individual_annual" }
+        },
+        family: {
+          monthly: { price: 19.99, priceId: "price_family_monthly" },
+          annual: { price: 199, priceId: "price_family_annual" }
+        }
+      };
+      res.json(plans);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/subscription/create", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const { subscriptionType, subscriptionPlan } = req.body;
+      const userId = req.user.id;
+      
+      // Calculate membership expiry
+      const now = new Date();
+      const membershipExpiry = new Date(now);
+      if (subscriptionPlan === 'monthly') {
+        membershipExpiry.setMonth(membershipExpiry.getMonth() + 1);
+      } else {
+        membershipExpiry.setFullYear(membershipExpiry.getFullYear() + 1);
+      }
+      
+      const updatedUser = await storage.updateUserSubscription(userId, {
+        subscriptionType,
+        subscriptionPlan,
+        subscriptionStatus: 'active',
+        membershipExpiry,
+      });
+      
+      res.json({ user: updatedUser, message: "Subscription created successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/subscription/status", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const subscription = {
+        type: user.subscriptionType,
+        plan: user.subscriptionPlan,
+        status: user.subscriptionStatus,
+        expiresAt: user.membershipExpiry,
+        isActive: user.subscriptionStatus === 'active' && (!user.membershipExpiry || new Date() < new Date(user.membershipExpiry))
+      };
+      
+      res.json(subscription);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

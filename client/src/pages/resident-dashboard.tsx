@@ -13,11 +13,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { DealWithMerchant, Redemption } from "@shared/schema";
+import type { DealWithMerchant, Redemption, VoucherWithDeal } from "@shared/schema";
 
 export default function ResidentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState("deals");
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -32,42 +33,91 @@ export default function ResidentDashboard() {
     },
   });
 
-  // Fetch user's redemptions
-  const { data: redemptions = [] } = useQuery({
-    queryKey: ['/api/redemptions/user', user?.id],
+  // Fetch user's vouchers
+  const { data: vouchers = [] } = useQuery({
+    queryKey: ['/api/vouchers/user', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const response = await apiRequestWithAuth('GET', `/api/redemptions/user/${user.id}`);
-      return response.json() as Promise<Redemption[]>;
+      const response = await apiRequestWithAuth('GET', `/api/vouchers/user/${user.id}`);
+      return response.json() as Promise<VoucherWithDeal[]>;
     },
     enabled: !!user,
   });
 
-  // Redeem deal mutation
-  const redeemDealMutation = useMutation({
-    mutationFn: async ({ dealId, value }: { dealId: number; value?: number }) => {
-      const response = await apiRequestWithAuth('POST', '/api/redemptions', { dealId, value });
+  // Fetch subscription status
+  const { data: subscription } = useQuery({
+    queryKey: ['/api/subscription/status'],
+    queryFn: async () => {
+      const response = await apiRequestWithAuth('GET', '/api/subscription/status');
       return response.json();
     },
-    onSuccess: () => {
+    enabled: !!user && user.role === 'resident',
+  });
+
+  // Fetch subscription plans
+  const { data: plans } = useQuery({
+    queryKey: ['/api/subscription/plans'],
+    queryFn: async () => {
+      const response = await fetch('/api/subscription/plans');
+      return response.json();
+    },
+  });
+
+  // Create voucher mutation (replaces deal redemption)
+  const createVoucherMutation = useMutation({
+    mutationFn: async ({ dealId }: { dealId: number }) => {
+      const response = await apiRequestWithAuth('POST', '/api/redemptions', { dealId });
+      return response.json();
+    },
+    onSuccess: (data) => {
       toast({
-        title: "Deal Redeemed!",
-        description: "Your voucher has been successfully redeemed.",
+        title: "Voucher Created!",
+        description: `Voucher ${data.voucherPosition} added to your wallet.`,
       });
+      queryClient.invalidateQueries({ queryKey: ['/api/vouchers/user'] });
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/redemptions/user'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Redemption Failed",
-        description: error.message || "Failed to redeem deal",
+        title: "Failed to Create Voucher",
+        description: error.message || "Unable to create voucher",
         variant: "destructive",
       });
     },
   });
 
-  const handleRedeemDeal = (dealId: number) => {
-    redeemDealMutation.mutate({ dealId });
+  // Create subscription mutation
+  const createSubscriptionMutation = useMutation({
+    mutationFn: async ({ subscriptionType, subscriptionPlan }: { subscriptionType: string; subscriptionPlan: string }) => {
+      const response = await apiRequestWithAuth('POST', '/api/subscription/create', { subscriptionType, subscriptionPlan });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Subscription Activated!",
+        description: "You can now create vouchers from deals.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Subscription Failed",
+        description: error.message || "Unable to activate subscription",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateVoucher = (dealId: number) => {
+    if (!subscription?.isActive) {
+      toast({
+        title: "Subscription Required",
+        description: "Please activate a subscription to create vouchers.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createVoucherMutation.mutate({ dealId });
   };
 
   // Filter deals
