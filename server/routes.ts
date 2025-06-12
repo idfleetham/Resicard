@@ -95,6 +95,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin registration endpoint (protected)
+  app.post("/api/auth/register-admin", async (req, res) => {
+    try {
+      const { username, email, password, adminSecret } = req.body;
+      
+      // Check admin secret (simple protection - in production use better security)
+      if (adminSecret !== "localperks-admin-2024") {
+        return res.status(403).json({ message: "Invalid admin secret" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const user = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword,
+        role: 'admin',
+      });
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      res.json({
+        user: { ...user, password: undefined },
+        token,
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;

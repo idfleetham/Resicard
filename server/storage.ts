@@ -10,6 +10,7 @@ export interface IStorage {
   getUsersByRole(role: string): Promise<User[]>;
   getPendingBusinesses(): Promise<User[]>;
   verifyBusiness(id: number): Promise<User | undefined>;
+  rejectBusiness(id: number): Promise<boolean>;
   
   // Deal operations
   getDeal(id: number): Promise<Deal | undefined>;
@@ -119,6 +120,15 @@ export class MemStorage implements IStorage {
 
   async verifyBusiness(id: number): Promise<User | undefined> {
     return this.updateUser(id, { isVerified: true });
+  }
+
+  async rejectBusiness(id: number): Promise<boolean> {
+    const user = this.users.get(id);
+    if (user && user.role === 'merchant' && !user.isVerified) {
+      this.users.delete(id);
+      return true;
+    }
+    return false;
   }
 
   async getDeal(id: number): Promise<Deal | undefined> {
