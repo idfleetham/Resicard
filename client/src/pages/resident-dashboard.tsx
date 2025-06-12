@@ -74,7 +74,7 @@ export default function ResidentDashboard() {
   const filteredDeals = deals.filter(deal => {
     if (availableOnly) {
       const isExpired = new Date(deal.expiryDate) < new Date();
-      const isFullyUsed = deal.usageCount >= deal.usageLimit;
+      const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
       return !isExpired && !isFullyUsed && deal.isActive;
     }
     return true;
@@ -83,7 +83,7 @@ export default function ResidentDashboard() {
   // Calculate stats
   const totalSavings = redemptions.reduce((sum, r) => sum + Number(r.value || 0), 0);
   const thisMonthRedemptions = redemptions.filter(r => {
-    const redemptionDate = new Date(r.redeemedAt);
+    const redemptionDate = new Date(r.redeemedAt || new Date());
     const now = new Date();
     return redemptionDate.getMonth() === now.getMonth() && 
            redemptionDate.getFullYear() === now.getFullYear();
@@ -149,7 +149,7 @@ export default function ResidentDashboard() {
                     <p className="text-2xl font-bold text-foreground">
                       {filteredDeals.filter(d => {
                         const isExpired = new Date(d.expiryDate) < new Date();
-                        const isFullyUsed = d.usageCount >= d.usageLimit;
+                        const isFullyUsed = (d.usageCount || 0) >= d.usageLimit;
                         return !isExpired && !isFullyUsed && d.isActive;
                       }).length}
                     </p>
@@ -238,7 +238,7 @@ export default function ResidentDashboard() {
                   <Checkbox 
                     id="available"
                     checked={availableOnly}
-                    onCheckedChange={setAvailableOnly}
+                    onCheckedChange={(checked) => setAvailableOnly(checked === true)}
                   />
                   <label htmlFor="available" className="text-sm text-muted-foreground">
                     Available now only
