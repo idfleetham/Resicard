@@ -5,6 +5,10 @@ import { Progress } from "@/components/ui/progress";
 import { Users, Calendar, Ticket } from "lucide-react";
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
 import type { DealWithMerchant } from "@shared/schema";
+import dunveganImage from "@assets/Dunny_1749765361824.jpg";
+import maishaImage from "@assets/Image 12-06-2025 at 22.55_1749765379381.jpeg";
+import tailendImage from "@assets/Image 12-06-2025 at 22.54_1749765379387.jpeg";
+import standrewsLinksImage from "@assets/Image 12-06-2025 at 22.53_1749765379387.jpeg";
 
 interface DealCardProps {
   deal: DealWithMerchant;
@@ -19,28 +23,39 @@ export default function DealCard({
   showMerchantInfo = true, 
   isLoading = false 
 }: DealCardProps) {
-  const usagePercentage = (deal.usageCount / deal.usageLimit) * 100;
+  const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
   const isExpired = new Date(deal.expiryDate) < new Date();
-  const isFullyUsed = deal.usageCount >= deal.usageLimit;
+  const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
   const getImageForDeal = (deal: DealWithMerchant) => {
-    // Use uploaded business image if available
-    if (deal.imageUrl) {
-      return deal.imageUrl;
+    // Map specific businesses to their uploaded images
+    const businessImages: Record<string, string> = {
+      "The Dunvegan": dunveganImage,
+      "Maisha": maishaImage,
+      "Tailend": tailendImage,
+      "St Andrews Links": standrewsLinksImage,
+    };
+    
+    // Use business-specific image if available
+    if (businessImages[deal.merchantName]) {
+      return businessImages[deal.merchantName];
     }
     
     // Fallback to category images
-    const images: Record<string, string> = {
+    const categoryImages: Record<string, string> = {
       restaurant: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop",
       bar: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&h=300&fit=crop",
       cafe: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=300&fit=crop",
       pub: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=300&fit=crop",
       takeaway: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&h=300&fit=crop",
       "fine-dining": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=300&fit=crop",
+      sports: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=300&fit=crop",
+      transport: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&h=300&fit=crop",
+      "food-drink": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=300&fit=crop",
     };
     
-    return images[deal.category.toLowerCase()] || images.restaurant;
+    return categoryImages[deal.category.toLowerCase()] || categoryImages.restaurant;
   };
 
   return (
