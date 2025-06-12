@@ -33,6 +33,7 @@ export const deals = pgTable("deals", {
   isActive: boolean("is_active").default(true),
   expiryDate: timestamp("expiry_date").notNull(),
   terms: text("terms"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

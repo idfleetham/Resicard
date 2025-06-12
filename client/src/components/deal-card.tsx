@@ -24,7 +24,13 @@ export default function DealCard({
   const isFullyUsed = deal.usageCount >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
-  const getImageForCategory = (category: string) => {
+  const getImageForDeal = (deal: DealWithMerchant) => {
+    // Use uploaded business image if available
+    if (deal.imageUrl) {
+      return deal.imageUrl;
+    }
+    
+    // Fallback to category images
     const images: Record<string, string> = {
       restaurant: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop",
       bar: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&h=300&fit=crop",
@@ -34,14 +40,14 @@ export default function DealCard({
       "fine-dining": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=300&fit=crop",
     };
     
-    return images[category.toLowerCase()] || images.restaurant;
+    return images[deal.category.toLowerCase()] || images.restaurant;
   };
 
   return (
     <Card className="deal-card overflow-hidden">
       <img 
-        src={getImageForCategory(deal.category)} 
-        alt={`${deal.category} interior`} 
+        src={getImageForDeal(deal)} 
+        alt={`${deal.merchantName} ${deal.category}`} 
         className="w-full h-48 object-cover"
       />
       

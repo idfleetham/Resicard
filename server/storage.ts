@@ -368,6 +368,7 @@ export class DatabaseStorage implements IStorage {
         expiryDate: deals.expiryDate,
         isActive: deals.isActive,
         terms: deals.terms,
+        imageUrl: deals.imageUrl,
         createdAt: deals.createdAt,
         merchantName: users.businessName,
         merchantAddress: users.businessAddress,
