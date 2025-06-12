@@ -42,7 +42,7 @@ interface PlatformStats {
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("pending");
   const [businessSearch, setBusinessSearch] = useState("");
-  const [businessCategory, setBusinessCategory] = useState("");
+  const [businessCategory, setBusinessCategory] = useState("all");
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
     const matchesSearch = !businessSearch || 
       business.businessName?.toLowerCase().includes(businessSearch.toLowerCase()) ||
       business.username.toLowerCase().includes(businessSearch.toLowerCase());
-    const matchesCategory = !businessCategory || business.businessCategory === businessCategory;
+    const matchesCategory = businessCategory === "all" || business.businessCategory === businessCategory;
     return matchesSearch && matchesCategory;
   });
 

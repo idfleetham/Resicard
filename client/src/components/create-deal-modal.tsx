@@ -122,7 +122,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -148,7 +148,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Discount Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
