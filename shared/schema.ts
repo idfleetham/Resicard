@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -79,6 +80,31 @@ export type InsertDeal = z.infer<typeof insertDealSchema>;
 export type Deal = typeof deals.$inferSelect;
 export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
 export type Redemption = typeof redemptions.$inferSelect;
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  deals: many(deals),
+  redemptions: many(redemptions),
+}));
+
+export const dealsRelations = relations(deals, ({ one, many }) => ({
+  merchant: one(users, {
+    fields: [deals.merchantId],
+    references: [users.id],
+  }),
+  redemptions: many(redemptions),
+}));
+
+export const redemptionsRelations = relations(redemptions, ({ one }) => ({
+  user: one(users, {
+    fields: [redemptions.userId],
+    references: [users.id],
+  }),
+  deal: one(deals, {
+    fields: [redemptions.dealId],
+    references: [deals.id],
+  }),
+}));
 
 export type DealWithMerchant = Deal & {
   merchantName: string;

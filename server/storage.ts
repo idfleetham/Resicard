@@ -1,4 +1,6 @@
 import { users, deals, redemptions, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type DealWithMerchant } from "@shared/schema";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -264,4 +266,213 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// rewrite MemStorage to DatabaseStorage
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async getUsersByRole(role: string): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.role, role));
+  }
+
+  async getPendingBusinesses(): Promise<User[]> {
+    return await db.select().from(users).where(
+      sql`${users.role} = 'merchant' AND ${users.isVerified} = false`
+    );
+  }
+
+  async verifyBusiness(id: number): Promise<User | undefined> {
+    return this.updateUser(id, { isVerified: true });
+  }
+
+  async rejectBusiness(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(
+      sql`${users.id} = ${id} AND ${users.role} = 'merchant' AND ${users.isVerified} = false`
+    );
+    return result.rowCount > 0;
+  }
+
+  async getDeal(id: number): Promise<Deal | undefined> {
+    const [deal] = await db.select().from(deals).where(eq(deals.id, id));
+    return deal || undefined;
+  }
+
+  async createDeal(dealData: InsertDeal & { merchantId: number }): Promise<Deal> {
+    const [deal] = await db
+      .insert(deals)
+      .values(dealData)
+      .returning();
+    return deal;
+  }
+
+  async updateDeal(id: number, updates: Partial<Deal>): Promise<Deal | undefined> {
+    const [deal] = await db
+      .update(deals)
+      .set(updates)
+      .where(eq(deals.id, id))
+      .returning();
+    return deal || undefined;
+  }
+
+  async deleteDeal(id: number): Promise<boolean> {
+    const result = await db.delete(deals).where(eq(deals.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getDealsByMerchant(merchantId: number): Promise<Deal[]> {
+    return await db.select().from(deals).where(eq(deals.merchantId, merchantId));
+  }
+
+  async getActiveDeals(): Promise<DealWithMerchant[]> {
+    const result = await db
+      .select({
+        id: deals.id,
+        merchantId: deals.merchantId,
+        title: deals.title,
+        description: deals.description,
+        category: deals.category,
+        discountType: deals.discountType,
+        discountValue: deals.discountValue,
+        originalValue: deals.originalValue,
+        usageLimit: deals.usageLimit,
+        usageCount: deals.usageCount,
+        expiryDate: deals.expiryDate,
+        isActive: deals.isActive,
+        createdAt: deals.createdAt,
+        merchantName: users.businessName,
+        merchantAddress: users.businessAddress,
+      })
+      .from(deals)
+      .innerJoin(users, eq(deals.merchantId, users.id))
+      .where(sql`${deals.isActive} = true AND ${deals.expiryDate} > NOW()`);
+
+    return result.map(row => ({
+      ...row,
+      merchantName: row.merchantName || '',
+      merchantAddress: row.merchantAddress || '',
+    }));
+  }
+
+  async getDealsByCategory(category: string): Promise<DealWithMerchant[]> {
+    const result = await db
+      .select({
+        id: deals.id,
+        merchantId: deals.merchantId,
+        title: deals.title,
+        description: deals.description,
+        category: deals.category,
+        discountType: deals.discountType,
+        discountValue: deals.discountValue,
+        originalValue: deals.originalValue,
+        usageLimit: deals.usageLimit,
+        usageCount: deals.usageCount,
+        expiryDate: deals.expiryDate,
+        isActive: deals.isActive,
+        createdAt: deals.createdAt,
+        merchantName: users.businessName,
+        merchantAddress: users.businessAddress,
+      })
+      .from(deals)
+      .innerJoin(users, eq(deals.merchantId, users.id))
+      .where(sql`${deals.category} = ${category} AND ${deals.isActive} = true`);
+
+    return result.map(row => ({
+      ...row,
+      merchantName: row.merchantName || '',
+      merchantAddress: row.merchantAddress || '',
+    }));
+  }
+
+  async createRedemption(redemption: InsertRedemption): Promise<Redemption> {
+    const [newRedemption] = await db
+      .insert(redemptions)
+      .values(redemption)
+      .returning();
+    return newRedemption;
+  }
+
+  async getRedemptionsByUser(userId: number): Promise<Redemption[]> {
+    return await db.select().from(redemptions).where(eq(redemptions.userId, userId));
+  }
+
+  async getRedemptionsByDeal(dealId: number): Promise<Redemption[]> {
+    return await db.select().from(redemptions).where(eq(redemptions.dealId, dealId));
+  }
+
+  async getRedemptionsByMerchant(merchantId: number): Promise<Redemption[]> {
+    const result = await db
+      .select()
+      .from(redemptions)
+      .innerJoin(deals, eq(redemptions.dealId, deals.id))
+      .where(eq(deals.merchantId, merchantId));
+    
+    return result.map(row => row.redemptions);
+  }
+
+  async getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }> {
+    const redemptionsList = await this.getRedemptionsByDeal(dealId);
+    const totalRedemptions = redemptionsList.length;
+    const totalValue = redemptionsList.reduce((sum, r) => sum + Number(r.value || 0), 0);
+    return { totalRedemptions, totalValue };
+  }
+
+  async getMerchantRevenue(merchantId: number): Promise<number> {
+    const redemptionsList = await this.getRedemptionsByMerchant(merchantId);
+    return redemptionsList.reduce((sum, r) => sum + Number(r.value || 0), 0);
+  }
+
+  async getPlatformStats(): Promise<{
+    totalUsers: number;
+    totalBusinesses: number;
+    totalDeals: number;
+    totalRedemptions: number;
+    totalRevenue: number;
+  }> {
+    const [usersCount] = await db.select({ count: sql`COUNT(*)` }).from(users);
+    const [businessesCount] = await db.select({ count: sql`COUNT(*)` }).from(users).where(eq(users.role, 'merchant'));
+    const [dealsCount] = await db.select({ count: sql`COUNT(*)` }).from(deals);
+    const [redemptionsCount] = await db.select({ count: sql`COUNT(*)` }).from(redemptions);
+    
+    const allRedemptions = await db.select().from(redemptions);
+    const totalRevenue = allRedemptions.reduce((sum, r) => sum + Number(r.value || 0), 0);
+
+    return {
+      totalUsers: Number(usersCount.count),
+      totalBusinesses: Number(businessesCount.count),
+      totalDeals: Number(dealsCount.count),
+      totalRedemptions: Number(redemptionsCount.count),
+      totalRevenue,
+    };
+  }
+}
+
+export const storage = new DatabaseStorage();
