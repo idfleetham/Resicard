@@ -58,16 +58,47 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
     },
   });
 
+  const watchedDealType = form.watch("discountType");
+
   const createDealMutation = useMutation({
     mutationFn: async (data: CreateDealFormData) => {
       console.log('Sending deal data:', data);
+      
+      // Map the new field structure to the existing backend format
+      let discountValue = "0";
+      let originalValue = "0";
+      
+      switch (data.discountType) {
+        case "fixed_percentage":
+          discountValue = data.dealPercentage || "0";
+          break;
+        case "free_item":
+          discountValue = "0";
+          break;
+        case "fixed_price":
+          discountValue = data.dealPrice || "0";
+          originalValue = data.originalPrice || "0";
+          break;
+        case "buy_one_get_one":
+          discountValue = "0";
+          break;
+        case "fixed_amount":
+          discountValue = data.fixedAmount || "0";
+          break;
+      }
+      
       const dealData = {
-        ...data,
-        expiryDate: new Date(data.expiryDate),
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        discountType: data.discountType,
+        discountValue,
+        originalValue,
         usageLimit: Number(data.usageLimit),
-        discountValue: data.discountValue || "0",
-        originalValue: data.originalValue || "0",
+        expiryDate: new Date(data.expiryDate),
+        terms: data.terms,
       };
+      
       console.log('Processed deal data:', dealData);
       const response = await apiRequestWithAuth('POST', '/api/deals', dealData);
       return response.json();
@@ -193,16 +224,18 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Dynamic fields based on deal type */}
+            {watchedDealType === "fixed_percentage" && (
               <FormField
                 control={form.control}
-                name="discountValue"
+                name="dealPercentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discount Value</FormLabel>
+                    <FormLabel>Discount Percentage (%)</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="e.g., 25 or 5.00" 
+                        type="number"
+                        placeholder="e.g., 25" 
                         {...field} 
                       />
                     </FormControl>
@@ -210,18 +243,19 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                   </FormItem>
                 )}
               />
+            )}
 
+            {watchedDealType === "free_item" && (
               <FormField
                 control={form.control}
-                name="originalValue"
+                name="freeItem"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Original Value (£)</FormLabel>
+                    <FormLabel>Free Item Details</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        placeholder="20.00" 
+                      <Textarea 
+                        placeholder="e.g., Free oyster with each glass of champagne"
+                        className="h-20"
                         {...field} 
                       />
                     </FormControl>
@@ -229,7 +263,88 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                   </FormItem>
                 )}
               />
-            </div>
+            )}
+
+            {watchedDealType === "fixed_price" && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="dealPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deal Price (£)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          step="0.01"
+                          placeholder="15.00" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="originalPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Original Price (£)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          step="0.01"
+                          placeholder="20.00" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {watchedDealType === "buy_one_get_one" && (
+              <FormField
+                control={form.control}
+                name="bogoItem"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Buy One Get One Free Item</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="e.g., Main courses, Cocktails" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {watchedDealType === "fixed_amount" && (
+              <FormField
+                control={form.control}
+                name="fixedAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fixed Amount Off (£)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        placeholder="5.00" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
