@@ -47,21 +47,33 @@ export default function ResidentDashboard() {
     queryKey: ['/api/vouchers/user', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const response = await apiRequestWithAuth('GET', `/api/vouchers/user/${user.id}`);
-      return response.json() as Promise<VoucherWithDeal[]>;
+      try {
+        const response = await apiRequestWithAuth('GET', `/api/vouchers/user/${user.id}`);
+        return response.json() as Promise<VoucherWithDeal[]>;
+      } catch (error) {
+        console.warn('Failed to fetch vouchers:', error);
+        return [];
+      }
     },
     enabled: !!user,
     refetchInterval: 30000, // Refresh every 30 seconds to catch redemptions
+    retry: false, // Don't retry on auth failures
   });
 
   // Fetch subscription status
   const { data: subscription } = useQuery({
     queryKey: ['/api/subscription/status'],
     queryFn: async () => {
-      const response = await apiRequestWithAuth('GET', '/api/subscription/status');
-      return response.json();
+      try {
+        const response = await apiRequestWithAuth('GET', '/api/subscription/status');
+        return response.json();
+      } catch (error) {
+        console.warn('Failed to fetch subscription status:', error);
+        return null;
+      }
     },
     enabled: !!user && user.role === 'resident',
+    retry: false, // Don't retry on auth failures
   });
 
   // Fetch subscription plans
@@ -91,6 +103,17 @@ export default function ResidentDashboard() {
     },
     onError: (error: any) => {
       setLoadingDealId(undefined);
+      
+      // Handle auth errors gracefully
+      if (error.message?.includes('Authentication expired')) {
+        toast({
+          title: "Session Expired",
+          description: "Please log in again to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       toast({
         title: "Failed to Create Voucher",
         description: error.message || "Unable to create voucher",
@@ -116,6 +139,16 @@ export default function ResidentDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
     },
     onError: (error: any) => {
+      // Handle auth errors gracefully
+      if (error.message?.includes('Authentication expired')) {
+        toast({
+          title: "Session Expired",
+          description: "Please log in again to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       toast({
         title: "Subscription Failed",
         description: error.message || "Unable to create subscription",

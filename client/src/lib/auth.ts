@@ -95,8 +95,8 @@ export async function apiRequestWithAuth(
   // Handle 401 responses by removing invalid token
   if (res.status === 401) {
     authApi.removeToken();
-    window.location.href = '/login';
-    throw new Error('Authentication required');
+    // Don't immediately redirect, let the auth context handle it
+    throw new Error('Authentication expired');
   }
 
   // Handle other error responses
