@@ -673,6 +673,7 @@ export class DatabaseStorage implements IStorage {
         documentReviewedAt: new Date(),
         documentReviewedBy: reviewerId,
         isResidencyVerified: true,
+        isVerified: true,
       })
       .where(eq(users.id, userId))
       .returning();
