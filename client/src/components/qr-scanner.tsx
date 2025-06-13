@@ -88,12 +88,20 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
     if (!qrScannerRef.current) return;
 
     if (isScanning && hasPermission) {
+      setError(""); // Clear previous errors
       qrScannerRef.current.start().catch((err) => {
         console.error('Failed to start camera:', err);
         setError("Failed to start camera. Please ensure camera permissions are granted.");
       });
     } else {
-      qrScannerRef.current.stop();
+      try {
+        qrScannerRef.current.stop();
+        if (!isScanning) {
+          setError(""); // Clear errors when manually stopping
+        }
+      } catch (err) {
+        console.warn('Failed to stop camera:', err);
+      }
     }
   }, [isScanning, hasPermission]);
 

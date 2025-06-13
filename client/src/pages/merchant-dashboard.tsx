@@ -134,16 +134,31 @@ export default function MerchantDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant'] });
     },
     onError: (error: any) => {
+      console.error('Voucher redemption error:', error);
+      setIsScanning(false); // Stop scanning on error
+      
+      let errorMessage = "Failed to redeem voucher";
+      
+      if (error.response?.status === 403) {
+        errorMessage = error.response.data?.message || "This voucher is for another business";
+      } else if (error.response?.status === 404) {
+        errorMessage = "Voucher not found or expired";
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.message || "Invalid voucher";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Redemption Failed",
-        description: error.message || "Failed to redeem voucher",
+        title: "Cannot Redeem Voucher",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
-  const handleToggleDeal = (dealId: number, isActive: boolean) => {
-    updateDealMutation.mutate({ dealId, updates: { isActive: !isActive } });
+  const handleToggleDeal = (dealId: number, isActive: boolean | null) => {
+    updateDealMutation.mutate({ dealId, updates: { isActive: !(isActive ?? false) } });
   };
 
   const handleQRScan = (qrData: string) => {
@@ -201,6 +216,7 @@ export default function MerchantDashboard() {
   const activeDeals = deals.filter(d => d.isActive && new Date(d.expiryDate) > new Date());
   const totalRedemptions = redemptions.length;
   const thisWeekRedemptions = redemptions.filter(r => {
+    if (!r.redeemedAt) return false;
     const redemptionDate = new Date(r.redeemedAt);
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     return redemptionDate > weekAgo;
