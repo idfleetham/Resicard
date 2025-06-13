@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -131,6 +131,13 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
   });
 
   const watchedDealType = form.watch("discountType");
+
+  // Reset form when existingDeal changes
+  useEffect(() => {
+    const formValues = getDefaultFormValues();
+    form.reset(formValues);
+    setDealImageUrl(existingDeal?.imageUrl || "");
+  }, [existingDeal, form]);
 
   const createDealMutation = useMutation({
     mutationFn: async (data: CreateDealFormData) => {
