@@ -243,6 +243,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/deals/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      
+      // Check if deal exists and belongs to the merchant
+      const existingDeal = await storage.getDeal(dealId);
+      if (!existingDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      if (existingDeal.merchantId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Not authorized to update this deal" });
+      }
+      
+      // Convert expiryDate string to Date object before validation
+      const processedData = {
+        ...req.body,
+        expiryDate: new Date(req.body.expiryDate),
+      };
+      
+      const dealData = insertDealSchema.parse(processedData);
+      
+      const updatedDeal = await storage.updateDeal(dealId, dealData);
+      
+      if (!updatedDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      res.json(updatedDeal);
+    } catch (error: any) {
+      console.error('Deal update validation error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.get("/api/deals/merchant/:merchantId", authenticateToken, async (req, res) => {
     try {
       const merchantId = parseInt(req.params.merchantId);

@@ -62,25 +62,72 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
     maxSize: 5 * 1024 * 1024, // 5MB
   });
 
-  const form = useForm<CreateDealFormData>({
-    resolver: zodResolver(createDealSchema),
-    defaultValues: {
-      title: existingDeal?.title || "",
-      description: existingDeal?.description || "",
-      category: existingDeal?.category || "",
-      discountType: existingDeal?.discountType || "fixed_percentage",
-      discountValue: existingDeal?.discountValue || "",
-      originalValue: existingDeal?.originalValue || "",
-      usageLimit: existingDeal?.usageLimit || 1,
-      expiryDate: existingDeal?.expiryDate ? new Date(existingDeal.expiryDate).toISOString().split('T')[0] : "",
-      terms: existingDeal?.terms || "",
+  // Map existing deal data to form fields based on discount type
+  const getDefaultFormValues = () => {
+    if (!existingDeal) {
+      return {
+        title: "",
+        description: "",
+        category: "",
+        discountType: "fixed_percentage",
+        discountValue: "",
+        originalValue: "",
+        usageLimit: 1,
+        expiryDate: "",
+        terms: "",
+        dealPercentage: "",
+        freeItem: "",
+        dealPrice: "",
+        originalPrice: "",
+        bogoItem: "",
+        fixedAmount: "",
+      };
+    }
+
+    const baseValues = {
+      title: existingDeal.title,
+      description: existingDeal.description,
+      category: existingDeal.category,
+      discountType: existingDeal.discountType,
+      discountValue: existingDeal.discountValue,
+      originalValue: existingDeal.originalValue,
+      usageLimit: existingDeal.usageLimit,
+      expiryDate: new Date(existingDeal.expiryDate).toISOString().split('T')[0],
+      terms: existingDeal.terms || "",
       dealPercentage: "",
       freeItem: "",
       dealPrice: "",
       originalPrice: "",
       bogoItem: "",
       fixedAmount: "",
-    },
+    };
+
+    // Map values to the appropriate field based on discount type
+    switch (existingDeal.discountType) {
+      case "fixed_percentage":
+        baseValues.dealPercentage = existingDeal.discountValue;
+        break;
+      case "free_item":
+        baseValues.freeItem = existingDeal.description; // Use description for free item
+        break;
+      case "fixed_price":
+        baseValues.dealPrice = existingDeal.discountValue;
+        baseValues.originalPrice = existingDeal.originalValue;
+        break;
+      case "buy_one_get_one":
+        baseValues.bogoItem = existingDeal.description; // Use description for BOGO item
+        break;
+      case "fixed_amount":
+        baseValues.fixedAmount = existingDeal.discountValue;
+        break;
+    }
+
+    return baseValues;
+  };
+
+  const form = useForm<CreateDealFormData>({
+    resolver: zodResolver(createDealSchema),
+    defaultValues: getDefaultFormValues(),
   });
 
   const watchedDealType = form.watch("discountType");
@@ -160,7 +207,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Deal</DialogTitle>
+          <DialogTitle>{existingDeal ? "Edit Deal" : "Create New Deal"}</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -196,6 +243,50 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                 </FormItem>
               )}
             />
+
+            {/* Deal Image Upload */}
+            <div className="space-y-2">
+              <Label>Deal Image</Label>
+              <div className="space-y-4">
+                {dealImageUrl ? (
+                  <div className="relative">
+                    <img 
+                      src={dealImageUrl} 
+                      alt="Deal preview" 
+                      className="w-full h-48 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => setDealImageUrl("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-sm text-gray-600 mb-2">
+                      {isDragActive ? 'Drop your image here' : 'Drag & drop an image here, or click to select'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, WEBP up to 5MB
+                    </p>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  {dealImageUrl ? 'Custom image uploaded' : `Default: Your business profile photo will be used`}
+                </p>
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField

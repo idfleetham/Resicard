@@ -29,6 +29,7 @@ import type { Deal, Redemption } from "@shared/schema";
 
 export default function MerchantDashboard() {
   const [showCreateDeal, setShowCreateDeal] = useState(false);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -406,7 +407,12 @@ export default function MerchantDashboard() {
                             </div>
                           </div>
                           <div className="flex space-x-2 ml-4">
-                            <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setEditingDeal(deal)}
+                              className="text-primary hover:text-primary/80"
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -469,8 +475,12 @@ export default function MerchantDashboard() {
       </div>
 
       <CreateDealModal 
-        isOpen={showCreateDeal} 
-        onClose={() => setShowCreateDeal(false)} 
+        isOpen={showCreateDeal || !!editingDeal} 
+        onClose={() => {
+          setShowCreateDeal(false);
+          setEditingDeal(null);
+        }}
+        existingDeal={editingDeal}
       />
     </>
   );
