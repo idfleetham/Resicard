@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import QrScanner from 'qr-scanner';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,41 +16,60 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
   const qrScannerRef = useRef<QrScanner | null>(null);
   const [error, setError] = useState<string>("");
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  useEffect(() => {
-    if (!videoRef.current) return;
+  const initializeScanner = useCallback(async () => {
+    if (!videoRef.current || qrScannerRef.current) return;
 
-    const scanner = new QrScanner(
-      videoRef.current,
-      (result) => {
-        onScan(result.data);
-      },
-      {
-        highlightScanRegion: true,
-        highlightCodeOutline: true,
-        preferredCamera: 'environment', // Use back camera on mobile
-      }
-    );
+    setIsInitializing(true);
+    setError("");
 
-    qrScannerRef.current = scanner;
-
-    // Check camera permissions
-    QrScanner.hasCamera().then((hasCamera) => {
+    try {
+      // Check camera availability first
+      const hasCamera = await QrScanner.hasCamera();
       if (!hasCamera) {
         setError("No camera found on this device");
         setHasPermission(false);
-      } else {
-        setHasPermission(true);
+        setIsInitializing(false);
+        return;
       }
-    }).catch(() => {
-      setError("Unable to access camera");
-      setHasPermission(false);
-    });
 
-    return () => {
-      scanner.destroy();
-    };
+      const scanner = new QrScanner(
+        videoRef.current,
+        (result) => {
+          onScan(result.data);
+        },
+        {
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+          preferredCamera: 'environment',
+          maxScansPerSecond: 5, // Limit scan rate for better performance
+        }
+      );
+
+      qrScannerRef.current = scanner;
+      setHasPermission(true);
+    } catch (err) {
+      console.error('Scanner initialization error:', err);
+      setError("Unable to initialize camera scanner");
+      setHasPermission(false);
+    } finally {
+      setIsInitializing(false);
+    }
   }, [onScan]);
+
+  useEffect(() => {
+    if (isScanning && !qrScannerRef.current) {
+      initializeScanner();
+    }
+    
+    return () => {
+      if (qrScannerRef.current) {
+        qrScannerRef.current.destroy();
+        qrScannerRef.current = null;
+      }
+    };
+  }, [isScanning, initializeScanner]);
 
   useEffect(() => {
     if (!qrScannerRef.current) return;

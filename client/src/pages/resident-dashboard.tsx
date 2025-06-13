@@ -42,7 +42,7 @@ export default function ResidentDashboard() {
     },
   });
 
-  // Fetch user's vouchers
+  // Fetch user's vouchers with better caching
   const { data: vouchers = [] } = useQuery({
     queryKey: ['/api/vouchers/user', user?.id],
     queryFn: async () => {
@@ -51,6 +51,7 @@ export default function ResidentDashboard() {
       return response.json() as Promise<VoucherWithDeal[]>;
     },
     enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds to catch redemptions
   });
 
   // Fetch subscription status
@@ -72,7 +73,7 @@ export default function ResidentDashboard() {
     },
   });
 
-  // Create voucher mutation (replaces deal redemption)
+  // Create voucher mutation
   const createVoucherMutation = useMutation({
     mutationFn: async ({ dealId }: { dealId: number }) => {
       setLoadingDealId(dealId);
@@ -101,11 +102,10 @@ export default function ResidentDashboard() {
   // Create subscription mutation
   const createSubscriptionMutation = useMutation({
     mutationFn: async ({ subscriptionType, subscriptionPlan }: { subscriptionType: string; subscriptionPlan: string }) => {
-      const response = await apiRequestWithAuth('POST', '/api/subscription/create', { subscriptionType, subscriptionPlan });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Subscription failed');
-      }
+      const response = await apiRequestWithAuth('POST', '/api/subscription/create', {
+        subscriptionType,
+        subscriptionPlan,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -116,30 +116,11 @@ export default function ResidentDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
     },
     onError: (error: any) => {
-      const errorMessage = error.message || "Unable to activate subscription";
-      
-      // Handle specific verification errors
-      if (errorMessage.includes("Profile photo required")) {
-        toast({
-          title: "Profile Photo Required",
-          description: "Please add a profile photo to your account before purchasing a subscription.",
-          variant: "destructive",
-        });
-        setActiveTab("profile");
-      } else if (errorMessage.includes("Account verification required")) {
-        toast({
-          title: "Verification Required",
-          description: "Please wait for your residency documents to be verified before purchasing a subscription.",
-          variant: "destructive",
-        });
-        setActiveTab("verification");
-      } else {
-        toast({
-          title: "Subscription Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Subscription Failed",
+        description: error.message || "Unable to create subscription",
+        variant: "destructive",
+      });
     },
   });
 
@@ -147,52 +128,44 @@ export default function ResidentDashboard() {
     if (!subscription?.isActive) {
       toast({
         title: "Subscription Required",
-        description: "Please activate a subscription to create vouchers.",
+        description: "Please activate a subscription to create vouchers from deals.",
         variant: "destructive",
       });
+      setActiveTab("subscription");
       return;
     }
-    
-    // Check if user already has a voucher for this deal
-    const hasExistingVoucher = vouchers.some(v => v.dealId === dealId && !v.isUsed);
-    if (hasExistingVoucher) {
-      toast({
-        title: "Voucher Already Exists",
-        description: "You already have an active voucher for this deal.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     createVoucherMutation.mutate({ dealId });
   };
 
-  // Filter deals
+  // Separate active and used vouchers
+  const activeVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) > new Date());
+  const usedVouchers = vouchers.filter(v => v.isUsed);
+
+  // Filter deals based on category and availability
   const filteredDeals = deals.filter(deal => {
-    // Category filter
-    if (selectedCategory !== "all" && deal.category !== selectedCategory) {
-      return false;
-    }
-    
-    // Availability filter
-    if (availableOnly) {
-      const isExpired = new Date(deal.expiryDate) < new Date();
-      const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
-      return !isExpired && !isFullyUsed && deal.isActive;
-    }
-    return true;
+    const matchesCategory = selectedCategory === "all" || deal.category === selectedCategory;
+    const isAvailable = !availableOnly || (
+      deal.isActive && 
+      new Date(deal.expiryDate) > new Date() && 
+      (deal.usageCount || 0) < deal.usageLimit
+    );
+    return matchesCategory && isAvailable;
   });
 
-  // Calculate stats from vouchers
-  const totalVouchers = vouchers.length;
-  const usedVouchers = vouchers.filter(v => v.isUsed);
-  const activeVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) > new Date());
-  const thisMonthVouchers = vouchers.filter(v => {
-    const voucherDate = new Date(v.createdAt || new Date());
-    const now = new Date();
-    return voucherDate.getMonth() === now.getMonth() && 
-           voucherDate.getFullYear() === now.getFullYear();
-  });
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "restaurant", label: "Restaurant" },
+    { value: "bar", label: "Bar" },
+    { value: "cafe", label: "Cafe" },
+    { value: "pub", label: "Pub" },
+    { value: "takeaway", label: "Takeaway" },
+    { value: "fine-dining", label: "Fine Dining" },
+    { value: "hotel", label: "Hotel" },
+    { value: "retail", label: "Retail" },
+    { value: "sports", label: "Sports" },
+    { value: "transport", label: "Transport" },
+    { value: "experience", label: "Experience" },
+  ];
 
   if (!user) {
     return (
@@ -219,181 +192,120 @@ export default function ResidentDashboard() {
               backgroundImage: `url("${mapImage}")`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              opacity: 0.3,
             }}
           />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">
-                Welcome back, {user.username}!
-              </h1>
+              <h1 className="text-4xl font-bold mb-4">Welcome back, {user.username}!</h1>
               <p className="text-xl opacity-90 mb-6">
-                Your Resicard for exclusive St Andrews community deals
+                Discover exclusive local deals and build your savings with Resicard
               </p>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 inline-block">
-                <div className="flex items-center text-white">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <span>Verified local resident</span>
-                  <CheckCircle className="h-4 w-4 text-green-400 ml-2" />
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <Ticket className="h-8 w-8" />
+                  </div>
+                  <div className="text-2xl font-bold">{vouchers.length}</div>
+                  <div className="text-sm opacity-90">Total Vouchers</div>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <CheckCircle className="h-8 w-8" />
+                  </div>
+                  <div className="text-2xl font-bold">{activeVouchers.length}</div>
+                  <div className="text-sm opacity-90">Active Vouchers</div>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <PiggyBank className="h-8 w-8" />
+                  </div>
+                  <div className="text-2xl font-bold">{usedVouchers.length}</div>
+                  <div className="text-sm opacity-90">Redeemed</div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* User Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <Ticket className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Available Deals</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {filteredDeals.filter(d => {
-                        const isExpired = new Date(d.expiryDate) < new Date();
-                        const isFullyUsed = (d.usageCount || 0) >= d.usageLimit;
-                        return !isExpired && !isFullyUsed && d.isActive;
-                      }).length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Vouchers This Month</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {thisMonthVouchers.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-amber-100 p-3 rounded-lg">
-                    <PiggyBank className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Active Vouchers</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {activeVouchers.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <Calendar className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Membership</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {user.membershipExpiry 
-                        ? `Valid until ${formatDate(user.membershipExpiry)}`
-                        : 'Active'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Tab Navigation */}
-          <div className="mb-8">
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
-                <button
-                  onClick={() => setActiveTab("deals")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "deals"
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  Available Deals
-                </button>
-                <button
-                  onClick={() => setActiveTab("wallet")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "wallet"
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  My Voucher Wallet ({activeVouchers.length})
-                </button>
-                <button
-                  onClick={() => setActiveTab("verification")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "verification"
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  Verification
-                </button>
-                <button
-                  onClick={() => setActiveTab("subscription")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "subscription"
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  Subscription
-                </button>
-              </nav>
-            </div>
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8 max-w-md">
+            <button
+              onClick={() => setActiveTab("deals")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "deals"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Browse Deals
+            </button>
+            <button
+              onClick={() => setActiveTab("wallet")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "wallet"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              My Wallet
+            </button>
+            <button
+              onClick={() => setActiveTab("verification")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "verification"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Verification
+            </button>
+            <button
+              onClick={() => setActiveTab("subscription")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "subscription"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Subscription
+            </button>
           </div>
 
-          {/* Deals Tab */}
+          {/* Browse Deals Tab */}
           {activeTab === "deals" && (
             <>
               {/* Filters */}
               <Card className="mb-8">
                 <CardContent className="p-6">
-                  <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold text-foreground">Filter Deals</h3>
+                      <span className="text-sm font-medium">Filters:</span>
                     </div>
                     
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="All Categories" />
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="restaurant">Restaurants</SelectItem>
-                        <SelectItem value="bar">Bars</SelectItem>
-                        <SelectItem value="cafe">Cafes</SelectItem>
-                        <SelectItem value="pub">Pubs</SelectItem>
-                        <SelectItem value="takeaway">Takeaway</SelectItem>
-                        <SelectItem value="fine-dining">Fine Dining</SelectItem>
+                        {categories.map(category => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-
+                    
                     <div className="flex items-center space-x-2">
                       <Checkbox 
-                        id="available"
+                        id="available" 
                         checked={availableOnly}
                         onCheckedChange={(checked) => setAvailableOnly(checked === true)}
                       />
@@ -457,38 +369,6 @@ export default function ResidentDashboard() {
                         View All Deals
                       </Button>
                     )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Membership Renewal Prompt */}
-              {user.membershipExpiry && new Date(user.membershipExpiry) < new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) && (
-                <Card className="mt-12 coastal-bg border-primary/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-semibold text-foreground">
-                            Membership expires soon
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Renew now to continue accessing exclusive local deals
-                          </p>
-                        </div>
-                      </div>
-                      <Button 
-                        className="coastal-gradient"
-                        onClick={() => toast({
-                          title: "Payment System Coming Soon",
-                          description: "Membership renewal will be available once payment processing is set up.",
-                        })}
-                      >
-                        Renew Membership
-                      </Button>
-                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -602,7 +482,7 @@ export default function ResidentDashboard() {
                                         className="block w-full"
                                       >
                                         <User className="h-4 w-4 mr-2" />
-                                        Show for Redemption
+                                        Show QR Code
                                       </Button>
                                     </div>
                                   )}
@@ -741,113 +621,101 @@ export default function ResidentDashboard() {
                       </div>
                     )}
 
-                    {plans && (
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Individual Plans */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Individual</h4>
-                          <div className="space-y-3">
-                            <Card className={`border-2 transition-colors ${
-                              (!user?.profilePhoto || !user?.isResidencyVerified) 
-                                ? 'border-gray-200 opacity-60' 
-                                : 'border-gray-200 hover:border-primary cursor-pointer'
-                            }`}>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Monthly</span>
-                                  <span className="text-lg font-bold">£{plans.individual?.monthly.price}</span>
+                    {/* Individual Plans */}
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-md font-semibold mb-4">Individual Plans</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium">Monthly</span>
+                                <span className="text-lg font-bold">£{plans?.individual?.monthly.price}</span>
+                              </div>
+                              <Button 
+                                className="w-full"
+                                onClick={() => createSubscriptionMutation.mutate({ 
+                                  subscriptionType: 'individual', 
+                                  subscriptionPlan: 'monthly' 
+                                })}
+                                disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
+                              >
+                                {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium">Annual</span>
+                                <div className="text-right">
+                                  <span className="text-lg font-bold">£{plans?.individual?.annual.price}</span>
+                                  <div className="text-xs text-green-600">Save £20/year</div>
                                 </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'individual', 
-                                    subscriptionPlan: 'monthly' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 
-                                   (!user?.profilePhoto || !user?.isResidencyVerified) ? 'Verification Required' : 'Choose Monthly'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className={`border-2 transition-colors ${
-                              (!user?.profilePhoto || !user?.isResidencyVerified) 
-                                ? 'border-gray-200 opacity-60' 
-                                : 'border-gray-200 hover:border-primary cursor-pointer'
-                            }`}>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Annual</span>
-                                  <div className="text-right">
-                                    <span className="text-lg font-bold">£{plans.individual?.annual.price}</span>
-                                    <div className="text-xs text-green-600">Save £20/year</div>
-                                  </div>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'individual', 
-                                    subscriptionPlan: 'annual' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 
-                                   (!user?.profilePhoto || !user?.isResidencyVerified) ? 'Verification Required' : 'Choose Annual'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-
-                        {/* Family Plans */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Family</h4>
-                          <div className="space-y-3">
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Monthly</span>
-                                  <span className="text-lg font-bold">£{plans.family?.monthly.price}</span>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'family', 
-                                    subscriptionPlan: 'monthly' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium">Annual</span>
-                                  <div className="text-right">
-                                    <span className="text-lg font-bold">£{plans.family?.annual.price}</span>
-                                    <div className="text-xs text-green-600">Save £40/year</div>
-                                  </div>
-                                </div>
-                                <Button 
-                                  className="w-full"
-                                  onClick={() => createSubscriptionMutation.mutate({ 
-                                    subscriptionType: 'family', 
-                                    subscriptionPlan: 'annual' 
-                                  })}
-                                  disabled={createSubscriptionMutation.isPending}
-                                >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          </div>
+                              </div>
+                              <Button 
+                                className="w-full"
+                                onClick={() => createSubscriptionMutation.mutate({ 
+                                  subscriptionType: 'individual', 
+                                  subscriptionPlan: 'annual' 
+                                })}
+                                disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
+                              >
+                                {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                              </Button>
+                            </CardContent>
+                          </Card>
                         </div>
                       </div>
-                    )}
+
+                      {/* Family Plans */}
+                      <div>
+                        <h4 className="text-md font-semibold mb-4">Family Plans</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium">Monthly</span>
+                                <span className="text-lg font-bold">£{plans?.family?.monthly.price}</span>
+                              </div>
+                              <Button 
+                                className="w-full"
+                                onClick={() => createSubscriptionMutation.mutate({ 
+                                  subscriptionType: 'family', 
+                                  subscriptionPlan: 'monthly' 
+                                })}
+                                disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
+                              >
+                                {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium">Annual</span>
+                                <div className="text-right">
+                                  <span className="text-lg font-bold">£{plans?.family?.annual.price}</span>
+                                  <div className="text-xs text-green-600">Save £40/year</div>
+                                </div>
+                              </div>
+                              <Button 
+                                className="w-full"
+                                onClick={() => createSubscriptionMutation.mutate({ 
+                                  subscriptionType: 'family', 
+                                  subscriptionPlan: 'annual' 
+                                })}
+                                disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
+                              >
+                                {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -859,7 +727,7 @@ export default function ResidentDashboard() {
         <Dialog open={showRedemptionCard} onOpenChange={setShowRedemptionCard}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Show to Merchant for Redemption</DialogTitle>
+              <DialogTitle>Show QR Code to Merchant</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {selectedVoucher && (
@@ -868,9 +736,6 @@ export default function ResidentDashboard() {
                   showVoucherDetails={true} 
                 />
               )}
-              <div className="text-center text-sm text-muted-foreground">
-                Present this screen to the merchant to redeem your voucher
-              </div>
             </div>
           </DialogContent>
         </Dialog>

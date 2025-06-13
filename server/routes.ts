@@ -347,8 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createRedemption({
         dealId: dealId,
         userId: userId,
-        voucherNumber: voucherNumber,
-        redeemedAt: new Date(),
+        value: null,
       });
       
       res.json({
