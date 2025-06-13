@@ -149,6 +149,8 @@ export default function Register() {
       username: "",
       email: "",
       password: "",
+      firstName: "",
+      surname: "",
       role: "merchant",
       businessName: "",
       businessCategory: "",
@@ -211,11 +213,11 @@ export default function Register() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="resident" className="flex items-center space-x-2">
                   <Home className="h-4 w-4" />
-                  <span>Local Resident</span>
+                  <span>Resident</span>
                 </TabsTrigger>
                 <TabsTrigger value="merchant" className="flex items-center space-x-2">
                   <Store className="h-4 w-4" />
-                  <span>Business Owner</span>
+                  <span>Business</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -457,6 +459,34 @@ export default function Register() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={merchantForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="John" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={merchantForm.control}
+                        name="surname"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Surname</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={merchantForm.control}
                         name="username"
                         render={({ field }) => (
                           <FormItem>
@@ -539,12 +569,9 @@ export default function Register() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="restaurant">Restaurant</SelectItem>
-                                <SelectItem value="bar">Bar</SelectItem>
-                                <SelectItem value="cafe">Cafe</SelectItem>
-                                <SelectItem value="pub">Pub</SelectItem>
-                                <SelectItem value="takeaway">Takeaway</SelectItem>
-                                <SelectItem value="fine-dining">Fine Dining</SelectItem>
+                                <SelectItem value="hotel">Hotel</SelectItem>
+                                <SelectItem value="retail">Retail</SelectItem>
+                                <SelectItem value="experience">Experience</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
