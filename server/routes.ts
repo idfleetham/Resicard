@@ -7,6 +7,15 @@ import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@sha
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// Initialize Stripe (placeholder - will work when keys are provided)
+let stripe: any = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  const Stripe = require('stripe');
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2023-10-16",
+  });
+}
+
 // Extend the Request interface to include user
 declare global {
   namespace Express {
@@ -647,6 +656,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       res.json(subscription);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Subscription change endpoint
+  app.post("/api/subscription/change", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const { subscriptionType, subscriptionPlan } = req.body;
+      const userId = req.user.id;
+      
+      if (!subscriptionType || !subscriptionPlan) {
+        return res.status(400).json({ message: "Subscription type and plan are required" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Calculate new membership expiry
+      const now = new Date();
+      const membershipExpiry = new Date(now);
+      if (subscriptionPlan === 'monthly') {
+        membershipExpiry.setMonth(membershipExpiry.getMonth() + 1);
+      } else {
+        membershipExpiry.setFullYear(membershipExpiry.getFullYear() + 1);
+      }
+
+      // Stripe integration placeholder
+      let stripeSubscriptionId = user.stripeSubscriptionId;
+      let stripeCustomerId = user.stripeCustomerId;
+      
+      if (stripe) {
+        try {
+          // Create or update Stripe customer
+          if (!stripeCustomerId && user.email) {
+            const customer = await stripe.customers.create({
+              email: user.email,
+              name: user.username,
+            });
+            stripeCustomerId = customer.id;
+          }
+
+          // Handle subscription change in Stripe
+          if (stripeSubscriptionId) {
+            // Update existing subscription
+            await stripe.subscriptions.update(stripeSubscriptionId, {
+              items: [{
+                price: process.env[`STRIPE_PRICE_${subscriptionType.toUpperCase()}_${subscriptionPlan.toUpperCase()}`],
+              }],
+              proration_behavior: 'create_prorations',
+            });
+          } else {
+            // Create new subscription
+            const subscription = await stripe.subscriptions.create({
+              customer: stripeCustomerId,
+              items: [{
+                price: process.env[`STRIPE_PRICE_${subscriptionType.toUpperCase()}_${subscriptionPlan.toUpperCase()}`],
+              }],
+            });
+            stripeSubscriptionId = subscription.id;
+          }
+        } catch (stripeError: any) {
+          console.warn('Stripe operation failed:', stripeError.message);
+          // Continue without Stripe for now
+        }
+      }
+      
+      // Update user subscription
+      const updatedUser = await storage.updateUserSubscription(userId, {
+        subscriptionType,
+        subscriptionPlan,
+        subscriptionStatus: 'active',
+        membershipExpiry,
+        stripeCustomerId: stripeCustomerId || undefined,
+        stripeSubscriptionId: stripeSubscriptionId || undefined,
+      });
+      
+      res.json({ 
+        user: updatedUser, 
+        message: `Subscription changed to ${subscriptionType} ${subscriptionPlan} plan` 
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Subscription cancellation endpoint
+  app.post("/api/subscription/cancel", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const userId = req.user.id;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Cancel in Stripe if configured
+      if (stripe && user.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.update(user.stripeSubscriptionId, {
+            cancel_at_period_end: true
+          });
+        } catch (stripeError: any) {
+          console.warn('Stripe cancellation failed:', stripeError.message);
+          // Continue with local cancellation
+        }
+      }
+      
+      // Update user subscription status
+      const updatedUser = await storage.updateUserSubscription(userId, {
+        subscriptionType: user.subscriptionType || 'individual',
+        subscriptionPlan: user.subscriptionPlan || 'monthly',
+        subscriptionStatus: 'cancelled',
+        membershipExpiry: user.membershipExpiry || new Date(),
+        stripeCustomerId: user.stripeCustomerId || undefined,
+        stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+      });
+      
+      res.json({ 
+        user: updatedUser, 
+        message: "Subscription cancelled. Access will continue until your current billing period ends." 
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
