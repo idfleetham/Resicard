@@ -46,10 +46,16 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
 
   const createDealMutation = useMutation({
     mutationFn: async (data: CreateDealFormData) => {
-      const response = await apiRequestWithAuth('POST', '/api/deals', {
+      console.log('Sending deal data:', data);
+      const dealData = {
         ...data,
         expiryDate: new Date(data.expiryDate),
-      });
+        usageLimit: Number(data.usageLimit),
+        discountValue: data.discountValue || "0",
+        originalValue: data.originalValue || "0",
+      };
+      console.log('Processed deal data:', dealData);
+      const response = await apiRequestWithAuth('POST', '/api/deals', dealData);
       return response.json();
     },
     onSuccess: () => {
@@ -62,6 +68,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
       onClose();
     },
     onError: (error: any) => {
+      console.error('Deal creation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create deal",

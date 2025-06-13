@@ -197,11 +197,19 @@ export default function MerchantDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100&h=100&fit=crop" 
-                    alt="Business" 
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
+                  {user?.profilePhoto ? (
+                    <img 
+                      src={user.profilePhoto} 
+                      alt="Business Profile" 
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-primary">
+                        {user?.businessName?.[0] || user?.username?.[0] || '?'}
+                      </span>
+                    </div>
+                  )}
                   <div className="ml-4">
                     <h1 className="text-2xl font-bold text-foreground">
                       {user.businessName || user.username}
