@@ -25,12 +25,21 @@ export default function Home() {
     },
   });
 
+  // Fetch platform statistics
+  const { data: platformStats } = useQuery({
+    queryKey: ['/api/analytics/platform/stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/analytics/platform/stats');
+      return response.json();
+    },
+  });
+
   // Show role selector if not authenticated
   if (!isAuthenticated) {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-100">
           {/* Hero Section */}
           <div className="relative coastal-gradient text-white">
             <div 
@@ -72,44 +81,50 @@ export default function Home() {
           {/* Stats Section */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <Card>
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <CardContent className="p-6 text-center">
                   <div className="bg-primary/10 p-3 rounded-lg inline-block mb-4">
                     <Ticket className="h-8 w-8 text-primary" />
                   </div>
                   <div className="text-3xl font-bold text-foreground mb-2">
-                    {deals.length}
+                    {deals.filter(deal => deal.isActive).length}
                   </div>
                   <div className="text-muted-foreground">Active Deals</div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <CardContent className="p-6 text-center">
                   <div className="bg-green-100 p-3 rounded-lg inline-block mb-4">
                     <Users className="h-8 w-8 text-green-600" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">42</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {platformStats?.totalBusinesses || 0}
+                  </div>
                   <div className="text-muted-foreground">Local Businesses</div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <CardContent className="p-6 text-center">
                   <div className="bg-amber-100 p-3 rounded-lg inline-block mb-4">
-                    <PiggyBank className="h-8 w-8 text-amber-600" />
+                    <CheckCircle className="h-8 w-8 text-amber-600" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">£127k</div>
-                  <div className="text-muted-foreground">Community Savings</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {platformStats?.totalRedemptions || 0}
+                  </div>
+                  <div className="text-muted-foreground">Voucher Redemptions</div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <CardContent className="p-6 text-center">
                   <div className="bg-blue-100 p-3 rounded-lg inline-block mb-4">
                     <Calendar className="h-8 w-8 text-blue-600" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">1,205</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {platformStats?.totalUsers || 0}
+                  </div>
                   <div className="text-muted-foreground">Active Members</div>
                 </CardContent>
               </Card>
