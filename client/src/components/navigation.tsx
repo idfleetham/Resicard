@@ -41,7 +41,7 @@ export default function Navigation() {
               className="flex-shrink-0 flex items-center hover:opacity-80 transition-opacity"
             >
               <MapPin className="h-6 w-6 text-primary mr-2" />
-              <span className="text-xl font-bold text-foreground">LocalPerks</span>
+              <span className="text-xl font-bold text-foreground">Resicard</span>
               <span className="text-sm text-muted-foreground ml-2">St Andrews</span>
             </button>
           </div>
@@ -72,7 +72,7 @@ export default function Navigation() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                       <User className="h-4 w-4 mr-2" />
-                      {user.username}
+                      {user?.username}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

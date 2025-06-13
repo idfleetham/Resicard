@@ -181,7 +181,7 @@ export default function ResidentDashboard() {
                 Welcome back, {user.username}!
               </h1>
               <p className="text-xl opacity-90 mb-6">
-                Discover exclusive deals in St Andrews
+                Your Resicard for exclusive St Andrews community deals
               </p>
               <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 inline-block">
                 <div className="flex items-center text-white">

@@ -44,10 +44,10 @@ export default function Home() {
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
               <div className="text-center">
                 <h1 className="text-5xl font-bold mb-6">
-                  Discover Local Deals in St Andrews
+                  Resicard St Andrews
                 </h1>
                 <p className="text-xl mb-8 opacity-90">
-                  Exclusive offers for verified local residents and the best businesses in town
+                  Your community card for exclusive local deals and savings
                 </p>
                 <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 inline-block mb-8">
                   <div className="flex items-center text-white">
@@ -175,7 +175,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">
-                How LocalPerks Works
+                How Resicard Works
               </h2>
               <p className="text-muted-foreground text-lg">
                 Simple steps to start saving at your favorite local spots
@@ -212,9 +212,9 @@ export default function Home() {
                   <div className="bg-primary/10 p-4 rounded-full inline-block mb-6">
                     <span className="text-2xl font-bold text-primary">3</span>
                   </div>
-                  <h3 className="text-xl font-semibold mb-4">Redeem & Save</h3>
+                  <h3 className="text-xl font-semibold mb-4">Create Vouchers & Save</h3>
                   <p className="text-muted-foreground">
-                    Use deals at participating businesses and track your savings
+                    Build your voucher wallet and redeem at participating businesses
                   </p>
                 </CardContent>
               </Card>
@@ -226,7 +226,7 @@ export default function Home() {
         <footer className="bg-slate-100 border-t">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center text-sm text-muted-foreground">
-              <p>&copy; 2024 LocalPerks St Andrews. All rights reserved.</p>
+              <p>&copy; 2024 Resicard St Andrews. All rights reserved.</p>
               <div className="mt-2 space-x-4">
                 <Link href="/admin-signup" className="hover:text-primary">
                   Admin Portal
