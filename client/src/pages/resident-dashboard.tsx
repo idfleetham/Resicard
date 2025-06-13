@@ -26,6 +26,7 @@ export default function ResidentDashboard() {
   const [activeTab, setActiveTab] = useState("deals");
   const [selectedVoucher, setSelectedVoucher] = useState<VoucherWithDeal | null>(null);
   const [showRedemptionCard, setShowRedemptionCard] = useState(false);
+  const [loadingDealId, setLoadingDealId] = useState<number | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -73,10 +74,12 @@ export default function ResidentDashboard() {
   // Create voucher mutation (replaces deal redemption)
   const createVoucherMutation = useMutation({
     mutationFn: async ({ dealId }: { dealId: number }) => {
+      setLoadingDealId(dealId);
       const response = await apiRequestWithAuth('POST', '/api/redemptions', { dealId });
       return response.json();
     },
     onSuccess: (data) => {
+      setLoadingDealId(null);
       toast({
         title: "Voucher Created!",
         description: `Voucher ${data.voucherPosition} added to your wallet.`,
@@ -85,6 +88,7 @@ export default function ResidentDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
     },
     onError: (error: any) => {
+      setLoadingDealId(null);
       toast({
         title: "Failed to Create Voucher",
         description: error.message || "Unable to create voucher",

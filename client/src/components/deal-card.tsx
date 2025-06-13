@@ -16,13 +16,17 @@ interface DealCardProps {
   onRedeem?: (dealId: number) => void;
   showMerchantInfo?: boolean;
   isLoading?: boolean;
+  loadingDealId?: number;
+  hasExistingVoucher?: boolean;
 }
 
 export default function DealCard({ 
   deal, 
   onRedeem, 
   showMerchantInfo = true, 
-  isLoading = false 
+  isLoading = false,
+  loadingDealId,
+  hasExistingVoucher = false
 }: DealCardProps) {
   const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
   const isExpired = new Date(deal.expiryDate) < new Date();
@@ -109,11 +113,12 @@ export default function DealCard({
             <Button 
               size="sm" 
               onClick={() => onRedeem(deal.id)}
-              disabled={isLoading}
+              disabled={hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
               className="coastal-gradient hover:opacity-90"
             >
               <Ticket className="h-4 w-4 mr-2" />
-              {isLoading ? 'Redeeming...' : 'Use Deal'}
+              {hasExistingVoucher ? 'Already Have Voucher' : 
+               (isLoading && loadingDealId === deal.id) ? 'Redeeming...' : 'Use Deal'}
             </Button>
           )}
         </div>
