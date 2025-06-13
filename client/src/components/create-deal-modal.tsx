@@ -179,6 +179,10 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
         imageUrl: dealImageUrl || (existingDeal?.imageUrl) || user?.profilePhoto || null,
       };
       
+      console.log('Deal image URL state:', dealImageUrl);
+      console.log('Existing deal image URL:', existingDeal?.imageUrl);
+      console.log('User profile photo:', user?.profilePhoto);
+      console.log('Final imageUrl in dealData:', dealData.imageUrl);
       console.log('Processed deal data:', dealData);
       const method = existingDeal ? 'PUT' : 'POST';
       const url = existingDeal ? `/api/deals/${existingDeal.id}` : '/api/deals';
@@ -544,7 +548,10 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                 disabled={createDealMutation.isPending}
                 className="flex-1 coastal-gradient"
               >
-                {createDealMutation.isPending ? 'Creating...' : 'Create Deal'}
+                {createDealMutation.isPending 
+                  ? (existingDeal ? 'Saving...' : 'Creating...') 
+                  : (existingDeal ? 'Save Changes' : 'Create Deal')
+                }
               </Button>
             </div>
           </form>

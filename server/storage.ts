@@ -515,6 +515,15 @@ export class DatabaseStorage implements IStorage {
       .insert(vouchers)
       .values(voucher)
       .returning();
+    
+    // Increment the deal's usage count
+    await db
+      .update(deals)
+      .set({ 
+        usageCount: sql`${deals.usageCount} + 1`
+      })
+      .where(eq(deals.id, voucher.dealId));
+    
     return newVoucher;
   }
 
