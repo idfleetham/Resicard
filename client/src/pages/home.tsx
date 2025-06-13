@@ -7,7 +7,7 @@ import DealCard from "@/components/deal-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, CheckCircle, Users, Ticket, PiggyBank, Calendar } from "lucide-react";
+import { Rocket, Users, Ticket, PiggyBank, Calendar, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequestWithAuth } from "@/lib/auth";
 import type { DealWithMerchant } from "@shared/schema";
@@ -63,20 +63,15 @@ export default function Home() {
                 <p className="text-xl mb-8 opacity-90" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
                   Your community card for exclusive local deals and savings
                 </p>
-                <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 inline-block mb-8">
-                  <div className="flex items-center text-white">
-                    <MapPin className="h-5 w-5 mr-2" />
-                    <span>Serving the St Andrews community</span>
-                    <CheckCircle className="h-5 w-5 text-green-400 ml-2" />
-                  </div>
-                </div>
+
                 <div className="space-x-4">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    className="bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-bold px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     onClick={() => setShowRoleSelector(true)}
                   >
-                    🚀 Get Started Today
+                    <Rocket className="h-5 w-5 mr-2" />
+                    Get Started
                   </Button>
                 </div>
               </div>
