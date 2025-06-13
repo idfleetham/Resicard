@@ -840,6 +840,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public platform statistics for homepage
+  app.get("/api/analytics/platform/stats", async (req, res) => {
+    try {
+      const stats = await storage.getPlatformStats();
+      res.json(stats);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   // Analytics routes
   app.get("/api/analytics/merchant/:merchantId/revenue", authenticateToken, async (req, res) => {
     try {

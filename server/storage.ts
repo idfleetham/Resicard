@@ -600,19 +600,43 @@ export class DatabaseStorage implements IStorage {
     totalRedemptions: number;
     totalRevenue: number;
   }> {
-    const [usersCount] = await db.select({ count: sql`COUNT(*)` }).from(users);
+    const [usersCount] = await db.select({ count: sql`COUNT(*)` }).from(users).where(eq(users.role, 'resident'));
     const [businessesCount] = await db.select({ count: sql`COUNT(*)` }).from(users).where(eq(users.role, 'merchant'));
     const [dealsCount] = await db.select({ count: sql`COUNT(*)` }).from(deals);
-    const [redemptionsCount] = await db.select({ count: sql`COUNT(*)` }).from(redemptions);
+    const [vouchersUsedCount] = await db.select({ count: sql`COUNT(*)` }).from(vouchers).where(eq(vouchers.isUsed, true));
     
-    const allRedemptions = await db.select().from(redemptions);
-    const totalRevenue = allRedemptions.reduce((sum, r) => sum + Number(r.value || 0), 0);
+    // Calculate total revenue from used vouchers with 5% commission
+    const usedVouchers = await db.select().from(vouchers).where(eq(vouchers.isUsed, true));
+    const dealsData = await db.select().from(deals);
+    const dealsMap = new Map(dealsData.map(deal => [deal.id, deal]));
+    
+    let totalRevenue = 0;
+    usedVouchers.forEach(voucher => {
+      const deal = dealsMap.get(voucher.dealId);
+      if (deal) {
+        const discountVal = parseFloat((deal.discountValue as string) || '0');
+        const originalVal = parseFloat((deal.originalValue as string) || '0');
+        
+        let dealValue = 0;
+        if (deal.discountType === 'percentage' && originalVal > 0) {
+          // For percentage deals, use the discount amount (what customer saves)
+          dealValue = originalVal * (discountVal / 100);
+        } else if (deal.discountType === 'fixed') {
+          // For fixed deals, use the discount value (what customer saves)
+          dealValue = discountVal;
+        } else {
+          dealValue = discountVal || originalVal;
+        }
+        
+        totalRevenue += dealValue * 0.05; // 5% commission
+      }
+    });
 
     return {
       totalUsers: Number(usersCount.count),
       totalBusinesses: Number(businessesCount.count),
       totalDeals: Number(dealsCount.count),
-      totalRedemptions: Number(redemptionsCount.count),
+      totalRedemptions: Number(vouchersUsedCount.count),
       totalRevenue,
     };
   }
