@@ -49,8 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       try {
         return await authApi.getProfile();
-      } catch (error) {
+      } catch (error: any) {
+        console.warn('Auth check failed:', error.message);
         authApi.removeToken();
+        
+        // Only redirect if we're on a protected route
+        const currentPath = window.location.pathname;
+        const protectedRoutes = ['/resident', '/merchant', '/admin', '/edit-profile'];
+        
+        if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1000); // Delay to prevent immediate redirect during error handling
+        }
+        
         return null;
       }
     },
