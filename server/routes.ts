@@ -220,7 +220,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/deals", authenticateToken, requireRole('merchant'), async (req, res) => {
     try {
+      console.log('Received deal data:', req.body);
       const dealData = insertDealSchema.parse(req.body);
+      console.log('Parsed deal data:', dealData);
       
       const deal = await storage.createDeal({
         ...dealData,
@@ -229,6 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(deal);
     } catch (error: any) {
+      console.error('Deal creation validation error:', error);
       res.status(400).json({ message: error.message });
     }
   });
