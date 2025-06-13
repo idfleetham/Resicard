@@ -221,7 +221,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/deals", authenticateToken, requireRole('merchant'), async (req, res) => {
     try {
       console.log('Received deal data:', req.body);
-      const dealData = insertDealSchema.parse(req.body);
+      
+      // Convert expiryDate string to Date object before validation
+      const processedData = {
+        ...req.body,
+        expiryDate: new Date(req.body.expiryDate),
+      };
+      
+      const dealData = insertDealSchema.parse(processedData);
       console.log('Parsed deal data:', dealData);
       
       const deal = await storage.createDeal({
