@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { MapPin, Bell, User, LogOut } from "lucide-react";
+import { MapPin, Bell, User, LogOut, Settings, CreditCard } from "lucide-react";
 import { useLocation } from "wouter";
 import {
   DropdownMenu,
@@ -77,8 +77,22 @@ export default function Navigation() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleRoleNavigation}>
+                      <User className="h-4 w-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation('/edit-profile')}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </DropdownMenuItem>
+                    {user?.role === 'resident' && (
+                      <DropdownMenuItem onClick={() => {
+                        handleRoleNavigation();
+                        // Navigate to subscription tab would be handled by dashboard state
+                      }}>
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Subscription
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={logout}>
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout

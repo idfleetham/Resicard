@@ -212,14 +212,7 @@ export default function ResidentDashboard() {
                   <CheckCircle className="h-4 w-4 text-green-400 ml-2" />
                 </div>
               </div>
-              <div className="mt-6">
-                <Link href="/edit-profile">
-                  <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                </Link>
-              </div>
+
             </div>
           </div>
         </div>

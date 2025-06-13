@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { QrCode, User, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { VoucherWithDeal } from "@shared/schema";
+import cardBackgroundImage from "@assets/DF611683-0C55-429D-9633-95A8FD10F9CE_1_105_c_1749807319428.jpeg";
 
 interface DigitalMembershipCardProps {
   voucher?: VoucherWithDeal;
@@ -21,59 +22,66 @@ export default function DigitalMembershipCard({
   return (
     <div className="space-y-4">
       {/* Membership Card */}
-      <Card className="overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white border-0">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden border-0 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url("${cardBackgroundImage}")`,
+          }}
+        />
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
+        <CardContent className="p-6 relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold">Resicard</h2>
-              <p className="text-sm opacity-90">St Andrews Community</p>
+              <h2 className="text-2xl font-bold text-black">Resicard</h2>
+              <p className="text-sm text-black/80">St Andrews Community</p>
             </div>
             <div className="text-right">
-              <p className="text-xs opacity-75">Member ID</p>
-              <p className="text-lg font-mono">#{user.id.toString().padStart(6, '0')}</p>
+              <p className="text-xs text-black/70">Member ID</p>
+              <p className="text-lg font-mono text-black font-semibold">#{user.id.toString().padStart(6, '0')}</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20 border-3 border-white/30">
+            <Avatar className="h-20 w-20 border-3 border-black/20 shadow-lg">
               <AvatarImage src={user.profilePhoto || ""} alt={user.username} />
-              <AvatarFallback className="text-xl bg-white/20 text-white border-0">
+              <AvatarFallback className="text-xl bg-white/80 text-black border-0">
                 {user.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1">
-              <h3 className="text-xl font-semibold">{user.username}</h3>
-              <div className="flex items-center text-sm opacity-90 mt-1">
+              <h3 className="text-xl font-semibold text-black">{user.username}</h3>
+              <div className="flex items-center text-sm text-black/80 mt-1">
                 <MapPin className="h-3 w-3 mr-1" />
                 <span>Local Resident</span>
               </div>
-              <div className="flex items-center text-sm opacity-90 mt-1">
+              <div className="flex items-center text-sm text-black/80 mt-1">
                 <Calendar className="h-3 w-3 mr-1" />
                 <span>Member since {new Date(user.createdAt).getFullYear()}</span>
               </div>
-              <Badge variant="secondary" className="mt-2 bg-white/20 text-white border-white/30 hover:bg-white/30">
+              <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
                 Verified ✓
               </Badge>
             </div>
 
             <div className="text-center">
-              <div className="bg-white/20 p-3 rounded-lg">
-                <QrCode className="h-12 w-12 mx-auto" />
+              <div className="bg-white/80 p-3 rounded-lg shadow-lg border border-black/10">
+                <QrCode className="h-12 w-12 mx-auto text-black" />
               </div>
-              <p className="text-xs mt-1 opacity-75">Scan to verify</p>
+              <p className="text-xs mt-1 text-black/70">Scan to verify</p>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/20">
+          <div className="mt-4 pt-4 border-t border-black/20">
             <div className="flex justify-between text-sm">
-              <span className="opacity-75">Status:</span>
-              <span className="font-medium">Active Member</span>
+              <span className="text-black/70">Status:</span>
+              <span className="font-medium text-black">Active Member</span>
             </div>
             {user.membershipExpiry && (
               <div className="flex justify-between text-sm mt-1">
-                <span className="opacity-75">Valid until:</span>
-                <span className="font-medium">
+                <span className="text-black/70">Valid until:</span>
+                <span className="font-medium text-black">
                   {new Date(user.membershipExpiry).toLocaleDateString()}
                 </span>
               </div>

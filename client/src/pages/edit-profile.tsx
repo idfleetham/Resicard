@@ -102,18 +102,32 @@ export default function EditProfile() {
       return;
     }
 
+    // Use pixel crop values directly, not percentage
+    const pixelRatio = window.devicePixelRatio || 1;
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = crop.width * scaleX;
-    canvas.height = crop.height * scaleY;
+    const targetSize = 200 * pixelRatio; // Fixed size for profile photos
+    canvas.width = targetSize;
+    canvas.height = targetSize;
+
+    // Calculate source crop dimensions in actual image pixels
+    const sourceX = crop.x * scaleX;
+    const sourceY = crop.y * scaleY;
+    const sourceWidth = crop.width * scaleX;
+    const sourceHeight = crop.height * scaleY;
+
+    // Clear canvas and set high quality
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     ctx.drawImage(
       image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
       0,
       0,
       canvas.width,
@@ -127,7 +141,7 @@ export default function EditProfile() {
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
         }
-      }, "image/jpeg", 0.8);
+      }, "image/jpeg", 0.9);
     });
   }, [crop]);
 
