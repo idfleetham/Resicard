@@ -52,9 +52,14 @@ export default function Home() {
             />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
               <div className="text-center">
-                <h1 className="text-5xl font-bold mb-6" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                  Resicard© St Andrews
-                </h1>
+                <div className="mb-6 text-center">
+                  <h1 className="text-5xl font-bold mb-2" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                    Resicard©
+                  </h1>
+                  <h2 className="text-3xl font-medium" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+                    St Andrews
+                  </h2>
+                </div>
                 <p className="text-xl mb-8 opacity-90" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
                   Your community card for exclusive local deals and savings
                 </p>
