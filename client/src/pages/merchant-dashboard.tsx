@@ -319,7 +319,7 @@ export default function MerchantDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm text-muted-foreground">Commission Rate</p>
-                    <p className="text-2xl font-bold text-foreground">12%</p>
+                    <p className="text-2xl font-bold text-foreground">5%</p>
                   </div>
                 </div>
               </CardContent>
@@ -488,22 +488,100 @@ export default function MerchantDashboard() {
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
+              {/* Overall Merchant Analytics */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Analytics Dashboard</CardTitle>
+                  <CardTitle>Merchant Revenue Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Revenue</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h3 className="text-sm font-medium text-green-700 mb-1">Total Revenue</h3>
                       <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(revenueData?.revenue || 0)}
+                        £{revenueData?.revenue || 0}
                       </p>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Total Redemptions</h3>
-                      <p className="text-2xl font-bold text-blue-600">{totalRedemptions}</p>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="text-sm font-medium text-blue-700 mb-1">Monthly Revenue</h3>
+                      <p className="text-2xl font-bold text-blue-600">
+                        £{Math.round((revenueData?.revenue || 0) / 12)}
+                      </p>
                     </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h3 className="text-sm font-medium text-purple-700 mb-1">Commission Rate</h3>
+                      <p className="text-2xl font-bold text-purple-600">5%</p>
+                    </div>
+                    
+                    <div className="bg-amber-50 p-4 rounded-lg">
+                      <h3 className="text-sm font-medium text-amber-700 mb-1">Total Commission Due</h3>
+                      <p className="text-2xl font-bold text-amber-600">
+                        £{((revenueData?.revenue || 0) * 0.05).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Deal-by-Deal Analytics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Deal Performance Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {deals.map((deal) => {
+                      const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
+                      const vouchersCreated = deal.usageCount || 0;
+                      const vouchersRedeemed = dealRedemptions.length;
+                      const estimatedRevenue = vouchersRedeemed * 15; // Estimated £15 per redemption
+                      
+                      return (
+                        <div key={deal.id} className="border rounded-lg p-4 bg-gray-50">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-semibold text-lg">{deal.title}</h4>
+                              <p className="text-sm text-muted-foreground">{deal.category}</p>
+                            </div>
+                            <Badge variant={deal.isActive ? "default" : "secondary"}>
+                              {deal.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-3 rounded border">
+                              <p className="text-xs text-muted-foreground">Vouchers in Wallets</p>
+                              <p className="text-xl font-bold text-blue-600">{vouchersCreated}</p>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded border">
+                              <p className="text-xs text-muted-foreground">Vouchers Redeemed</p>
+                              <p className="text-xl font-bold text-green-600">{vouchersRedeemed}</p>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded border">
+                              <p className="text-xs text-muted-foreground">Estimated Revenue</p>
+                              <p className="text-xl font-bold text-purple-600">£{estimatedRevenue}</p>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded border">
+                              <p className="text-xs text-muted-foreground">Redemption Rate</p>
+                              <p className="text-xl font-bold text-amber-600">
+                                {vouchersCreated > 0 ? `${Math.round((vouchersRedeemed / vouchersCreated) * 100)}%` : '0%'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {deals.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No deals created yet. Create your first deal to see analytics.</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
