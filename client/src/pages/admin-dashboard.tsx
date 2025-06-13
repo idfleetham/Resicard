@@ -339,7 +339,7 @@ export default function AdminDashboard() {
 
           {/* Tabs Navigation */}
           <Card className="mb-8">
-            <div className="border-b border-border">
+            <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-5 bg-transparent h-auto p-0">
                   <TabsTrigger 
@@ -483,54 +483,105 @@ export default function AdminDashboard() {
                                 <h4 className="text-lg font-semibold text-foreground">
                                   {resident.username}
                                 </h4>
-                                <Badge className="ml-3 bg-amber-100 text-amber-800">
-                                  Document Pending
+                                <Badge className="ml-3 bg-blue-100 text-blue-800">
+                                  Resident Application
+                                </Badge>
+                                <Badge className="ml-2 bg-amber-100 text-amber-800">
+                                  Document Pending Review
                                 </Badge>
                               </div>
-                              <p className="text-muted-foreground mb-2">
-                                {resident.email} • {resident.postcode}
+                              <p className="text-muted-foreground mb-4">
+                                <strong>Email:</strong> {resident.email} • <strong>Postcode:</strong> {resident.postcode || 'Not provided'}
                               </p>
-                              <div className="space-y-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-4">
-                                  <span><strong>Document Type:</strong> {resident.documentType}</span>
-                                  {resident.documentSubmittedAt && (
-                                    <span><strong>Submitted:</strong> {formatDate(resident.documentSubmittedAt)}</span>
-                                  )}
+                              
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                  <h5 className="font-medium text-foreground">Application Details</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div>
+                                      <span className="font-medium">Document Type:</span> 
+                                      <Badge variant="outline" className="ml-2">
+                                        {resident.documentType || 'Not specified'}
+                                      </Badge>
+                                    </div>
+                                    {resident.documentSubmittedAt && (
+                                      <div>
+                                        <span className="font-medium">Submitted:</span> {formatDate(resident.documentSubmittedAt)}
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="font-medium">Applying as:</span> Resident (St Andrews local)
+                                    </div>
+                                  </div>
                                 </div>
+                                
                                 {resident.documentFile && (
-                                  <div className="mt-3">
-                                    <strong>Document:</strong>
-                                    <div className="mt-2 border rounded-lg p-2 bg-gray-50">
+                                  <div className="space-y-3">
+                                    <h5 className="font-medium text-foreground">Submitted Document</h5>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                                       <img 
                                         src={resident.documentFile} 
-                                        alt="Submitted document"
-                                        className="max-w-md max-h-64 object-contain rounded"
+                                        alt={`${resident.documentType} submitted by ${resident.username}`}
+                                        className="w-full max-w-sm mx-auto object-contain rounded shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+                                        style={{ maxHeight: '300px' }}
+                                        onClick={() => resident.documentFile && window.open(resident.documentFile, '_blank')}
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          const parent = target.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = '<div class="text-center text-red-600 p-4"><p>Document image failed to load</p><p class="text-xs mt-2">File may be corrupted or invalid format</p></div>';
+                                          }
+                                        }}
                                       />
                                     </div>
+                                    <p className="text-xs text-gray-600 text-center">
+                                      Click image to view full size
+                                    </p>
                                   </div>
                                 )}
                               </div>
+                              
+                              {!resident.documentFile && (
+                                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                  <p className="text-red-800 text-sm">
+                                    <strong>Warning:</strong> No document file found for this application.
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {!resident.documentType && (
+                                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                  <p className="text-yellow-800 text-sm">
+                                    <strong>Notice:</strong> Document type not specified.
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                            <div className="flex space-x-2 ml-4">
-                              <Button 
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleApproveDocument(resident.id)}
-                                disabled={approveDocumentMutation.isPending}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve
-                              </Button>
-                              <Button 
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleRejectDocument(resident.id)}
-                                disabled={rejectDocumentMutation.isPending}
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject
-                              </Button>
-                            </div>
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                            <Button 
+                              size="default"
+                              variant="outline"
+                              onClick={() => handleRejectDocument(resident.id)}
+                              disabled={rejectDocumentMutation.isPending}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              {rejectDocumentMutation.isPending ? 'Rejecting...' : 'Reject Document'}
+                            </Button>
+                            <Button 
+                              size="default"
+                              variant="default"
+                              onClick={() => handleApproveDocument(resident.id)}
+                              disabled={approveDocumentMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              {approveDocumentMutation.isPending ? 'Approving...' : 'Approve & Verify'}
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -902,7 +953,7 @@ export default function AdminDashboard() {
                   </div>
                 </TabsContent>
               </Tabs>
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>
