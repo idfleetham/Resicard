@@ -60,9 +60,15 @@ export default function DigitalMembershipCard({
                 <Calendar className="h-3 w-3 mr-1" />
                 <span>Member since {new Date(user.createdAt).getFullYear()}</span>
               </div>
-              <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
-                Verified ✓
-              </Badge>
+              {user.isResidencyVerified ? (
+                <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
+                  Residency Verified ✓
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="mt-2 bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200">
+                  Verification Required
+                </Badge>
+              )}
             </div>
 
             <div className="text-center">

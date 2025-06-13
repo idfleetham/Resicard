@@ -16,6 +16,13 @@ interface User {
   businessPhone?: string;
   profilePhoto?: string;
   membershipExpiry?: string;
+  documentType?: string;
+  documentFile?: string;
+  documentStatus?: string;
+  documentSubmittedAt?: string;
+  documentReviewedAt?: string;
+  documentReviewedBy?: number;
+  isResidencyVerified?: boolean;
   createdAt: string;
 }
 

@@ -531,6 +531,20 @@ export default function ResidentDashboard() {
                               </div>
                             ) : new Date(voucher.expiresAt) < new Date() ? (
                               <Badge variant="destructive">Expired</Badge>
+                            ) : !user?.isResidencyVerified ? (
+                              <div className="space-y-2">
+                                <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                                  Verification Required
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setActiveTab("verification")}
+                                  className="block w-full"
+                                >
+                                  Verify Residency
+                                </Button>
+                              </div>
                             ) : (
                               <div className="space-y-2">
                                 <Badge variant="outline">Ready to use</Badge>
@@ -554,6 +568,16 @@ export default function ResidentDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Verification Tab */}
+          {activeTab === "verification" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Residency Verification</h2>
+              </div>
+              <DocumentVerification />
             </div>
           )}
 
