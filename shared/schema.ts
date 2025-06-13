@@ -8,6 +8,8 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  firstName: text("first_name"),
+  surname: text("surname"),
   role: text("role").notNull(), // 'resident', 'merchant', 'admin'
   isVerified: boolean("is_verified").default(false),
   postcode: text("postcode"),
@@ -30,6 +32,16 @@ export const users = pgTable("users", {
   documentReviewedAt: timestamp("document_reviewed_at"),
   documentReviewedBy: integer("document_reviewed_by"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const familyMembers = pgTable("family_members", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  firstName: text("first_name").notNull(),
+  surname: text("surname").notNull(),
+  age: integer("age").notNull(),
+  relationship: text("relationship").notNull(), // 'spouse', 'child', 'other'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -74,12 +86,21 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
   password: true,
+  firstName: true,
+  surname: true,
   role: true,
   postcode: true,
   businessName: true,
   businessCategory: true,
   businessAddress: true,
   businessPhone: true,
+});
+
+export const insertFamilyMemberSchema = createInsertSchema(familyMembers).pick({
+  firstName: true,
+  surname: true,
+  age: true,
+  relationship: true,
 });
 
 export const insertDealSchema = createInsertSchema(deals).pick({
@@ -109,6 +130,8 @@ export const insertVoucherSchema = createInsertSchema(vouchers).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
+export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
 export type Deal = typeof deals.$inferSelect;
 export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
@@ -121,6 +144,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   deals: many(deals),
   redemptions: many(redemptions),
   vouchers: many(vouchers),
+  familyMembers: many(familyMembers),
+}));
+
+export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
+  user: one(users, {
+    fields: [familyMembers.userId],
+    references: [users.id],
+  }),
 }));
 
 export const dealsRelations = relations(deals, ({ one, many }) => ({
