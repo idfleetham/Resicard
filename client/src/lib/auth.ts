@@ -29,7 +29,9 @@ interface AuthResponse {
     businessCategory?: string;
     businessAddress?: string;
     businessPhone?: string;
+    profilePhoto?: string;
     membershipExpiry?: string;
+    createdAt: string;
   };
   token: string;
 }

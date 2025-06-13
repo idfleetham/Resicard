@@ -179,6 +179,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.put("/api/profile", authenticateToken, async (req, res) => {
+    try {
+      const { username, email, profilePhoto } = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(req.user.id, {
+        username,
+        email,
+        profilePhoto,
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ ...updatedUser, password: undefined });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Deal routes
   app.get("/api/deals", async (req, res) => {
     try {

@@ -12,6 +12,7 @@ import AdminSignup from "@/pages/admin-signup";
 import ResidentDashboard from "@/pages/resident-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import EditProfile from "@/pages/edit-profile";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/resident" component={ResidentDashboard} />
       <Route path="/merchant" component={MerchantDashboard} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/edit-profile" component={EditProfile} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -186,6 +186,7 @@ export class MemStorage implements IStorage {
       isActive: true,
       expiryDate: dealData.expiryDate,
       terms: dealData.terms || null,
+      imageUrl: null,
       createdAt: new Date(),
     };
     this.deals.set(id, deal);
@@ -325,6 +326,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserProfile(id: number, updates: { username?: string; email?: string; profilePhoto?: string }): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set(updates)

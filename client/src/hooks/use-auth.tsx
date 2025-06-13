@@ -16,6 +16,7 @@ interface User {
   businessPhone?: string;
   profilePhoto?: string;
   membershipExpiry?: string;
+  createdAt: string;
 }
 
 interface AuthContextType {
