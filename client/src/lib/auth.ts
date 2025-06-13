@@ -99,5 +99,11 @@ export async function apiRequestWithAuth(
     throw new Error('Authentication required');
   }
 
+  // Handle other error responses
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    throw new Error(`${res.status}: ${text}`);
+  }
+
   return res;
 }

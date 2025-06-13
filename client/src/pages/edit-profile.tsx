@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, User, Save, ArrowLeft, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequestWithAuth } from "@/lib/auth";
 import { Link } from "wouter";
 
 const profileSchema = z.object({
@@ -85,7 +85,7 @@ export default function EditProfile() {
         profilePhoto: profileImageUrl || user?.profilePhoto,
       };
 
-      await apiRequest("PUT", "/api/profile", updateData);
+      await apiRequestWithAuth("PUT", "/api/profile", updateData);
       
       toast({
         title: "Profile Updated",
