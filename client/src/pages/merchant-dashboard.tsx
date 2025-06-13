@@ -507,11 +507,14 @@ export default function MerchantDashboard() {
                       const originalVal = parseFloat((deal.originalValue as string) || '0');
                       
                       if (deal.discountType === 'percentage' && originalVal > 0) {
+                        // For percentage deals, use the discount amount (what customer saves)
                         dealValue = originalVal * (discountVal / 100);
                       } else if (deal.discountType === 'fixed') {
+                        // For fixed deals, use the discount value (what customer saves)
                         dealValue = discountVal;
-                      } else if (originalVal > 0) {
-                        dealValue = originalVal;
+                      } else {
+                        // Default fallback
+                        dealValue = discountVal || originalVal;
                       }
                       
                       totalMerchantRevenue += vouchersRedeemed * dealValue;
@@ -571,11 +574,14 @@ export default function MerchantDashboard() {
                       const originalVal = parseFloat((deal.originalValue as string) || '0');
                       
                       if (deal.discountType === 'percentage' && originalVal > 0) {
+                        // For percentage deals, use the discount amount (what customer saves)
                         dealValue = originalVal * (discountVal / 100);
                       } else if (deal.discountType === 'fixed') {
+                        // For fixed deals, use the discount value (what customer saves)
                         dealValue = discountVal;
-                      } else if (originalVal > 0) {
-                        dealValue = originalVal;
+                      } else {
+                        // Default fallback
+                        dealValue = discountVal || originalVal;
                       }
                       
                       const totalRevenue = vouchersRedeemed * dealValue;
