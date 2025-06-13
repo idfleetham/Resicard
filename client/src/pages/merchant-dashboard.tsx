@@ -149,11 +149,29 @@ export default function MerchantDashboard() {
   const handleQRScan = (qrData: string) => {
     try {
       const voucherData = JSON.parse(qrData);
+      
+      // Validate required fields
+      if (!voucherData.voucherNumber || !voucherData.dealId || !voucherData.userId) {
+        toast({
+          title: "Invalid QR Code",
+          description: "The scanned QR code is missing required voucher data",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Show preview of what's being redeemed
+      toast({
+        title: "Processing Voucher",
+        description: `Redeeming voucher for ${voucherData.dealTitle || 'deal'} from ${voucherData.merchantName || 'merchant'}`,
+      });
+      
       redeemVoucherMutation.mutate(voucherData);
     } catch (error) {
+      console.error('QR scan error:', error);
       toast({
         title: "Invalid QR Code",
-        description: "The scanned QR code is not a valid voucher",
+        description: "The scanned QR code is not a valid voucher format",
         variant: "destructive",
       });
     }

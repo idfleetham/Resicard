@@ -36,14 +36,21 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
 
       const scanner = new QrScanner(
         videoRef.current,
-        (result) => {
-          onScan(result.data);
+        (result: any) => {
+          try {
+            const data = result?.data || result;
+            if (data) {
+              onScan(data);
+            }
+          } catch (scanError) {
+            console.error('Scan result error:', scanError);
+            setError("Error processing scan result");
+          }
         },
         {
           highlightScanRegion: true,
           highlightCodeOutline: true,
           preferredCamera: 'environment',
-          maxScansPerSecond: 5, // Limit scan rate for better performance
         }
       );
 
@@ -51,7 +58,7 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
       setHasPermission(true);
     } catch (err) {
       console.error('Scanner initialization error:', err);
-      setError("Unable to initialize camera scanner");
+      setError(`Unable to initialize camera: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setHasPermission(false);
     } finally {
       setIsInitializing(false);
@@ -65,8 +72,14 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
     
     return () => {
       if (qrScannerRef.current) {
-        qrScannerRef.current.destroy();
-        qrScannerRef.current = null;
+        try {
+          qrScannerRef.current.stop();
+          qrScannerRef.current.destroy();
+        } catch (cleanupError) {
+          console.warn('Scanner cleanup error:', cleanupError);
+        } finally {
+          qrScannerRef.current = null;
+        }
       }
     };
   }, [isScanning, initializeScanner]);

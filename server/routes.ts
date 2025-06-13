@@ -331,7 +331,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (deal.merchantId !== req.user.id) {
-        return res.status(403).json({ message: "You can only redeem vouchers for your own deals" });
+        return res.status(403).json({ 
+          message: `This voucher is for ${merchantName || 'another business'}. You can only redeem vouchers for your own deals.` 
+        });
       }
       
       // Get user info for the redemption
