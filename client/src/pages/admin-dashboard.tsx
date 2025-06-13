@@ -43,6 +43,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("pending");
   const [businessSearch, setBusinessSearch] = useState("");
   const [businessCategory, setBusinessCategory] = useState("all");
+  const [selectedResident, setSelectedResident] = useState<User | null>(null);
+  const [showResidentModal, setShowResidentModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -690,6 +692,29 @@ export default function AdminDashboard() {
                                 {resident.postcode || 'Not provided'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
+                                {resident.isResidencyVerified ? (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Verified
+                                  </Badge>
+                                ) : resident.documentStatus === 'pending' ? (
+                                  <Badge className="bg-yellow-100 text-yellow-800">
+                                    <Hourglass className="h-3 w-3 mr-1" />
+                                    Pending
+                                  </Badge>
+                                ) : resident.documentStatus === 'rejected' ? (
+                                  <Badge className="bg-red-100 text-red-800">
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                    Rejected
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-gray-100 text-gray-800">
+                                    <Shield className="h-3 w-3 mr-1" />
+                                    Not Submitted
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
                                 <Badge className="bg-green-100 text-green-800">
                                   {resident.membershipExpiry 
                                     ? `Until ${formatDate(resident.membershipExpiry)}`
@@ -701,10 +726,28 @@ export default function AdminDashboard() {
                                 {formatDate(resident.createdAt || new Date())}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-primary hover:text-primary/80"
+                                  onClick={() => {
+                                    setSelectedResident(resident);
+                                    setShowResidentModal(true);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
                                   View
                                 </Button>
-                                <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-amber-600 hover:text-amber-700"
+                                  onClick={() => {
+                                    setSelectedResident(resident);
+                                    setShowResidentModal(true);
+                                  }}
+                                >
+                                  <Settings className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
                               </td>
