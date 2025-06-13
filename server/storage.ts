@@ -15,6 +15,15 @@ export interface IStorage {
   verifyBusiness(id: number): Promise<User | undefined>;
   rejectBusiness(id: number): Promise<boolean>;
   
+  // Document verification operations
+  submitDocument(userId: number, documentData: {
+    documentType: string;
+    documentFile: string;
+  }): Promise<User | undefined>;
+  getPendingDocuments(): Promise<User[]>;
+  approveDocument(userId: number, reviewerId: number): Promise<User | undefined>;
+  rejectDocument(userId: number, reviewerId: number): Promise<User | undefined>;
+  
   // Deal operations
   getDeal(id: number): Promise<Deal | undefined>;
   createDeal(deal: InsertDeal & { merchantId: number }): Promise<Deal>;

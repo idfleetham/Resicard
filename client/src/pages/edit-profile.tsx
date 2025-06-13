@@ -12,6 +12,7 @@ import { Upload, User, Save, ArrowLeft, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
+import { queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 
 const profileSchema = z.object({
@@ -86,6 +87,9 @@ export default function EditProfile() {
       };
 
       await apiRequestWithAuth("PUT", "/api/profile", updateData);
+      
+      // Invalidate auth cache to refresh user data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       toast({
         title: "Profile Updated",

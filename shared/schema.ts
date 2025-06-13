@@ -22,6 +22,14 @@ export const users = pgTable("users", {
   membershipExpiry: timestamp("membership_expiry"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  // Document verification fields
+  documentType: text("document_type"), // "driving_license", "bank_statement", "utility_bill", "passport"
+  documentFile: text("document_file"), // Base64 encoded document
+  documentStatus: text("document_status").default("pending"), // "pending", "approved", "rejected"
+  documentSubmittedAt: timestamp("document_submitted_at"),
+  documentReviewedAt: timestamp("document_reviewed_at"),
+  documentReviewedBy: integer("document_reviewed_by"),
+  isResidencyVerified: boolean("is_residency_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
