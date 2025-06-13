@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDropzone } from "react-dropzone";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -30,25 +32,48 @@ type CreateDealFormData = z.infer<typeof createDealSchema>;
 interface CreateDealModalProps {
   isOpen: boolean;
   onClose: () => void;
+  existingDeal?: any;
 }
 
-export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
+export default function CreateDealModal({ isOpen, onClose, existingDeal }: CreateDealModalProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [dealImageUrl, setDealImageUrl] = useState<string>(existingDeal?.imageUrl || "");
+
+  // Image upload functionality
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setDealImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
+    },
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024, // 5MB
+  });
 
   const form = useForm<CreateDealFormData>({
     resolver: zodResolver(createDealSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      category: "",
-      discountType: "fixed_percentage",
-      discountValue: "",
-      originalValue: "",
-      usageLimit: 1,
-      expiryDate: "",
-      terms: "",
+      title: existingDeal?.title || "",
+      description: existingDeal?.description || "",
+      category: existingDeal?.category || "",
+      discountType: existingDeal?.discountType || "fixed_percentage",
+      discountValue: existingDeal?.discountValue || "",
+      originalValue: existingDeal?.originalValue || "",
+      usageLimit: existingDeal?.usageLimit || 1,
+      expiryDate: existingDeal?.expiryDate ? new Date(existingDeal.expiryDate).toISOString().split('T')[0] : "",
+      terms: existingDeal?.terms || "",
       dealPercentage: "",
       freeItem: "",
       dealPrice: "",
@@ -97,20 +122,24 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
         usageLimit: Number(data.usageLimit),
         expiryDate: new Date(data.expiryDate),
         terms: data.terms,
+        imageUrl: dealImageUrl || (existingDeal?.imageUrl) || user?.profilePhoto || null,
       };
       
       console.log('Processed deal data:', dealData);
-      const response = await apiRequestWithAuth('POST', '/api/deals', dealData);
+      const method = existingDeal ? 'PUT' : 'POST';
+      const url = existingDeal ? `/api/deals/${existingDeal.id}` : '/api/deals';
+      const response = await apiRequestWithAuth(method, url, dealData);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Deal Created",
-        description: "Your deal has been created successfully.",
+        title: existingDeal ? "Deal Updated" : "Deal Created",
+        description: existingDeal ? "Your deal has been updated successfully." : "Your deal has been created successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
       queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant', user?.id] });
       form.reset();
+      setDealImageUrl("");
       onClose();
     },
     onError: (error: any) => {
