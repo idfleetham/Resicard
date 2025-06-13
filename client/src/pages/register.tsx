@@ -103,28 +103,7 @@ export default function Register() {
     });
   };
 
-  const resizeDocument = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-      
-      img.onload = () => {
-        const maxWidth = 800;
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        const width = img.width * ratio;
-        const height = img.height * ratio;
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  };
+
 
   // Dropzone callbacks
   const onProfileDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -147,16 +126,7 @@ export default function Register() {
     maxSize: 5 * 1024 * 1024,
   });
 
-  const { getRootProps: getDocumentRootProps, getInputProps: getDocumentInputProps, isDragActive: isDocumentDragActive } = useDropzone({
-    onDrop: onDocumentDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
-      'application/pdf': ['.pdf']
-    },
-    maxFiles: 1,
-    maxSize: 10 * 1024 * 1024,
-    disabled: !postcodeValid,
-  });
+
 
   // Postcode validation
   const handlePostcodeChange = (value: string) => {
