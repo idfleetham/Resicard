@@ -48,7 +48,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
     mutationFn: async (data: CreateDealFormData) => {
       const response = await apiRequestWithAuth('POST', '/api/deals', {
         ...data,
-        expiryDate: new Date(data.expiryDate).toISOString(),
+        expiryDate: new Date(data.expiryDate),
       });
       return response.json();
     },
