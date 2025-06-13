@@ -113,6 +113,7 @@ export const insertDealSchema = createInsertSchema(deals).pick({
   usageLimit: true,
   expiryDate: true,
   terms: true,
+  imageUrl: true,
 });
 
 export const insertRedemptionSchema = createInsertSchema(redemptions).pick({

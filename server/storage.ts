@@ -199,7 +199,7 @@ export class MemStorage implements IStorage {
       isActive: true,
       expiryDate: dealData.expiryDate,
       terms: dealData.terms || null,
-      imageUrl: null,
+      imageUrl: dealData.imageUrl || null,
       createdAt: new Date(),
     };
     this.deals.set(id, deal);
