@@ -81,11 +81,18 @@ export default function DocumentVerification() {
 
     try {
       setIsUploading(true);
+      console.log("Starting document submission:", {
+        documentType: selectedDocumentType,
+        documentFileLength: documentFile?.length || 0,
+        hasFile: !!documentFile
+      });
       
-      await apiRequestWithAuth("POST", "/api/documents/submit", {
+      const response = await apiRequestWithAuth("POST", "/api/documents/submit", {
         documentType: selectedDocumentType,
         documentFile: documentFile,
       });
+      
+      console.log("Document submission successful:", response.status);
       
       // Invalidate auth cache to refresh user data
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
@@ -100,6 +107,7 @@ export default function DocumentVerification() {
       setDocumentFile(null);
       setFileName("");
     } catch (error: any) {
+      console.error("Document submission failed:", error);
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit document",
