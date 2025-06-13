@@ -123,14 +123,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Featured Deals */}
+          {/* All Deals */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-white">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">
-                Featured Local Deals
+                Current Local Deals
               </h2>
               <p className="text-muted-foreground text-lg">
-                A taste of what's available to our community members
+                All available deals from our verified local businesses
               </p>
             </div>
             
@@ -150,7 +150,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {deals.slice(0, 6).map((deal) => (
+                {deals.map((deal) => (
                   <DealCard 
                     key={deal.id} 
                     deal={deal} 
