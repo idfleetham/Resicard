@@ -26,7 +26,7 @@ export default function ResidentDashboard() {
   const [activeTab, setActiveTab] = useState("deals");
   const [selectedVoucher, setSelectedVoucher] = useState<VoucherWithDeal | null>(null);
   const [showRedemptionCard, setShowRedemptionCard] = useState(false);
-  const [loadingDealId, setLoadingDealId] = useState<number | null>(null);
+  const [loadingDealId, setLoadingDealId] = useState<number | undefined>(undefined);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -79,7 +79,7 @@ export default function ResidentDashboard() {
       return response.json();
     },
     onSuccess: (data) => {
-      setLoadingDealId(null);
+      setLoadingDealId(undefined);
       toast({
         title: "Voucher Created!",
         description: `Voucher ${data.voucherPosition} added to your wallet.`,
@@ -88,7 +88,7 @@ export default function ResidentDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
     },
     onError: (error: any) => {
-      setLoadingDealId(null);
+      setLoadingDealId(undefined);
       toast({
         title: "Failed to Create Voucher",
         description: error.message || "Unable to create voucher",
@@ -128,6 +128,18 @@ export default function ResidentDashboard() {
       });
       return;
     }
+    
+    // Check if user already has a voucher for this deal
+    const hasExistingVoucher = vouchers.some(v => v.dealId === dealId && !v.isUsed);
+    if (hasExistingVoucher) {
+      toast({
+        title: "Voucher Already Exists",
+        description: "You already have an active voucher for this deal.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createVoucherMutation.mutate({ dealId });
   };
 
@@ -383,15 +395,20 @@ export default function ResidentDashboard() {
                 </div>
               ) : filteredDeals.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredDeals.map((deal) => (
-                    <DealCard 
-                      key={deal.id} 
-                      deal={deal} 
-                      onRedeem={handleCreateVoucher}
-                      isLoading={createVoucherMutation.isPending}
-                      showMerchantInfo={true}
-                    />
-                  ))}
+                  {filteredDeals.map((deal) => {
+                    const hasExistingVoucher = vouchers.some(v => v.dealId === deal.id && !v.isUsed);
+                    return (
+                      <DealCard 
+                        key={deal.id} 
+                        deal={deal} 
+                        onRedeem={handleCreateVoucher}
+                        isLoading={createVoucherMutation.isPending}
+                        loadingDealId={loadingDealId}
+                        hasExistingVoucher={hasExistingVoucher}
+                        showMerchantInfo={true}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <Card>

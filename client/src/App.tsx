@@ -21,6 +21,9 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/admin-signup" component={AdminSignup} />
+      <Route path="/resident-dashboard" component={ResidentDashboard} />
+      <Route path="/merchant-dashboard" component={MerchantDashboard} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/resident" component={ResidentDashboard} />
       <Route path="/merchant" component={MerchantDashboard} />
       <Route path="/admin" component={AdminDashboard} />
