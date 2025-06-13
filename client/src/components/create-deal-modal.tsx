@@ -526,7 +526,11 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                     <Textarea 
                       placeholder="Additional terms and conditions"
                       className="h-16"
-                      {...field} 
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />
