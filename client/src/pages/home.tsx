@@ -43,10 +43,10 @@ export default function Home() {
             />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
               <div className="text-center">
-                <h1 className="text-5xl font-bold mb-6">
+                <h1 className="text-5xl font-bold mb-6" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                   Resicard St Andrews
                 </h1>
-                <p className="text-xl mb-8 opacity-90">
+                <p className="text-xl mb-8 opacity-90" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
                   Your community card for exclusive local deals and savings
                 </p>
                 <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 inline-block mb-8">
@@ -59,17 +59,10 @@ export default function Home() {
                 <div className="space-x-4">
                   <Button 
                     size="lg" 
-                    className="bg-white text-primary hover:bg-gray-100"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     onClick={() => setShowRoleSelector(true)}
                   >
-                    Get Started
-                  </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="border-white text-white hover:bg-white hover:text-primary"
-                  >
-                    Learn More
+                    🚀 Get Started Today
                   </Button>
                 </div>
               </div>
