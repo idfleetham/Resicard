@@ -494,33 +494,62 @@ export default function MerchantDashboard() {
                   <CardTitle>Merchant Revenue Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-medium text-green-700 mb-1">Total Revenue</h3>
-                      <p className="text-2xl font-bold text-green-600">
-                        £{revenueData?.revenue || 0}
-                      </p>
-                    </div>
+                  {(() => {
+                    // Calculate total revenue across all deals
+                    let totalMerchantRevenue = 0;
                     
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-medium text-blue-700 mb-1">Monthly Revenue</h3>
-                      <p className="text-2xl font-bold text-blue-600">
-                        £{Math.round((revenueData?.revenue || 0) / 12)}
-                      </p>
-                    </div>
+                    deals.forEach(deal => {
+                      const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
+                      const vouchersRedeemed = dealRedemptions.length;
+                      
+                      let dealValue = 0;
+                      const discountVal = parseFloat((deal.discountValue as string) || '0');
+                      const originalVal = parseFloat((deal.originalValue as string) || '0');
+                      
+                      if (deal.discountType === 'percentage' && originalVal > 0) {
+                        dealValue = originalVal * (discountVal / 100);
+                      } else if (deal.discountType === 'fixed') {
+                        dealValue = discountVal;
+                      } else if (originalVal > 0) {
+                        dealValue = originalVal;
+                      }
+                      
+                      totalMerchantRevenue += vouchersRedeemed * dealValue;
+                    });
                     
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-medium text-purple-700 mb-1">Commission Rate</h3>
-                      <p className="text-2xl font-bold text-purple-600">5%</p>
-                    </div>
+                    const monthlyRevenue = totalMerchantRevenue / 12;
+                    const totalCommission = totalMerchantRevenue * 0.05;
                     
-                    <div className="bg-amber-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-medium text-amber-700 mb-1">Total Commission Due</h3>
-                      <p className="text-2xl font-bold text-amber-600">
-                        £{((revenueData?.revenue || 0) * 0.05).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div className="bg-green-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium text-green-700 mb-1">Total Revenue</h3>
+                          <p className="text-2xl font-bold text-green-600">
+                            £{totalMerchantRevenue.toFixed(2)}
+                          </p>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium text-blue-700 mb-1">Monthly Revenue</h3>
+                          <p className="text-2xl font-bold text-blue-600">
+                            £{monthlyRevenue.toFixed(2)}
+                          </p>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium text-purple-700 mb-1">Commission Rate</h3>
+                          <p className="text-2xl font-bold text-purple-600">5%</p>
+                        </div>
+                        
+                        <div className="bg-amber-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium text-amber-700 mb-1">Total Commission Due</h3>
+                          <p className="text-2xl font-bold text-amber-600">
+                            £{totalCommission.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
@@ -535,7 +564,21 @@ export default function MerchantDashboard() {
                       const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
                       const vouchersCreated = deal.usageCount || 0;
                       const vouchersRedeemed = dealRedemptions.length;
-                      const estimatedRevenue = vouchersRedeemed * 15; // Estimated £15 per redemption
+                      
+                      // Calculate actual revenue based on deal value
+                      let dealValue = 0;
+                      const discountVal = parseFloat((deal.discountValue as string) || '0');
+                      const originalVal = parseFloat((deal.originalValue as string) || '0');
+                      
+                      if (deal.discountType === 'percentage' && originalVal > 0) {
+                        dealValue = originalVal * (discountVal / 100);
+                      } else if (deal.discountType === 'fixed') {
+                        dealValue = discountVal;
+                      } else if (originalVal > 0) {
+                        dealValue = originalVal;
+                      }
+                      
+                      const totalRevenue = vouchersRedeemed * dealValue;
                       
                       return (
                         <div key={deal.id} className="border rounded-lg p-4 bg-gray-50">
@@ -543,6 +586,12 @@ export default function MerchantDashboard() {
                             <div>
                               <h4 className="font-semibold text-lg">{deal.title}</h4>
                               <p className="text-sm text-muted-foreground">{deal.category}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Value: {deal.discountType === 'percentage' 
+                                  ? `${deal.discountValue}% off £${deal.originalValue || 0}`
+                                  : `£${deal.discountValue} ${deal.originalValue ? `(was £${deal.originalValue})` : ''}`
+                                }
+                              </p>
                             </div>
                             <Badge variant={deal.isActive ? "default" : "secondary"}>
                               {deal.isActive ? "Active" : "Inactive"}
@@ -561,8 +610,8 @@ export default function MerchantDashboard() {
                             </div>
                             
                             <div className="bg-white p-3 rounded border">
-                              <p className="text-xs text-muted-foreground">Estimated Revenue</p>
-                              <p className="text-xl font-bold text-purple-600">£{estimatedRevenue}</p>
+                              <p className="text-xs text-muted-foreground">Total Revenue</p>
+                              <p className="text-xl font-bold text-purple-600">£{totalRevenue.toFixed(2)}</p>
                             </div>
                             
                             <div className="bg-white p-3 rounded border">
