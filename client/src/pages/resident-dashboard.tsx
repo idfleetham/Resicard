@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -102,6 +102,10 @@ export default function ResidentDashboard() {
   const createSubscriptionMutation = useMutation({
     mutationFn: async ({ subscriptionType, subscriptionPlan }: { subscriptionType: string; subscriptionPlan: string }) => {
       const response = await apiRequestWithAuth('POST', '/api/subscription/create', { subscriptionType, subscriptionPlan });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Subscription failed');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -112,11 +116,30 @@ export default function ResidentDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Subscription Failed",
-        description: error.message || "Unable to activate subscription",
-        variant: "destructive",
-      });
+      const errorMessage = error.message || "Unable to activate subscription";
+      
+      // Handle specific verification errors
+      if (errorMessage.includes("Profile photo required")) {
+        toast({
+          title: "Profile Photo Required",
+          description: "Please add a profile photo to your account before purchasing a subscription.",
+          variant: "destructive",
+        });
+        setActiveTab("profile");
+      } else if (errorMessage.includes("Account verification required")) {
+        toast({
+          title: "Verification Required",
+          description: "Please wait for your residency documents to be verified before purchasing a subscription.",
+          variant: "destructive",
+        });
+        setActiveTab("verification");
+      } else {
+        toast({
+          title: "Subscription Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -640,13 +663,46 @@ export default function ResidentDashboard() {
                       Subscribe to create vouchers from deals and build your savings wallet.
                     </p>
                     
+                    {/* Verification Status Check */}
+                    {(!user?.profilePhoto || !user?.isResidencyVerified) && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-start space-x-3">
+                          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                          <div>
+                            <h4 className="font-medium text-amber-800">Verification Required</h4>
+                            <p className="text-sm text-amber-700 mt-1">
+                              Complete your account verification to purchase a subscription:
+                            </p>
+                            <ul className="text-sm text-amber-700 mt-2 space-y-1">
+                              {!user?.profilePhoto && (
+                                <li className="flex items-center">
+                                  <X className="h-3 w-3 text-red-500 mr-2" />
+                                  Add profile photo
+                                </li>
+                              )}
+                              {!user?.isResidencyVerified && (
+                                <li className="flex items-center">
+                                  <X className="h-3 w-3 text-red-500 mr-2" />
+                                  Complete residency verification
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {plans && (
                       <div className="grid md:grid-cols-2 gap-6">
                         {/* Individual Plans */}
                         <div className="space-y-4">
                           <h4 className="font-medium">Individual</h4>
                           <div className="space-y-3">
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <Card className={`border-2 transition-colors ${
+                              (!user?.profilePhoto || !user?.isResidencyVerified) 
+                                ? 'border-gray-200 opacity-60' 
+                                : 'border-gray-200 hover:border-primary cursor-pointer'
+                            }`}>
                               <CardContent className="p-4">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="font-medium">Monthly</span>
@@ -658,14 +714,19 @@ export default function ResidentDashboard() {
                                     subscriptionType: 'individual', 
                                     subscriptionPlan: 'monthly' 
                                   })}
-                                  disabled={createSubscriptionMutation.isPending}
+                                  disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
                                 >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
+                                  {createSubscriptionMutation.isPending ? 'Activating...' : 
+                                   (!user?.profilePhoto || !user?.isResidencyVerified) ? 'Verification Required' : 'Choose Monthly'}
                                 </Button>
                               </CardContent>
                             </Card>
                             
-                            <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
+                            <Card className={`border-2 transition-colors ${
+                              (!user?.profilePhoto || !user?.isResidencyVerified) 
+                                ? 'border-gray-200 opacity-60' 
+                                : 'border-gray-200 hover:border-primary cursor-pointer'
+                            }`}>
                               <CardContent className="p-4">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="font-medium">Annual</span>
@@ -680,9 +741,10 @@ export default function ResidentDashboard() {
                                     subscriptionType: 'individual', 
                                     subscriptionPlan: 'annual' 
                                   })}
-                                  disabled={createSubscriptionMutation.isPending}
+                                  disabled={createSubscriptionMutation.isPending || !user?.profilePhoto || !user?.isResidencyVerified}
                                 >
-                                  {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
+                                  {createSubscriptionMutation.isPending ? 'Activating...' : 
+                                   (!user?.profilePhoto || !user?.isResidencyVerified) ? 'Verification Required' : 'Choose Annual'}
                                 </Button>
                               </CardContent>
                             </Card>

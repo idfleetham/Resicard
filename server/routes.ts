@@ -423,6 +423,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { subscriptionType, subscriptionPlan } = req.body;
       const userId = req.user.id;
       
+      // Get user details to check verification status
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if user has profile photo
+      if (!user.profilePhoto) {
+        return res.status(400).json({ 
+          message: "Profile photo required. Please add a profile photo to your account before purchasing a subscription.",
+          code: "PROFILE_PHOTO_REQUIRED"
+        });
+      }
+      
+      // Check if user's residency is verified
+      if (!user.isResidencyVerified) {
+        return res.status(400).json({ 
+          message: "Account verification required. Please wait for your residency documents to be verified before purchasing a subscription.",
+          code: "VERIFICATION_REQUIRED"
+        });
+      }
+      
       // Calculate membership expiry
       const now = new Date();
       const membershipExpiry = new Date(now);
