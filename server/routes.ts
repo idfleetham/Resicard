@@ -600,10 +600,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Document file is required" });
       }
       
+      // Check file size limit (400KB base64 = ~300KB actual)
+      if (documentFile.length > 400000) {
+        return res.status(400).json({ message: "Document file is too large. Please compress or resize your document." });
+      }
+      
       const updatedUser = await storage.submitDocument(userId, {
         documentType,
         documentFile,
       });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to save document. Please try again." });
+      }
       
       console.log(`Document submitted successfully for user ${userId}:`, {
         documentType: updatedUser?.documentType,
@@ -614,7 +623,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ user: updatedUser, message: "Document submitted for verification" });
     } catch (error: any) {
       console.error(`Error submitting document for user ${req.user?.id}:`, error);
-      res.status(400).json({ message: error.message });
+      
+      // Provide more specific error messages
+      if (error.message?.includes('connection')) {
+        res.status(500).json({ message: "Database connection error. Please try again in a moment." });
+      } else if (error.message?.includes('timeout')) {
+        res.status(500).json({ message: "Request timed out. Please try with a smaller file." });
+      } else {
+        res.status(400).json({ message: error.message || "Failed to submit document" });
+      }
     }
   });
 

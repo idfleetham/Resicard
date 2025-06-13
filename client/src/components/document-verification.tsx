@@ -27,25 +27,59 @@ export default function DocumentVerification() {
   const [fileName, setFileName] = useState("");
 
   const resizeDocument = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      // Handle PDF files differently
+      if (file.type === 'application/pdf') {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Limit PDF size to 500KB base64
+          if (result.length > 500000) {
+            reject(new Error('PDF file is too large. Please ensure it\'s under 2MB.'));
+            return;
+          }
+          resolve(result);
+        };
+        reader.onerror = () => reject(new Error('Failed to read PDF file'));
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // Handle image files
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
       const img = new Image();
       
       img.onload = () => {
-        // Resize to max 800px width while maintaining aspect ratio
-        const maxWidth = 800;
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        const width = img.width * ratio;
-        const height = img.height * ratio;
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
+        try {
+          // More aggressive resizing for smaller files
+          const maxWidth = 600;
+          const maxHeight = 600;
+          const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
+          const width = img.width * ratio;
+          const height = img.height * ratio;
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Use lower quality for smaller file size
+          const result = canvas.toDataURL('image/jpeg', 0.6);
+          
+          // Check if result is still too large
+          if (result.length > 400000) { // ~300KB limit
+            reject(new Error('Image file is too large even after compression. Please use a smaller image.'));
+            return;
+          }
+          
+          resolve(result);
+        } catch (error) {
+          reject(new Error('Failed to process image file'));
+        }
       };
       
+      img.onerror = () => reject(new Error('Failed to load image file'));
       img.src = URL.createObjectURL(file);
     });
   };
@@ -54,10 +88,25 @@ export default function DocumentVerification() {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       setFileName(file.name);
-      const resizedDocument = await resizeDocument(file);
-      setDocumentFile(resizedDocument);
+      
+      try {
+        const resizedDocument = await resizeDocument(file);
+        setDocumentFile(resizedDocument);
+        toast({
+          title: "File Uploaded",
+          description: `${file.name} has been processed and is ready for submission.`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "File Processing Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setFileName("");
+        setDocumentFile(null);
+      }
     }
-  }, []);
+  }, [toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
