@@ -554,13 +554,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { documentType, documentFile } = req.body;
       const userId = req.user.id;
       
+      console.log(`Document submission for user ${userId}:`, {
+        documentType,
+        documentFileLength: documentFile?.length || 0,
+        hasDocumentFile: !!documentFile
+      });
+      
+      if (!documentType) {
+        return res.status(400).json({ message: "Document type is required" });
+      }
+      
+      if (!documentFile) {
+        return res.status(400).json({ message: "Document file is required" });
+      }
+      
       const updatedUser = await storage.submitDocument(userId, {
         documentType,
         documentFile,
       });
       
+      console.log(`Document submitted successfully for user ${userId}:`, {
+        documentType: updatedUser?.documentType,
+        documentStatus: updatedUser?.documentStatus,
+        hasDocumentFile: !!updatedUser?.documentFile
+      });
+      
       res.json({ user: updatedUser, message: "Document submitted for verification" });
     } catch (error: any) {
+      console.error(`Error submitting document for user ${req.user?.id}:`, error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -568,9 +589,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/pending-documents", authenticateToken, requireRole('admin'), async (req, res) => {
     try {
       const pendingDocuments = await storage.getPendingDocuments();
+      
+      console.log(`Retrieved ${pendingDocuments.length} pending documents:`);
+      pendingDocuments.forEach(user => {
+        console.log(`User ${user.id} (${user.username}):`, {
+          documentType: user.documentType,
+          documentStatus: user.documentStatus,
+          hasDocumentFile: !!user.documentFile,
+          documentFileLength: user.documentFile?.length || 0,
+          submittedAt: user.documentSubmittedAt
+        });
+      });
+      
       const safeDocuments = pendingDocuments.map(user => ({ ...user, password: undefined }));
       res.json(safeDocuments);
     } catch (error: any) {
+      console.error('Error retrieving pending documents:', error);
       res.status(400).json({ message: error.message });
     }
   });
