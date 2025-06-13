@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   businessCategory: text("business_category"),
   businessAddress: text("business_address"),
   businessPhone: text("business_phone"),
+  profilePhoto: text("profile_photo"), // Base64 encoded image for membership card
   subscriptionType: text("subscription_type"), // 'individual' or 'family'
   subscriptionPlan: text("subscription_plan"), // 'monthly' or 'annual'
   subscriptionStatus: text("subscription_status").default("inactive"), // 'active', 'inactive', 'cancelled'

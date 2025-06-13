@@ -9,6 +9,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  updateUserProfile(id: number, updates: { username?: string; email?: string; profilePhoto?: string }): Promise<User | undefined>;
   getUsersByRole(role: string): Promise<User[]>;
   getPendingBusinesses(): Promise<User[]>;
   verifyBusiness(id: number): Promise<User | undefined>;
@@ -109,6 +110,12 @@ export class MemStorage implements IStorage {
       businessCategory: insertUser.businessCategory || null,
       businessAddress: insertUser.businessAddress || null,
       businessPhone: insertUser.businessPhone || null,
+      profilePhoto: null,
+      subscriptionType: null,
+      subscriptionPlan: null,
+      subscriptionStatus: "inactive",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
       membershipExpiry: insertUser.role === 'resident' 
         ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
         : null,
@@ -119,6 +126,15 @@ export class MemStorage implements IStorage {
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...updates };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserProfile(id: number, updates: { username?: string; email?: string; profilePhoto?: string }): Promise<User | undefined> {
     const user = this.users.get(id);
     if (!user) return undefined;
     

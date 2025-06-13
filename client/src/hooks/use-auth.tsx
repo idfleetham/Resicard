@@ -14,6 +14,7 @@ interface User {
   businessCategory?: string;
   businessAddress?: string;
   businessPhone?: string;
+  profilePhoto?: string;
   membershipExpiry?: string;
 }
 
