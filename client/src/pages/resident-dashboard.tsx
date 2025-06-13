@@ -24,6 +24,8 @@ export default function ResidentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [activeTab, setActiveTab] = useState("deals");
+  const [selectedVoucher, setSelectedVoucher] = useState<VoucherWithDeal | null>(null);
+  const [showRedemptionCard, setShowRedemptionCard] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -505,7 +507,20 @@ export default function ResidentDashboard() {
                             ) : new Date(voucher.expiresAt) < new Date() ? (
                               <Badge variant="destructive">Expired</Badge>
                             ) : (
-                              <Badge variant="outline">Ready to use</Badge>
+                              <div className="space-y-2">
+                                <Badge variant="outline">Ready to use</Badge>
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedVoucher(voucher);
+                                    setShowRedemptionCard(true);
+                                  }}
+                                  className="block w-full"
+                                >
+                                  <User className="h-4 w-4 mr-2" />
+                                  Show for Redemption
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -659,6 +674,26 @@ export default function ResidentDashboard() {
             </div>
           )}
         </div>
+
+        {/* Digital Membership Card Dialog for Redemption */}
+        <Dialog open={showRedemptionCard} onOpenChange={setShowRedemptionCard}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Show to Merchant for Redemption</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {selectedVoucher && (
+                <DigitalMembershipCard 
+                  voucher={selectedVoucher} 
+                  showVoucherDetails={true} 
+                />
+              )}
+              <div className="text-center text-sm text-muted-foreground">
+                Present this screen to the merchant to redeem your voucher
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
