@@ -420,7 +420,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/subscription/create", authenticateToken, requireRole('resident'), async (req, res) => {
     try {
-      const { subscriptionType, subscriptionPlan } = req.body;
+      const { subscriptionType, subscriptionPlan, familyMembers } = req.body;
       const userId = req.user.id;
       
       // Get user details to check verification status
@@ -443,6 +443,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Account verification required. Please wait for your residency documents to be verified before purchasing a subscription.",
           code: "VERIFICATION_REQUIRED"
         });
+      }
+      
+      // For family subscriptions, validate family members
+      if (subscriptionType === 'family') {
+        if (!familyMembers || !Array.isArray(familyMembers) || familyMembers.length === 0) {
+          return res.status(400).json({ 
+            message: "Family members required. Please add at least one family member for a family subscription.",
+            code: "FAMILY_MEMBERS_REQUIRED"
+          });
+        }
+        
+        // Validate each family member
+        for (const member of familyMembers) {
+          if (!member.firstName || !member.surname || !member.age || !member.relationship) {
+            return res.status(400).json({ 
+              message: "All family member details are required (name, age, relationship).",
+              code: "INVALID_FAMILY_MEMBER"
+            });
+          }
+          
+          if (member.age > 17 && member.relationship === 'child') {
+            return res.status(400).json({ 
+              message: "Children must be 17 years old or under.",
+              code: "INVALID_CHILD_AGE"
+            });
+          }
+        }
       }
       
       // Calculate membership expiry

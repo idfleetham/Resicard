@@ -56,6 +56,10 @@ export interface IStorage {
     stripeSubscriptionId?: string;
   }): Promise<User | undefined>;
   
+  // Family member operations
+  createFamilyMembers(userId: number, familyMembers: InsertFamilyMember[]): Promise<FamilyMember[]>;
+  getFamilyMembersByUser(userId: number): Promise<FamilyMember[]>;
+  
   // Analytics
   getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }>;
   getMerchantRevenue(merchantId: number): Promise<number>;

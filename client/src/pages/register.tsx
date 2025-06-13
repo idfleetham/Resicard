@@ -22,6 +22,8 @@ const baseSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  surname: z.string().min(1, "Surname is required"),
 });
 
 const residentSchema = baseSchema.extend({
@@ -74,6 +76,8 @@ export default function Register() {
       username: "",
       email: "",
       password: "",
+      firstName: "",
+      surname: "",
       role: "resident",
       postcode: "",
       profilePhoto: "",
@@ -271,6 +275,36 @@ export default function Register() {
 
                 <Form {...residentForm}>
                   <form onSubmit={residentForm.handleSubmit(onResidentSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={residentForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="John" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={residentForm.control}
+                        name="surname"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Surname</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={residentForm.control}
