@@ -1,17 +1,14 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDropzone } from "react-dropzone";
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Upload, Camera, User, Save, ArrowLeft } from "lucide-react";
+import { Upload, User, Save, ArrowLeft, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -24,36 +21,11 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-function centerAspectCrop(
-  mediaWidth: number,
-  mediaHeight: number,
-  aspect: number,
-) {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight,
-    ),
-    mediaWidth,
-    mediaHeight,
-  );
-}
-
 export default function EditProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-  const [showCropDialog, setShowCropDialog] = useState(false);
-  const [imgSrc, setImgSrc] = useState("");
-  const [crop, setCrop] = useState<Crop>();
-  const [croppedImageUrl, setCroppedImageUrl] = useState(user?.profilePhoto || "");
-  const imgRef = useRef<HTMLImageElement>(null);
-  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(user?.profilePhoto || "");
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -63,15 +35,35 @@ export default function EditProfile() {
     },
   });
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const resizeImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      
+      img.onload = () => {
+        const size = 200;
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Calculate crop area for center square
+        const minDimension = Math.min(img.width, img.height);
+        const x = (img.width - minDimension) / 2;
+        const y = (img.height - minDimension) / 2;
+        
+        ctx.drawImage(img, x, y, minDimension, minDimension, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        setImgSrc(reader.result?.toString() || "");
-        setShowCropDialog(true);
-      });
-      reader.readAsDataURL(file);
+      const resizedImage = await resizeImage(file);
+      setProfileImageUrl(resizedImage);
     }
   }, []);
 
@@ -84,82 +76,13 @@ export default function EditProfile() {
     maxSize: 5 * 1024 * 1024, // 5MB
   });
 
-  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    setCrop(centerAspectCrop(width, height, 1));
-  }, []);
-
-  const getCroppedImg = useCallback(async () => {
-    if (!imgRef.current || !previewCanvasRef.current || !crop) {
-      return;
-    }
-
-    const image = imgRef.current;
-    const canvas = previewCanvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) {
-      return;
-    }
-
-    // Use pixel crop values directly, not percentage
-    const pixelRatio = window.devicePixelRatio || 1;
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    const targetSize = 200 * pixelRatio; // Fixed size for profile photos
-    canvas.width = targetSize;
-    canvas.height = targetSize;
-
-    // Calculate source crop dimensions in actual image pixels
-    const sourceX = crop.x * scaleX;
-    const sourceY = crop.y * scaleY;
-    const sourceWidth = crop.width * scaleX;
-    const sourceHeight = crop.height * scaleY;
-
-    // Clear canvas and set high quality
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      canvas.width,
-      canvas.height,
-    );
-
-    return new Promise<string>((resolve) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        }
-      }, "image/jpeg", 0.9);
-    });
-  }, [crop]);
-
-  const handleCropComplete = async () => {
-    const croppedImage = await getCroppedImg();
-    if (croppedImage) {
-      setCroppedImageUrl(croppedImage);
-      setShowCropDialog(false);
-    }
-  };
-
   const onSubmit = async (data: ProfileFormData) => {
     try {
       setIsUploading(true);
       
       const updateData = {
         ...data,
-        profilePhoto: croppedImageUrl || user?.profilePhoto,
+        profilePhoto: profileImageUrl || user?.profilePhoto,
       };
 
       await apiRequest("PUT", "/api/profile", updateData);
@@ -177,6 +100,10 @@ export default function EditProfile() {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const removePhoto = () => {
+    setProfileImageUrl("");
   };
 
   if (!user) {
@@ -211,12 +138,25 @@ export default function EditProfile() {
                 <div className="space-y-4">
                   <FormLabel>Profile Photo</FormLabel>
                   <div className="flex items-center space-x-6">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={croppedImageUrl} alt={user.username} />
-                      <AvatarFallback className="text-lg">
-                        {user.username.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={profileImageUrl} alt={user.username} />
+                        <AvatarFallback className="text-lg">
+                          {user.username.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {profileImageUrl && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                          onClick={removePhoto}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                     
                     <div className="flex-1">
                       <div
@@ -235,7 +175,7 @@ export default function EditProfile() {
                             : "Drag & drop an image here, or click to select"}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          PNG, JPG, GIF up to 5MB
+                          PNG, JPG, GIF up to 5MB. Image will be automatically resized and cropped.
                         </p>
                       </div>
                     </div>
@@ -284,7 +224,7 @@ export default function EditProfile() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Camera className="h-5 w-5" />
+              <User className="h-5 w-5" />
               <span>Digital Membership Card Preview</span>
             </CardTitle>
           </CardHeader>
@@ -292,7 +232,7 @@ export default function EditProfile() {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-16 w-16 border-2 border-white">
-                  <AvatarImage src={croppedImageUrl} alt={user.username} />
+                  <AvatarImage src={profileImageUrl} alt={user.username} />
                   <AvatarFallback className="text-lg bg-white text-gray-800">
                     {user.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -310,47 +250,6 @@ export default function EditProfile() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Crop Dialog */}
-      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Crop Your Photo</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {imgSrc && (
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                aspect={1}
-                minWidth={100}
-                minHeight={100}
-                circularCrop
-              >
-                <img
-                  ref={imgRef}
-                  alt="Crop me"
-                  src={imgSrc}
-                  style={{ maxHeight: "400px" }}
-                  onLoad={onImageLoad}
-                />
-              </ReactCrop>
-            )}
-            <canvas
-              ref={previewCanvasRef}
-              style={{ display: "none" }}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCropDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCropComplete}>
-              Apply Crop
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
