@@ -569,6 +569,12 @@ export default function Register() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
+                                <SelectItem value="restaurant">Restaurant</SelectItem>
+                                <SelectItem value="bar">Bar</SelectItem>
+                                <SelectItem value="cafe">Cafe</SelectItem>
+                                <SelectItem value="pub">Pub</SelectItem>
+                                <SelectItem value="takeaway">Takeaway</SelectItem>
+                                <SelectItem value="fine-dining">Fine Dining</SelectItem>
                                 <SelectItem value="hotel">Hotel</SelectItem>
                                 <SelectItem value="retail">Retail</SelectItem>
                                 <SelectItem value="experience">Experience</SelectItem>
