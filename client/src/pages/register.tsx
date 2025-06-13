@@ -31,8 +31,6 @@ const residentSchema = baseSchema.extend({
   postcode: z.string().min(1, "Postcode is required")
     .refine(validatePostcode, "Postcode must be within 10 miles of St Andrews"),
   profilePhoto: z.string().min(1, "Profile photo is required"),
-  documentType: z.string().min(1, "Document type is required"),
-  documentFile: z.string().min(1, "Document upload is required"),
 });
 
 const merchantSchema = baseSchema.extend({
@@ -64,9 +62,6 @@ export default function Register() {
   
   // Resident verification state
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
-  const [documentFile, setDocumentFile] = useState<string>("");
-  const [documentFileName, setDocumentFileName] = useState("");
-  const [selectedDocumentType, setSelectedDocumentType] = useState("");
   const [postcodeValid, setPostcodeValid] = useState(false);
   const [postcodeChecked, setPostcodeChecked] = useState(false);
 
@@ -81,8 +76,6 @@ export default function Register() {
       role: "resident",
       postcode: "",
       profilePhoto: "",
-      documentType: "",
-      documentFile: "",
     },
   });
 
@@ -143,15 +136,7 @@ export default function Register() {
     }
   }, [residentForm]);
 
-  const onDocumentDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setDocumentFileName(file.name);
-      const resizedDocument = await resizeDocument(file);
-      setDocumentFile(resizedDocument);
-      residentForm.setValue('documentFile', resizedDocument);
-    }
-  }, [residentForm]);
+
 
   const { getRootProps: getProfileRootProps, getInputProps: getProfileInputProps, isDragActive: isProfileDragActive } = useDropzone({
     onDrop: onProfileDrop,
@@ -463,100 +448,17 @@ export default function Register() {
                       )}
                     />
 
-                    {/* Document Verification Section */}
-                    <div className={`space-y-4 p-4 rounded-lg border transition-all ${
-                      postcodeValid 
-                        ? "border-green-200 bg-green-50" 
-                        : "border-gray-200 bg-gray-50 opacity-60"
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <FormLabel className="text-base font-semibold">
-                          Residency Verification *
-                        </FormLabel>
-                        {postcodeValid && (
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                            Upload Enabled
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {!postcodeValid && (
-                        <p className="text-sm text-amber-600">
-                          Please enter a valid St Andrews postcode first to enable document upload
-                        </p>
-                      )}
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={residentForm.control}
-                          name="documentType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Document Type</FormLabel>
-                              <Select 
-                                value={selectedDocumentType} 
-                                onValueChange={(value) => {
-                                  setSelectedDocumentType(value);
-                                  residentForm.setValue('documentType', value);
-                                }}
-                                disabled={!postcodeValid}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select document type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {documentTypes.map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      {type.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="space-y-2">
-                          <FormLabel>Upload Document</FormLabel>
-                          <div
-                            {...getDocumentRootProps()}
-                            className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-                              !postcodeValid 
-                                ? "border-gray-200 bg-gray-100 cursor-not-allowed"
-                                : isDocumentDragActive
-                                ? "border-primary bg-primary/5"
-                                : "border-gray-300 hover:border-primary"
-                            }`}
-                          >
-                            <input {...getDocumentInputProps()} />
-                            <FileText className={`h-6 w-6 mx-auto mb-2 ${postcodeValid ? 'text-gray-400' : 'text-gray-300'}`} />
-                            <p className={`text-sm ${postcodeValid ? 'text-gray-600' : 'text-gray-400'}`}>
-                              {!postcodeValid 
-                                ? "Verify postcode first"
-                                : isDocumentDragActive
-                                ? "Drop document here..."
-                                : "Upload verification document"}
-                            </p>
-                            <p className={`text-xs mt-1 ${postcodeValid ? 'text-gray-500' : 'text-gray-400'}`}>
-                              PNG, JPG, PDF up to 10MB
-                            </p>
-                            {documentFileName && (
-                              <p className="text-sm text-green-600 mt-2 font-medium">
-                                Selected: {documentFileName}
-                              </p>
-                            )}
-                          </div>
+                    {/* Note about verification after registration */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-blue-800">Next Step: Document Verification</h4>
+                          <p className="text-sm text-blue-700 mt-1">
+                            After creating your account, you'll need to upload a document proving your St Andrews residency 
+                            from your dashboard. This verification is required before you can redeem vouchers.
+                          </p>
                         </div>
-                      </div>
-
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p className="text-sm text-blue-800">
-                          <strong>Required:</strong> Upload a document showing your name and St Andrews address 
-                          (driving license, bank statement, utility bill, etc.) for residency verification.
-                        </p>
                       </div>
                     </div>
 
