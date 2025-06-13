@@ -110,7 +110,7 @@ export default function Register() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 text-primary hover:opacity-80">
             <MapPin className="h-8 w-8" />
-            <span className="text-2xl font-bold">LocalPerks</span>
+            <span className="text-2xl font-bold">Resicard</span>
           </Link>
           <p className="text-muted-foreground mt-2">Join the St Andrews Community</p>
         </div>
