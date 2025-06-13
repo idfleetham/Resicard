@@ -599,26 +599,17 @@ export default function ResidentDashboard() {
                 )}
               </div>
 
-              {subscription?.isActive ? (
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">Active Subscription</h3>
-                        <p className="text-muted-foreground">
-                          {subscription.type} plan ({subscription.plan})
-                        </p>
-                      </div>
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {subscription.expiresAt && (
-                        <p>Expires: {formatDate(subscription.expiresAt)}</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
+              <SubscriptionManagement 
+                subscription={subscription}
+                plans={plans}
+                onSubscriptionChange={() => {
+                  queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+                  queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+                }}
+              />
+
+              {/* Legacy subscription creation for non-active users */}
+              {!subscription?.isActive && (
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>

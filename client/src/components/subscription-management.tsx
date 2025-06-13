@@ -10,6 +10,7 @@ import { AlertTriangle, Calendar, CreditCard, Users, User, Check, X } from "luci
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import StripeCheckout from "@/components/stripe-checkout";
 
 interface SubscriptionManagementProps {
   subscription: any;
@@ -25,6 +26,7 @@ export default function SubscriptionManagement({
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -106,6 +108,12 @@ export default function SubscriptionManagement({
       return;
     }
 
+    // Show checkout dialog for payment processing
+    setShowCheckout(true);
+  };
+
+  const handleCheckoutSuccess = () => {
+    setShowCheckout(false);
     changeSubscriptionMutation.mutate({
       subscriptionType: selectedType,
       subscriptionPlan: selectedPlan,
@@ -328,6 +336,25 @@ export default function SubscriptionManagement({
           )}
         </CardContent>
       </Card>
+
+      {/* Stripe Checkout Dialog */}
+      <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Complete Your Payment</DialogTitle>
+            <DialogDescription>
+              Secure payment processing for your subscription
+            </DialogDescription>
+          </DialogHeader>
+          <StripeCheckout
+            subscriptionType={selectedType}
+            subscriptionPlan={selectedPlan}
+            price={getPlanPrice(selectedType, selectedPlan)}
+            onSuccess={handleCheckoutSuccess}
+            onCancel={() => setShowCheckout(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
