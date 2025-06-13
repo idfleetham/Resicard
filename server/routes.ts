@@ -278,6 +278,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only route to clean up demo data
+  app.delete("/api/admin/cleanup-demo", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      // Delete specific demo deals and merchants
+      const dealsToDelete = [1, 2, 3, 4]; // The Dunvegan, Maisha, Tailend, St Andrews Links
+      const merchantsToDelete = [2, 4, 5, 6];
+      
+      for (const dealId of dealsToDelete) {
+        await storage.deleteDeal(dealId);
+      }
+      
+      res.json({ message: "Demo data cleaned up successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.get("/api/deals/merchant/:merchantId", authenticateToken, async (req, res) => {
     try {
       const merchantId = parseInt(req.params.merchantId);
