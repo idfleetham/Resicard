@@ -101,7 +101,7 @@ export default function DealCard({
           {deal.description}
         </p>
         
-        {deal.originalValue && (
+        {deal.originalValue && Number(deal.originalValue) > 0 && (
           <div className="mb-4">
             <span className="text-sm text-muted-foreground">Value: </span>
             <span className="font-semibold">{formatCurrency(Number(deal.originalValue))}</span>
