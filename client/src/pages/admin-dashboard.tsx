@@ -148,7 +148,11 @@ export default function AdminDashboard() {
   // Document approval mutation
   const approveDocumentMutation = useMutation({
     mutationFn: async (userId: number) => {
-      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/approve`);
+      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/approve`, {});
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to approve document');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -172,7 +176,11 @@ export default function AdminDashboard() {
   // Document rejection mutation
   const rejectDocumentMutation = useMutation({
     mutationFn: async (userId: number) => {
-      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/reject`);
+      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/reject`, {});
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reject document');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -654,6 +662,9 @@ export default function AdminDashboard() {
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Postcode
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                              Verification Status
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Membership

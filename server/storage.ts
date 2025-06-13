@@ -623,7 +623,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingDocuments(): Promise<User[]> {
-    return await db.select().from(users).where(eq(users.documentStatus, "pending"));
+    return await db.select().from(users).where(
+      sql`${users.documentStatus} = 'pending' AND ${users.role} = 'resident'`
+    );
   }
 
   async approveDocument(userId: number, reviewerId: number): Promise<User | undefined> {
