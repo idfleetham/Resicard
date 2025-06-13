@@ -27,7 +27,7 @@ export const users = pgTable("users", {
   // Document verification fields
   documentType: text("document_type"), // "driving_license", "bank_statement", "utility_bill", "passport"
   documentFile: text("document_file"), // Base64 encoded document
-  documentStatus: text("document_status").default("pending"), // "pending", "approved", "rejected"
+  documentStatus: text("document_status"), // "pending", "approved", "rejected"
   documentSubmittedAt: timestamp("document_submitted_at"),
   documentReviewedAt: timestamp("document_reviewed_at"),
   documentReviewedBy: integer("document_reviewed_by"),
