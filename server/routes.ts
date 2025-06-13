@@ -481,6 +481,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         membershipExpiry.setFullYear(membershipExpiry.getFullYear() + 1);
       }
       
+      // Save family members if this is a family subscription
+      if (subscriptionType === 'family' && familyMembers && familyMembers.length > 0) {
+        await storage.createFamilyMembers(userId, familyMembers);
+      }
+      
       const updatedUser = await storage.updateUserSubscription(userId, {
         subscriptionType,
         subscriptionPlan,

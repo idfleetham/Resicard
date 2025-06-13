@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type DealWithMerchant, type VoucherWithDeal } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 
@@ -658,6 +658,24 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user || undefined;
+  }
+
+  async createFamilyMembers(userId: number, familyMemberData: InsertFamilyMember[]): Promise<FamilyMember[]> {
+    const membersToInsert = familyMemberData.map(member => ({
+      ...member,
+      userId,
+    }));
+    
+    const result = await db
+      .insert(familyMembers)
+      .values(membersToInsert)
+      .returning();
+    
+    return result;
+  }
+
+  async getFamilyMembersByUser(userId: number): Promise<FamilyMember[]> {
+    return await db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
   }
 }
 
