@@ -302,7 +302,15 @@ export default function DocumentVerification() {
                 </div>
 
                 <Button 
-                  onClick={handleSubmit} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("Submit button clicked:", {
+                      selectedDocumentType,
+                      hasDocumentFile: !!documentFile,
+                      documentFileLength: documentFile?.length
+                    });
+                    handleSubmit();
+                  }} 
                   disabled={isUploading || !selectedDocumentType || !documentFile}
                   className="w-full"
                 >
