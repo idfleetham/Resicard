@@ -295,6 +295,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // QR Code voucher redemption endpoint
+  app.post("/api/vouchers/redeem-qr", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const { voucherNumber, dealId, userId, merchantName, dealTitle } = req.body;
+      
+      if (!voucherNumber || !dealId || !userId) {
+        return res.status(400).json({ message: "Missing required voucher data" });
+      }
+      
+      // Find the voucher
+      const voucher = await storage.getVoucherByNumber(voucherNumber);
+      if (!voucher) {
+        return res.status(404).json({ message: "Voucher not found" });
+      }
+      
+      if (voucher.isUsed) {
+        return res.status(400).json({ message: "Voucher has already been used" });
+      }
+      
+      // Verify the voucher belongs to the deal
+      if (voucher.dealId !== dealId) {
+        return res.status(400).json({ message: "Voucher does not match the deal" });
+      }
+      
+      // Check if voucher is expired
+      if (new Date(voucher.expiresAt) < new Date()) {
+        return res.status(400).json({ message: "Voucher has expired" });
+      }
+      
+      // Get deal and verify merchant ownership
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      if (deal.merchantId !== req.user.id) {
+        return res.status(403).json({ message: "You can only redeem vouchers for your own deals" });
+      }
+      
+      // Get user info for the redemption
+      const customer = await storage.getUser(userId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      // Mark voucher as used
+      const usedVoucher = await storage.useVoucher(voucherNumber);
+      
+      // Create redemption record
+      await storage.createRedemption({
+        dealId: dealId,
+        userId: userId,
+        voucherNumber: voucherNumber,
+        redeemedAt: new Date(),
+      });
+      
+      res.json({
+        message: "Voucher redeemed successfully",
+        voucherNumber,
+        dealTitle,
+        customerName: customer.username,
+        redeemedAt: new Date(),
+      });
+    } catch (error: any) {
+      console.error('QR redemption error:', error);
+      res.status(500).json({ message: error.message || "Failed to redeem voucher" });
+    }
+  });
+
   app.get("/api/deals/merchant/:merchantId", authenticateToken, async (req, res) => {
     try {
       const merchantId = parseInt(req.params.merchantId);
