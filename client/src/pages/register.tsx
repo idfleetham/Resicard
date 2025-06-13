@@ -28,7 +28,7 @@ const residentSchema = baseSchema.extend({
   role: z.literal("resident"),
   postcode: z.string().min(1, "Postcode is required")
     .refine(validatePostcode, "Postcode must be within 10 miles of St Andrews"),
-  profilePhoto: z.string().optional(),
+  profilePhoto: z.string().min(1, "Profile photo is required"),
   documentType: z.string().min(1, "Document type is required"),
   documentFile: z.string().min(1, "Document upload is required"),
 });
@@ -330,7 +330,7 @@ export default function Register() {
 
                     {/* Profile Photo Upload */}
                     <div className="space-y-4">
-                      <FormLabel>Profile Photo (Optional)</FormLabel>
+                      <FormLabel>Profile Photo *</FormLabel>
                       <div className="flex items-center space-x-6">
                         <div className="relative">
                           <Avatar className="h-24 w-24">
@@ -376,6 +376,13 @@ export default function Register() {
                             </p>
                           </div>
                         </div>
+                      </div>
+                      
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-sm text-amber-800">
+                          <strong>Required for Security:</strong> Your photo appears on your digital membership card 
+                          so merchants can verify your identity when redeeming vouchers.
+                        </p>
                       </div>
                     </div>
 

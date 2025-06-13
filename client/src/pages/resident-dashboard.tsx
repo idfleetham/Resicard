@@ -531,6 +531,26 @@ export default function ResidentDashboard() {
                               </div>
                             ) : new Date(voucher.expiresAt) < new Date() ? (
                               <Badge variant="destructive">Expired</Badge>
+                            ) : !user?.profilePhoto ? (
+                              <div className="space-y-2">
+                                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                                  Photo Required
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Profile Photo Required",
+                                      description: "Please add a profile photo to your account for merchant verification during redemption.",
+                                      variant: "destructive",
+                                    });
+                                  }}
+                                  className="block w-full"
+                                >
+                                  Add Photo
+                                </Button>
+                              </div>
                             ) : !user?.isResidencyVerified ? (
                               <div className="space-y-2">
                                 <Badge variant="secondary" className="bg-amber-100 text-amber-800">

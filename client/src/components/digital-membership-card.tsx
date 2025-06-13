@@ -45,8 +45,8 @@ export default function DigitalMembershipCard({
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20 border-3 border-black/20 shadow-lg">
               <AvatarImage src={user.profilePhoto || ""} alt={user.username} />
-              <AvatarFallback className="text-xl bg-white/80 text-black border-0">
-                {user.username.charAt(0).toUpperCase()}
+              <AvatarFallback className="text-xl bg-red-100 text-red-800 border-2 border-red-300">
+                <User className="h-8 w-8" />
               </AvatarFallback>
             </Avatar>
             
