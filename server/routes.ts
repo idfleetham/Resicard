@@ -526,6 +526,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Document verification routes
+  app.post("/api/documents/submit", authenticateToken, async (req, res) => {
+    try {
+      const { documentType, documentFile } = req.body;
+      const userId = req.user.id;
+      
+      const updatedUser = await storage.submitDocument(userId, {
+        documentType,
+        documentFile,
+      });
+      
+      res.json({ user: updatedUser, message: "Document submitted for verification" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/pending-documents", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const pendingDocuments = await storage.getPendingDocuments();
+      const safeDocuments = pendingDocuments.map(user => ({ ...user, password: undefined }));
+      res.json(safeDocuments);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/documents/:userId/approve", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const reviewerId = req.user.id;
+      
+      const updatedUser = await storage.approveDocument(userId, reviewerId);
+      res.json({ user: updatedUser, message: "Document approved" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/documents/:userId/reject", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const reviewerId = req.user.id;
+      
+      const updatedUser = await storage.rejectDocument(userId, reviewerId);
+      res.json({ user: updatedUser, message: "Document rejected" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.post("/api/admin/verify-business/:id", authenticateToken, requireRole('admin'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);

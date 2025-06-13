@@ -18,6 +18,7 @@ import mapImage from "@assets/Geddy-Map-smaller_1749767170608.jpeg";
 import { Link } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DigitalMembershipCard from "@/components/digital-membership-card";
+import DocumentVerification from "@/components/document-verification";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function ResidentDashboard() {
@@ -315,6 +316,16 @@ export default function ResidentDashboard() {
                   }`}
                 >
                   My Voucher Wallet ({activeVouchers.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("verification")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "verification"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  Verification
                 </button>
                 <button
                   onClick={() => setActiveTab("subscription")}

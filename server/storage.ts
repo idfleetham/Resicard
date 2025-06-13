@@ -603,6 +603,56 @@ export class DatabaseStorage implements IStorage {
       totalRevenue,
     };
   }
+
+  async submitDocument(userId: number, documentData: {
+    documentType: string;
+    documentFile: string;
+  }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        documentType: documentData.documentType,
+        documentFile: documentData.documentFile,
+        documentStatus: "pending",
+        documentSubmittedAt: new Date(),
+        isResidencyVerified: false,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
+  async getPendingDocuments(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.documentStatus, "pending"));
+  }
+
+  async approveDocument(userId: number, reviewerId: number): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        documentStatus: "approved",
+        documentReviewedAt: new Date(),
+        documentReviewedBy: reviewerId,
+        isResidencyVerified: true,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
+  async rejectDocument(userId: number, reviewerId: number): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        documentStatus: "rejected",
+        documentReviewedAt: new Date(),
+        documentReviewedBy: reviewerId,
+        isResidencyVerified: false,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
 }
 
 export const storage = new DatabaseStorage();
