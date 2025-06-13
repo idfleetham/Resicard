@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { insertDealSchema } from "@shared/schema";
 
@@ -27,6 +28,7 @@ interface CreateDealModalProps {
 
 export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const form = useForm<CreateDealFormData>({
@@ -64,6 +66,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
         description: "Your deal has been created successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant', user?.id] });
       form.reset();
       onClose();
     },
