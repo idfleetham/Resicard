@@ -17,6 +17,12 @@ import { insertDealSchema } from "@shared/schema";
 
 const createDealSchema = insertDealSchema.extend({
   expiryDate: z.string().min(1, "Expiry date is required"),
+  dealPercentage: z.string().optional(),
+  freeItem: z.string().optional(),
+  dealPrice: z.string().optional(),
+  originalPrice: z.string().optional(),
+  bogoItem: z.string().optional(),
+  fixedAmount: z.string().optional(),
 });
 
 type CreateDealFormData = z.infer<typeof createDealSchema>;
@@ -37,12 +43,18 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
       title: "",
       description: "",
       category: "",
-      discountType: "percentage",
+      discountType: "fixed_percentage",
       discountValue: "",
       originalValue: "",
       usageLimit: 1,
       expiryDate: "",
       terms: "",
+      dealPercentage: "",
+      freeItem: "",
+      dealPrice: "",
+      originalPrice: "",
+      bogoItem: "",
+      fixedAmount: "",
     },
   });
 
@@ -145,6 +157,9 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                         <SelectItem value="pub">Pub</SelectItem>
                         <SelectItem value="takeaway">Takeaway</SelectItem>
                         <SelectItem value="fine-dining">Fine Dining</SelectItem>
+                        <SelectItem value="hotel">Hotel</SelectItem>
+                        <SelectItem value="retail">Retail</SelectItem>
+                        <SelectItem value="experience">Experience</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -157,18 +172,19 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                 name="discountType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discount Type</FormLabel>
+                    <FormLabel>Deal Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder="Select deal type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="percentage">Percentage Off</SelectItem>
-                        <SelectItem value="fixed">Fixed Amount Off</SelectItem>
-                        <SelectItem value="bogo">Buy One Get One</SelectItem>
+                        <SelectItem value="fixed_percentage">Fixed % Off</SelectItem>
                         <SelectItem value="free_item">Free Item</SelectItem>
+                        <SelectItem value="fixed_price">Fixed Price</SelectItem>
+                        <SelectItem value="buy_one_get_one">Buy One Get One Free</SelectItem>
+                        <SelectItem value="fixed_amount">Fixed Amount Off</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
