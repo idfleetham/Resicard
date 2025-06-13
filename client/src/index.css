@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global styles for darker backgrounds and shadows */
+.bg-page {
+  @apply bg-slate-200;
+}
+
+.card-shadow {
+  @apply shadow-lg hover:shadow-xl transition-shadow duration-200;
+}
+
 :root {
   --background: hsl(210, 20%, 98%);
   --foreground: hsl(222, 84%, 5%);

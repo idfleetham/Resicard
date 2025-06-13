@@ -53,7 +53,7 @@ export default function Home() {
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
               <div className="text-center">
                 <h1 className="text-5xl font-bold mb-6" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                  Resicard St Andrews
+                  Resicard© St Andrews
                 </h1>
                 <p className="text-xl mb-8 opacity-90" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
                   Your community card for exclusive local deals and savings
@@ -183,7 +183,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">
-                How Resicard Works
+                How Resicard© Works
               </h2>
               <p className="text-muted-foreground text-lg">
                 Simple steps to start saving at your favorite local spots
