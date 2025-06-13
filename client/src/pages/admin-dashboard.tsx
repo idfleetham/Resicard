@@ -77,6 +77,16 @@ export default function AdminDashboard() {
     enabled: !!user && user.role === 'admin',
   });
 
+  // Fetch pending documents
+  const { data: pendingDocuments = [] } = useQuery({
+    queryKey: ['/api/admin/pending-documents'],
+    queryFn: async () => {
+      const response = await apiRequestWithAuth('GET', '/api/admin/pending-documents');
+      return response.json() as Promise<User[]>;
+    },
+    enabled: !!user && user.role === 'admin',
+  });
+
   // Verify business mutation
   const verifyBusinessMutation = useMutation({
     mutationFn: async (businessId: number) => {
@@ -132,6 +142,64 @@ export default function AdminDashboard() {
   const handleRejectBusiness = (businessId: number) => {
     if (confirm('Are you sure you want to reject this business application? This action cannot be undone.')) {
       rejectBusinessMutation.mutate(businessId);
+    }
+  };
+
+  // Document approval mutation
+  const approveDocumentMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/approve`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Document Approved",
+        description: "The document has been approved and user verified.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-documents'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Approval Failed",
+        description: error.message || "Failed to approve document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Document rejection mutation
+  const rejectDocumentMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await apiRequestWithAuth('POST', `/api/admin/documents/${userId}/reject`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Document Rejected",
+        description: "The document has been rejected. User can resubmit.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-documents'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Rejection Failed",
+        description: error.message || "Failed to reject document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleApproveDocument = (userId: number) => {
+    approveDocumentMutation.mutate(userId);
+  };
+
+  const handleRejectDocument = (userId: number) => {
+    if (confirm('Are you sure you want to reject this document? The user will need to resubmit.')) {
+      rejectDocumentMutation.mutate(userId);
     }
   };
 
@@ -208,7 +276,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm text-muted-foreground">Pending Reviews</p>
-                    <p className="text-2xl font-bold text-foreground">{pendingBusinesses.length}</p>
+                    <p className="text-2xl font-bold text-foreground">{pendingBusinesses.length + pendingDocuments.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -263,15 +331,26 @@ export default function AdminDashboard() {
           <Card className="mb-8">
             <div className="border-b border-border">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4 bg-transparent h-auto p-0">
+                <TabsList className="grid w-full grid-cols-5 bg-transparent h-auto p-0">
                   <TabsTrigger 
                     value="pending" 
                     className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <span>Pending Reviews</span>
+                      <span>Business Reviews</span>
                       {pendingBusinesses.length > 0 && (
                         <Badge className="bg-amber-100 text-amber-800">{pendingBusinesses.length}</Badge>
+                      )}
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="documents" 
+                    className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>Document Reviews</span>
+                      {pendingDocuments.length > 0 && (
+                        <Badge className="bg-amber-100 text-amber-800">{pendingDocuments.length}</Badge>
                       )}
                     </div>
                   </TabsTrigger>
@@ -374,6 +453,84 @@ export default function AdminDashboard() {
                       <h3 className="text-lg font-semibold text-foreground mb-2">No pending applications</h3>
                       <p className="text-muted-foreground">
                         All business applications have been reviewed.
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Document Reviews Tab */}
+                <TabsContent value="documents" className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Document Verification Reviews
+                  </h3>
+                  {pendingDocuments.length > 0 ? (
+                    <div className="space-y-4">
+                      {pendingDocuments.map((resident) => (
+                        <div key={resident.id} className="border border-border rounded-lg p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center mb-2">
+                                <h4 className="text-lg font-semibold text-foreground">
+                                  {resident.username}
+                                </h4>
+                                <Badge className="ml-3 bg-amber-100 text-amber-800">
+                                  Document Pending
+                                </Badge>
+                              </div>
+                              <p className="text-muted-foreground mb-2">
+                                {resident.email} • {resident.postcode}
+                              </p>
+                              <div className="space-y-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-4">
+                                  <span><strong>Document Type:</strong> {resident.documentType}</span>
+                                  {resident.documentSubmittedAt && (
+                                    <span><strong>Submitted:</strong> {formatDate(resident.documentSubmittedAt)}</span>
+                                  )}
+                                </div>
+                                {resident.documentFile && (
+                                  <div className="mt-3">
+                                    <strong>Document:</strong>
+                                    <div className="mt-2 border rounded-lg p-2 bg-gray-50">
+                                      <img 
+                                        src={resident.documentFile} 
+                                        alt="Submitted document"
+                                        className="max-w-md max-h-64 object-contain rounded"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex space-x-2 ml-4">
+                              <Button 
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApproveDocument(resident.id)}
+                                disabled={approveDocumentMutation.isPending}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve
+                              </Button>
+                              <Button 
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleRejectDocument(resident.id)}
+                                disabled={rejectDocumentMutation.isPending}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No pending documents</h3>
+                      <p className="text-muted-foreground">
+                        All document verifications have been reviewed.
                       </p>
                     </div>
                   )}
