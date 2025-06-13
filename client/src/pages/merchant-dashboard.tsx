@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import CreateDealModal from "@/components/create-deal-modal";
-import { Card, CardContent } from "@/components/ui/card";
+import QRScanner from "@/components/qr-scanner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Ticket, 
   Users, 
@@ -19,7 +21,9 @@ import {
   Play, 
   Trash2, 
   Copy,
-  MapPin
+  MapPin,
+  QrCode,
+  CheckCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +34,8 @@ import type { Deal, Redemption } from "@shared/schema";
 export default function MerchantDashboard() {
   const [showCreateDeal, setShowCreateDeal] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [lastScannedVoucher, setLastScannedVoucher] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

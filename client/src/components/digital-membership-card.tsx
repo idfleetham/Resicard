@@ -5,6 +5,7 @@ import { QrCode, User, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { VoucherWithDeal } from "@shared/schema";
 import cardBackgroundImage from "@assets/DF611683-0C55-429D-9633-95A8FD10F9CE_1_105_c_1749807319428.jpeg";
+import QRCodeGenerator from "./qr-code-generator";
 
 interface DigitalMembershipCardProps {
   voucher?: VoucherWithDeal;
@@ -122,6 +123,26 @@ export default function DigitalMembershipCard({
                 <p className="text-2xl font-mono font-bold tracking-wider">
                   {voucher.voucherNumber}
                 </p>
+              </div>
+
+              {/* QR Code for Scanning */}
+              <div className="flex justify-center mb-4">
+                <div className="bg-white p-4 rounded-lg shadow-lg border">
+                  <QRCodeGenerator 
+                    value={JSON.stringify({
+                      voucherNumber: voucher.voucherNumber,
+                      dealId: voucher.dealId,
+                      userId: user.id,
+                      merchantName: voucher.merchantName,
+                      dealTitle: voucher.dealTitle,
+                      timestamp: Date.now()
+                    })}
+                    size={160}
+                  />
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Scan this QR code to redeem
+                  </p>
+                </div>
               </div>
 
               <div className="text-sm text-muted-foreground space-y-1">
