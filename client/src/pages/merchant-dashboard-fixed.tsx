@@ -165,24 +165,18 @@ export default function MerchantDashboard() {
     }
   };
 
+  const handleEditDeal = (deal: Deal) => {
+    setEditingDeal(deal);
+  };
+
   const getDealStatus = (deal: Deal) => {
     const isExpired = new Date(deal.expiryDate) < new Date();
-    const isFullyUsed = deal.usageCount >= deal.usageLimit;
+    const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
     
     if (isExpired) return 'expired';
     if (isFullyUsed) return 'fully-used';
     if (!deal.isActive) return 'paused';
     return 'active';
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Active';
-      case 'expired': return 'Expired';
-      case 'fully-used': return 'Fully Used';
-      case 'paused': return 'Paused';
-      default: return 'Unknown';
-    }
   };
 
   // Calculate stats
@@ -249,36 +243,31 @@ export default function MerchantDashboard() {
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-primary">
-                        {user?.businessName?.[0] || user?.username?.[0] || '?'}
-                      </span>
+                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Users className="h-8 w-8 text-primary" />
                     </div>
                   )}
+                  
                   <div className="ml-4">
-                    <h1 className="text-2xl font-bold text-foreground">
-                      {user.businessName || user.username}
-                    </h1>
-                    <p className="text-muted-foreground">Verified Business • Member since 2023</p>
+                    <h1 className="text-2xl font-bold text-foreground">{user.businessName}</h1>
+                    <p className="text-sm text-muted-foreground">@{user.username}</p>
                     {user.businessAddress && (
-                      <div className="flex items-center mt-1">
-                        <MapPin className="h-4 w-4 text-muted-foreground mr-1" />
-                        <span className="text-sm text-muted-foreground">{user.businessAddress}</span>
-                      </div>
+                      <p className="text-sm text-muted-foreground flex items-center mt-1">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {user.businessAddress}
+                      </p>
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">
-                    {formatCurrency(revenueData?.revenue || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Revenue this month</div>
-                </div>
+                
+                <Badge className="bg-green-100 text-green-800">
+                  Verified Business
+                </Badge>
               </div>
             </CardContent>
           </Card>
 
-          {/* Stats Grid */}
+          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardContent className="p-6">
@@ -346,7 +335,6 @@ export default function MerchantDashboard() {
             </TabsList>
 
             <TabsContent value="deals" className="space-y-6">
-              {/* Active Deals Management */}
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -362,120 +350,110 @@ export default function MerchantDashboard() {
                 </CardHeader>
                 <CardContent className="p-6">
                   {dealsLoading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="border border-border rounded-lg p-4 animate-pulse">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 space-y-2">
-                          <div className="h-6 bg-muted rounded w-1/4" />
-                          <div className="h-4 bg-muted rounded w-3/4" />
-                          <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="border border-border rounded-lg p-4 animate-pulse">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 space-y-2">
+                              <div className="h-6 bg-muted rounded w-1/4" />
+                              <div className="h-4 bg-muted rounded w-3/4" />
+                              <div className="h-4 bg-muted rounded w-1/2" />
+                            </div>
+                            <div className="flex space-x-2">
+                              <div className="h-8 w-8 bg-muted rounded" />
+                              <div className="h-8 w-8 bg-muted rounded" />
+                              <div className="h-8 w-8 bg-muted rounded" />
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <div className="h-8 w-8 bg-muted rounded" />
-                          <div className="h-8 w-8 bg-muted rounded" />
-                          <div className="h-8 w-8 bg-muted rounded" />
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : deals.length > 0 ? (
-                <div className="space-y-4">
-                  {deals.map((deal) => {
-                    const status = getDealStatus(deal);
-                    const usagePercentage = (deal.usageCount / deal.usageLimit) * 100;
-                    
-                    return (
-                      <div key={deal.id} className="border border-border rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                              <h3 className="text-lg font-semibold text-foreground">{deal.title}</h3>
-                              <Badge className={`ml-3 ${getStatusColor(status)}`}>
-                                {getStatusText(status)}
-                              </Badge>
-                            </div>
-                            <p className="text-muted-foreground mb-2">{deal.description}</p>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <span>
-                                <Users className="h-4 w-4 inline mr-1" />
-                                {deal.usageCount} of {deal.usageLimit} used
-                              </span>
-                              <span>
-                                <Badge className={getDealCategoryColor(deal.category)}>
-                                  {deal.category}
-                                </Badge>
-                              </span>
-                              <span>{formatRelativeTime(deal.expiryDate)}</span>
-                              {deal.originalValue && (
-                                <span>{formatCurrency(Number(deal.originalValue))} value</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex space-x-2 ml-4">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setEditingDeal(deal)}
-                              className="text-primary hover:text-primary/80"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleToggleDeal(deal.id, deal.isActive)}
-                              className={deal.isActive ? "text-amber-600 hover:text-amber-700" : "text-green-600 hover:text-green-700"}
-                              disabled={updateDealMutation.isPending}
-                            >
-                              {deal.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDeleteDeal(deal.id)}
-                              className="text-destructive hover:text-destructive/80"
-                              disabled={deleteDealMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="mt-3 bg-muted rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Usage Progress</span>
-                            <span className="text-sm font-medium text-foreground">
-                              {Math.round(usagePercentage)}%
-                            </span>
-                          </div>
-                          <div className="mt-2">
-                            <Progress 
-                              value={usagePercentage} 
-                              className="h-2"
-                            />
-                          </div>
-                        </div>
+                  ) : deals.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="bg-muted rounded-full p-6 mx-auto w-20 h-20 flex items-center justify-center mb-4">
+                        <Ticket className="h-10 w-10 text-muted-foreground" />
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No deals yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create your first deal to start attracting customers.
-                  </p>
-                  <Button 
-                    onClick={() => setShowCreateDeal(true)}
-                    className="coastal-gradient"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Deal
-                  </Button>
-                </div>
-              )}
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No deals yet</h3>
+                      <p className="text-muted-foreground mb-4">Create your first deal to start attracting customers</p>
+                      <Button 
+                        onClick={() => setShowCreateDeal(true)}
+                        className="coastal-gradient"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Deal
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {deals.map((deal) => {
+                        const status = getDealStatus(deal);
+                        const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
+                        
+                        return (
+                          <div key={deal.id} className="border border-border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-semibold text-foreground">{deal.title}</h3>
+                                  <Badge className={getDealCategoryColor(deal.category)}>
+                                    {deal.category}
+                                  </Badge>
+                                  <Badge className={getStatusColor(status)}>
+                                    {status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2">{deal.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <span>Expires: {formatRelativeTime(deal.expiryDate)}</span>
+                                  <span>{deal.usageCount || 0}/{deal.usageLimit} used</span>
+                                  {deal.originalValue && Number(deal.originalValue) > 0 && (
+                                    <span>Value: {formatCurrency(Number(deal.originalValue))}</span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditDeal(deal)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleToggleDeal(deal.id, deal.isActive)}
+                                >
+                                  {deal.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                </Button>
+                                
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteDeal(deal.id)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Usage Progress</span>
+                                <span className="text-sm font-medium text-foreground">
+                                  {Math.round(usagePercentage)}%
+                                </span>
+                              </div>
+                              <Progress value={usagePercentage} className="h-2" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
