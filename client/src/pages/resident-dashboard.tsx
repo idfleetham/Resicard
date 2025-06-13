@@ -8,13 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DealWithMerchant, Redemption, VoucherWithDeal } from "@shared/schema";
 import mapImage from "@assets/Geddy-Map-smaller_1749767170608.jpeg";
+import { Link } from "wouter";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import DigitalMembershipCard from "@/components/digital-membership-card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function ResidentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -189,6 +193,14 @@ export default function ResidentDashboard() {
                   <span>Verified local resident</span>
                   <CheckCircle className="h-4 w-4 text-green-400 ml-2" />
                 </div>
+              </div>
+              <div className="mt-6">
+                <Link href="/edit-profile">
+                  <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
