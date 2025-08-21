@@ -22,6 +22,7 @@ export default function QRRedemption() {
   const [isScanning, setIsScanning] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [selectedOffer, setSelectedOffer] = useState("");
+  const [activeTab, setActiveTab] = useState<'manual' | 'qr-scan'>('manual');
   const qrRef = useRef<HTMLDivElement>(null);
 
   const redeemVoucherMutation = useMutation({
@@ -128,176 +129,189 @@ export default function QRRedemption() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Voucher Redemption */}
-        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-fg">
-              <Hash className="w-5 h-5" />
-              <span>Redeem Voucher</span>
-            </CardTitle>
-            <CardDescription className="text-soft">
-              Enter voucher code or scan QR to process customer redemption
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-surface border-dim">
-                <TabsTrigger value="manual" className="data-[state=active]:bg-surface2 data-[state=active]:text-brand1">Manual Entry</TabsTrigger>
-                <TabsTrigger value="qr-scan" className="data-[state=active]:bg-surface2 data-[state=active]:text-brand1">QR Scan</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="manual" className="space-y-4">
-                <div>
-                  <Label htmlFor="voucher-code">Voucher Code</Label>
-                  <Input
-                    id="voucher-code"
-                    placeholder="Enter voucher code"
-                    value={voucherCode}
-                    onChange={(e) => setVoucherCode(e.target.value)}
-                    className="input-dark"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="staff-pin">Staff PIN</Label>
-                  <Input
-                    id="staff-pin"
-                    type="password"
-                    placeholder="Enter your staff PIN"
-                    value={staffPin}
-                    onChange={(e) => setStaffPin(e.target.value)}
-                    className="input-dark"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="basket-amount">Basket Amount (Optional)</Label>
-                  <Input
-                    id="basket-amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="£0.00"
-                    value={basketAmount}
-                    onChange={(e) => setBasketAmount(e.target.value)}
-                    className="input-dark"
-                  />
-                  <p className="text-xs text-soft mt-1">
-                    Enter basket total for percentage discounts
-                  </p>
-                </div>
-                
-                <Button 
+      <div className="space-y-6">
+        {/* Main Voucher Redemption Card */}
+        <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition p-5">
+          <h2 className="text-2xl font-semibold mb-1 text-fg">Redeem Voucher</h2>
+          <p className="text-soft mb-4">Enter voucher code or scan QR to process customer redemption</p>
+
+          {/* Custom Tab Buttons */}
+          <div className="mb-4 inline-flex rounded-xl border border-dim bg-surface overflow-hidden">
+            <button
+              className={`px-4 py-2 text-sm transition-colors ${
+                activeTab === 'manual'
+                  ? 'bg-surface2 text-fg'
+                  : 'text-soft hover:bg-white/[0.03]'
+              }`}
+              onClick={() => setActiveTab('manual')}
+            >
+              Manual Entry
+            </button>
+            <button
+              className={`px-4 py-2 text-sm transition-colors ${
+                activeTab === 'qr-scan'
+                  ? 'bg-surface2 text-fg'
+                  : 'text-soft hover:bg-white/[0.03]'
+              }`}
+              onClick={() => setActiveTab('qr-scan')}
+            >
+              QR Scan
+            </button>
+          </div>
+          
+          {activeTab === 'manual' ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Voucher Code</label>
+                <Input
+                  placeholder="Enter voucher code"
+                  value={voucherCode}
+                  onChange={(e) => setVoucherCode(e.target.value)}
+                  className="input-dark"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                <Input
+                  type="password"
+                  placeholder="Enter your staff PIN"
+                  value={staffPin}
+                  onChange={(e) => setStaffPin(e.target.value)}
+                  className="input-dark"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium tracking-wide text-fg mb-1">
+                  Basket Amount <span className="text-soft">(Optional)</span>
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="£0.00"
+                  value={basketAmount}
+                  onChange={(e) => setBasketAmount(e.target.value)}
+                  className="input-dark"
+                />
+                <p className="text-xs text-soft/80 mt-1">Enter basket total for percentage discounts</p>
+              </div>
+
+              <div className="pt-2">
+                <button 
                   onClick={handleRedeemVoucher}
                   disabled={redeemVoucherMutation.isPending}
-                  className="w-full"
+                  className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all disabled:opacity-50"
                 >
                   {redeemVoucherMutation.isPending ? (
                     <>
-                      <Zap className="w-4 h-4 mr-2 animate-pulse" />
+                      <Zap className="w-4 h-4 mr-2 animate-pulse inline" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
+                      <CheckCircle className="w-4 h-4 mr-2 inline" />
                       Redeem Voucher
                     </>
                   )}
-                </Button>
-              </TabsContent>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-surface border border-dim p-4">
+              <div className="text-center py-8">
+                <Camera className="w-12 h-12 mx-auto mb-4 text-soft" />
+                <p className="text-soft mb-4">Camera preview and scanner go here</p>
+                <button 
+                  onClick={handleScanQR}
+                  disabled={isScanning}
+                  className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all disabled:opacity-50"
+                >
+                  {isScanning ? (
+                    <>
+                      <Camera className="w-4 h-4 mr-2 animate-pulse inline" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 mr-2 inline" />
+                      Start QR Scanner
+                    </>
+                  )}
+                </button>
+              </div>
               
-              <TabsContent value="qr-scan" className="space-y-4">
-                <div className="text-center py-8 border-2 border-dashed border-dim rounded-lg bg-surface/50">
-                  <Camera className="w-12 h-12 mx-auto mb-4 text-soft" />
-                  <p className="text-soft mb-4">Scan customer QR code</p>
-                  <Button onClick={handleScanQR} disabled={isScanning}>
-                    {isScanning ? (
-                      <>
-                        <Camera className="w-4 h-4 mr-2 animate-pulse" />
-                        Scanning...
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="w-4 h-4 mr-2" />
-                        Start QR Scanner
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                <div>
-                  <Label htmlFor="staff-pin-qr">Staff PIN</Label>
-                  <Input
-                    id="staff-pin-qr"
-                    type="password"
-                    placeholder="Enter your staff PIN"
-                    value={staffPin}
-                    onChange={(e) => setStaffPin(e.target.value)}
-                    className="input-dark"
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+              <div className="mt-4 pt-4 border-t border-dim">
+                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                <Input
+                  type="password"
+                  placeholder="Enter your staff PIN"
+                  value={staffPin}
+                  onChange={(e) => setStaffPin(e.target.value)}
+                  className="input-dark"
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
-        {/* QR Code Generation */}
-        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-fg">
+        {/* QR Code Generation Card */}
+        <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition p-5">
+          <div className="border-b border-dim pb-4 mb-4">
+            <h2 className="text-lg font-semibold text-fg flex items-center space-x-2">
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
-            </CardTitle>
-            <CardDescription className="text-soft">
-              Create QR codes for your offers to display in-store
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+            <p className="text-soft text-sm mt-1">Create QR codes for your offers to display in-store</p>
+          </div>
+
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="offer-select">Select Offer</Label>
+              <label className="block text-sm font-medium tracking-wide text-fg mb-1">Select Offer</label>
               <Input
-                id="offer-select"
                 placeholder="Enter offer ID or select from list"
                 value={selectedOffer}
                 onChange={(e) => setSelectedOffer(e.target.value)}
                 className="input-dark"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-soft/80 mt-1">
                 Placeholder: In full implementation, this would be a dropdown of active offers
               </p>
             </div>
             
-            <Button 
-              onClick={generateOfferQR}
-              disabled={generateOfferQRMutation.isPending || !selectedOffer}
-              className="w-full"
-            >
-              {generateOfferQRMutation.isPending ? (
-                <>
-                  <QrCode className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <QrCode className="w-4 h-4 mr-2" />
-                  Generate QR Code
-                </>
-              )}
-            </Button>
+            <div className="pt-2">
+              <button 
+                onClick={generateOfferQR}
+                disabled={generateOfferQRMutation.isPending || !selectedOffer}
+                className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all disabled:opacity-50 w-full"
+              >
+                {generateOfferQRMutation.isPending ? (
+                  <>
+                    <QrCode className="w-4 h-4 mr-2 animate-spin inline" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <QrCode className="w-4 h-4 mr-2 inline" />
+                    Generate QR Code
+                  </>
+                )}
+              </button>
+            </div>
             
             {qrCodeUrl && (
-              <div className="text-center pt-4 border-t">
-                <p className="text-sm font-medium mb-2">Generated QR Code</p>
-                <div className="inline-block p-4 bg-white border rounded-lg">
+              <div className="text-center pt-4 border-t border-dim">
+                <p className="text-sm font-medium mb-2 text-fg">Generated QR Code</p>
+                <div className="inline-block p-4 bg-surface border border-dim rounded-lg">
                   <img src={qrCodeUrl} alt="Offer QR Code" className="w-32 h-32" />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-soft mt-2">
                   Print this QR code and display it in your store
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Recent Redemptions */}
