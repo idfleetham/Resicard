@@ -116,6 +116,8 @@ export class MemStorage implements IStorage {
       username: insertUser.username,
       email: insertUser.email,
       password: insertUser.password,
+      firstName: insertUser.firstName || null,
+      surname: insertUser.surname || null,
       role: insertUser.role,
       isVerified: insertUser.role === 'resident' ? true : false, // Auto-verify residents
       postcode: insertUser.postcode || null,
@@ -132,6 +134,36 @@ export class MemStorage implements IStorage {
       membershipExpiry: insertUser.role === 'resident' 
         ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
         : null,
+      // Document verification fields
+      documentType: null,
+      documentFile: null,
+      documentStatus: null,
+      documentSubmittedAt: null,
+      documentReviewedAt: null,
+      documentReviewedBy: null,
+      isResidencyVerified: false,
+      // Merchant portal fields
+      merchantId: null,
+      staffPin: null,
+      subscriptionType: null,
+      subscriptionPlan: null,
+      subscriptionStatus: "inactive",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      membershipExpiry: insertUser.role === 'resident' 
+        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
+        : null,
+      // Document verification fields
+      documentType: null,
+      documentFile: null,
+      documentStatus: null,
+      documentSubmittedAt: null,
+      documentReviewedAt: null,
+      documentReviewedBy: null,
+      isResidencyVerified: false,
+      // Merchant portal fields
+      merchantId: null,
+      staffPin: null,
       createdAt: new Date(),
     };
     this.users.set(id, user);

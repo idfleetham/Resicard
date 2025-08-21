@@ -32,8 +32,8 @@ export const users = pgTable("users", {
   documentReviewedAt: timestamp("document_reviewed_at"),
   documentReviewedBy: integer("document_reviewed_by"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
-  // Merchant portal fields
-  merchantId: uuid("merchant_id").references(() => merchants.id),
+  // Merchant portal fields (removed foreign key constraint to avoid migration issues)
+  merchantId: uuid("merchant_id"),
   staffPin: text("staff_pin"),
   createdAt: timestamp("created_at").defaultNow(),
 });
