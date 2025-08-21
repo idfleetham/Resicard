@@ -4,6 +4,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@shared/schema";
+import { eq, sql, and, gt, desc, count } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool } from "@neondatabase/serverless";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -61,6 +64,14 @@ function validatePostcode(postcode: string): boolean {
   const postcodePrefix = postcode.toUpperCase().substring(0, 4);
   return stAndrewsPostcodes.some(prefix => postcodePrefix.startsWith(prefix));
 }
+
+// Initialize database connection
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
+}
+const pool = new Pool({ connectionString });
+const db = drizzle(pool);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -1069,8 +1080,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const redemptions = await storage.getRedemptionsByMerchant(merchantId);
-      res.json(redemptions);
+      // Direct SQL query to get redemptions for the merchant
+      const result = await db.execute(sql`
+        SELECT 
+          r.id,
+          r.deal_id,
+          r.user_id,
+          r.redeemed_at,
+          r.value,
+          d.title as dealTitle,
+          d.title as offerTitle,
+          u.username as customerName,
+          'System' as staffName
+        FROM redemptions r
+        LEFT JOIN deals d ON r.deal_id = d.id
+        LEFT JOIN users u ON r.user_id = u.id
+        WHERE d.merchant_id = ${merchantId}
+        ORDER BY r.redeemed_at DESC
+      `);
+      
+      res.json(result);
     } catch (error) {
       console.error("Error fetching redemptions:", error);
       res.status(500).json({ error: "Failed to fetch redemptions" });

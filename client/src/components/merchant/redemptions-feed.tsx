@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
-import { Download, Filter, RefreshCw, Eye, Calendar, TrendingUp } from "lucide-react";
+import { Download, Filter, RefreshCw, Eye, Calendar, TrendingUp, DollarSign } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { Redemption } from "@shared/schema";
 

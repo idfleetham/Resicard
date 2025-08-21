@@ -115,21 +115,11 @@ export const deals = pgTable("deals", {
 });
 
 export const redemptions = pgTable("redemptions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id"),
-  offerId: uuid("offer_id").references(() => offers.id),
-  dealId: integer("deal_id"),
-  merchantId: uuid("merchant_id").references(() => merchants.id),
-  staffUserId: uuid("staff_user_id"),
-  verifiedAt: timestamp("verified_at").defaultNow(),
-  pricingType: text("pricing_type").$type<"percent"|"fixed"|"set_menu">(),
-  percentOff: integer("percent_off"),
-  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
-  basketSubtotal: numeric("basket_subtotal", { precision: 10, scale: 2 }),
-  calculatedDiscount: numeric("calculated_discount", { precision: 10, scale: 2 }),
-  value: decimal("value", { precision: 10, scale: 2 }),
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  userId: integer("user_id").notNull(),
   redeemedAt: timestamp("redeemed_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
+  value: decimal("value", { precision: 10, scale: 2 }),
 });
 
 export const vouchers = pgTable("vouchers", {
