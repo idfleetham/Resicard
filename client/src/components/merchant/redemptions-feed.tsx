@@ -17,10 +17,15 @@ export default function RedemptionsFeed() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState("7days");
 
-  const { data: redemptions = [], isLoading, refetch } = useQuery<any[]>({
+  const { data: redemptionsResponse, isLoading, refetch } = useQuery<any>({
     queryKey: ["/api/redemptions/merchant", user?.id, filter, dateRange],
     enabled: !!user?.id,
   });
+
+  // Handle the response structure - it could be an array or an object with rows
+  const redemptions = Array.isArray(redemptionsResponse) 
+    ? redemptionsResponse 
+    : redemptionsResponse?.rows || [];
 
   const filteredRedemptions = redemptions.filter((redemption: any) =>
     redemption.dealTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||

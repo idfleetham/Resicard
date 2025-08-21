@@ -88,6 +88,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files statically
   app.use("/uploads", express.static("uploads"));
+
+  // Simple placeholder image endpoint
+  app.get("/api/placeholder/:width/:height", (req, res) => {
+    const { width, height } = req.params;
+    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${width}" height="${height}" fill="#374151"/>
+      <text x="50%" y="50%" font-family="system-ui" font-size="14" fill="#9CA3AF" text-anchor="middle" alignment-baseline="middle">
+        ${width}x${height}
+      </text>
+    </svg>`;
+    
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  });
   
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
@@ -1186,7 +1200,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY r.redeemed_at DESC
       `);
       
-      res.json(result);
+      // Return the rows array directly
+      res.json(result.rows || []);
     } catch (error) {
       console.error("Error fetching redemptions:", error);
       res.status(500).json({ error: "Failed to fetch redemptions" });
