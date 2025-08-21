@@ -27,6 +27,7 @@ import {
   Mail
 } from "lucide-react";
 import { z } from "zod";
+import { motion } from "framer-motion";
 
 const businessDetailsSchema = z.object({
   name: z.string().min(2, "Business name must be at least 2 characters"),
@@ -50,7 +51,7 @@ type BusinessDetailsData = z.infer<typeof businessDetailsSchema>;
 type BusinessHoursData = z.infer<typeof businessHoursSchema>;
 
 export default function MerchantSettings() {
-  const { user } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("business");
   const [apiKey] = useState("sk_live_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz");
@@ -156,6 +157,68 @@ export default function MerchantSettings() {
       regenerateApiKeyMutation.mutate();
     }
   };
+
+  // Handle loading and authentication states
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-slate-800 rounded animate-pulse" />
+            <div className="h-4 w-64 bg-slate-800 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-12 bg-slate-800 rounded animate-pulse" />
+            ))}
+          </div>
+          <div className="lg:col-span-2">
+            <div className="h-96 bg-slate-800 rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
+          <CardContent>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Authentication Required</h3>
+            <p className="text-slate-400 mb-4">Please log in to access merchant settings.</p>
+            <Button 
+              onClick={() => window.location.href = '/login'}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user.role !== 'merchant') {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
+          <CardContent>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Access Denied</h3>
+            <p className="text-slate-400 mb-4">This page is only accessible to merchant accounts.</p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+            >
+              Go to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
