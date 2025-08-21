@@ -473,7 +473,7 @@ export default function OffersManager() {
                       {deal.usageCount || 0} / {deal.usageLimit}
                     </TableCell>
                     <TableCell>
-                      {format(parseISO(deal.expiryDate), "MMM d, yyyy")}
+                      {format(new Date(deal.expiryDate), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell>{getStatusBadge(deal)}</TableCell>
                     <TableCell>
