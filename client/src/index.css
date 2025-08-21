@@ -58,7 +58,8 @@
   --coastal-900: hsl(202, 80%, 24%);
 }
 
-[data-theme="dim"] {
+[data-theme="dim"], 
+.theme-dim {
   --bg: 12 14 26;           /* #0C0E1A */
   --surface: 20 25 40;      /* #141928 */
   --surface-2: 28 33 50;    /* #1C2132 */
@@ -72,18 +73,19 @@
   --brand-2: 139 92 246;    /* violet-500 */
 }
 
-[data-theme="high"] {
-  --bg: 2 6 18;             /* Much darker background */
-  --surface: 15 20 35;      /* Higher contrast surface */
-  --surface-2: 25 30 48;    /* Higher contrast surface-2 */
-  --card: 35 42 68;         /* Much more contrast for cards */
-  --fg: 248 250 252;        /* Very bright text */
-  --fg-soft: 226 232 240;   /* Bright soft text */
-  --muted: 203 213 225;     /* Bright muted text */
-  --border: 255 255 255 / 0.25;   /* Much brighter borders */
-  --border-strong: 255 255 255 / 0.35;  /* Very bright borders */
-  --brand-1: 129 140 248;   /* Brighter indigo */
-  --brand-2: 167 139 250;   /* Brighter violet */
+[data-theme="high"], 
+.theme-high {
+  --bg: 0 0 0;              /* Pure black background */
+  --surface: 24 24 27;      /* Very dark zinc surface */
+  --surface-2: 39 39 42;    /* Darker zinc surface-2 */
+  --card: 24 24 27;         /* Very dark card background */
+  --fg: 255 255 255;        /* Pure white text */
+  --fg-soft: 244 244 245;   /* Almost white soft text */
+  --muted: 212 212 216;     /* Light muted text */
+  --border: 255 255 255 / 0.4;    /* Much brighter borders */
+  --border-strong: 255 255 255 / 0.6;  /* Very bright borders */
+  --brand-1: 147 197 253;   /* Bright blue */
+  --brand-2: 196 181 253;   /* Bright violet */
 }
 
 .dark {

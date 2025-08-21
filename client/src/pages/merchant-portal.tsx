@@ -99,18 +99,22 @@ export default function MerchantPortal() {
                   <Select
                     defaultValue="dim"
                     onValueChange={(v) => {
-                      // Apply theme to both root and body
+                      console.log('Theme changing to:', v);
+                      
+                      // Apply theme attribute
                       document.documentElement.setAttribute('data-theme', v);
                       document.body.setAttribute('data-theme', v);
                       
-                      // Force CSS variable refresh by triggering reflow
+                      // Force a complete style recalculation
                       const root = document.documentElement;
-                      root.style.display = 'none';
-                      root.offsetHeight; // trigger reflow
-                      root.style.display = '';
+                      root.style.setProperty('--force-update', Math.random().toString());
                       
-                      // Also force custom property update
-                      root.style.setProperty('--theme-applied', v);
+                      // Also trigger a class change to force re-render
+                      root.classList.remove('theme-dim', 'theme-high');
+                      root.classList.add(`theme-${v}`);
+                      
+                      // Log for debugging
+                      console.log('Theme applied, data-theme:', root.getAttribute('data-theme'));
                     }}
                   >
                     <SelectTrigger className="w-[160px] border-dim bg-surface text-fg">
