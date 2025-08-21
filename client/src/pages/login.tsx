@@ -78,6 +78,7 @@ export default function Login() {
                         <Input 
                           type="email" 
                           placeholder="your@email.com"
+                          className="input-dark"
                           {...field} 
                         />
                       </FormControl>
@@ -97,6 +98,7 @@ export default function Login() {
                           <Input 
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
+                            className="input-dark"
                             {...field} 
                           />
                           <button

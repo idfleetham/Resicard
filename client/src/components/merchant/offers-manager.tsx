@@ -229,7 +229,7 @@ export default function OffersManager() {
                         <FormItem>
                           <FormLabel className="text-slate-200">Deal Title</FormLabel>
                           <FormControl>
-                            <Input placeholder="20% off all meals" {...field} className="bg-slate-800 border-slate-700 text-slate-100" />
+                            <Input placeholder="20% off all meals" {...field} className="input-dark" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -271,7 +271,7 @@ export default function OffersManager() {
                           <Textarea 
                             placeholder="Describe your offer..."
                             {...field}
-                            className="bg-slate-800 border-slate-700 text-slate-100"
+                            className="input-dark"
                           />
                         </FormControl>
                         <FormMessage />
@@ -297,7 +297,7 @@ export default function OffersManager() {
                                   uploadOfferImageMutation.mutate({ offerId: editingDeal.id, file });
                                 }
                               }}
-                              className="bg-slate-800 border-slate-700 text-slate-100"
+                              className="input-dark"
                               disabled={uploadOfferImageMutation.isPending}
                             />
                             {field.value && (

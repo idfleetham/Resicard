@@ -230,7 +230,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                 <FormItem>
                   <FormLabel>Deal Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 25% Off Main Course" {...field} />
+                    <Input placeholder="e.g., 25% Off Main Course" className="input-dark" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -246,7 +246,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                   <FormControl>
                     <Textarea 
                       placeholder="Describe the deal terms and conditions"
-                      className="h-20"
+                      className="input-dark h-20"
                       {...field} 
                     />
                   </FormControl>

@@ -363,7 +363,7 @@ export default function MerchantSettings() {
                         <FormItem>
                           <FormLabel className="text-slate-200">Business Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your Business Name" {...field} className="bg-slate-800 border-slate-700 text-slate-100" />
+                            <Input placeholder="Your Business Name" {...field} className="input-dark" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -379,7 +379,7 @@ export default function MerchantSettings() {
                             <FormControl>
                               <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                                <Input className="pl-10" type="email" placeholder="business@example.com" {...field} />
+                                <Input className="input-dark pl-10" type="email" placeholder="business@example.com" {...field} />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -395,7 +395,7 @@ export default function MerchantSettings() {
                             <FormControl>
                               <div className="relative">
                                 <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                                <Input className="pl-10" type="tel" placeholder="+44 1334 123456" {...field} />
+                                <Input className="input-dark pl-10" type="tel" placeholder="+44 1334 123456" {...field} />
                               </div>
                             </FormControl>
                             <FormMessage />

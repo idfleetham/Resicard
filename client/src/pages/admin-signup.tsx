@@ -121,7 +121,7 @@ export default function AdminSignup() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="admin_username" {...field} />
+                          <Input placeholder="admin_username" className="input-dark" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -135,7 +135,7 @@ export default function AdminSignup() {
                       <FormItem>
                         <FormLabel>Email Address</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="admin@example.com" {...field} />
+                          <Input type="email" placeholder="admin@example.com" className="input-dark" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -154,6 +154,7 @@ export default function AdminSignup() {
                           <Input 
                             type={showPassword ? "text" : "password"}
                             placeholder="Create a secure password"
+                            className="input-dark"
                             {...field} 
                           />
                           <button
