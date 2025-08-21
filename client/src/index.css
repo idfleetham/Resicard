@@ -73,17 +73,17 @@
 }
 
 [data-theme="high"] {
-  --bg: 8 10 20;            /* Even darker */
-  --surface: 24 28 45;      /* Higher contrast */
-  --surface-2: 30 36 58;
-  --card: 36 44 72;         /* Much more contrast */
-  --fg: 248 250 252;        /* brighter text */
-  --fg-soft: 226 232 240;   /* brighter soft text */
-  --muted: 203 213 225;     /* brighter muted */
-  --border: 255 255 255 / 0.18;
-  --border-strong: 255 255 255 / 0.26;
-  --brand-1: 129 140 248;   /* brighter indigo */
-  --brand-2: 167 139 250;   /* brighter violet */
+  --bg: 2 6 18;             /* Much darker background */
+  --surface: 15 20 35;      /* Higher contrast surface */
+  --surface-2: 25 30 48;    /* Higher contrast surface-2 */
+  --card: 35 42 68;         /* Much more contrast for cards */
+  --fg: 248 250 252;        /* Very bright text */
+  --fg-soft: 226 232 240;   /* Bright soft text */
+  --muted: 203 213 225;     /* Bright muted text */
+  --border: 255 255 255 / 0.25;   /* Much brighter borders */
+  --border-strong: 255 255 255 / 0.35;  /* Very bright borders */
+  --brand-1: 129 140 248;   /* Brighter indigo */
+  --brand-2: 167 139 250;   /* Brighter violet */
 }
 
 .dark {
@@ -150,35 +150,6 @@
 
 .btn-brand:hover {
   background-color: rgb(var(--brand-1) / 0.9) !important;
-}
-.text-fg { color: rgb(var(--fg)); }
-.text-soft { color: rgb(var(--fg-soft)); }
-.border-dim { border-color: rgb(var(--border)); }
-.border-dimStrong { border-color: rgb(var(--border-strong)); }
-
-/* Enhanced shadow system with theme awareness */
-.shadow-elev-1 { 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-[data-theme="dim"] .shadow-elev-1,
-[data-theme="high"] .shadow-elev-1 {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.shadow-elev-2 { 
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-[data-theme="dim"] .shadow-elev-2,
-[data-theme="high"] .shadow-elev-2 {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-.shadow-elev-3 { 
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
-}
-[data-theme="dim"] .shadow-elev-3,
-[data-theme="high"] .shadow-elev-3 {
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
 }
 
 /* Enhanced input styling for dark theme */

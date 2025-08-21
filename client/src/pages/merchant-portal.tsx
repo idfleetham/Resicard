@@ -46,7 +46,7 @@ export default function MerchantPortal() {
 
   if (isLoading) {
     return (
-      <div data-theme="dim" className="min-h-screen bg-app text-fg relative">
+      <div data-theme="dim" className="min-h-screen bg-bg text-fg relative">
         <div className="pointer-events-none absolute inset-0 -z-10
             bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
         <div className="flex items-center justify-center min-h-screen">
@@ -67,7 +67,7 @@ export default function MerchantPortal() {
   }
 
   return (
-    <div data-theme="dim" className="min-h-screen bg-app text-fg relative">
+    <div data-theme="dim" className="min-h-screen bg-bg text-fg relative">
       <div className="pointer-events-none absolute inset-0 -z-10
           bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
       
@@ -99,10 +99,18 @@ export default function MerchantPortal() {
                   <Select
                     defaultValue="dim"
                     onValueChange={(v) => {
+                      // Apply theme to both root and body
                       document.documentElement.setAttribute('data-theme', v);
                       document.body.setAttribute('data-theme', v);
-                      // Force re-render by updating a CSS custom property
-                      document.documentElement.style.setProperty('--theme-applied', v);
+                      
+                      // Force CSS variable refresh by triggering reflow
+                      const root = document.documentElement;
+                      root.style.display = 'none';
+                      root.offsetHeight; // trigger reflow
+                      root.style.display = '';
+                      
+                      // Also force custom property update
+                      root.style.setProperty('--theme-applied', v);
                     }}
                   >
                     <SelectTrigger className="w-[160px] border-dim bg-surface text-fg">
