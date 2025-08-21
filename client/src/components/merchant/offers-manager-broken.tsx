@@ -36,50 +36,54 @@ export default function OffersManager() {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
   const { data: deals = [], isLoading } = useOffers();
-  const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
-  const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
+  const toggleOfferMutation = useToggleOffer();
+  const updateOfferMutation = useUpdateOffer();
 
   const createDealMutation = useMutation({
     mutationFn: (data: CreateDealData) => {
-      const processedData = {
+      const dealData = {
         ...data,
+        expiryDate: new Date(data.expiryDate).toISOString(),
         merchantId: user!.id,
-        expiryDate: new Date(data.expiryDate),
-        usageCount: 0,
-        isActive: true,
       };
-      return apiRequest("POST", "/api/deals", processedData);
+      return apiRequest("POST", "/api/deals", dealData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
       setIsCreateOpen(false);
-      form.reset();
-      toast({ title: "Offer created successfully!" });
+      toast({ title: "Deal created successfully" });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error creating offer",
+      toast({ 
+        title: "Error creating deal", 
         description: error.message,
-        variant: "destructive",
+        variant: "destructive" 
       });
     },
   });
 
-  const handleToggleOffer = (dealId: number) => {
-    toggleOfferMutation(dealId);
+  // Handle offer toggle
+  const handleToggleOffer = (offerId: number) => {
+    toggleOfferMutation.mutate(offerId.toString());
   };
 
+  // Handle offer edit
   const handleEditOffer = (deal: Deal) => {
     setEditingDeal(deal);
   };
 
-  const handleUpdateOffer = (data: CreateDealData) => {
+  // Handle offer update via the new mutation
+  const handleUpdateOffer = (data: Partial<Deal>) => {
     if (!editingDeal) return;
-    updateOfferMutation({
-      id: editingDeal.id,
-      data: { ...data, expiryDate: new Date(data.expiryDate) },
+    
+    updateOfferMutation.mutate({
+      id: editingDeal.id.toString(),
+      data
+    }, {
+      onSuccess: () => {
+        setEditingDeal(null);
+      }
     });
-    setEditingDeal(null);
   };
 
   const form = useForm<CreateDealData>({
@@ -87,7 +91,7 @@ export default function OffersManager() {
     defaultValues: {
       title: "",
       description: "",
-      category: "Food & Drink",
+      category: "",
       discountType: "percentage",
       discountValue: "",
       originalValue: "",
@@ -102,10 +106,12 @@ export default function OffersManager() {
     createDealMutation.mutate(data);
   };
 
+  // Form for editing existing deals
   const editForm = useForm<CreateDealData>({
     resolver: zodResolver(createDealSchema),
   });
 
+  // Set form values when editing a deal
   useEffect(() => {
     if (editingDeal) {
       editForm.reset({
@@ -155,6 +161,7 @@ export default function OffersManager() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        {/* Header Skeleton */}
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <Skeleton className="h-8 w-48 bg-slate-800" />
@@ -162,6 +169,8 @@ export default function OffersManager() {
           </div>
           <Skeleton className="h-10 w-32 bg-slate-800" />
         </div>
+        
+        {/* Stats Cards Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="bg-slate-900/50 border-slate-700">
@@ -174,6 +183,8 @@ export default function OffersManager() {
             </Card>
           ))}
         </div>
+        
+        {/* Table Skeleton */}
         <Card className="bg-slate-900/50 border-slate-700">
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -427,6 +438,217 @@ export default function OffersManager() {
           </div>
         </CardHeader>
       </Card>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Offer
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Offer</DialogTitle>
+              <DialogDescription>
+                Create a new deal to attract customers to your business
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Deal Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="20% off all meals" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Food & Drink">Food & Drink</SelectItem>
+                            <SelectItem value="Retail">Retail</SelectItem>
+                            <SelectItem value="Services">Services</SelectItem>
+                            <SelectItem value="Entertainment">Entertainment</SelectItem>
+                            <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe what customers get with this deal..."
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="discountType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Discount Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="percentage">Percentage Off</SelectItem>
+                            <SelectItem value="fixed">Fixed Amount Off</SelectItem>
+                            <SelectItem value="bogo">Buy One Get One</SelectItem>
+                            <SelectItem value="free_item">Free Item</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="discountValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Discount Value</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="20" 
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="originalValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Original Price (£)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="50.00" 
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="usageLimit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Usage Limit</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="100" 
+                            {...field} 
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="expiryDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expiry Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="terms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Terms & Conditions</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Additional terms and conditions..."
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsCreateOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createDealMutation.isPending}>
+                    {createDealMutation.isPending ? "Creating..." : "Create Offer"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -543,7 +765,7 @@ export default function OffersManager() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleOffer(deal.id)}
-                          disabled={isToggling}
+                          disabled={toggleOfferMutation.isPending}
                           className="border-slate-700 hover:bg-slate-800 text-slate-300"
                         >
                           {deal.isActive ? (
@@ -647,6 +869,125 @@ export default function OffersManager() {
                 )}
               />
 
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="discountType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discount Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="percentage">Percentage Off</SelectItem>
+                          <SelectItem value="fixed">Fixed Amount Off</SelectItem>
+                          <SelectItem value="bogo">Buy One Get One</SelectItem>
+                          <SelectItem value="free_item">Free Item</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="discountValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discount Value</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="20" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="originalValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Original Price (£)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="50.00" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="usageLimit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Usage Limit</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="100" 
+                          {...field} 
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expiry Date</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={editForm.control}
+                name="terms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Terms & Conditions</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Additional terms and conditions..."
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button 
                   type="button" 
@@ -658,10 +999,10 @@ export default function OffersManager() {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={isUpdating}
+                  disabled={updateOfferMutation.isPending}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
                 >
-                  {isUpdating ? "Updating..." : "Update Offer"}
+                  {updateOfferMutation.isPending ? "Updating..." : "Update Offer"}
                 </Button>
               </div>
             </form>
