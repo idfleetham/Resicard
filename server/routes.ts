@@ -1092,6 +1092,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle offer active status
+  app.post("/api/merchant/offers/:id/toggle", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      
+      // Get current deal and verify ownership
+      const existingDeal = await storage.getDeal(dealId);
+      if (!existingDeal) {
+        return res.status(404).json({ message: "Offer not found" });
+      }
+      
+      if (existingDeal.merchantId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to modify this offer" });
+      }
+      
+      // Toggle the active status
+      const updatedDeal = await storage.updateDeal(dealId, { 
+        isActive: !existingDeal.isActive 
+      });
+      
+      res.json(updatedDeal);
+    } catch (error: any) {
+      console.error('Deal toggle error:', error);
+      res.status(500).json({ message: error.message || "Failed to toggle offer" });
+    }
+  });
+
+  // Get single offer by ID for merchant
+  app.get("/api/merchant/offers/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Offer not found" });
+      }
+      
+      if (deal.merchantId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Not authorized to view this offer" });
+      }
+      
+      res.json(deal);
+    } catch (error: any) {
+      console.error('Error fetching offer:', error);
+      res.status(500).json({ message: error.message || "Failed to fetch offer" });
+    }
+  });
+
+  // Update offer for merchant with proper validation
+  app.put("/api/merchant/offers/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      
+      // Check if deal exists and belongs to the merchant
+      const existingDeal = await storage.getDeal(dealId);
+      if (!existingDeal) {
+        return res.status(404).json({ message: "Offer not found" });
+      }
+      
+      if (existingDeal.merchantId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update this offer" });
+      }
+      
+      // Process the update data
+      const processedData = {
+        ...req.body
+      };
+      
+      // Convert expiryDate if provided
+      if (req.body.expiryDate) {
+        processedData.expiryDate = new Date(req.body.expiryDate);
+      }
+      
+      // Validate the data
+      const dealData = insertDealSchema.partial().parse(processedData);
+      
+      const updatedDeal = await storage.updateDeal(dealId, dealData);
+      
+      res.json(updatedDeal);
+    } catch (error: any) {
+      console.error('Deal update validation error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

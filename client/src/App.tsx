@@ -15,6 +15,7 @@ import MerchantDashboard from "@/pages/merchant-dashboard";
 import MerchantPortal from "@/pages/merchant-portal";
 import AdminDashboard from "@/pages/admin-dashboard";
 import EditProfile from "@/pages/edit-profile";
+import OfferDetails from "@/pages/offer-details";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/resident" component={ResidentDashboard} />
       <Route path="/merchant" component={MerchantPortal} />
+      <Route path="/merchant/offers/:id" component={OfferDetails} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/edit-profile" component={EditProfile} />
       <Route component={NotFound} />

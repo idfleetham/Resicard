@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertDealSchema, type Deal, type InsertDeal } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useOffers, useToggleOffer, useUpdateOffer } from "@/hooks/use-merchant-offers";
 import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
@@ -31,10 +33,9 @@ export default function OffersManager() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
-  const { data: deals = [], isLoading } = useQuery<Deal[]>({
-    queryKey: ["/api/deals/my-deals"],
-    enabled: !!user?.id,
-  });
+  const { data: deals = [], isLoading } = useOffers();
+  const toggleOfferMutation = useToggleOffer();
+  const updateOfferMutation = useUpdateOffer();
 
   const createDealMutation = useMutation({
     mutationFn: (data: CreateDealData) => {
@@ -59,22 +60,29 @@ export default function OffersManager() {
     },
   });
 
-  const updateDealMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Deal> }) =>
-      apiRequest("PUT", `/api/deals/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
-      setEditingDeal(null);
-      toast({ title: "Deal updated successfully" });
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Error updating deal", 
-        description: error.message,
-        variant: "destructive" 
-      });
-    },
-  });
+  // Handle offer toggle
+  const handleToggleOffer = (offerId: number) => {
+    toggleOfferMutation.mutate(offerId.toString());
+  };
+
+  // Handle offer edit
+  const handleEditOffer = (deal: Deal) => {
+    setEditingDeal(deal);
+  };
+
+  // Handle offer update via the new mutation
+  const handleUpdateOffer = (data: Partial<Deal>) => {
+    if (!editingDeal) return;
+    
+    updateOfferMutation.mutate({
+      id: editingDeal.id.toString(),
+      data
+    }, {
+      onSuccess: () => {
+        setEditingDeal(null);
+      }
+    });
+  };
 
   const form = useForm<CreateDealData>({
     resolver: zodResolver(createDealSchema),
@@ -96,11 +104,35 @@ export default function OffersManager() {
     createDealMutation.mutate(data);
   };
 
-  const toggleDealStatus = (deal: Deal) => {
-    updateDealMutation.mutate({
-      id: deal.id,
-      data: { isActive: !deal.isActive },
-    });
+  // Form for editing existing deals
+  const editForm = useForm<CreateDealData>({
+    resolver: zodResolver(createDealSchema),
+  });
+
+  // Set form values when editing a deal
+  useEffect(() => {
+    if (editingDeal) {
+      editForm.reset({
+        title: editingDeal.title,
+        description: editingDeal.description,
+        category: editingDeal.category,
+        discountType: editingDeal.discountType,
+        discountValue: editingDeal.discountValue || "",
+        originalValue: editingDeal.originalValue || "",
+        usageLimit: editingDeal.usageLimit,
+        expiryDate: editingDeal.expiryDate ? format(new Date(editingDeal.expiryDate), 'yyyy-MM-dd') : "",
+        terms: editingDeal.terms || "",
+        imageUrl: editingDeal.imageUrl || "",
+      });
+    }
+  }, [editingDeal, editForm]);
+
+  const onEditSubmit = (data: CreateDealData) => {
+    const processedData = {
+      ...data,
+      expiryDate: new Date(data.expiryDate),
+    };
+    handleUpdateOffer(processedData);
   };
 
   const getStatusBadge = (deal: Deal) => {
@@ -248,7 +280,8 @@ export default function OffersManager() {
                             type="number" 
                             step="0.01"
                             placeholder="20" 
-                            {...field} 
+                            {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -266,7 +299,8 @@ export default function OffersManager() {
                             type="number" 
                             step="0.01"
                             placeholder="50.00" 
-                            {...field} 
+                            {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -321,7 +355,8 @@ export default function OffersManager() {
                       <FormControl>
                         <Textarea 
                           placeholder="Additional terms and conditions..."
-                          {...field} 
+                          {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -365,7 +400,7 @@ export default function OffersManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {deals.filter(deal => deal.isActive).length}
+              {deals.filter((deal: Deal) => deal.isActive).length}
             </div>
           </CardContent>
         </Card>
@@ -376,7 +411,7 @@ export default function OffersManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {deals.reduce((sum, deal) => sum + (deal.usageCount || 0), 0)}
+              {deals.reduce((sum: number, deal: Deal) => sum + (deal.usageCount || 0), 0)}
             </div>
           </CardContent>
         </Card>
@@ -387,7 +422,7 @@ export default function OffersManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {deals.filter(deal => {
+              {deals.filter((deal: Deal) => {
                 const daysUntilExpiry = Math.ceil(
                   (new Date(deal.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
                 );
@@ -429,7 +464,7 @@ export default function OffersManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {deals.map((deal) => (
+                {deals.map((deal: Deal) => (
                   <TableRow key={deal.id}>
                     <TableCell className="font-medium">{deal.title}</TableCell>
                     <TableCell>{getDiscountText(deal)}</TableCell>
@@ -446,8 +481,8 @@ export default function OffersManager() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => toggleDealStatus(deal)}
-                          disabled={updateDealMutation.isPending}
+                          onClick={() => handleToggleOffer(deal.id)}
+                          disabled={toggleOfferMutation.isPending}
                         >
                           {deal.isActive ? (
                             <Pause className="w-4 h-4" />
@@ -455,10 +490,18 @@ export default function OffersManager() {
                             <Play className="w-4 h-4" />
                           )}
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditOffer(deal)}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.location.href = `/merchant/offers/${deal.id}`}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                       </div>
@@ -470,6 +513,210 @@ export default function OffersManager() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingDeal} onOpenChange={() => setEditingDeal(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Offer</DialogTitle>
+            <DialogDescription>
+              Update your offer details
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deal Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="20% off all meals" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Food & Drink">Food & Drink</SelectItem>
+                          <SelectItem value="Retail">Retail</SelectItem>
+                          <SelectItem value="Services">Services</SelectItem>
+                          <SelectItem value="Entertainment">Entertainment</SelectItem>
+                          <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={editForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe what customers get with this deal..."
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="discountType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discount Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="percentage">Percentage Off</SelectItem>
+                          <SelectItem value="fixed">Fixed Amount Off</SelectItem>
+                          <SelectItem value="bogo">Buy One Get One</SelectItem>
+                          <SelectItem value="free_item">Free Item</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="discountValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discount Value</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="20" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="originalValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Original Price (£)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="50.00" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="usageLimit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Usage Limit</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="100" 
+                          {...field} 
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expiry Date</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={editForm.control}
+                name="terms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Terms & Conditions</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Additional terms and conditions..."
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setEditingDeal(null)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateOfferMutation.isPending}>
+                  {updateOfferMutation.isPending ? "Updating..." : "Update Offer"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
