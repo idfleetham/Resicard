@@ -98,7 +98,11 @@ export default function MerchantPortal() {
                 <div className="flex items-center space-x-4">
                   <Select
                     defaultValue="dim"
-                    onValueChange={(v) => document.documentElement.setAttribute('data-theme', v)}
+                    onValueChange={(v) => {
+                      document.documentElement.setAttribute('data-theme', v);
+                      // Also apply to body to ensure site-wide coverage
+                      document.body.setAttribute('data-theme', v);
+                    }}
                   >
                     <SelectTrigger className="w-[160px] border-dim bg-surface">
                       <SelectValue placeholder="Theme" />

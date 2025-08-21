@@ -59,15 +59,31 @@
 }
 
 [data-theme="dim"] {
-  /* same as :root but easy to toggle later */
+  --bg: 12 14 26;           /* #0C0E1A */
+  --surface: 20 25 40;      /* #141928 */
+  --surface-2: 28 33 50;    /* #1C2132 */
+  --card: 30 36 58;         /* #1E243A */
+  --fg: 226 232 240;        /* slate-200 */
+  --fg-soft: 203 213 225;   /* slate-300 */
+  --muted: 148 163 184;     /* slate-400 */
+  --border: 255 255 255 / 0.12;
+  --border-strong: 255 255 255 / 0.18;
+  --brand-1: 99 102 241;    /* indigo-500 */
+  --brand-2: 139 92 246;    /* violet-500 */
 }
 
 [data-theme="high"] {
-  --surface: 24 28 45;
+  --bg: 8 10 20;            /* Even darker */
+  --surface: 24 28 45;      /* Higher contrast */
   --surface-2: 30 36 58;
-  --card: 36 44 72;
+  --card: 36 44 72;         /* Much more contrast */
+  --fg: 248 250 252;        /* brighter text */
+  --fg-soft: 226 232 240;   /* brighter soft text */
+  --muted: 203 213 225;     /* brighter muted */
   --border: 255 255 255 / 0.18;
   --border-strong: 255 255 255 / 0.26;
+  --brand-1: 129 140 248;   /* brighter indigo */
+  --brand-2: 167 139 250;   /* brighter violet */
 }
 
 .dark {
@@ -104,13 +120,13 @@
 }
 
 /* Define theme-aware utility classes */
-.bg-bg { background-color: hsl(var(--bg)); }
-.bg-surface { background-color: hsl(var(--surface)); }
-.bg-card { background-color: hsl(var(--card)); }
-.text-fg { color: hsl(var(--fg)); }
-.text-soft { color: hsl(var(--fg-soft)); }
-.border-dim { border-color: hsl(var(--border)); }
-.border-dimStrong { border-color: hsl(var(--border-strong)); }
+.bg-bg { background-color: rgb(var(--bg)); }
+.bg-surface { background-color: rgb(var(--surface)); }
+.bg-card { background-color: rgb(var(--card)); }
+.text-fg { color: rgb(var(--fg)); }
+.text-soft { color: rgb(var(--fg-soft)); }
+.border-dim { border-color: rgb(var(--border)); }
+.border-dimStrong { border-color: rgb(var(--border-strong)); }
 
 /* Enhanced shadow system with theme awareness */
 .shadow-elev-1 { 

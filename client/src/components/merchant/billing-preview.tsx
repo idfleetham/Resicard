@@ -54,25 +54,18 @@ export default function BillingPreview() {
   const currentPeriod = billingPeriods.find(p => p.id === selectedPeriod) || billingPeriods[0];
   const feePerRedemption = 0.50; // £0.50 per redemption
 
-  const { data: redemptionStats } = useQuery({
-    queryKey: ["/api/billing/stats", user?.id, selectedPeriod],
-    enabled: !!user?.id,
+  const { data: billingStats } = useQuery({
+    queryKey: ['/api/billing/stats'],
+    enabled: !!user && user.role === 'merchant',
   });
 
   const handleDownloadInvoice = (periodId: string) => {
     const period = billingPeriods.find(p => p.id === periodId);
     if (!period) return;
 
-    // Generate CSV content
+    // Create CSV content
     const csvData = [
-      ["Resicard St Andrews - Invoice"],
-      [""],
-      ["Business:", user?.businessName || "Unknown Business"],
-      ["Period:", period.period],
-      ["Invoice Date:", format(new Date(), "yyyy-MM-dd")],
-      ["Due Date:", period.dueDate],
-      [""],
-      ["Description", "Quantity", "Unit Price", "Total"],
+      ["Item", "Quantity", "Rate", "Amount"],
       ["Redemption Processing Fee", period.redemptions.toString(), `£${feePerRedemption}`, `£${period.totalFees}`],
       [""],
       ["Total Due:", "", "", `£${period.totalFees}`],
@@ -117,32 +110,36 @@ export default function BillingPreview() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Billing Preview</h2>
-          <p className="text-gray-600">View monthly fees and download invoices</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {billingPeriods.map((period) => (
-                <SelectItem key={period.id} value={period.id}>
-                  {period.period}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => handleDownloadInvoice(selectedPeriod)}>
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
-        </div>
-      </div>
+      <Card variant="elevated">
+        <CardBody>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-fg">Billing Preview</h2>
+              <p className="text-soft">View monthly fees and download invoices</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="w-40 input-dark">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {billingPeriods.map((period) => (
+                    <SelectItem key={period.id} value={period.id}>
+                      {period.period}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-surface border-dim hover:bg-card text-fg">
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
 
       {/* Current Period Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -173,136 +170,85 @@ export default function BillingPreview() {
       </div>
 
       {/* Billing Details */}
-      <Card>
+      <Card variant="elevated">
         <CardHeader>
           <CardTitle>Billing Breakdown - {currentPeriod.period}</CardTitle>
           <CardDescription>
-            Detailed breakdown of fees for the selected period
-          </CardDescription>
-        </CardHeader>
-        <CardBody>
-          <div className="space-y-6">
-            {/* Fee Structure */}
-            <div>
-              <h4 className="font-medium mb-2">Fee Structure</h4>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span>Redemption Processing Fee</span>
-                  <span className="font-medium">£0.50 per redemption</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  This fee covers payment processing, platform maintenance, and customer support.
-                </p>
-              </div>
-            </div>
-
-            {/* Calculation */}
-            <div>
-              <h4 className="font-medium mb-2">Calculation</h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Redemption Processing Fee</TableCell>
-                    <TableCell>{currentPeriod.redemptions}</TableCell>
-                    <TableCell>£{feePerRedemption}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      £{currentPeriod.totalFees}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell colSpan={3} className="font-medium">Total Due</TableCell>
-                    <TableCell className="text-right font-bold text-lg">
-                      £{currentPeriod.totalFees}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Payment Information */}
-            <div>
-              <h4 className="font-medium mb-2">Payment Information</h4>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex items-center mb-2">
-                  <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
-                  <span className="font-medium">Direct Debit Collection</span>
-                </div>
-                <p className="text-sm text-gray-700">
-                  Fees are collected automatically via direct debit on the last business day of each month.
-                  You'll receive an email notification 5 days before collection.
-                </p>
-              </div>
-            </div>
-
-            {/* Current Status */}
-            <div>
-              <h4 className="font-medium mb-2">Current Status</h4>
-              <div className="flex items-center space-x-2">
-                {getStatusIcon(currentPeriod.status)}
-                {getStatusBadge(currentPeriod.status)}
-                <span className="text-sm text-gray-600">
-                  {currentPeriod.status === 'draft' && "Fees are being calculated for this period"}
-                  {currentPeriod.status === 'pending_dd' && "Direct debit collection scheduled"}
-                  {currentPeriod.status === 'collected' && "Payment successfully collected"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Historical Billing */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>
-            Previous billing periods and payment status
+            Detailed breakdown of fees for the selected billing period
           </CardDescription>
         </CardHeader>
         <CardBody>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Period</TableHead>
-                <TableHead>Redemptions</TableHead>
-                <TableHead>Total Fees</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-fg">Description</TableHead>
+                <TableHead className="text-fg">Quantity</TableHead>
+                <TableHead className="text-fg">Rate</TableHead>
+                <TableHead className="text-right text-fg">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {billingPeriods.map((period) => (
-                <TableRow key={period.id}>
-                  <TableCell className="font-medium">{period.period}</TableCell>
-                  <TableCell>{period.redemptions}</TableCell>
-                  <TableCell>£{period.totalFees}</TableCell>
-                  <TableCell>{getStatusBadge(period.status)}</TableCell>
-                  <TableCell>
-                    {format(new Date(period.dueDate), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDownloadInvoice(period.id)}
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Download
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              <TableRow>
+                <TableCell className="text-soft">Redemption Processing Fee</TableCell>
+                <TableCell className="text-soft">{currentPeriod.redemptions}</TableCell>
+                <TableCell className="text-soft">£{feePerRedemption}</TableCell>
+                <TableCell className="text-right text-soft">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow className="border-t-2 border-dimStrong font-medium">
+                <TableCell className="text-fg font-semibold" colSpan={3}>Total Due</TableCell>
+                <TableCell className="text-right text-fg font-semibold">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
+
+          {currentPeriod.status === 'draft' && (
+            <div className="mt-4 p-4 bg-surface/50 border border-dim rounded-lg">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-fg">Draft Invoice</h4>
+                  <p className="text-xs text-soft mt-1">
+                    This is a draft invoice. The final amount will be calculated at the end of the billing period 
+                    and collected via direct debit on {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Payment Method */}
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle>Payment Method</CardTitle>
+          <CardDescription>How fees are collected</CardDescription>
+        </CardHeader>
+        <CardBody>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center w-12 h-12 bg-surface/50 rounded-full">
+              <CreditCard className="h-6 w-6 text-fg" />
+            </div>
+            <div>
+              <p className="font-medium text-fg">Direct Debit</p>
+              <p className="text-sm text-soft">Fees are automatically collected monthly</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-soft">Collection Date:</span>
+              <span className="text-fg">End of each month</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-soft">Processing Fee:</span>
+              <span className="text-fg">£0.50 per redemption</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-soft">VAT:</span>
+              <span className="text-fg">Included</span>
+            </div>
+          </div>
         </CardBody>
       </Card>
     </div>

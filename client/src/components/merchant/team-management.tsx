@@ -87,6 +87,15 @@ export default function TeamManagement() {
     },
   ];
 
+  const form = useForm<InviteStaffData>({
+    resolver: zodResolver(inviteStaffSchema),
+    defaultValues: {
+      email: "",
+      name: "",
+      role: "staff",
+    },
+  });
+
   const inviteStaffMutation = useMutation({
     mutationFn: (data: InviteStaffData) =>
       apiRequest("POST", "/api/staff/invite", {
@@ -108,59 +117,8 @@ export default function TeamManagement() {
     },
   });
 
-  const rotateStaffPinMutation = useMutation({
-    mutationFn: (staffId: string) =>
-      apiRequest("POST", `/api/staff/${staffId}/rotate-pin`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
-      toast({ title: "Staff PIN rotated successfully" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error rotating PIN",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const removeStaffMutation = useMutation({
-    mutationFn: (staffId: string) =>
-      apiRequest("DELETE", `/api/staff/${staffId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
-      toast({ title: "Staff member removed successfully" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error removing staff member",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const form = useForm<InviteStaffData>({
-    resolver: zodResolver(inviteStaffSchema),
-    defaultValues: {
-      email: "",
-      name: "",
-      role: "staff",
-    },
-  });
-
   const onSubmit = (data: InviteStaffData) => {
     inviteStaffMutation.mutate(data);
-  };
-
-  const handleRotatePin = (staffId: string) => {
-    rotateStaffPinMutation.mutate(staffId);
-  };
-
-  const handleRemoveStaff = (staffId: string) => {
-    if (confirm("Are you sure you want to remove this staff member?")) {
-      removeStaffMutation.mutate(staffId);
-    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -187,307 +145,226 @@ export default function TeamManagement() {
     }
   };
 
-  const getActiveCount = () => staffMembers.filter(member => member.status === "active").length;
-  const getPendingCount = () => staffMembers.filter(member => member.status === "pending").length;
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Team Management</h2>
-          <p className="text-gray-600">Manage staff accounts, roles, and access permissions</p>
-        </div>
-        <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Invite Staff
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Invite New Staff Member</DialogTitle>
-              <DialogDescription>
-                Send an invitation to a new team member to join your merchant account
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Smith" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="staff">Staff - Can process redemptions</SelectItem>
-                          <SelectItem value="manager">Manager - Full access</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsInviteOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={inviteStaffMutation.isPending}>
-                    {inviteStaffMutation.isPending ? "Sending..." : "Send Invitation"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <Card variant="elevated">
+        <CardBody>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-fg">Team Management</h2>
+              <p className="text-soft">Manage staff accounts, roles, and access permissions</p>
+            </div>
+            <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-surface border-dim hover:bg-card text-fg">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Invite Staff
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Invite New Staff Member</DialogTitle>
+                  <DialogDescription>
+                    Send an invitation to a new team member to join your merchant account
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Smith" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="john@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Role</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a role" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="staff">Staff</SelectItem>
+                              <SelectItem value="manager">Manager</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex justify-end space-x-3">
+                      <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={inviteStaffMutation.isPending}>
+                        {inviteStaffMutation.isPending ? "Sending..." : "Send Invitation"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardBody>
+      </Card>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+      {/* Staff Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card variant="surface">
           <CardBody>
-            <div className="text-2xl font-bold">{staffMembers.length}</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-soft text-sm">Total Staff</p>
+                <p className="text-2xl font-semibold text-fg">{staffMembers.length}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
           </CardBody>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+        <Card variant="surface">
           <CardBody>
-            <div className="text-2xl font-bold">{getActiveCount()}</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-soft text-sm">Active</p>
+                <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "active").length}</p>
+              </div>
+              <UserCheck className="h-8 w-8 text-green-500" />
+            </div>
           </CardBody>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Invites</CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+        <Card variant="surface">
           <CardBody>
-            <div className="text-2xl font-bold">{getPendingCount()}</div>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Managers</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardBody>
-            <div className="text-2xl font-bold">
-              {staffMembers.filter(member => member.role === "manager").length}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-soft text-sm">Pending</p>
+                <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "pending").length}</p>
+              </div>
+              <UserX className="h-8 w-8 text-orange-500" />
             </div>
           </CardBody>
         </Card>
       </div>
 
       {/* Staff Table */}
-      <Card>
+      <Card variant="elevated">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Staff Members</span>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowPins(!showPins)}
-              >
-                {showPins ? (
-                  <>
-                    <EyeOff className="w-4 h-4 mr-2" />
-                    Hide PINs
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Show PINs
-                  </>
-                )}
-              </Button>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Staff Members</CardTitle>
+              <CardDescription>Manage your team's access and permissions</CardDescription>
             </div>
-          </CardTitle>
-          <CardDescription>
-            Manage your team members and their access permissions
-          </CardDescription>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPins(!showPins)}
+              className="border-dim hover:bg-surface/50"
+            >
+              {showPins ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+              {showPins ? "Hide PINs" : "Show PINs"}
+            </Button>
+          </div>
         </CardHeader>
         <CardBody>
-          {staffMembers.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-500 mb-4">No staff members yet</p>
-              <Button onClick={() => setIsInviteOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Invite Your First Staff Member
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Staff PIN</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead>Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-fg">Name</TableHead>
+                <TableHead className="text-fg">Email</TableHead>
+                <TableHead className="text-fg">Role</TableHead>
+                <TableHead className="text-fg">Status</TableHead>
+                <TableHead className="text-fg">PIN</TableHead>
+                <TableHead className="text-fg">Last Active</TableHead>
+                <TableHead className="text-right text-fg">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {staffMembers.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell className="font-medium text-fg">{member.name}</TableCell>
+                  <TableCell className="text-soft">{member.email}</TableCell>
+                  <TableCell>{getRoleBadge(member.role)}</TableCell>
+                  <TableCell>{getStatusBadge(member.status)}</TableCell>
+                  <TableCell className="text-soft font-mono">
+                    {showPins ? member.staffPin : "••••"}
+                  </TableCell>
+                  <TableCell className="text-soft">
+                    {member.lastActive 
+                      ? new Date(member.lastActive).toLocaleDateString()
+                      : "Never"
+                    }
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" size="sm" className="border-dim hover:bg-surface/50">
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-dim hover:bg-surface/50">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {staffMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell className="font-medium">{member.name}</TableCell>
-                    <TableCell>{member.email}</TableCell>
-                    <TableCell>{getRoleBadge(member.role)}</TableCell>
-                    <TableCell>{getStatusBadge(member.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">
-                          {showPins ? member.staffPin : "****"}
-                        </code>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRotatePin(member.id)}
-                          disabled={rotateStaffPinMutation.isPending}
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {member.lastActive 
-                        ? new Date(member.lastActive).toLocaleDateString()
-                        : "Never"
-                      }
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRemoveStaff(member.id)}
-                          disabled={removeStaffMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+            </TableBody>
+          </Table>
         </CardBody>
       </Card>
 
-      {/* Permissions Overview */}
-      <Card>
+      {/* Staff PIN Management */}
+      <Card variant="elevated">
         <CardHeader>
-          <CardTitle>Role Permissions</CardTitle>
+          <CardTitle>Staff PIN Security</CardTitle>
           <CardDescription>
-            Understanding what each role can do
+            Staff PINs are used for voucher redemption verification
           </CardDescription>
         </CardHeader>
         <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <Shield className="w-5 h-5 text-blue-500" />
-                <h4 className="font-medium">Manager</h4>
-                <Badge variant="default">Full Access</Badge>
+          <div className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <Key className="h-5 w-5 text-blue-500 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-medium text-fg">PIN Requirements</h4>
+                <p className="text-xs text-soft mt-1">
+                  All staff members are assigned a unique 4-digit PIN for voucher redemption.
+                  PINs can be rotated for security purposes.
+                </p>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>Create and manage offers</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>Process redemptions</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>View billing and reports</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>Manage staff members</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>Access all settings</span>
-                </li>
-              </ul>
             </div>
-            <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <Key className="w-5 h-5 text-green-500" />
-                <h4 className="font-medium">Staff</h4>
-                <Badge variant="outline">Limited Access</Badge>
+            <div className="flex items-start space-x-3">
+              <Shield className="h-5 w-5 text-green-500 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-medium text-fg">Security Best Practices</h4>
+                <p className="text-xs text-soft mt-1">
+                  Regularly rotate PINs and ensure staff don't share their access codes.
+                  Monitor redemption activity for suspicious patterns.
+                </p>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>Process redemptions</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserCheck className="w-4 h-4" />
-                  <span>View active offers</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserX className="w-4 h-4" />
-                  <span>Cannot create offers</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserX className="w-4 h-4" />
-                  <span>Cannot view billing</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <UserX className="w-4 h-4" />
-                  <span>Cannot manage staff</span>
-                </li>
-              </ul>
             </div>
           </div>
         </CardBody>
