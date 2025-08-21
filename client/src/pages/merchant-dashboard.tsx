@@ -335,7 +335,7 @@ export default function MerchantDashboard() {
                   
                   <Button 
                     variant="outline" 
-                    className="border-dim hover:bg-surface text-fg"
+                    className="border-dim hover:bg-surface text-black"
                     onClick={() => {
                       logout();
                       navigate('/');
