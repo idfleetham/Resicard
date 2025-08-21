@@ -99,9 +99,21 @@ export default function OffersManager() {
   });
 
   const getStatusBadge = (deal: Deal) => {
-    if (!deal.isActive) return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Paused</Badge>;
-    if (new Date(deal.expiryDate) < new Date()) return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Expired</Badge>;
-    return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>;
+    if (!deal.isActive) return (
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-yellow-400/30 bg-yellow-500/12 px-2 py-0.5 text-xs text-yellow-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+        Paused
+      </Badge>
+    );
+    if (new Date(deal.expiryDate) < new Date()) return (
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/12 px-2 py-0.5 text-xs text-red-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+        Expired
+      </Badge>
+    );
+    return (
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-xs text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+        Active
+      </Badge>
+    );
   };
 
   const getDiscountText = (deal: Deal) => {
@@ -260,25 +272,25 @@ export default function OffersManager() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             title: "Total Offers",
             value: deals.length,
-            icon: DollarSign,
-            gradient: "from-blue-500 to-blue-600"
+            icon: "📦",
+            gradient: "from-brand1/70 to-brand2/70"
           },
           {
             title: "Active Offers", 
             value: deals.filter((deal: Deal) => deal.isActive).length,
-            icon: Play,
-            gradient: "from-green-500 to-green-600"
+            icon: "▶",
+            gradient: "from-green-500/70 to-green-600/70"
           },
           {
             title: "Total Redemptions",
             value: deals.reduce((sum: number, deal: Deal) => sum + (deal.usageCount || 0), 0),
-            icon: Users,
-            gradient: "from-purple-500 to-purple-600"
+            icon: "👥",
+            gradient: "from-purple-500/70 to-purple-600/70"
           },
           {
             title: "Expiring Soon",
@@ -288,8 +300,8 @@ export default function OffersManager() {
               );
               return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
             }).length,
-            icon: Calendar,
-            gradient: "from-orange-500 to-orange-600"
+            icon: "📅",
+            gradient: "from-orange-500/70 to-orange-600/70"
           }
         ].map((stat, index) => (
           <motion.div
@@ -298,17 +310,15 @@ export default function OffersManager() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-soft">{stat.title}</CardTitle>
-                <div className={`w-8 h-8 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center`}>
-                  <stat.icon className="h-4 w-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-fg">{stat.value}</div>
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-soft">{stat.title}</span>
+                <span className={`inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-elev-1`}>
+                  {stat.icon}
+                </span>
+              </div>
+              <div className="mt-3 text-3xl font-semibold text-fg">{stat.value}</div>
+            </div>
           </motion.div>
         ))}
       </div>

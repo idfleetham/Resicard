@@ -51,7 +51,11 @@ export default function RedemptionsFeed() {
   };
 
   const getStatusBadge = (redemption: any) => {
-    return <Badge variant="default">Completed</Badge>;
+    return (
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-xs text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+        Completed
+      </Badge>
+    );
   };
 
   const getTotalValue = () => {
@@ -90,36 +94,36 @@ export default function RedemptionsFeed() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-soft">Total Redemptions</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-fg">{getTotalRedemptions()}</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-soft">Total Redemptions</span>
+            <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-green-500/70 to-green-600/70 text-white shadow-elev-1">
+              📈
+            </span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold text-fg">{getTotalRedemptions()}</div>
+        </div>
         
-        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-soft">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-fg">£{getTotalValue()}</div>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-soft">Total Value</span>
+            <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500/70 to-blue-600/70 text-white shadow-elev-1">
+              £
+            </span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold text-fg">£{getTotalValue()}</div>
+        </div>
         
-        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-soft">This Period</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-fg">{filteredRedemptions.length}</div>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-soft">This Period</span>
+            <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-purple-500/70 to-purple-600/70 text-white shadow-elev-1">
+              📅
+            </span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold text-fg">{filteredRedemptions.length}</div>
+        </div>
       </div>
 
 
