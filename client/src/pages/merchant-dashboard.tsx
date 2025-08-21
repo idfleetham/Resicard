@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate, formatRelativeTime, getDealCategoryColor, getStatusColor } from "@/lib/utils";
 import type { Deal, Redemption } from "@shared/schema";
@@ -38,9 +39,10 @@ export default function MerchantDashboard() {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [lastScannedVoucher, setLastScannedVoucher] = useState<any>(null);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   // Fetch merchant's deals
   const { data: deals = [], isLoading: dealsLoading } = useQuery({
@@ -268,7 +270,7 @@ export default function MerchantDashboard() {
       <div data-theme="dim" className="min-h-screen bg-bg text-fg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Merchant Header */}
-          <Card variant="elevated" className="mb-8">
+          <Card variant="elevated" className="mb-8 bg-card border-dim">
             <CardBody className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -285,10 +287,10 @@ export default function MerchantDashboard() {
                   )}
                   
                   <div className="ml-4">
-                    <h1 className="text-2xl font-bold text-foreground">{user.businessName}</h1>
-                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                    <h1 className="text-2xl font-bold text-fg">{user.businessName}</h1>
+                    <p className="text-sm text-soft">@{user.username}</p>
                     {user.businessAddress && (
-                      <p className="text-sm text-muted-foreground flex items-center mt-1">
+                      <p className="text-sm text-soft flex items-center mt-1">
                         <MapPin className="h-4 w-4 mr-1" />
                         {user.businessAddress}
                       </p>
@@ -318,18 +320,29 @@ export default function MerchantDashboard() {
                       console.log('Theme applied, data-theme:', root.getAttribute('data-theme'));
                     }}
                   >
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-[160px] border-dim bg-surface text-fg">
                       <SelectValue placeholder="Theme" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dim">Dim</SelectItem>
-                      <SelectItem value="high">High Contrast</SelectItem>
+                    <SelectContent className="bg-surface2 border-dim">
+                      <SelectItem value="dim" className="text-fg">Dim</SelectItem>
+                      <SelectItem value="high" className="text-fg">High Contrast</SelectItem>
                     </SelectContent>
                   </Select>
                   
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="border-dim hover:bg-surface text-fg"
+                    onClick={() => {
+                      logout();
+                      navigate('/');
+                    }}
+                  >
+                    Logout
+                  </Button>
                 </div>
               </div>
             </CardBody>

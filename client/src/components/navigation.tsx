@@ -53,7 +53,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={handleRoleNavigation}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-soft hover:text-fg"
                 >
                   <User className="h-4 w-4 mr-2" />
                   Dashboard
@@ -62,7 +62,7 @@ export default function Navigation() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-soft hover:text-fg"
                 >
                   <Bell className="h-4 w-4 mr-2" />
                   Notifications
@@ -70,17 +70,17 @@ export default function Navigation() {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="sm" className="text-soft hover:text-fg">
                       <User className="h-4 w-4 mr-2" />
                       {user?.username}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleRoleNavigation}>
+                  <DropdownMenuContent align="end" className="bg-surface2 border-dim">
+                    <DropdownMenuItem onClick={handleRoleNavigation} className="text-fg hover:bg-surface">
                       <User className="h-4 w-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLocation('/edit-profile')}>
+                    <DropdownMenuItem onClick={() => setLocation('/edit-profile')} className="text-fg hover:bg-surface">
                       <Settings className="h-4 w-4 mr-2" />
                       Edit Profile
                     </DropdownMenuItem>
@@ -88,12 +88,12 @@ export default function Navigation() {
                       <DropdownMenuItem onClick={() => {
                         handleRoleNavigation();
                         // Navigate to subscription tab would be handled by dashboard state
-                      }}>
+                      }} className="text-fg hover:bg-surface">
                         <CreditCard className="h-4 w-4 mr-2" />
                         Subscription
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onClick={logout}>
+                    <DropdownMenuItem onClick={logout} className="text-fg hover:bg-surface">
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
                     </DropdownMenuItem>
