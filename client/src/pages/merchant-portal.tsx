@@ -90,7 +90,7 @@ export default function MerchantPortal() {
                     <CardTitle className="text-2xl font-bold text-fg">
                       {user.businessName || "Merchant Portal"}
                     </CardTitle>
-                    <CardDescription className="text-fgsoft">
+                    <CardDescription className="text-soft">
                       Manage your offers, track redemptions, and grow your business
                     </CardDescription>
                   </div>
@@ -100,22 +100,23 @@ export default function MerchantPortal() {
                     defaultValue="dim"
                     onValueChange={(v) => {
                       document.documentElement.setAttribute('data-theme', v);
-                      // Also apply to body to ensure site-wide coverage
                       document.body.setAttribute('data-theme', v);
+                      // Force re-render by updating a CSS custom property
+                      document.documentElement.style.setProperty('--theme-applied', v);
                     }}
                   >
-                    <SelectTrigger className="w-[160px] border-dim bg-surface">
+                    <SelectTrigger className="w-[160px] border-dim bg-surface text-fg">
                       <SelectValue placeholder="Theme" />
                     </SelectTrigger>
                     <SelectContent className="bg-surface2 border-dim">
-                      <SelectItem value="dim">Dim</SelectItem>
-                      <SelectItem value="high">High Contrast</SelectItem>
+                      <SelectItem value="dim" className="text-fg">Dim</SelectItem>
+                      <SelectItem value="high" className="text-fg">High Contrast</SelectItem>
                     </SelectContent>
                   </Select>
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
-                  <Button variant="outline" onClick={logout} className="border-dim hover:bg-surface">
+                  <Button variant="outline" onClick={logout} className="border-dim hover:bg-surface text-fg">
                     Logout
                   </Button>
                 </div>

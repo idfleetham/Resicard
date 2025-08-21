@@ -123,6 +123,34 @@
 .bg-bg { background-color: rgb(var(--bg)); }
 .bg-surface { background-color: rgb(var(--surface)); }
 .bg-card { background-color: rgb(var(--card)); }
+.bg-surface2 { background-color: rgb(var(--surface-2)); }
+
+.text-fg { color: rgb(var(--fg)); }
+.text-soft { color: rgb(var(--fg-soft)); }
+.text-muted { color: rgb(var(--muted)); }
+.text-brand1 { color: rgb(var(--brand-1)); }
+.text-brand2 { color: rgb(var(--brand-2)); }
+
+.border-dim { border-color: rgba(var(--border)); }
+.border-dimStrong { border-color: rgba(var(--border-strong)); }
+
+.shadow-elev-1 { 
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2), 0 4px 16px -4px rgba(0, 0, 0, 0.1); 
+}
+.shadow-elev-2 { 
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3), 0 8px 32px -8px rgba(0, 0, 0, 0.2); 
+}
+
+/* Ensure buttons use proper contrast */
+.btn-brand {
+  background-color: rgb(var(--brand-1)) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-brand:hover {
+  background-color: rgb(var(--brand-1) / 0.9) !important;
+}
 .text-fg { color: rgb(var(--fg)); }
 .text-soft { color: rgb(var(--fg-soft)); }
 .border-dim { border-color: rgb(var(--border)); }
