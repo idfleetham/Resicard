@@ -124,11 +124,11 @@ export default function QRRedemption() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 p-5">
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl shadow-xl p-6 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-fg">QR & Code Redemption</h2>
-            <p className="text-soft">Redeem customer vouchers and generate QR codes for your offers</p>
+            <h2 className="text-2xl font-bold text-white">QR & Code Redemption</h2>
+            <p className="text-slate-300">Redeem customer vouchers and generate QR codes for your offers</p>
           </div>
         </div>
       </div>

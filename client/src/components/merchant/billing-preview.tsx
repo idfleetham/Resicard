@@ -112,26 +112,26 @@ export default function BillingPreview() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 p-5">
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl shadow-xl p-6 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-fg">Billing Preview</h2>
-            <p className="text-soft">View monthly fees and download invoices</p>
+            <h2 className="text-2xl font-bold text-white">Billing Preview</h2>
+            <p className="text-slate-300">View monthly fees and download invoices</p>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-40 border-dim bg-surface text-fg">
+              <SelectTrigger className="w-40 border-slate-600 bg-slate-700 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-surface2 border-dim">
+              <SelectContent className="bg-slate-700 border-slate-600">
                 {billingPeriods.map((period) => (
-                  <SelectItem key={period.id} value={period.id} className="text-fg">
+                  <SelectItem key={period.id} value={period.id} className="text-white">
                     {period.period}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-brand1 hover:bg-brand1/90 text-white">
+            <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
