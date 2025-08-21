@@ -103,6 +103,53 @@
   }
 }
 
+/* Define theme-aware utility classes */
+.bg-bg { background-color: hsl(var(--bg)); }
+.bg-surface { background-color: hsl(var(--surface)); }
+.bg-card { background-color: hsl(var(--card)); }
+.text-fg { color: hsl(var(--fg)); }
+.text-soft { color: hsl(var(--fg-soft)); }
+.border-dim { border-color: hsl(var(--border)); }
+.border-dimStrong { border-color: hsl(var(--border-strong)); }
+
+/* Enhanced shadow system with theme awareness */
+.shadow-elev-1 { 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dim"] .shadow-elev-1,
+[data-theme="high"] .shadow-elev-1 {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.shadow-elev-2 { 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+[data-theme="dim"] .shadow-elev-2,
+[data-theme="high"] .shadow-elev-2 {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.shadow-elev-3 { 
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dim"] .shadow-elev-3,
+[data-theme="high"] .shadow-elev-3 {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
+}
+
+/* Enhanced input styling for dark theme */
+.input-dark {
+  @apply px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+  @apply transition-colors duration-200;
+  background-color: hsl(var(--surface) / 0.6);
+  color: hsl(var(--fg));
+  border: 1px solid hsl(var(--border));
+}
+
+.input-dark::placeholder {
+  color: hsl(var(--fg-soft));
+}
+
 /* Custom coastal theme utilities */
 .coastal-gradient {
   background: linear-gradient(135deg, var(--coastal-600) 0%, var(--coastal-800) 100%);

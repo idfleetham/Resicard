@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "./Card";
 
-export function MetricTile({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
+export function MetricTile({ label, value, icon, subtitle }: { label: string; value: React.ReactNode; icon?: React.ReactNode; subtitle?: string }) {
   return (
     <Card variant="ghost" padded={true} className="h-full">
       <div className="flex items-center justify-between">
@@ -12,6 +12,7 @@ export function MetricTile({ label, value, icon }: { label: string; value: React
         </span>
       </div>
       <div className="mt-3 text-3xl font-semibold text-fg">{value}</div>
+      {subtitle && <div className="text-xs text-soft mt-1">{subtitle}</div>}
     </Card>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
+import { MetricTile } from "@/ui/MetricTile";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -145,53 +146,30 @@ export default function BillingPreview() {
 
       {/* Current Period Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Redemptions</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardBody>
-            <div className="text-2xl font-bold">{currentPeriod.redemptions}</div>
-            <p className="text-xs text-muted-foreground">{currentPeriod.period}</p>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fee Per Redemption</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardBody>
-            <div className="text-2xl font-bold">£{feePerRedemption}</div>
-            <p className="text-xs text-muted-foreground">Standard rate</p>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Fees</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardBody>
-            <div className="text-2xl font-bold">£{currentPeriod.totalFees}</div>
-            <p className="text-xs text-muted-foreground">
-              {currentPeriod.status === 'draft' ? 'Estimated' : 'Final'}
-            </p>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
-            {getStatusIcon(currentPeriod.status)}
-          </CardHeader>
-          <CardBody>
-            <div className="text-lg font-medium">{getStatusBadge(currentPeriod.status)}</div>
-            <p className="text-xs text-muted-foreground">
-              Due: {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}
-            </p>
-          </CardBody>
-        </Card>
+        <MetricTile 
+          label="Redemptions" 
+          value={currentPeriod.redemptions.toString()} 
+          icon={<TrendingUp className="h-4 w-4" />}
+          subtitle={currentPeriod.period}
+        />
+        <MetricTile 
+          label="Fee Per Redemption" 
+          value={`£${feePerRedemption}`} 
+          icon={<CreditCard className="h-4 w-4" />}
+          subtitle="Standard rate"
+        />
+        <MetricTile 
+          label="Total Fees" 
+          value={`£${currentPeriod.totalFees}`} 
+          icon={<Calendar className="h-4 w-4" />}
+          subtitle={currentPeriod.status === 'draft' ? 'Estimated' : 'Final'}
+        />
+        <MetricTile 
+          label="Status" 
+          value={getStatusBadge(currentPeriod.status)} 
+          icon={getStatusIcon(currentPeriod.status)}
+          subtitle={`Due: ${format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}`}
+        />
       </div>
 
       {/* Billing Details */}
