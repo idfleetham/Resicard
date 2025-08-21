@@ -128,7 +128,7 @@ export default function MerchantPortal() {
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
-                  <Button variant="outline" onClick={logout} className="border-dim hover:bg-surface text-fg">
+                  <Button variant="outline" onClick={logout} className="border-dim hover:bg-surface text-black">
                     Logout
                   </Button>
                 </div>
