@@ -112,34 +112,32 @@ export default function BillingPreview() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <Card variant="elevated">
-        <CardBody>
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-fg">Billing Preview</h2>
-              <p className="text-soft">View monthly fees and download invoices</p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-40 input-dark">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {billingPeriods.map((period) => (
-                    <SelectItem key={period.id} value={period.id}>
-                      {period.period}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-surface border-dim hover:bg-card text-fg">
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
-            </div>
+      <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 p-5">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-fg">Billing Preview</h2>
+            <p className="text-soft">View monthly fees and download invoices</p>
           </div>
-        </CardBody>
-      </Card>
+          <div className="flex items-center space-x-2">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-40 border-dim bg-surface text-fg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-surface2 border-dim">
+                {billingPeriods.map((period) => (
+                  <SelectItem key={period.id} value={period.id} className="text-fg">
+                    {period.period}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-brand1 hover:bg-brand1/90 text-white">
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Current Period Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -148,20 +148,19 @@ export default function TeamManagement() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <Card variant="elevated">
-        <CardBody>
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-fg">Team Management</h2>
-              <p className="text-soft">Manage staff accounts, roles, and access permissions</p>
-            </div>
-            <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-surface border-dim hover:bg-card text-fg">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Invite Staff
-                </Button>
-              </DialogTrigger>
+      <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 p-5">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-fg">Team Management</h2>
+            <p className="text-soft">Manage staff accounts, roles, and access permissions</p>
+          </div>
+          <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-brand1 hover:bg-brand1/90 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Invite Staff
+              </Button>
+            </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Invite New Staff Member</DialogTitle>
@@ -230,9 +229,8 @@ export default function TeamManagement() {
                 </Form>
               </DialogContent>
             </Dialog>
-          </div>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Staff Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
