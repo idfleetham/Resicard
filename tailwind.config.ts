@@ -61,6 +61,23 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Dim theme colors
+        app: 'rgb(var(--bg))',
+        surface: 'rgb(var(--surface))',
+        surface2: 'rgb(var(--surface-2))',
+        dimcard: 'rgb(var(--card))',
+        fg: 'rgb(var(--fg))',
+        fgsoft: 'rgb(var(--fg-soft))',
+        brand1: 'rgb(var(--brand-1))',
+        brand2: 'rgb(var(--brand-2))',
+      },
+      boxShadow: {
+        'elev-1': '0 8px 24px rgba(0,0,0,0.25)',
+        'elev-2': '0 12px 36px rgba(0,0,0,0.35)',
+      },
+      borderColor: {
+        dim: 'color-mix(in oklab, white 12%, transparent)',
+        dimStrong: 'color-mix(in oklab, white 18%, transparent)',
       },
       keyframes: {
         "accordion-down": {
