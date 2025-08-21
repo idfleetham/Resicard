@@ -213,6 +213,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update merchant business details
+  app.put("/api/merchants/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = parseInt(req.params.id);
+      
+      // Verify the merchant is updating their own details
+      if (merchantId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update these details" });
+      }
+
+      const { name, email, phone, address, description } = req.body;
+      
+      const updatedUser = await storage.updateUserBusinessDetails(req.user.id, {
+        businessName: name,
+        businessPhone: phone,
+        businessAddress: address,
+        email: email,
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Merchant not found" });
+      }
+      
+      res.json({ ...updatedUser, password: undefined });
+    } catch (error: any) {
+      console.error('Error updating merchant business details:', error);
+      res.status(500).json({ message: "Failed to update business details" });
+    }
+  });
+
   // Deal routes
   app.get("/api/deals", async (req, res) => {
     try {
