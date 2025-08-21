@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import QrScanner from 'qr-scanner';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Camera, CameraOff, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -114,14 +114,14 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
             Camera Access Required
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {error || "Camera access is required to scan QR codes. Please enable camera permissions in your browser settings."}
             </AlertDescription>
           </Alert>
-        </CardContent>
+        </CardBody>
       </Card>
     );
   }
@@ -150,7 +150,7 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardBody>
         <div className="relative">
           <video
             ref={videoRef}
@@ -172,7 +172,7 @@ export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRSc
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-      </CardContent>
+      </CardBody>
     </Card>
   );
 }

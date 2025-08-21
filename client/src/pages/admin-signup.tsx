@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -103,7 +103,7 @@ export default function AdminSignup() {
               <span>Create Admin Account</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-6">
               <p className="text-sm text-amber-800">
                 <strong>Admin Registration:</strong> This form is for creating platform administrator accounts. 
@@ -255,7 +255,7 @@ export default function AdminSignup() {
                 <p className="text-amber-600">Remove this in production!</p>
               </div>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <div className="text-center">

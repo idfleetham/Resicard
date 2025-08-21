@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import CreateDealModal from "@/components/create-deal-modal";
 import QRScanner from "@/components/qr-scanner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
+import { MetricTile } from "@/ui/MetricTile";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -240,8 +241,8 @@ export default function MerchantDashboard() {
       <>
         <Navigation />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Card className="max-w-md mx-4">
-            <CardContent className="p-8 text-center">
+          <Card variant="elevated" className="max-w-md mx-4">
+            <CardBody className="p-8 text-center">
               <div className="bg-amber-100 p-4 rounded-full inline-block mb-4">
                 <Users className="h-8 w-8 text-amber-600" />
               </div>
@@ -253,7 +254,7 @@ export default function MerchantDashboard() {
               <Badge className="bg-amber-100 text-amber-800">
                 Verification Pending
               </Badge>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
       </>
@@ -266,8 +267,8 @@ export default function MerchantDashboard() {
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Merchant Header */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
+          <Card variant="elevated" className="mb-8">
+            <CardBody className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   {user?.profilePhoto ? (
@@ -298,66 +299,34 @@ export default function MerchantDashboard() {
                   Verified Business
                 </Badge>
               </div>
-            </CardContent>
+            </CardBody>
           </Card>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <Ticket className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Active Deals</p>
-                    <p className="text-2xl font-bold text-foreground">{activeDeals.length}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MetricTile 
+              label="Active Deals" 
+              value={activeDeals.length} 
+              icon={<Ticket className="h-4 w-4" />}
+            />
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <Users className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Total Redemptions</p>
-                    <p className="text-2xl font-bold text-foreground">{totalRedemptions}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MetricTile 
+              label="Total Redemptions" 
+              value={totalRedemptions} 
+              icon={<Users className="h-4 w-4" />}
+            />
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-purple-100 p-3 rounded-lg">
-                    <ChartLine className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">This Week</p>
-                    <p className="text-2xl font-bold text-foreground">{thisWeekRedemptions.length}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MetricTile 
+              label="This Week" 
+              value={thisWeekRedemptions.length} 
+              icon={<ChartLine className="h-4 w-4" />}
+            />
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="bg-amber-100 p-3 rounded-lg">
-                    <Percent className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Commission Rate</p>
-                    <p className="text-2xl font-bold text-foreground">5%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MetricTile 
+              label="Commission Rate" 
+              value="5%" 
+              icon={<Percent className="h-4 w-4" />}
+            />
           </div>
 
           {/* Main Dashboard Tabs */}
@@ -369,7 +338,7 @@ export default function MerchantDashboard() {
             </TabsList>
 
             <TabsContent value="deals" className="space-y-6">
-              <Card>
+              <Card variant="elevated">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Your Deals</CardTitle>
@@ -382,7 +351,7 @@ export default function MerchantDashboard() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardBody className="p-6">
                   {dealsLoading ? (
                     <div className="space-y-4">
                       {[...Array(3)].map((_, i) => (
@@ -488,7 +457,7 @@ export default function MerchantDashboard() {
                       })}
                     </div>
                   )}
-                </CardContent>
+                </CardBody>
               </Card>
             </TabsContent>
 
@@ -508,14 +477,14 @@ export default function MerchantDashboard() {
                         Last Redemption
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardBody>
                       <div className="space-y-2">
                         <p><strong>Customer:</strong> {lastScannedVoucher.customerName}</p>
                         <p><strong>Deal:</strong> {lastScannedVoucher.dealTitle}</p>
                         <p><strong>Voucher:</strong> {lastScannedVoucher.voucherNumber}</p>
                         <p><strong>Time:</strong> {new Date(lastScannedVoucher.redeemedAt).toLocaleString()}</p>
                       </div>
-                    </CardContent>
+                    </CardBody>
                   </Card>
                 )}
               </div>
@@ -527,7 +496,7 @@ export default function MerchantDashboard() {
                 <CardHeader>
                   <CardTitle>Merchant Revenue Analytics</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardBody>
                   {(() => {
                     // Calculate total revenue across all deals
                     let totalMerchantRevenue = 0;
@@ -587,7 +556,7 @@ export default function MerchantDashboard() {
                       </div>
                     );
                   })()}
-                </CardContent>
+                </CardBody>
               </Card>
 
               {/* Deal-by-Deal Analytics */}
@@ -595,7 +564,7 @@ export default function MerchantDashboard() {
                 <CardHeader>
                   <CardTitle>Deal Performance Analytics</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardBody>
                   <div className="space-y-4">
                     {deals.map((deal) => {
                       const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
@@ -672,7 +641,7 @@ export default function MerchantDashboard() {
                       </div>
                     )}
                   </div>
-                </CardContent>
+                </CardBody>
               </Card>
             </TabsContent>
           </Tabs>

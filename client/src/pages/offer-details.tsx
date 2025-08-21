@@ -1,5 +1,5 @@
 import { useRoute } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -77,7 +77,7 @@ export default function OfferDetails() {
           <CardTitle>Offer Information</CardTitle>
           <CardDescription>Complete details about this offer</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardBody className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold mb-2">Basic Information</h3>
@@ -109,7 +109,7 @@ export default function OfferDetails() {
               <p className="text-gray-700 bg-gray-50 p-3 rounded">{offer.terms}</p>
             </div>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Stats Cards */}
@@ -119,40 +119,40 @@ export default function OfferDetails() {
             <CardTitle className="text-sm font-medium">Total Views</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{offer.viewCount || 0}</div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Redemptions</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{offer.usageCount || 0}</div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Usage Rate</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">
               {offer.usageLimit > 0 ? Math.round(((offer.usageCount || 0) / offer.usageLimit) * 100) : 0}%
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Days Until Expiry</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">
               {Math.max(0, Math.ceil((new Date(offer.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
@@ -162,12 +162,12 @@ export default function OfferDetails() {
           <CardTitle>Recent Redemptions</CardTitle>
           <CardDescription>Latest voucher redemptions for this offer</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="text-center py-8 text-gray-500">
             <p>No recent redemptions available</p>
             <p className="text-sm">Redemption tracking will appear here once customers start using this offer</p>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

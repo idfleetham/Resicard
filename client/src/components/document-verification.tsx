@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -218,7 +218,7 @@ export default function DocumentVerification() {
           {getStatusBadge()}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardBody className="space-y-4">
         {isVerified ? (
           <div className="text-center py-6">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
@@ -321,7 +321,7 @@ export default function DocumentVerification() {
             ) : null}
           </>
         )}
-      </CardContent>
+      </CardBody>
     </Card>
   );
 }

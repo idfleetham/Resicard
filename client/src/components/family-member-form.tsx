@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Users } from "lucide-react";
 
@@ -86,7 +86,7 @@ export default function FamilyMemberForm({ onSubmit, onCancel, isLoading }: Fami
           Add your family members to your subscription. Children must be 17 years old or under.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardBody>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <div className="space-y-4">
@@ -215,7 +215,7 @@ export default function FamilyMemberForm({ onSubmit, onCancel, isLoading }: Fami
             </div>
           </form>
         </Form>
-      </CardContent>
+      </CardBody>
     </Card>
   );
 }

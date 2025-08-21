@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import DealCard from "@/components/deal-card";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -317,7 +317,7 @@ export default function ResidentDashboard() {
             <>
               {/* Filters */}
               <Card className="mb-8">
-                <CardContent className="p-6">
+                <CardBody className="p-6">
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="h-4 w-4 text-muted-foreground" />
@@ -348,7 +348,7 @@ export default function ResidentDashboard() {
                       </label>
                     </div>
                   </div>
-                </CardContent>
+                </CardBody>
               </Card>
 
               {/* Deal Cards */}
@@ -357,12 +357,12 @@ export default function ResidentDashboard() {
                   {[...Array(6)].map((_, i) => (
                     <Card key={i} className="animate-pulse">
                       <div className="h-48 bg-muted" />
-                      <CardContent className="p-6 space-y-3">
+                      <CardBody className="p-6 space-y-3">
                         <div className="h-4 bg-muted rounded w-1/4" />
                         <div className="h-6 bg-muted rounded w-3/4" />
                         <div className="h-4 bg-muted rounded w-full" />
                         <div className="h-4 bg-muted rounded w-2/3" />
-                      </CardContent>
+                      </CardBody>
                     </Card>
                   ))}
                 </div>
@@ -385,7 +385,7 @@ export default function ResidentDashboard() {
                 </div>
               ) : (
                 <Card>
-                  <CardContent className="p-12 text-center">
+                  <CardBody className="p-12 text-center">
                     <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
                     <p className="text-muted-foreground">
@@ -403,7 +403,7 @@ export default function ResidentDashboard() {
                         View All Deals
                       </Button>
                     )}
-                  </CardContent>
+                  </CardBody>
                 </Card>
               )}
             </>
@@ -421,7 +421,7 @@ export default function ResidentDashboard() {
 
               {vouchers.length === 0 ? (
                 <Card>
-                  <CardContent className="p-12 text-center">
+                  <CardBody className="p-12 text-center">
                     <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No vouchers yet</h3>
                     <p className="text-muted-foreground mb-4">
@@ -430,7 +430,7 @@ export default function ResidentDashboard() {
                     <Button onClick={() => setActiveTab("deals")}>
                       Browse Deals
                     </Button>
-                  </CardContent>
+                  </CardBody>
                 </Card>
               ) : (
                 <>
@@ -444,7 +444,7 @@ export default function ResidentDashboard() {
                       <div className="grid gap-4">
                         {activeVouchers.map((voucher) => (
                           <Card key={voucher.id}>
-                            <CardContent className="p-6">
+                            <CardBody className="p-6">
                               <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
@@ -522,7 +522,7 @@ export default function ResidentDashboard() {
                                   )}
                                 </div>
                               </div>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                         ))}
                       </div>
@@ -539,7 +539,7 @@ export default function ResidentDashboard() {
                       <div className="grid gap-4">
                         {usedVouchers.map((voucher) => (
                           <Card key={voucher.id} className="opacity-60">
-                            <CardContent className="p-6">
+                            <CardBody className="p-6">
                               <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
@@ -566,7 +566,7 @@ export default function ResidentDashboard() {
                                   <Badge variant="secondary">Redeemed</Badge>
                                 </div>
                               </div>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                         ))}
                       </div>
@@ -611,7 +611,7 @@ export default function ResidentDashboard() {
               {/* Legacy subscription creation for non-active users */}
               {!subscription?.isActive && (
                 <Card>
-                  <CardContent className="p-6">
+                  <CardBody className="p-6">
                     <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
                     <p className="text-muted-foreground mb-6">
                       Subscribe to create vouchers from deals and build your savings wallet.
@@ -652,7 +652,7 @@ export default function ResidentDashboard() {
                         <h4 className="text-md font-semibold mb-4">Individual Plans</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                            <CardContent className="p-4">
+                            <CardBody className="p-4">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="font-medium">Monthly</span>
                                 <span className="text-lg font-bold">£{plans?.individual?.monthly.price}</span>
@@ -667,11 +667,11 @@ export default function ResidentDashboard() {
                               >
                                 {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
                               </Button>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                           
                           <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                            <CardContent className="p-4">
+                            <CardBody className="p-4">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="font-medium">Annual</span>
                                 <div className="text-right">
@@ -689,7 +689,7 @@ export default function ResidentDashboard() {
                               >
                                 {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
                               </Button>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                         </div>
                       </div>
@@ -699,7 +699,7 @@ export default function ResidentDashboard() {
                         <h4 className="text-md font-semibold mb-4">Family Plans</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                            <CardContent className="p-4">
+                            <CardBody className="p-4">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="font-medium">Monthly</span>
                                 <span className="text-lg font-bold">£{plans?.family?.monthly.price}</span>
@@ -714,11 +714,11 @@ export default function ResidentDashboard() {
                               >
                                 {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Monthly'}
                               </Button>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                           
                           <Card className="border-2 hover:border-primary cursor-pointer transition-colors">
-                            <CardContent className="p-4">
+                            <CardBody className="p-4">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="font-medium">Annual</span>
                                 <div className="text-right">
@@ -736,12 +736,12 @@ export default function ResidentDashboard() {
                               >
                                 {createSubscriptionMutation.isPending ? 'Activating...' : 'Choose Annual'}
                               </Button>
-                            </CardContent>
+                            </CardBody>
                           </Card>
                         </div>
                       </div>
                     </div>
-                  </CardContent>
+                  </CardBody>
                 </Card>
               )}
             </div>

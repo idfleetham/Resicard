@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -174,25 +174,25 @@ export default function OffersManager() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="bg-slate-900/50 border-slate-700">
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20 bg-slate-800" />
                   <Skeleton className="h-8 w-12 bg-slate-800" />
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
           ))}
         </div>
         
         {/* Table Skeleton */}
         <Card className="bg-slate-900/50 border-slate-700">
-          <CardContent className="p-6">
+          <CardBody className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full bg-slate-800" />
               ))}
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
     );
@@ -696,9 +696,9 @@ export default function OffersManager() {
                   <stat.icon className="h-4 w-4 text-white" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardBody>
                 <div className="text-2xl font-bold text-slate-100">{stat.value}</div>
-              </CardContent>
+              </CardBody>
             </Card>
           </motion.div>
         ))}
@@ -712,7 +712,7 @@ export default function OffersManager() {
             Manage all your business offers and track their performance
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {deals.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -797,7 +797,7 @@ export default function OffersManager() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Edit Dialog */}

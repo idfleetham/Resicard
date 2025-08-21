@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -94,7 +94,7 @@ export default function StripeCheckout({
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardBody className="space-y-6">
         {/* Order Summary */}
         <div className="space-y-4">
           <h3 className="font-medium">Order Summary</h3>
@@ -169,7 +169,7 @@ export default function StripeCheckout({
           By completing your purchase, you agree to our terms of service. 
           You can cancel your subscription at any time from your account settings.
         </p>
-      </CardContent>
+      </CardBody>
     </Card>
   );
 }

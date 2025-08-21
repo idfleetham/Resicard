@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
+import { MetricTile } from "@/ui/MetricTile";
+import { EmptyState } from "@/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -315,61 +317,39 @@ export default function QRRedemption() {
       </div>
 
       {/* Recent Redemptions */}
-      <Card>
+      <Card variant="elevated">
         <CardHeader>
           <CardTitle>Recent Redemptions</CardTitle>
           <CardDescription>
             Latest voucher redemptions processed by your staff
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {/* Placeholder for recent redemptions */}
-            <div className="text-center py-8">
-              <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600 mb-2">No recent redemptions</p>
-              <p className="text-xs text-gray-500">
-                Processed redemptions will appear here in real-time
-              </p>
-            </div>
-          </div>
-        </CardContent>
+        <CardBody>
+          <EmptyState 
+            title="No recent redemptions"
+            subtitle="Processed redemptions will appear here in real-time"
+            icon={<CreditCard className="h-6 w-6" />}
+          />
+        </CardBody>
       </Card>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Redemptions</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <Badge variant="secondary" className="mt-1">Live</Badge>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
-            <Hash className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <Badge variant="default" className="mt-1">Online</Badge>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">QR Codes Generated</CardTitle>
-            <QrCode className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{qrCodeUrl ? 1 : 0}</div>
-            <Badge variant="outline" className="mt-1">This Session</Badge>
-          </CardContent>
-        </Card>
+        <MetricTile 
+          label="Today's Redemptions" 
+          value="0" 
+          icon={<CheckCircle className="h-4 w-4" />}
+        />
+        <MetricTile 
+          label="Active Staff" 
+          value="1" 
+          icon={<Hash className="h-4 w-4" />}
+        />
+        <MetricTile 
+          label="QR Codes Generated" 
+          value={qrCodeUrl ? "1" : "0"} 
+          icon={<QrCode className="h-4 w-4" />}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -150,10 +150,10 @@ export default function BillingPreview() {
             <CardTitle className="text-sm font-medium">Redemptions</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{currentPeriod.redemptions}</div>
             <p className="text-xs text-muted-foreground">{currentPeriod.period}</p>
-          </CardContent>
+          </CardBody>
         </Card>
         
         <Card>
@@ -161,10 +161,10 @@ export default function BillingPreview() {
             <CardTitle className="text-sm font-medium">Fee Per Redemption</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">£{feePerRedemption}</div>
             <p className="text-xs text-muted-foreground">Standard rate</p>
-          </CardContent>
+          </CardBody>
         </Card>
         
         <Card>
@@ -172,12 +172,12 @@ export default function BillingPreview() {
             <CardTitle className="text-sm font-medium">Total Fees</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">£{currentPeriod.totalFees}</div>
             <p className="text-xs text-muted-foreground">
               {currentPeriod.status === 'draft' ? 'Estimated' : 'Final'}
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
         
         <Card>
@@ -185,12 +185,12 @@ export default function BillingPreview() {
             <CardTitle className="text-sm font-medium">Status</CardTitle>
             {getStatusIcon(currentPeriod.status)}
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-lg font-medium">{getStatusBadge(currentPeriod.status)}</div>
             <p className="text-xs text-muted-foreground">
               Due: {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
@@ -202,7 +202,7 @@ export default function BillingPreview() {
             Detailed breakdown of fees for the selected period
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="space-y-6">
             {/* Fee Structure */}
             <div>
@@ -278,7 +278,7 @@ export default function BillingPreview() {
               </div>
             </div>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Historical Billing */}
@@ -289,7 +289,7 @@ export default function BillingPreview() {
             Previous billing periods and payment status
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <Table>
             <TableHeader>
               <TableRow>
@@ -325,7 +325,7 @@ export default function BillingPreview() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -135,7 +135,7 @@ export default function EditProfile() {
               <span>Profile Information</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Profile Photo Section */}
@@ -221,7 +221,7 @@ export default function EditProfile() {
                 </Button>
               </form>
             </Form>
-          </CardContent>
+          </CardBody>
         </Card>
 
         {/* Digital Membership Card Preview */}
@@ -232,7 +232,7 @@ export default function EditProfile() {
               <span>Digital Membership Card Preview</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-16 w-16 border-2 border-white">
@@ -251,7 +251,7 @@ export default function EditProfile() {
                 </div>
               </div>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
     </div>

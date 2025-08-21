@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardBody } from "@/ui/Card";
 import { MapPin, Home, Store, Shield, X } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -30,7 +30,7 @@ export default function RoleSelector({ onSelect, isVisible, onClose }: RoleSelec
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="max-w-md w-full shadow-2xl">
-        <CardContent className="p-6">
+        <CardBody className="p-6">
           <div className="flex justify-between items-start mb-6">
             <div className="flex-1">
               <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -94,7 +94,7 @@ export default function RoleSelector({ onSelect, isVisible, onClose }: RoleSelec
               </div>
             </Button>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

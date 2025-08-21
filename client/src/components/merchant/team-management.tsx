@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -286,38 +286,38 @@ export default function TeamManagement() {
             <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{staffMembers.length}</div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{getActiveCount()}</div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Invites</CardTitle>
             <Mail className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{getPendingCount()}</div>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Managers</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">
               {staffMembers.filter(member => member.role === "manager").length}
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
@@ -350,7 +350,7 @@ export default function TeamManagement() {
             Manage your team members and their access permissions
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {staffMembers.length === 0 ? (
             <div className="text-center py-8">
               <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -418,7 +418,7 @@ export default function TeamManagement() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Permissions Overview */}
@@ -429,7 +429,7 @@ export default function TeamManagement() {
             Understanding what each role can do
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <div className="flex items-center space-x-2 mb-3">
@@ -490,7 +490,7 @@ export default function TeamManagement() {
               </ul>
             </div>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -65,7 +65,7 @@ export default function Login() {
           <CardHeader>
             <CardTitle className="text-center">Welcome Back</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -142,7 +142,7 @@ export default function Login() {
                 <p>Use the registration form to create resident or merchant accounts</p>
               </div>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <div className="text-center">

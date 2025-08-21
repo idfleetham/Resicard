@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDropzone } from "react-dropzone";
 import { Link, useSearch } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -208,7 +208,7 @@ export default function Register() {
           <CardHeader>
             <CardTitle className="text-center">Create Your Account</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="resident" className="flex items-center space-x-2">
@@ -638,7 +638,7 @@ export default function Register() {
                 </Link>
               </p>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <div className="text-center">

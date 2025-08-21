@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -138,7 +138,7 @@ export default function RedemptionsFeed() {
         <CardHeader className="border-b border-dim">
           <CardTitle className="text-lg text-fg">Filters</CardTitle>
         </CardHeader>
-        <CardContent className="p-5">
+        <CardBody className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Search</label>
@@ -185,7 +185,7 @@ export default function RedemptionsFeed() {
               </Button>
             </div>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Redemptions Table */}
@@ -196,7 +196,7 @@ export default function RedemptionsFeed() {
             Live feed of customer redemptions for your offers
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-5">
+        <CardBody className="p-5">
           {filteredRedemptions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-soft mb-4">No redemptions found</p>
@@ -251,7 +251,7 @@ export default function RedemptionsFeed() {
               </Table>
             </div>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

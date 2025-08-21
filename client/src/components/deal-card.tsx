@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -77,7 +77,7 @@ export default function DealCard({
         className="w-full h-48 object-cover"
       />
       
-      <CardContent className="p-6">
+      <CardBody className="p-6">
         <div className="flex items-center justify-between mb-2">
           <Badge className={getDealCategoryColor(deal.category)}>
             {deal.category}
@@ -160,7 +160,7 @@ export default function DealCard({
             📍 {deal.merchantAddress}
           </div>
         )}
-      </CardContent>
+      </CardBody>
     </Card>
   );
 }

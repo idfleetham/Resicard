@@ -5,7 +5,7 @@ import Navigation from "@/components/navigation";
 import RoleSelector from "@/components/role-selector";
 import DealCard from "@/components/deal-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardBody } from "@/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Rocket, Users, Ticket, PiggyBank, Calendar, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -82,7 +82,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <CardContent className="p-6 text-center">
+                <CardBody className="p-6 text-center">
                   <div className="bg-primary/10 p-3 rounded-lg inline-block mb-4">
                     <Ticket className="h-8 w-8 text-primary" />
                   </div>
@@ -90,11 +90,11 @@ export default function Home() {
                     {deals.filter(deal => deal.isActive).length}
                   </div>
                   <div className="text-muted-foreground">Active Deals</div>
-                </CardContent>
+                </CardBody>
               </Card>
               
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <CardContent className="p-6 text-center">
+                <CardBody className="p-6 text-center">
                   <div className="bg-green-100 p-3 rounded-lg inline-block mb-4">
                     <Users className="h-8 w-8 text-green-600" />
                   </div>
@@ -102,11 +102,11 @@ export default function Home() {
                     {platformStats?.totalBusinesses || 0}
                   </div>
                   <div className="text-muted-foreground">Local Businesses</div>
-                </CardContent>
+                </CardBody>
               </Card>
               
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <CardContent className="p-6 text-center">
+                <CardBody className="p-6 text-center">
                   <div className="bg-amber-100 p-3 rounded-lg inline-block mb-4">
                     <CheckCircle className="h-8 w-8 text-amber-600" />
                   </div>
@@ -114,11 +114,11 @@ export default function Home() {
                     {platformStats?.totalRedemptions || 0}
                   </div>
                   <div className="text-muted-foreground">Voucher Redemptions</div>
-                </CardContent>
+                </CardBody>
               </Card>
               
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <CardContent className="p-6 text-center">
+                <CardBody className="p-6 text-center">
                   <div className="bg-blue-100 p-3 rounded-lg inline-block mb-4">
                     <Calendar className="h-8 w-8 text-blue-600" />
                   </div>
@@ -126,7 +126,7 @@ export default function Home() {
                     {platformStats?.totalUsers || 0}
                   </div>
                   <div className="text-muted-foreground">Active Members</div>
-                </CardContent>
+                </CardBody>
               </Card>
             </div>
           </div>
@@ -147,12 +147,12 @@ export default function Home() {
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <div className="h-48 bg-muted" />
-                    <CardContent className="p-6 space-y-3">
+                    <CardBody className="p-6 space-y-3">
                       <div className="h-4 bg-muted rounded w-1/4" />
                       <div className="h-6 bg-muted rounded w-3/4" />
                       <div className="h-4 bg-muted rounded w-full" />
                       <div className="h-4 bg-muted rounded w-2/3" />
-                    </CardContent>
+                    </CardBody>
                   </Card>
                 ))}
               </div>
@@ -192,7 +192,7 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <Card className="text-center">
-                <CardContent className="p-8">
+                <CardBody className="p-8">
                   <div className="bg-primary/10 p-4 rounded-full inline-block mb-6">
                     <span className="text-2xl font-bold text-primary">1</span>
                   </div>
@@ -200,11 +200,11 @@ export default function Home() {
                   <p className="text-muted-foreground">
                     Register with your postcode to verify you're within 10 miles of St Andrews
                   </p>
-                </CardContent>
+                </CardBody>
               </Card>
               
               <Card className="text-center">
-                <CardContent className="p-8">
+                <CardBody className="p-8">
                   <div className="bg-primary/10 p-4 rounded-full inline-block mb-6">
                     <span className="text-2xl font-bold text-primary">2</span>
                   </div>
@@ -212,11 +212,11 @@ export default function Home() {
                   <p className="text-muted-foreground">
                     Explore exclusive offers from restaurants, bars, cafes, and more
                   </p>
-                </CardContent>
+                </CardBody>
               </Card>
               
               <Card className="text-center">
-                <CardContent className="p-8">
+                <CardBody className="p-8">
                   <div className="bg-primary/10 p-4 rounded-full inline-block mb-6">
                     <span className="text-2xl font-bold text-primary">3</span>
                   </div>
@@ -224,7 +224,7 @@ export default function Home() {
                   <p className="text-muted-foreground">
                     Build your voucher wallet and redeem at participating businesses
                   </p>
-                </CardContent>
+                </CardBody>
               </Card>
             </div>
           </div>

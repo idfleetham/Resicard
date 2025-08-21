@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -155,7 +155,7 @@ export default function SubscriptionManagement({
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardBody className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium">Type</p>
@@ -218,7 +218,7 @@ export default function SubscriptionManagement({
                 </Dialog>
               </div>
             )}
-          </CardContent>
+          </CardBody>
         </Card>
       )}
 
@@ -230,7 +230,7 @@ export default function SubscriptionManagement({
             Select a new subscription type and plan
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardBody className="space-y-6">
           {/* Subscription Type Selection */}
           <div className="space-y-3">
             <label className="text-sm font-medium">Subscription Type</label>
@@ -270,7 +270,7 @@ export default function SubscriptionManagement({
                     } ${isCurrentPlan(selectedType, planKey) ? 'ring-2 ring-green-500' : ''}`}
                     onClick={() => setSelectedPlan(planKey)}
                   >
-                    <CardContent className="p-4">
+                    <CardBody className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium capitalize">{planKey}</h3>
                         {isCurrentPlan(selectedType, planKey) && (
@@ -291,7 +291,7 @@ export default function SubscriptionManagement({
                           Save {planData.discount}% compared to monthly
                         </p>
                       )}
-                    </CardContent>
+                    </CardBody>
                   </Card>
                 ))}
               </div>
@@ -334,7 +334,7 @@ export default function SubscriptionManagement({
               )}
             </div>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Stripe Checkout Dialog */}

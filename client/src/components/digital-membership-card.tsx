@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardBody } from "@/ui/Card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { QrCode, User, MapPin, Calendar } from "lucide-react";
@@ -31,7 +31,7 @@ export default function DigitalMembershipCard({
           }}
         />
         <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
-        <CardContent className="p-6 relative z-10">
+        <CardBody className="p-6 relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-black">Resicard</h2>
@@ -94,13 +94,13 @@ export default function DigitalMembershipCard({
               </div>
             )}
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
       {/* Voucher Details for Redemption */}
       {showVoucherDetails && voucher && (
         <Card className="border-2 border-dashed border-primary">
-          <CardContent className="p-6">
+          <CardBody className="p-6">
             <div className="text-center">
               <h3 className="text-xl font-bold text-primary mb-2">Voucher for Redemption</h3>
               <div className="bg-primary/5 rounded-lg p-4 mb-4">
@@ -151,7 +151,7 @@ export default function DigitalMembershipCard({
                 <p><strong>Status:</strong> {voucher.isUsed ? 'Used' : 'Ready to Use'}</p>
               </div>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       )}
     </div>

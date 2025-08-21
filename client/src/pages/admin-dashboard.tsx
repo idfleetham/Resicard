@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
+import { MetricTile } from "@/ui/MetricTile";
+import { EmptyState } from "@/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -231,13 +233,13 @@ export default function AdminDashboard() {
         <Navigation />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <Card className="max-w-md mx-4">
-            <CardContent className="p-8 text-center">
+            <CardBody className="p-8 text-center">
               <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-bold text-foreground mb-2">Access Denied</h2>
               <p className="text-muted-foreground">
                 You need administrator privileges to access this page.
               </p>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
       </>
@@ -251,7 +253,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Admin Header */}
           <Card className="mb-8">
-            <CardContent className="p-6">
+            <CardBody className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">Platform Administration</h1>
@@ -273,13 +275,13 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-            </CardContent>
+            </CardBody>
           </Card>
 
           {/* Admin Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="flex items-center">
                   <div className="bg-amber-100 p-3 rounded-lg">
                     <Hourglass className="h-6 w-6 text-amber-600" />
@@ -289,11 +291,11 @@ export default function AdminDashboard() {
                     <p className="text-2xl font-bold text-foreground">{pendingBusinesses.length + pendingDocuments.length}</p>
                   </div>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="flex items-center">
                   <div className="bg-green-100 p-3 rounded-lg">
                     <Store className="h-6 w-6 text-green-600" />
@@ -305,11 +307,11 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="flex items-center">
                   <div className="bg-blue-100 p-3 rounded-lg">
                     <Users className="h-6 w-6 text-blue-600" />
@@ -319,11 +321,11 @@ export default function AdminDashboard() {
                     <p className="text-2xl font-bold text-foreground">{residents.length}</p>
                   </div>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="flex items-center">
                   <div className="bg-purple-100 p-3 rounded-lg">
                     <Ticket className="h-6 w-6 text-purple-600" />
@@ -333,13 +335,13 @@ export default function AdminDashboard() {
                     <p className="text-2xl font-bold text-foreground">{stats?.totalDeals || 0}</p>
                   </div>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
           </div>
 
           {/* Tabs Navigation */}
           <Card className="mb-8">
-            <CardContent className="p-0">
+            <CardBody className="p-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-5 bg-transparent h-auto p-0">
                     <TabsTrigger 
@@ -816,7 +818,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="space-y-6">
                       <Card>
-                        <CardContent className="p-4">
+                        <CardBody className="p-4">
                           <h4 className="text-base font-semibold text-foreground mb-4">Location Settings</h4>
                           <div className="space-y-4">
                             <div>
@@ -847,11 +849,11 @@ export default function AdminDashboard() {
                               </p>
                             </div>
                           </div>
-                        </CardContent>
+                        </CardBody>
                       </Card>
 
                       <Card>
-                        <CardContent className="p-4">
+                        <CardBody className="p-4">
                           <h4 className="text-base font-semibold text-foreground mb-4">Commission Settings</h4>
                           <div className="space-y-4">
                             <div>
@@ -884,13 +886,13 @@ export default function AdminDashboard() {
                               </p>
                             </div>
                           </div>
-                        </CardContent>
+                        </CardBody>
                       </Card>
                     </div>
 
                     <div className="space-y-6">
                       <Card>
-                        <CardContent className="p-4">
+                        <CardBody className="p-4">
                           <h4 className="text-base font-semibold text-foreground mb-4">Membership Settings</h4>
                           <div className="space-y-4">
                             <div>
@@ -914,11 +916,11 @@ export default function AdminDashboard() {
                               </Label>
                             </div>
                           </div>
-                        </CardContent>
+                        </CardBody>
                       </Card>
 
                       <Card>
-                        <CardContent className="p-4">
+                        <CardBody className="p-4">
                           <h4 className="text-base font-semibold text-foreground mb-4">Notification Settings</h4>
                           <div className="space-y-3">
                             <div className="flex items-center space-x-2">
@@ -940,7 +942,7 @@ export default function AdminDashboard() {
                               </Label>
                             </div>
                           </div>
-                        </CardContent>
+                        </CardBody>
                       </Card>
                     </div>
                   </div>
@@ -953,7 +955,7 @@ export default function AdminDashboard() {
                   </div>
                 </TabsContent>
               </Tabs>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
       </div>

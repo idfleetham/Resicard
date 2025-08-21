@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -169,23 +169,23 @@ export default function OffersManager() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="bg-card/90 border border-dim shadow-elev-1">
-              <CardContent className="p-6">
+              <CardBody className="p-6">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20 bg-surface" />
                   <Skeleton className="h-8 w-12 bg-surface" />
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
           ))}
         </div>
         <Card className="bg-card/90 border border-dim shadow-elev-1">
-          <CardContent className="p-6">
+          <CardBody className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full bg-surface" />
               ))}
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
     );
@@ -400,7 +400,7 @@ export default function OffersManager() {
             Manage all your business offers and track their performance
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-5">
+        <CardBody className="p-5">
           {deals.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -504,7 +504,7 @@ export default function OffersManager() {
               </Table>
             </div>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
     </motion.div>
   );

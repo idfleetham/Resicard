@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -209,7 +209,7 @@ export default function MerchantSettings() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
-          <CardContent>
+          <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Authentication Required</h3>
             <p className="text-slate-400 mb-4">Please log in to access merchant settings.</p>
             <Button 
@@ -218,7 +218,7 @@ export default function MerchantSettings() {
             >
               Go to Login
             </Button>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
     );
@@ -228,7 +228,7 @@ export default function MerchantSettings() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
-          <CardContent>
+          <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Access Denied</h3>
             <p className="text-slate-400 mb-4">This page is only accessible to merchant accounts.</p>
             <Button 
@@ -237,7 +237,7 @@ export default function MerchantSettings() {
             >
               Go to Home
             </Button>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
     );
@@ -280,7 +280,7 @@ export default function MerchantSettings() {
         {/* Navigation */}
         <div className="lg:col-span-1">
           <Card className="bg-card/90 border border-dim shadow-elev-1">
-            <CardContent className="p-4">
+            <CardBody className="p-4">
               <nav className="space-y-2">
                 <Button
                   variant={activeTab === "business" ? "default" : "ghost"}
@@ -331,7 +331,7 @@ export default function MerchantSettings() {
                   API Access
                 </Button>
               </nav>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
 
@@ -353,7 +353,7 @@ export default function MerchantSettings() {
                     Update your business information and contact details
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardBody>
                 <Form {...businessForm}>
                   <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} className="space-y-4">
                     <FormField
@@ -458,7 +458,7 @@ export default function MerchantSettings() {
                     </Button>
                   </form>
                 </Form>
-              </CardContent>
+              </CardBody>
             </Card>
             </motion.div>
           )}
@@ -479,7 +479,7 @@ export default function MerchantSettings() {
                   Set your operating hours for customer reference
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardBody>
                 <Form {...hoursForm}>
                   <form onSubmit={hoursForm.handleSubmit(onHoursSubmit)} className="space-y-4">
                     {Object.entries(hoursForm.getValues()).map(([day, hours]) => (
@@ -513,7 +513,7 @@ export default function MerchantSettings() {
                     </Button>
                   </form>
                 </Form>
-              </CardContent>
+              </CardBody>
             </Card>
             </motion.div>
           )}
@@ -529,7 +529,7 @@ export default function MerchantSettings() {
                   Upload your business logo and manage branding
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardBody className="space-y-6">
                 <div>
                   <h4 className="font-medium mb-4">Current Logo</h4>
                   <div className="flex items-center space-x-4">
@@ -573,7 +573,7 @@ export default function MerchantSettings() {
                     this would integrate with cloud storage for secure file uploads.
                   </p>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
           )}
 
@@ -588,7 +588,7 @@ export default function MerchantSettings() {
                   Manage your API key for integrations and third-party access
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardBody className="space-y-6">
                 <div>
                   <h4 className="font-medium mb-2">API Key</h4>
                   <div className="flex items-center space-x-2">
@@ -636,7 +636,7 @@ export default function MerchantSettings() {
                     Connect third-party applications using your API key to automate offer management and redemption processing.
                   </p>
                 </div>
-              </CardContent>
+              </CardBody>
             </Card>
           )}
 
@@ -656,7 +656,7 @@ export default function MerchantSettings() {
                     Set your operating hours for customer reference
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardBody>
                   <Form {...hoursForm}>
                     <form onSubmit={hoursForm.handleSubmit(onHoursSubmit)} className="space-y-4">
                       {Object.entries(hoursForm.getValues()).map(([day, hours]) => (
@@ -688,7 +688,7 @@ export default function MerchantSettings() {
                       </Button>
                     </form>
                   </Form>
-                </CardContent>
+                </CardBody>
               </Card>
             </motion.div>
           )}
@@ -709,7 +709,7 @@ export default function MerchantSettings() {
                     Upload your business logo and customize branding
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardBody className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-medium text-slate-200">Business Logo</h4>
                     <div className="flex items-start space-x-4">
@@ -741,7 +741,7 @@ export default function MerchantSettings() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </CardBody>
               </Card>
             </motion.div>
           )}
@@ -762,7 +762,7 @@ export default function MerchantSettings() {
                     Manage API keys for third-party integrations
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardBody className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-medium text-slate-200">API Key</h4>
                     <div className="flex items-center space-x-2">
@@ -816,7 +816,7 @@ export default function MerchantSettings() {
                       Connect third-party applications using your API key to automate offer management and redemption processing.
                     </p>
                   </div>
-                </CardContent>
+                </CardBody>
               </Card>
             </motion.div>
           )}
