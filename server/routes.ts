@@ -7,6 +7,9 @@ import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@sha
 import { eq, sql, and, gt, desc, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool } from "@neondatabase/serverless";
+import multer from "multer";
+import express from "express";
+import { merchants, deals } from "@shared/schema";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -73,7 +76,18 @@ if (!connectionString) {
 const pool = new Pool({ connectionString });
 const db = drizzle(pool);
 
+// Setup multer for file uploads
+const upload = multer({ dest: "uploads/" });
+
+// Helper function to get merchant ID from authenticated user
+function getMerchantId(req: any): number {
+  return req.user.id;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Serve uploaded files statically
+  app.use("/uploads", express.static("uploads"));
   
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
@@ -251,6 +265,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error updating merchant business details:', error);
       res.status(500).json({ message: "Failed to update business details" });
+    }
+  });
+
+  // Update merchant profile settings
+  app.put("/api/merchant", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = getMerchantId(req);
+      const payload = req.body;
+      
+      // Update user table business details
+      const updatedUser = await storage.updateUserBusinessDetails(merchantId, {
+        businessName: payload.name,
+        businessPhone: payload.phone,
+        businessAddress: payload.address,
+        email: payload.email,
+      });
+      
+      res.json({ ...updatedUser, password: undefined });
+    } catch (error: any) {
+      console.error('Error updating merchant profile:', error);
+      res.status(500).json({ message: "Failed to update merchant profile" });
+    }
+  });
+
+  // Upload merchant logo
+  app.post("/api/merchant/upload/logo", authenticateToken, requireRole('merchant'), upload.single("file"), async (req, res) => {
+    try {
+      const merchantId = getMerchantId(req);
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const logoUrl = `/uploads/${req.file.filename}`;
+      
+      // Update user profile photo field to store logo URL
+      const updatedUser = await storage.updateUser(merchantId, {
+        profilePhoto: logoUrl
+      });
+      
+      res.json({ ...updatedUser, password: undefined });
+    } catch (error: any) {
+      console.error('Error uploading merchant logo:', error);
+      res.status(500).json({ message: "Failed to upload logo" });
+    }
+  });
+
+  // Upload offer image
+  app.post("/api/merchant/offers/:id/upload", authenticateToken, requireRole('merchant'), upload.single("file"), async (req, res) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      const merchantId = getMerchantId(req);
+      
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      // Verify merchant owns this deal
+      const deal = await storage.getDeal(dealId);
+      if (!deal || deal.merchantId !== merchantId) {
+        return res.status(403).json({ error: "Not authorized to update this offer" });
+      }
+      
+      const imageUrl = `/uploads/${req.file.filename}`;
+      
+      // Update deal with new image URL
+      const updatedDeal = await storage.updateDeal(dealId, {
+        imageUrl: imageUrl
+      });
+      
+      res.json(updatedDeal);
+    } catch (error: any) {
+      console.error('Error uploading offer image:', error);
+      res.status(500).json({ message: "Failed to upload offer image" });
     }
   });
 

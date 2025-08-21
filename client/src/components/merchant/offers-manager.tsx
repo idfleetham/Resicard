@@ -18,7 +18,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useOffers, useToggleOffer, useUpdateOffer } from "@/hooks/use-merchant-offers";
-import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package } from "lucide-react";
+import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -34,10 +34,42 @@ export default function OffersManager() {
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [uploadingImageForOffer, setUploadingImageForOffer] = useState<number | null>(null);
 
   const { data: deals = [], isLoading } = useOffers();
   const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
   const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
+
+  const uploadOfferImageMutation = useMutation({
+    mutationFn: ({ offerId, file }: { offerId: number; file: File }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return fetch(`/api/merchant/offers/${offerId}/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      }).then(res => res.json());
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
+      toast({ title: "Image uploaded successfully" });
+      setUploadingImageForOffer(null);
+      // Update form if currently editing this offer
+      if (editingDeal?.id === variables.offerId) {
+        form.setValue("imageUrl", data.imageUrl);
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error uploading image",
+        description: error.message,
+        variant: "destructive",
+      });
+      setUploadingImageForOffer(null);
+    },
+  });
 
   const createDealMutation = useMutation({
     mutationFn: (data: CreateDealData) => {
@@ -247,6 +279,43 @@ export default function OffersManager() {
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-200">Offer Image</FormLabel>
+                        <FormControl>
+                          <div className="space-y-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file && editingDeal?.id) {
+                                  setUploadingImageForOffer(editingDeal.id);
+                                  uploadOfferImageMutation.mutate({ offerId: editingDeal.id, file });
+                                }
+                              }}
+                              className="bg-slate-800 border-slate-700 text-slate-100"
+                              disabled={uploadOfferImageMutation.isPending}
+                            />
+                            {field.value && (
+                              <div className="mt-2">
+                                <img
+                                  src={field.value}
+                                  alt="Offer preview"
+                                  className="h-12 w-12 rounded-xl ring-1 ring-dim bg-white/[0.06] object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="flex justify-end space-x-2 pt-4">
                     <Button 
                       type="button" 
@@ -357,6 +426,7 @@ export default function OffersManager() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
+                    <TableHead className="text-soft">Image</TableHead>
                     <TableHead className="text-soft">Title</TableHead>
                     <TableHead className="text-soft">Discount</TableHead>
                     <TableHead className="text-soft">Category</TableHead>
@@ -369,6 +439,22 @@ export default function OffersManager() {
                 <TableBody className="divide-y divide-white/5">
                   {deals.map((deal: Deal) => (
                     <TableRow key={deal.id} className="hover:bg-white/[0.03]">
+                      <TableCell>
+                        <img
+                          src={deal.imageUrl || user?.profilePhoto || "/api/placeholder/64/64"}
+                          alt={deal.title}
+                          className="h-12 w-12 rounded-xl ring-1 ring-dim bg-white/[0.06] object-cover"
+                          onError={(e) => {
+                            // Fallback to merchant logo, then to placeholder
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== user?.profilePhoto && user?.profilePhoto) {
+                              target.src = user.profilePhoto;
+                            } else {
+                              target.src = "/api/placeholder/64/64";
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium text-fg">{deal.title}</TableCell>
                       <TableCell className="text-soft">{getDiscountText(deal)}</TableCell>
                       <TableCell className="text-soft">{deal.category}</TableCell>

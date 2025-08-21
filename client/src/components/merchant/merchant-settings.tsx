@@ -83,14 +83,42 @@ export default function MerchantSettings() {
 
   const updateBusinessMutation = useMutation({
     mutationFn: (data: BusinessDetailsData) =>
-      apiRequest("PUT", `/api/merchants/${user!.id}`, data),
+      apiRequest("PUT", "/api/merchant", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({ title: "Business details updated successfully" });
+      queryClient.invalidateQueries({ queryKey: ["merchant", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({ title: "Settings saved successfully" });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating business details",
+        title: "Error saving settings",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadLogoMutation = useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return fetch("/api/merchant/upload/logo", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      }).then(res => res.json());
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["merchant", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({ title: "Logo uploaded successfully" });
+      setLogoPreview(data.profilePhoto);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error uploading logo",
         description: error.message,
         variant: "destructive",
       });
@@ -138,12 +166,7 @@ export default function MerchantSettings() {
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
-        toast({ title: "Logo uploaded (preview only)" });
-      };
-      reader.readAsDataURL(file);
+      uploadLogoMutation.mutate(file);
     }
   };
 
