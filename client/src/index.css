@@ -35,16 +35,16 @@
   --ring: hsl(198, 88%, 48%);
   --radius: 0.5rem;
   
-  /* ---- DIM THEME ---- */
+  /* ---- RESICARD DARK THEME (DIM) ---- */
   --bg: 12 14 26;           /* #0C0E1A */
   --surface: 20 25 40;      /* #141928 */
   --surface-2: 28 33 50;    /* #1C2132 */
   --card: 30 36 58;         /* #1E243A */
-  --border: 255 255 255 / 0.10;
-  --border-strong: 255 255 255 / 0.18;
-  --muted: 148 163 184;     /* slate-400 */
   --fg: 226 232 240;        /* slate-200 */
   --fg-soft: 203 213 225;   /* slate-300 */
+  --muted: 148 163 184;     /* slate-400 */
+  --border: 255 255 255 / 0.12;
+  --border-strong: 255 255 255 / 0.18;
   --brand-1: 99 102 241;    /* indigo-500 */
   --brand-2: 139 92 246;    /* violet-500 */
   
@@ -62,14 +62,12 @@
   /* same as :root but easy to toggle later */
 }
 
-/* High contrast theme */
 [data-theme="high"] {
-  --bg: 18 22 36;
-  --surface: 36 44 68;
-  --surface-2: 46 56 85;
-  --card: 56 68 102;
-  --border: 255 255 255 / 0.30;
-  --border-strong: 255 255 255 / 0.45;
+  --surface: 24 28 45;
+  --surface-2: 30 36 58;
+  --card: 36 44 72;
+  --border: 255 255 255 / 0.18;
+  --border-strong: 255 255 255 / 0.26;
 }
 
 .dark {
@@ -158,11 +156,15 @@
 /* Theme utility helpers */
 .bg-app { background-color: rgb(var(--bg)); }
 .bg-surface { background-color: rgb(var(--surface)); }
-.bg-surface2 { background-color: rgb(var(--surface-2)); }
+.bg-surface-2 { background-color: rgb(var(--surface-2)); }
 .bg-card { background-color: rgb(var(--card)); }
 .text-fg { color: rgb(var(--fg)); }
-.text-fgsoft { color: rgb(var(--fg-soft)); }
-.text-soft { color: rgb(var(--muted)); }
-.border-dim { border-color: rgba(var(--border)); }
-.border-dimStrong { border-color: rgba(var(--border-strong)); }
-.ring-dim { box-shadow: 0 0 0 1px rgba(var(--border)); }
+.text-soft { color: rgb(var(--fg-soft)); }
+.border-dim { border-color: color-mix(in oklab, white 12%, transparent); }
+.border-dimStrong { border-color: color-mix(in oklab, white 18%, transparent); }
+
+/* Input baseline for dark mode */
+.input-dark {
+  @apply w-full rounded-lg text-fg placeholder:text-slate-500 border border-dim focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition;
+  background-color: rgb(var(--surface-2) / 0.9);
+}

@@ -123,28 +123,28 @@ export default function QRRedemption() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">QR & Code Redemption</h2>
-          <p className="text-gray-600">Redeem customer vouchers and generate QR codes for your offers</p>
+          <h2 className="text-2xl font-bold text-fg">QR & Code Redemption</h2>
+          <p className="text-soft">Redeem customer vouchers and generate QR codes for your offers</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Voucher Redemption */}
-        <Card>
+        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-fg">
               <Hash className="w-5 h-5" />
               <span>Redeem Voucher</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-soft">
               Enter voucher code or scan QR to process customer redemption
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                <TabsTrigger value="qr-scan">QR Scan</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-surface border-dim">
+                <TabsTrigger value="manual" className="data-[state=active]:bg-surface2 data-[state=active]:text-brand1">Manual Entry</TabsTrigger>
+                <TabsTrigger value="qr-scan" className="data-[state=active]:bg-surface2 data-[state=active]:text-brand1">QR Scan</TabsTrigger>
               </TabsList>
               
               <TabsContent value="manual" className="space-y-4">
@@ -155,6 +155,7 @@ export default function QRRedemption() {
                     placeholder="Enter voucher code"
                     value={voucherCode}
                     onChange={(e) => setVoucherCode(e.target.value)}
+                    className="input-dark"
                   />
                 </div>
                 
@@ -166,6 +167,7 @@ export default function QRRedemption() {
                     placeholder="Enter your staff PIN"
                     value={staffPin}
                     onChange={(e) => setStaffPin(e.target.value)}
+                    className="input-dark"
                   />
                 </div>
                 
@@ -178,8 +180,9 @@ export default function QRRedemption() {
                     placeholder="£0.00"
                     value={basketAmount}
                     onChange={(e) => setBasketAmount(e.target.value)}
+                    className="input-dark"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-soft mt-1">
                     Enter basket total for percentage discounts
                   </p>
                 </div>
@@ -204,9 +207,9 @@ export default function QRRedemption() {
               </TabsContent>
               
               <TabsContent value="qr-scan" className="space-y-4">
-                <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                  <Camera className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 mb-4">Scan customer QR code</p>
+                <div className="text-center py-8 border-2 border-dashed border-dim rounded-lg bg-surface/50">
+                  <Camera className="w-12 h-12 mx-auto mb-4 text-soft" />
+                  <p className="text-soft mb-4">Scan customer QR code</p>
                   <Button onClick={handleScanQR} disabled={isScanning}>
                     {isScanning ? (
                       <>
@@ -230,6 +233,7 @@ export default function QRRedemption() {
                     placeholder="Enter your staff PIN"
                     value={staffPin}
                     onChange={(e) => setStaffPin(e.target.value)}
+                    className="input-dark"
                   />
                 </div>
               </TabsContent>
@@ -238,13 +242,13 @@ export default function QRRedemption() {
         </Card>
 
         {/* QR Code Generation */}
-        <Card>
+        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-fg">
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-soft">
               Create QR codes for your offers to display in-store
             </CardDescription>
           </CardHeader>
@@ -256,6 +260,7 @@ export default function QRRedemption() {
                 placeholder="Enter offer ID or select from list"
                 value={selectedOffer}
                 onChange={(e) => setSelectedOffer(e.target.value)}
+                className="input-dark"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Placeholder: In full implementation, this would be a dropdown of active offers
