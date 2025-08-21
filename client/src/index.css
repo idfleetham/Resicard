@@ -62,6 +62,15 @@
   /* same as :root but easy to toggle later */
 }
 
+/* High contrast theme */
+[data-theme="high"] {
+  --surface: 24 28 45;
+  --surface-2: 30 36 58;
+  --card: 36 44 72;
+  --border: 255 255 255 / 0.18;
+  --border-strong: 255 255 255 / 0.26;
+}
+
 .dark {
   --background: hsl(222, 84%, 5%);
   --foreground: hsl(210, 40%, 98%);
@@ -145,12 +154,14 @@
   background: hsl(var(--primary));
 }
 
-/* Dim theme utility helpers */
+/* Theme utility helpers */
 .bg-app { background-color: rgb(var(--bg)); }
 .bg-surface { background-color: rgb(var(--surface)); }
-.bg-surface-2 { background-color: rgb(var(--surface-2)); }
+.bg-surface2 { background-color: rgb(var(--surface-2)); }
 .bg-card { background-color: rgb(var(--card)); }
 .text-fg { color: rgb(var(--fg)); }
-.text-soft { color: rgb(var(--fg-soft)); }
-.border-dim { border-color: color-mix(in oklab, white 12%, transparent); }
-.ring-dim { box-shadow: 0 0 0 1px color-mix(in oklab, white 16%, transparent); }
+.text-fgsoft { color: rgb(var(--fg-soft)); }
+.text-soft { color: rgb(var(--muted)); }
+.border-dim { border-color: rgba(var(--border)); }
+.border-dimStrong { border-color: rgba(var(--border-strong)); }
+.ring-dim { box-shadow: 0 0 0 1px rgba(var(--border)); }

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { 
   BarChart3, 
@@ -95,6 +96,18 @@ export default function MerchantPortal() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
+                  <Select
+                    defaultValue="dim"
+                    onValueChange={(v) => document.documentElement.setAttribute('data-theme', v)}
+                  >
+                    <SelectTrigger className="w-[160px] border-dim bg-surface">
+                      <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-surface2 border-dim">
+                      <SelectItem value="dim">Dim</SelectItem>
+                      <SelectItem value="high">High Contrast</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
