@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Ticket, 
   Users, 
@@ -227,9 +228,9 @@ export default function MerchantDashboard() {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div data-theme="dim" className="min-h-screen bg-bg text-fg flex items-center justify-center">
           <div className="text-center">
-            <p className="text-muted-foreground">Please log in to access your dashboard.</p>
+            <p className="text-soft">Please log in to access your dashboard.</p>
           </div>
         </div>
       </>
@@ -240,18 +241,18 @@ export default function MerchantDashboard() {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Card variant="elevated" className="max-w-md mx-4">
+        <div data-theme="dim" className="min-h-screen bg-bg text-fg flex items-center justify-center">
+          <Card variant="elevated" className="max-w-md mx-4 bg-card">
             <CardBody className="p-8 text-center">
-              <div className="bg-amber-100 p-4 rounded-full inline-block mb-4">
-                <Users className="h-8 w-8 text-amber-600" />
+              <div className="bg-amber-500/20 p-4 rounded-full inline-block mb-4">
+                <Users className="h-8 w-8 text-amber-400" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Pending Verification</h2>
-              <p className="text-muted-foreground mb-4">
+              <h2 className="text-xl font-bold text-fg mb-2">Pending Verification</h2>
+              <p className="text-soft mb-4">
                 Your business application is currently under review by our admin team. 
                 You'll receive an email notification once your account is verified.
               </p>
-              <Badge className="bg-amber-100 text-amber-800">
+              <Badge className="bg-amber-500/20 text-amber-400">
                 Verification Pending
               </Badge>
             </CardBody>
@@ -264,7 +265,7 @@ export default function MerchantDashboard() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-slate-50">
+      <div data-theme="dim" className="min-h-screen bg-bg text-fg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Merchant Header */}
           <Card variant="elevated" className="mb-8">
@@ -295,9 +296,41 @@ export default function MerchantDashboard() {
                   </div>
                 </div>
                 
-                <Badge className="bg-green-100 text-green-800">
-                  Verified Business
-                </Badge>
+                <div className="flex items-center space-x-4">
+                  <Select
+                    defaultValue="dim"
+                    onValueChange={(v) => {
+                      console.log('Theme changing to:', v);
+                      
+                      // Apply theme attribute
+                      document.documentElement.setAttribute('data-theme', v);
+                      document.body.setAttribute('data-theme', v);
+                      
+                      // Force a complete style recalculation
+                      const root = document.documentElement;
+                      root.style.setProperty('--force-update', Math.random().toString());
+                      
+                      // Also trigger a class change to force re-render
+                      root.classList.remove('theme-dim', 'theme-high');
+                      root.classList.add(`theme-${v}`);
+                      
+                      // Log for debugging
+                      console.log('Theme applied, data-theme:', root.getAttribute('data-theme'));
+                    }}
+                  >
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dim">Dim</SelectItem>
+                      <SelectItem value="high">High Contrast</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Badge className="bg-green-100 text-green-800">
+                    Verified Business
+                  </Badge>
+                </div>
               </div>
             </CardBody>
           </Card>

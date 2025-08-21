@@ -32,7 +32,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-border">
+    <nav className="bg-surface shadow-sm border-b border-dim">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -41,8 +41,8 @@ export default function Navigation() {
               className="flex-shrink-0 flex items-center hover:opacity-80 transition-opacity"
             >
               <MapPin className="h-6 w-6 text-primary mr-2" />
-              <span className="text-xl font-bold text-foreground">Resicard</span>
-              <span className="text-sm text-muted-foreground ml-2">St Andrews</span>
+              <span className="text-xl font-bold text-fg">Resicard</span>
+              <span className="text-sm text-soft ml-2">St Andrews</span>
             </button>
           </div>
           
