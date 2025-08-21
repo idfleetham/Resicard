@@ -31,11 +31,15 @@ function authenticateToken(req: any, res: any, next: any) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.log('No token provided in request');
     return res.sendStatus(401);
   }
 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) return res.sendStatus(403);
+    if (err) {
+      console.log('JWT verification error:', err.message);
+      return res.sendStatus(403);
+    }
     req.user = user;
     next();
   });
