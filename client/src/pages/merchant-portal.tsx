@@ -22,12 +22,12 @@ import {
 } from "lucide-react";
 
 // Import components for each tab
-import OffersManager from "@/components/merchant/offers-manager";
-import RedemptionsFeed from "@/components/merchant/redemptions-feed";
-import QRRedemption from "@/components/merchant/qr-redemption";
-import BillingPreview from "@/components/merchant/billing-preview";
-import TeamManagement from "@/components/merchant/team-management";
-import MerchantSettings from "@/components/merchant/merchant-settings";
+import OffersManager from "../components/merchant/offers-manager";
+import RedemptionsFeed from "../components/merchant/redemptions-feed";
+import QRRedemption from "../components/merchant/qr-redemption";
+import BillingPreview from "../components/merchant/billing-preview";
+import TeamManagement from "../components/merchant/team-management";
+import MerchantSettings from "../components/merchant/merchant-settings";
 
 export default function MerchantPortal() {
   const { user, isLoading, logout } = useAuth();

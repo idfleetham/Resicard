@@ -31,7 +31,7 @@ export default function OffersManager() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
-  const { data: deals = [], isLoading } = useQuery({
+  const { data: deals = [], isLoading } = useQuery<Deal[]>({
     queryKey: ["/api/deals/my-deals"],
     enabled: !!user?.id,
   });
@@ -83,8 +83,8 @@ export default function OffersManager() {
       description: "",
       category: "",
       discountType: "percentage",
-      discountValue: "0",
-      originalValue: "0",
+      discountValue: "",
+      originalValue: "",
       usageLimit: 100,
       expiryDate: "",
       terms: "",

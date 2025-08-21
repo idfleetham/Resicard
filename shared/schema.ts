@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -32,6 +32,22 @@ export const users = pgTable("users", {
   documentReviewedAt: timestamp("document_reviewed_at"),
   documentReviewedBy: integer("document_reviewed_by"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
+  // Merchant portal fields
+  merchantId: uuid("merchant_id").references(() => merchants.id),
+  staffPin: text("staff_pin"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const billingRuns = pgTable("billing_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
+  redemptionCount: integer("redemption_count").default(0),
+  feeType: text("fee_type").$type<"per_redemption"|"percent_of_discount">().default("per_redemption"),
+  feeValue: numeric("fee_value", { precision: 10, scale: 2 }).default("0.50"),
+  totalFees: numeric("total_fees", { precision: 12, scale: 2 }).default("0.00"),
+  status: text("status").$type<"draft"|"pending_dd"|"collected">().default("draft"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -42,6 +58,41 @@ export const familyMembers = pgTable("family_members", {
   surname: text("surname").notNull(),
   age: integer("age").notNull(),
   relationship: text("relationship").notNull(), // 'spouse', 'child', 'other'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Merchant entities
+export const merchants = pgTable("merchants", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  logoUrl: text("logo_url"),
+  businessHours: text("business_hours"), // JSON string
+  apiKey: text("api_key"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const offers = pgTable("offers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  category: text("category").notNull(),
+  type: text("type").$type<"percent"|"fixed"|"set_menu">().default("percent"),
+  percentOff: integer("percent_off"),
+  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
+  originalValue: numeric("original_value", { precision: 10, scale: 2 }),
+  usageLimit: integer("usage_limit").notNull(),
+  usageCount: integer("usage_count").default(0),
+  validFrom: date("valid_from"),
+  validTo: date("valid_to"),
+  daysOfWeek: text("days_of_week"), // "mon,tue,wed" format
+  active: boolean("active").default(true),
+  archived: boolean("archived").default(false),
+  terms: text("terms"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -64,11 +115,21 @@ export const deals = pgTable("deals", {
 });
 
 export const redemptions = pgTable("redemptions", {
-  id: serial("id").primaryKey(),
-  dealId: integer("deal_id").notNull(),
-  userId: integer("user_id").notNull(),
-  redeemedAt: timestamp("redeemed_at").defaultNow(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id"),
+  offerId: uuid("offer_id").references(() => offers.id),
+  dealId: integer("deal_id"),
+  merchantId: uuid("merchant_id").references(() => merchants.id),
+  staffUserId: uuid("staff_user_id"),
+  verifiedAt: timestamp("verified_at").defaultNow(),
+  pricingType: text("pricing_type").$type<"percent"|"fixed"|"set_menu">(),
+  percentOff: integer("percent_off"),
+  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
+  basketSubtotal: numeric("basket_subtotal", { precision: 10, scale: 2 }),
+  calculatedDiscount: numeric("calculated_discount", { precision: 10, scale: 2 }),
   value: decimal("value", { precision: 10, scale: 2 }),
+  redeemedAt: timestamp("redeemed_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const vouchers = pgTable("vouchers", {
@@ -103,6 +164,7 @@ export const insertFamilyMemberSchema = createInsertSchema(familyMembers).pick({
   relationship: true,
 });
 
+// Schema for legacy deals (backward compatibility)
 export const insertDealSchema = createInsertSchema(deals).pick({
   title: true,
   description: true,
@@ -116,10 +178,55 @@ export const insertDealSchema = createInsertSchema(deals).pick({
   imageUrl: true,
 });
 
+// Schema for new offers
+export const insertOfferSchema = createInsertSchema(offers).pick({
+  title: true,
+  description: true,
+  category: true,
+  type: true,
+  percentOff: true,
+  fixedPrice: true,
+  originalValue: true,
+  usageLimit: true,
+  validFrom: true,
+  validTo: true,
+  daysOfWeek: true,
+  terms: true,
+  imageUrl: true,
+});
+
+export const insertMerchantSchema = createInsertSchema(merchants).pick({
+  name: true,
+  email: true,
+  phone: true,
+  address: true,
+  logoUrl: true,
+  businessHours: true,
+});
+
 export const insertRedemptionSchema = createInsertSchema(redemptions).pick({
   dealId: true,
+  offerId: true,
   userId: true,
+  merchantId: true,
+  staffUserId: true,
+  pricingType: true,
+  percentOff: true,
+  fixedPrice: true,
+  basketSubtotal: true,
+  calculatedDiscount: true,
   value: true,
+});
+
+export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
+  merchantId: true,
+  periodStart: true,
+  periodEnd: true,
+  redemptionCount: true,
+  feeType: true,
+  feeValue: true,
+  totalFees: true,
+  status: true,
 });
 
 export const insertVoucherSchema = createInsertSchema(vouchers).pick({
@@ -135,10 +242,16 @@ export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
 export type Deal = typeof deals.$inferSelect;
+export type InsertOffer = z.infer<typeof insertOfferSchema>;
+export type Offer = typeof offers.$inferSelect;
+export type InsertMerchant = z.infer<typeof insertMerchantSchema>;
+export type Merchant = typeof merchants.$inferSelect;
 export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
 export type Redemption = typeof redemptions.$inferSelect;
 export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type Voucher = typeof vouchers.$inferSelect;
+export type InsertBillingRun = z.infer<typeof insertBillingRunSchema>;
+export type BillingRun = typeof billingRuns.$inferSelect;
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

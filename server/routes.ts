@@ -1012,6 +1012,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Merchant Portal API Routes
+  
+  // Get merchant's own deals
+  app.get("/api/deals/my-deals", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const deals = await storage.getDealsByMerchant(req.user.id);
+      res.json(deals);
+    } catch (error) {
+      console.error("Error fetching merchant deals:", error);
+      res.status(500).json({ error: "Failed to fetch deals" });
+    }
+  });
+
+  // Get redemptions for a merchant
+  app.get("/api/redemptions/merchant/:merchantId?", authenticateToken, requireRole('merchant'), async (req, res) => {
+    const merchantId = req.params.merchantId ? parseInt(req.params.merchantId) : req.user.id;
+    
+    // Ensure merchant can only access their own redemptions
+    if (merchantId !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    try {
+      const redemptions = await storage.getRedemptionsByMerchant(merchantId);
+      res.json(redemptions);
+    } catch (error) {
+      console.error("Error fetching redemptions:", error);
+      res.status(500).json({ error: "Failed to fetch redemptions" });
+    }
+  });
+
+  // Process voucher redemption
+  app.post("/api/redemptions/redeem", authenticateToken, requireRole('merchant'), async (req, res) => {
+    const { voucherCode, staffPin, basketAmount } = req.body;
+
+    if (!voucherCode || !staffPin) {
+      return res.status(400).json({ error: "Voucher code and staff PIN required" });
+    }
+
+    try {
+      // Mock redemption logic
+      const mockDiscount = basketAmount ? parseFloat(basketAmount) * 0.2 : 10.00;
+      
+      res.json({
+        success: true,
+        discount: mockDiscount.toFixed(2),
+        message: "Voucher redeemed successfully"
+      });
+    } catch (error) {
+      console.error("Error redeeming voucher:", error);
+      res.status(500).json({ error: "Failed to redeem voucher" });
+    }
+  });
+
+  // Generate QR code for offer
+  app.post("/api/offers/generate-qr", authenticateToken, requireRole('merchant'), async (req, res) => {
+    const { offerId } = req.body;
+
+    if (!offerId) {
+      return res.status(400).json({ error: "Offer ID required" });
+    }
+
+    try {
+      const qrData = `OFFER:${offerId}:${Date.now()}`;
+      
+      res.json({
+        qrCode: qrData,
+        offerId: offerId,
+        generatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+      res.status(500).json({ error: "Failed to generate QR code" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

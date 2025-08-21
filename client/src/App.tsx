@@ -12,6 +12,7 @@ import Register from "@/pages/register";
 import AdminSignup from "@/pages/admin-signup";
 import ResidentDashboard from "@/pages/resident-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
+import MerchantPortal from "@/pages/merchant-portal";
 import AdminDashboard from "@/pages/admin-dashboard";
 import EditProfile from "@/pages/edit-profile";
 
@@ -26,7 +27,7 @@ function Router() {
       <Route path="/merchant-dashboard" component={MerchantDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/resident" component={ResidentDashboard} />
-      <Route path="/merchant" component={MerchantDashboard} />
+      <Route path="/merchant" component={MerchantPortal} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/edit-profile" component={EditProfile} />
       <Route component={NotFound} />
