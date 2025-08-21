@@ -72,18 +72,17 @@ export default function RedemptionsFeed() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Redemptions Feed</h2>
-          <p className="text-gray-600">Track customer redemptions and export reports</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={handleExportCSV} disabled={filteredRedemptions.length === 0}>
+      {/* Hero Header */}
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-fg">Redemptions</h1>
+            <p className="text-soft">Track and manage customer voucher redemptions</p>
+          </div>
+          <Button 
+            onClick={handleExportCSV}
+            className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </Button>
@@ -92,52 +91,45 @@ export default function RedemptionsFeed() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Redemptions</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-soft">Total Redemptions</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getTotalRedemptions()}</div>
-            <p className="text-xs text-muted-foreground">
-              Last {dateRange === "7days" ? "7 days" : dateRange === "30days" ? "30 days" : "90 days"}
-            </p>
+            <div className="text-2xl font-bold text-fg">{getTotalRedemptions()}</div>
           </CardContent>
         </Card>
-        <Card>
+        
+        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Discount Value</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-soft">Total Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£{getTotalValue()}</div>
-            <p className="text-xs text-muted-foreground">
-              Provided to customers
-            </p>
+            <div className="text-2xl font-bold text-fg">£{getTotalValue()}</div>
           </CardContent>
         </Card>
-        <Card>
+        
+        <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Per Redemption</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-soft">This Period</CardTitle>
+            <Calendar className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              £{getTotalRedemptions() > 0 ? (parseFloat(getTotalValue()) / getTotalRedemptions()).toFixed(2) : "0.00"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Average discount
-            </p>
+            <div className="text-2xl font-bold text-fg">{filteredRedemptions.length}</div>
           </CardContent>
         </Card>
       </div>
 
+
+
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
+      <Card className="bg-card/90 border border-dim shadow-elev-1">
+        <CardHeader className="border-b border-dim">
+          <CardTitle className="text-lg text-fg">Filters</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Search</label>
@@ -188,18 +180,18 @@ export default function RedemptionsFeed() {
       </Card>
 
       {/* Redemptions Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Redemptions</CardTitle>
-          <CardDescription>
+      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
+        <CardHeader className="border-b border-dim">
+          <CardTitle className="text-fg">Recent Redemptions</CardTitle>
+          <CardDescription className="text-soft">
             Live feed of customer redemptions for your offers
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           {filteredRedemptions.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No redemptions found</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-soft mb-4">No redemptions found</p>
+              <p className="text-sm text-softer">
                 {redemptions.length === 0 
                   ? "No customer has redeemed your offers yet"
                   : "Try adjusting your filters to see more redemptions"
@@ -207,46 +199,48 @@ export default function RedemptionsFeed() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Deal</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Original Price</TableHead>
-                  <TableHead>Staff</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRedemptions.map((redemption: any) => (
-                  <TableRow key={redemption.id}>
-                    <TableCell>
-                      {format(parseISO(redemption.redeemedAt || redemption.createdAt), "MMM d, yyyy HH:mm")}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {redemption.dealTitle || redemption.offerTitle || "Unknown Deal"}
-                    </TableCell>
-                    <TableCell>{redemption.customerName || "Guest"}</TableCell>
-                    <TableCell className="text-green-600 font-medium">
-                      £{redemption.calculatedDiscount || redemption.value || "0.00"}
-                    </TableCell>
-                    <TableCell>
-                      £{redemption.basketSubtotal || "N/A"}
-                    </TableCell>
-                    <TableCell>{redemption.staffName || "System"}</TableCell>
-                    <TableCell>{getStatusBadge(redemption)}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
+            <div className="rounded-xl bg-surface/80 border border-dim shadow-elev-1 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
+                    <TableHead className="text-soft">Date & Time</TableHead>
+                    <TableHead className="text-soft">Deal</TableHead>
+                    <TableHead className="text-soft">Customer</TableHead>
+                    <TableHead className="text-soft">Discount</TableHead>
+                    <TableHead className="text-soft">Original Price</TableHead>
+                    <TableHead className="text-soft">Staff</TableHead>
+                    <TableHead className="text-soft">Status</TableHead>
+                    <TableHead className="text-soft">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody className="divide-y divide-white/5">
+                  {filteredRedemptions.map((redemption: any) => (
+                    <TableRow key={redemption.id} className="hover:bg-white/[0.03]">
+                      <TableCell className="text-soft">
+                        {format(parseISO(redemption.redeemedAt || redemption.createdAt), "MMM d, yyyy HH:mm")}
+                      </TableCell>
+                      <TableCell className="font-medium text-fg">
+                        {redemption.dealTitle || redemption.offerTitle || "Unknown Deal"}
+                      </TableCell>
+                      <TableCell className="text-soft">{redemption.customerName || "Guest"}</TableCell>
+                      <TableCell className="text-green-400 font-medium">
+                        £{redemption.calculatedDiscount || redemption.value || "0.00"}
+                      </TableCell>
+                      <TableCell className="text-soft">
+                        £{redemption.basketSubtotal || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-soft">{redemption.staffName || "System"}</TableCell>
+                      <TableCell>{getStatusBadge(redemption)}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" className="border-dim bg-surface hover:border-dimStrong">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

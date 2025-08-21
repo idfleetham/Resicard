@@ -98,39 +98,6 @@ export default function OffersManager() {
     },
   });
 
-  const onSubmit = (data: CreateDealData) => {
-    createDealMutation.mutate(data);
-  };
-
-  const editForm = useForm<CreateDealData>({
-    resolver: zodResolver(createDealSchema),
-  });
-
-  useEffect(() => {
-    if (editingDeal) {
-      editForm.reset({
-        title: editingDeal.title,
-        description: editingDeal.description,
-        category: editingDeal.category,
-        discountType: editingDeal.discountType,
-        discountValue: editingDeal.discountValue || "",
-        originalValue: editingDeal.originalValue || "",
-        usageLimit: editingDeal.usageLimit,
-        expiryDate: editingDeal.expiryDate ? format(new Date(editingDeal.expiryDate), 'yyyy-MM-dd') : "",
-        terms: editingDeal.terms || "",
-        imageUrl: editingDeal.imageUrl || "",
-      });
-    }
-  }, [editingDeal, editForm]);
-
-  const onEditSubmit = (data: CreateDealData) => {
-    const processedData = {
-      ...data,
-      expiryDate: new Date(data.expiryDate),
-    };
-    handleUpdateOffer(processedData);
-  };
-
   const getStatusBadge = (deal: Deal) => {
     if (!deal.isActive) return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Paused</Badge>;
     if (new Date(deal.expiryDate) < new Date()) return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Expired</Badge>;
@@ -148,37 +115,30 @@ export default function OffersManager() {
       case "free_item":
         return "Free Item";
       default:
-        return `${deal.discountValue}% off`;
+        return deal.discountValue;
     }
   };
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48 bg-slate-800" />
-            <Skeleton className="h-4 w-64 bg-slate-800" />
-          </div>
-          <Skeleton className="h-10 w-32 bg-slate-800" />
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-slate-900/50 border-slate-700">
+            <Card key={i} className="bg-card/90 border border-dim shadow-elev-1">
               <CardContent className="p-6">
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-20 bg-slate-800" />
-                  <Skeleton className="h-8 w-12 bg-slate-800" />
+                  <Skeleton className="h-4 w-20 bg-surface" />
+                  <Skeleton className="h-8 w-12 bg-surface" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-        <Card className="bg-slate-900/50 border-slate-700">
+        <Card className="bg-card/90 border border-dim shadow-elev-1">
           <CardContent className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full bg-slate-800" />
+                <Skeleton key={i} className="h-12 w-full bg-surface" />
               ))}
             </div>
           </CardContent>
@@ -188,245 +148,116 @@ export default function OffersManager() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
       {/* Hero Header */}
-      <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
-                <Package className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-2xl font-bold text-slate-100">Your Offers</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Create, edit and manage your business offers to attract more customers
-                </CardDescription>
-              </div>
-            </div>
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Offer
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
-                <DialogHeader>
-                  <DialogTitle className="text-slate-100">Create New Offer</DialogTitle>
-                  <DialogDescription className="text-slate-400">
-                    Create a new deal to attract customers to your business
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Deal Title</FormLabel>
-                            <FormControl>
-                              <Input placeholder="20% off all meals" {...field} className="bg-slate-800 border-slate-700 text-slate-100" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Category</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
-                                  <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-slate-800 border-slate-700">
-                                <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                                <SelectItem value="Retail">Retail</SelectItem>
-                                <SelectItem value="Services">Services</SelectItem>
-                                <SelectItem value="Entertainment">Entertainment</SelectItem>
-                                <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-200">Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe your offer..."
-                              {...field}
-                              className="bg-slate-800 border-slate-700 text-slate-100"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="discountType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Discount Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
-                                  <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-slate-800 border-slate-700">
-                                <SelectItem value="percentage">Percentage</SelectItem>
-                                <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                <SelectItem value="bogo">Buy One Get One</SelectItem>
-                                <SelectItem value="free_item">Free Item</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="discountValue"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Discount Value</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="20" 
-                                {...field} 
-                                value={field.value || ""}
-                                className="bg-slate-800 border-slate-700 text-slate-100"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="originalValue"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Original Value (£)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="25.00" 
-                                {...field} 
-                                value={field.value || ""}
-                                className="bg-slate-800 border-slate-700 text-slate-100"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="usageLimit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Usage Limit</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="100" 
-                                {...field} 
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                                className="bg-slate-800 border-slate-700 text-slate-100"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="expiryDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Expiry Date</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="date" 
-                                {...field} 
-                                className="bg-slate-800 border-slate-700 text-slate-100"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="terms"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-200">Terms & Conditions</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Additional terms and conditions..."
-                              {...field}
-                              value={field.value || ""}
-                              className="bg-slate-800 border-slate-700 text-slate-100"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="flex justify-end space-x-2 pt-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setIsCreateOpen(false)}
-                        className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={createDealMutation.isPending}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
-                      >
-                        {createDealMutation.isPending ? "Creating..." : "Create Offer"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
+            <p className="text-soft">Manage all your business offers</p>
           </div>
-        </CardHeader>
-      </Card>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Offer
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+              <DialogHeader>
+                <DialogTitle className="text-slate-100">Create New Offer</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Create a new deal to attract customers to your business
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit((data) => createDealMutation.mutate(data))} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Deal Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="20% off all meals" {...field} className="bg-slate-800 border-slate-700 text-slate-100" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-slate-800 border-slate-700">
+                              <SelectItem value="Food & Drink">Food & Drink</SelectItem>
+                              <SelectItem value="Retail">Retail</SelectItem>
+                              <SelectItem value="Services">Services</SelectItem>
+                              <SelectItem value="Entertainment">Entertainment</SelectItem>
+                              <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-200">Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe your offer..."
+                            {...field}
+                            className="bg-slate-800 border-slate-700 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsCreateOpen(false)}
+                      className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createDealMutation.isPending}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                    >
+                      {createDealMutation.isPending ? "Creating..." : "Create Offer"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -467,15 +298,15 @@ export default function OffersManager() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+            <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-300">{stat.title}</CardTitle>
+                <CardTitle className="text-sm font-medium text-soft">{stat.title}</CardTitle>
                 <div className={`w-8 h-8 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center`}>
                   <stat.icon className="h-4 w-4 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-slate-100">{stat.value}</div>
+                <div className="text-2xl font-bold text-fg">{stat.value}</div>
               </CardContent>
             </Card>
           </motion.div>
@@ -483,14 +314,14 @@ export default function OffersManager() {
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
-        <CardHeader>
-          <CardTitle className="text-slate-100">Your Offers</CardTitle>
-          <CardDescription className="text-slate-400">
+      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
+        <CardHeader className="border-b border-dim">
+          <CardTitle className="text-fg">Your Offers</CardTitle>
+          <CardDescription className="text-soft">
             Manage all your business offers and track their performance
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           {deals.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -498,176 +329,87 @@ export default function OffersManager() {
               transition={{ duration: 0.5 }}
               className="text-center py-12"
             >
-              <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="h-8 w-8 text-slate-500" />
+              <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package className="h-8 w-8 text-soft" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-200 mb-2">No offers yet</h3>
-              <p className="text-slate-400 mb-6">Create your first offer to start attracting customers</p>
+              <h3 className="text-lg font-semibold text-fg mb-2">No offers yet</h3>
+              <p className="text-soft mb-6">Create your first offer to start attracting customers</p>
               <Button 
                 onClick={() => setIsCreateOpen(true)}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Offer
               </Button>
             </motion.div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-slate-800">
-                  <TableHead className="text-slate-300">Title</TableHead>
-                  <TableHead className="text-slate-300">Discount</TableHead>
-                  <TableHead className="text-slate-300">Category</TableHead>
-                  <TableHead className="text-slate-300">Usage</TableHead>
-                  <TableHead className="text-slate-300">Expiry</TableHead>
-                  <TableHead className="text-slate-300">Status</TableHead>
-                  <TableHead className="text-slate-300">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deals.map((deal: Deal) => (
-                  <TableRow key={deal.id} className="border-slate-800 hover:bg-slate-800/50">
-                    <TableCell className="font-medium text-slate-100">{deal.title}</TableCell>
-                    <TableCell className="text-slate-300">{getDiscountText(deal)}</TableCell>
-                    <TableCell className="text-slate-300">{deal.category}</TableCell>
-                    <TableCell className="text-slate-300">
-                      {deal.usageCount || 0} / {deal.usageLimit}
-                    </TableCell>
-                    <TableCell className="text-slate-300">
-                      {format(new Date(deal.expiryDate), "MMM d, yyyy")}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(deal)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleToggleOffer(deal.id)}
-                          disabled={isToggling}
-                          className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                        >
-                          {deal.isActive ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditOffer(deal)}
-                          className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => window.location.href = `/merchant/offers/${deal.id}`}
-                          className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="rounded-xl bg-surface/80 border border-dim shadow-elev-1 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
+                    <TableHead className="text-soft">Title</TableHead>
+                    <TableHead className="text-soft">Discount</TableHead>
+                    <TableHead className="text-soft">Category</TableHead>
+                    <TableHead className="text-soft">Usage</TableHead>
+                    <TableHead className="text-soft">Expiry</TableHead>
+                    <TableHead className="text-soft">Status</TableHead>
+                    <TableHead className="text-soft">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody className="divide-y divide-white/5">
+                  {deals.map((deal: Deal) => (
+                    <TableRow key={deal.id} className="hover:bg-white/[0.03]">
+                      <TableCell className="font-medium text-fg">{deal.title}</TableCell>
+                      <TableCell className="text-soft">{getDiscountText(deal)}</TableCell>
+                      <TableCell className="text-soft">{deal.category}</TableCell>
+                      <TableCell className="text-soft">
+                        {deal.usageCount || 0} / {deal.usageLimit}
+                      </TableCell>
+                      <TableCell className="text-soft">
+                        {format(new Date(deal.expiryDate), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(deal)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleOffer(deal.id)}
+                            disabled={isToggling}
+                            className="border-dim bg-surface hover:border-dimStrong"
+                          >
+                            {deal.isActive ? (
+                              <Pause className="w-4 h-4" />
+                            ) : (
+                              <Play className="w-4 h-4" />
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditOffer(deal)}
+                            className="border-dim bg-surface hover:border-dimStrong"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.location.href = `/merchant/offers/${deal.id}`}
+                            className="border-dim bg-surface hover:border-dimStrong"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Edit Dialog */}
-      <Dialog open={!!editingDeal} onOpenChange={() => setEditingDeal(null)}>
-        <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-slate-100">Edit Offer</DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Update your offer details
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-200">Deal Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="20% off all meals" {...field} className="bg-slate-800 border-slate-700 text-slate-100" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-200">Category</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-slate-800 border-slate-700">
-                          <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                          <SelectItem value="Retail">Retail</SelectItem>
-                          <SelectItem value="Services">Services</SelectItem>
-                          <SelectItem value="Entertainment">Entertainment</SelectItem>
-                          <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={editForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-200">Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Describe what customers get with this deal..."
-                        {...field} 
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setEditingDeal(null)}
-                  className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isUpdating}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
-                >
-                  {isUpdating ? "Updating..." : "Update Offer"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 }

@@ -228,15 +228,24 @@ export default function MerchantSettings() {
       className="space-y-6"
     >
       {/* Hero Header */}
-      <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
-        <CardHeader>
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-fg">Business Settings</h1>
+            <p className="text-soft">Manage your business profile and account details</p>
+          </div>
+        </div>
+      </div>
+
+      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
+        <CardHeader className="border-b border-dim">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold text-slate-100">Settings</CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardTitle className="text-2xl font-bold text-fg">Settings</CardTitle>
+              <CardDescription className="text-soft">
                 Manage your merchant account settings and preferences
               </CardDescription>
             </div>
@@ -247,7 +256,7 @@ export default function MerchantSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Navigation */}
         <div className="lg:col-span-1">
-          <Card className="bg-slate-900/50 border-slate-700">
+          <Card className="bg-card/90 border border-dim shadow-elev-1">
             <CardContent className="p-4">
               <nav className="space-y-2">
                 <Button
