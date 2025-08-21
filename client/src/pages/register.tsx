@@ -192,21 +192,21 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div data-theme="dim" className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
         {/* Header */}
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center space-x-2 text-primary hover:opacity-80">
+          <Link href="/" className="inline-flex items-center space-x-2 text-brand1 hover:opacity-80">
             <MapPin className="h-8 w-8" />
-            <span className="text-2xl font-bold">Resicard</span>
+            <span className="text-2xl font-bold text-fg">Resicard</span>
           </Link>
-          <p className="text-muted-foreground mt-2">Join the St Andrews Community</p>
+          <p className="text-soft mt-2">Join the St Andrews Community</p>
         </div>
 
         {/* Registration Form */}
-        <Card>
+        <Card variant="elevated">
           <CardHeader>
-            <CardTitle className="text-center">Create Your Account</CardTitle>
+            <CardTitle className="text-center text-fg">Create Your Account</CardTitle>
           </CardHeader>
           <CardBody>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
