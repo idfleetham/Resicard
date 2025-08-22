@@ -432,42 +432,92 @@ export default function LoyaltyDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
           {/* Key Metrics */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricTile label="Active Members" value="247" delta="12%" icon={<Users className="w-5 h-5 text-white" />} />
-            <MetricTile label="Points Earned" value="12,450" delta="8%" icon={<Star className="w-5 h-5 text-white" />} />
-            <MetricTile label="Rewards Claimed" value="89" delta="15%" icon={<Gift className="w-5 h-5 text-white" />} />
-            <MetricTile label="Revenue Impact" value="£2,340" delta="22%" icon={<TrendingUp className="w-5 h-5 text-white" />} />
-          </div>
+          <motion.div 
+            className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <MetricTile label="Active Members" value="247" delta="12%" icon={<Users className="h-4 w-4 text-white/80" />} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <MetricTile label="Points Earned" value="12,450" delta="8%" icon={<Star className="h-4 w-4 text-white/80" />} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <MetricTile label="Rewards Claimed" value="89" delta="15%" icon={<Gift className="h-4 w-4 text-white/80" />} />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <MetricTile label="Revenue Impact" value="£2,340" delta="22%" icon={<TrendingUp className="h-4 w-4 text-white/80" />} />
+            </motion.div>
+          </motion.div>
 
           {/* Quick Actions */}
-          <GradientPanel>
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-              <div className="flex gap-3">
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => setActiveTab("staff")}
-                >
-                  Award Points
-                </button>
-                <button 
-                  className="btn btn-ghost"
-                  onClick={() => setActiveTab("rewards")}
-                >
-                  Add Reward
-                </button>
-                <button 
-                  className="btn btn-ghost"
-                  onClick={() => setActiveTab("tiers")}
-                >
-                  Manage Tiers
-                </button>
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
+          >
+            <GradientPanel>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+                <div className="flex gap-3">
+                  <motion.button 
+                    className="btn btn-primary focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+                    onClick={() => setActiveTab("staff")}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Award Points
+                  </motion.button>
+                  <motion.button 
+                    className="btn btn-ghost focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+                    onClick={() => setActiveTab("rewards")}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Reward
+                  </motion.button>
+                  <motion.button 
+                    className="btn btn-ghost focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+                    onClick={() => setActiveTab("tiers")}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Manage Tiers
+                  </motion.button>
+                </div>
               </div>
-            </div>
-          </GradientPanel>
+            </GradientPanel>
+          </motion.div>
 
           {/* Program Performance */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div 
+            className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
             <StatCard 
               title="Tier Distribution"
               subtitle="Customer distribution across tiers"
@@ -516,7 +566,7 @@ export default function LoyaltyDashboard() {
                 ))}
               </div>
             </StatCard>
-          </div>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="setup" className="space-y-6">
@@ -794,10 +844,16 @@ export default function LoyaltyDashboard() {
               </div>
           </StatCard>
 
-          <StatCard 
-            title="Recent Activity"
-            subtitle="Latest loyalty transactions and awards"
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
           >
+            <StatCard 
+              title="Recent Activity"
+              subtitle="Latest loyalty transactions and awards"
+            >
               <div className="space-y-3">
                 {[
                   { id: 201, username: "john_d", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
@@ -826,7 +882,8 @@ export default function LoyaltyDashboard() {
                   );
                 })}
               </div>
-          </StatCard>
+            </StatCard>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">
@@ -876,7 +933,7 @@ export default function LoyaltyDashboard() {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="btn btn-ghost text-xs px-3 py-1"
+                        className="btn btn-ghost text-xs px-3 py-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
                       >
                         Award Points
                       </motion.button>
