@@ -80,9 +80,9 @@ export default function MerchantPortal() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="border-b border-dim"
+          className="border-b border-border-dim"
         >
-          <Card className="bg-card border-dim hover:shadow-elev-1 hover:border-dimStrong transition-all duration-300">
+          <Card className="bg-card border-border-dim hover:shadow-elev-1 hover:border-border-dimStrong transition-all duration-300">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -120,10 +120,10 @@ export default function MerchantPortal() {
                       console.log('Theme applied, data-theme:', root.getAttribute('data-theme'));
                     }}
                   >
-                    <SelectTrigger className="w-[160px] border-dim bg-surface text-fg">
+                    <SelectTrigger className="w-[160px] border-border-dim bg-surface text-fg">
                       <SelectValue placeholder="Theme" />
                     </SelectTrigger>
-                    <SelectContent className="bg-surface2 border-dim">
+                    <SelectContent className="bg-surface2 border-border-dim">
                       <SelectItem value="dim" className="text-fg">Dim</SelectItem>
                       <SelectItem value="high" className="text-fg">High Contrast</SelectItem>
                     </SelectContent>
@@ -131,7 +131,7 @@ export default function MerchantPortal() {
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
-                  <Button variant="outline" onClick={logout} className="border-dim hover:bg-surface text-black">
+                  <Button variant="outline" onClick={logout} className="border-border-dim hover:bg-surface text-black">
                     Logout
                   </Button>
                 </div>
@@ -143,7 +143,7 @@ export default function MerchantPortal() {
         {/* Main Content */}
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-dim">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-border-border-dim">
             <TabsTrigger value="offers" className="flex items-center space-x-2 data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
@@ -238,7 +238,7 @@ export default function MerchantPortal() {
                         variant="outline" 
                         size="sm" 
                         className="w-full"
-                        onClick={() => navigate("/merchant/loyalty")}
+                        onClick={() => window.open("/loyalty-dashboard", "_blank")}
                       >
                         Full Dashboard
                       </Button>
@@ -285,7 +285,7 @@ export default function MerchantPortal() {
               </div>
 
               {/* Recent Activity */}
-              <Card className="bg-card/90 border border-dim">
+              <Card className="bg-card/90 border border-border-dim">
                 <CardHeader>
                   <CardTitle>Recent Loyalty Activity</CardTitle>
                   <CardDescription>Latest customer loyalty interactions</CardDescription>

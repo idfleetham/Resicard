@@ -100,7 +100,7 @@ export default function LoyaltyDashboard() {
     return (
       <div className="space-y-6 p-6">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="bg-card/90 border border-dim">
+          <Card key={i} className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardContent className="p-6">
               <div className="animate-pulse space-y-4">
                 <div className="h-4 bg-surface rounded w-1/4"></div>
@@ -122,7 +122,7 @@ export default function LoyaltyDashboard() {
       className="space-y-6 p-6"
     >
       {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-purple-500/25 via-blue-500/20 to-teal-500/25 border border-dim p-6">
+      <div className="rounded-2xl bg-gradient-to-r from-purple-500/25 via-blue-500/20 to-teal-500/25 border border-border-dim p-6 shadow-elev-1">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
@@ -203,7 +203,7 @@ export default function LoyaltyDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="bg-card/90 border border-dim shadow-elev-1">
+                <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -224,7 +224,7 @@ export default function LoyaltyDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardHeader>
               <CardTitle className="text-fg">Quick Actions</CardTitle>
               <CardDescription className="text-soft">Common loyalty program tasks</CardDescription>
@@ -252,7 +252,7 @@ export default function LoyaltyDashboard() {
 
           {/* Program Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card/90 border border-dim shadow-elev-1">
+            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
               <CardHeader>
                 <CardTitle className="text-fg">Tier Distribution</CardTitle>
                 <CardDescription className="text-soft">Customer distribution across tiers</CardDescription>
@@ -281,7 +281,7 @@ export default function LoyaltyDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/90 border border-dim shadow-elev-1">
+            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
               <CardHeader>
                 <CardTitle className="text-fg">Popular Rewards</CardTitle>
                 <CardDescription className="text-soft">Most redeemed rewards this month</CardDescription>
@@ -310,7 +310,7 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="setup" className="space-y-6">
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardHeader>
               <CardTitle className="text-fg">Program Configuration</CardTitle>
               <CardDescription className="text-soft">
@@ -399,7 +399,7 @@ export default function LoyaltyDashboard() {
           </Card>
 
           {/* Tiers Configuration */}
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardHeader>
               <CardTitle className="text-fg flex items-center gap-2">
                 <Crown className="w-5 h-5" />
@@ -412,7 +412,7 @@ export default function LoyaltyDashboard() {
             <CardContent className="p-6 pt-0">
               <div className="space-y-4">
                 {loyaltyProgram?.tiers.map((tier, index) => (
-                  <div key={tier.id} className="p-4 rounded-lg border border-dim bg-surface/30">
+                  <div key={tier.id} className="p-4 rounded-lg border-border-dim bg-surface/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-4 h-4 rounded-full ${
@@ -445,7 +445,7 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="rewards" className="space-y-6">
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardHeader>
               <CardTitle className="text-fg flex items-center gap-2">
                 <Gift className="w-5 h-5" />
@@ -462,7 +462,7 @@ export default function LoyaltyDashboard() {
             <CardContent className="p-6 pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {loyaltyProgram?.rewards.map((reward) => (
-                  <div key={reward.id} className="p-4 rounded-lg border border-dim bg-surface/30">
+                  <div key={reward.id} className="p-4 rounded-lg border-border-dim bg-surface/30">
                     <div className="flex items-start justify-between mb-3">
                       <Coffee className="w-8 h-8 text-brown-500" />
                       <Switch checked={reward.active} />
@@ -485,7 +485,7 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="customers" className="space-y-6">
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
             <CardHeader>
               <CardTitle className="text-fg flex items-center gap-2">
                 <Users className="w-5 h-5" />
