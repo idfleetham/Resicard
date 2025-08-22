@@ -280,19 +280,12 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   fixedPrice: true,
   originalValue: true,
   category: true,
-  tags: true,
   audience: true,
-  minBasket: true,
-  maxDiscount: true,
   stackable: true,
   newCustomerOnly: true,
-  locations: true,
   geofenceRadius: true,
   validFrom: true,
   validTo: true,
-  daysOfWeek: true,
-  timeSlots: true,
-  blackoutDates: true,
   leadTime: true,
   maxPerTransaction: true,
   maxPerDay: true,
@@ -316,6 +309,23 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   autoPauseOnAbuse: true,
   singleUse: true,
   deviceFingerprinting: true,
+}).extend({
+  // Override fields that need special handling for arrays/objects from frontend
+  tags: z.array(z.string()).optional(),
+  daysOfWeek: z.array(z.string()).optional(),
+  timeSlots: z.record(z.array(z.object({
+    start: z.string(),
+    end: z.string()
+  }))).optional(),
+  blackoutDates: z.array(z.object({
+    name: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+    recurring: z.boolean().default(false)
+  })).optional(),
+  locations: z.array(z.string()).optional(),
+  minBasket: z.number().optional(),
+  maxDiscount: z.number().optional(),
 });
 
 export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({
