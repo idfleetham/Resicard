@@ -375,6 +375,873 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                 </Card>
               )}
 
+              {/* B) Eligibility Section */}
+              {activeSection === "eligibility" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <Users className="w-5 h-5 mr-2 text-blue-400" />
+                      Eligibility & Targeting
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="audience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Target Audience</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="input-dark">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="resident">Residents Only</SelectItem>
+                                <SelectItem value="student">Students Only</SelectItem>
+                                <SelectItem value="both">Both Residents & Students</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="minBasket"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Minimum Basket (£)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                className="input-dark"
+                                placeholder="0.00"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="maxDiscount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Maximum Discount (£)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                className="input-dark"
+                                placeholder="No limit"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="geofenceRadius"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Geofence Radius (meters)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="0"
+                                className="input-dark"
+                                placeholder="No geofence"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="stackable"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Stackable with other offers</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Allow this offer to be combined with others
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="newCustomerOnly"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">New customers only</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Only for first-time customers
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* C) Scheduling Section */}
+              {activeSection === "scheduling" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <Calendar className="w-5 h-5 mr-2 text-blue-400" />
+                      Scheduling & Availability
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="validFrom"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Valid From</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="datetime-local"
+                                className="input-dark"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="validTo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Valid Until</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="datetime-local"
+                                className="input-dark"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="daysOfWeek"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Days of Week</FormLabel>
+                          <div className="grid grid-cols-4 gap-2">
+                            {DAYS_OF_WEEK.map((day) => (
+                              <FormField
+                                key={day.value}
+                                control={form.control}
+                                name="daysOfWeek"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={day.value}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <input
+                                          type="checkbox"
+                                          checked={field.value?.includes(day.value)}
+                                          onChange={(checked) => {
+                                            return checked.target.checked
+                                              ? field.onChange([...field.value, day.value])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== day.value
+                                                  )
+                                                )
+                                          }}
+                                          className="rounded border-slate-600 bg-slate-800"
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm text-slate-300">
+                                        {day.label}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="leadTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Advance Booking Required (hours)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              min="0"
+                              className="input-dark"
+                              placeholder="0"
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400">
+                            How many hours in advance must this offer be booked?
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-slate-200">Blackout Periods</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addBlackout({ name: "", startDate: "", endDate: "", recurring: false })}
+                          className="border-slate-600 text-slate-300"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Blackout
+                        </Button>
+                      </div>
+                      {blackoutFields.map((field, index) => (
+                        <div key={field.id} className="p-3 border border-slate-700 rounded-lg space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-300 text-sm">Blackout Period {index + 1}</span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeBlackout(index)}
+                              className="border-red-600 text-red-400 hover:bg-red-900/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-3">
+                            <FormField
+                              control={form.control}
+                              name={`blackoutDates.${index}.name`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} placeholder="e.g., Christmas" className="input-dark" />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`blackoutDates.${index}.startDate`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} type="date" className="input-dark" />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`blackoutDates.${index}.endDate`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} type="date" className="input-dark" />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* D) Limits & Rules Section */}
+              {activeSection === "limits" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <Shield className="w-5 h-5 mr-2 text-blue-400" />
+                      Limits & Rules
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="maxPerTransaction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Max per Transaction</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                className="input-dark"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="maxPerDay"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Max per Day</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                className="input-dark"
+                                placeholder="No limit"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="maxPerWeek"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Max per Week</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                className="input-dark"
+                                placeholder="No limit"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="globalUsageLimit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Total Usage Limit</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                className="input-dark"
+                                placeholder="Unlimited"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="proofType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Proof Required</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="input-dark">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="qr_only">QR Code Only</SelectItem>
+                                <SelectItem value="code_pin">Code + PIN</SelectItem>
+                                <SelectItem value="app_checkin">App Check-in</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="staffPinRequired"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Staff PIN Required</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Require staff verification
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="singleUse"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Single Use Only</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Each voucher can only be used once
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="deviceFingerprinting"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Device Fingerprinting</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Prevent multi-device abuse
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* E) Terms Section */}
+              {activeSection === "terms" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <Settings className="w-5 h-5 mr-2 text-blue-400" />
+                      Terms & Conditions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="terms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Terms & Conditions</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field}
+                              className="input-dark min-h-[100px]"
+                              placeholder="Enter detailed terms and conditions..."
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="dineInOnly"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Dine-in Only</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Not valid for takeaway orders
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="excludesAlcohol"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Excludes Alcohol</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Alcohol not included in offer
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="serviceChargeIncluded"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Service Charge Included</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Service charge applies to final bill
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="validOnBankHolidays"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-slate-200">Valid on Bank Holidays</FormLabel>
+                              <FormDescription className="text-slate-400 text-sm">
+                                Offer available on bank holidays
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* F) Media Section */}
+              {activeSection === "media" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <ImageIcon className="w-5 h-5 mr-2 text-blue-400" />
+                      Media & Presentation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Offer Image</FormLabel>
+                          <FormControl>
+                            <Input {...field} className="input-dark" placeholder="https://..." />
+                          </FormControl>
+                          <FormDescription className="text-slate-400">
+                            URL to an image that represents this offer
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="shortPromo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Short Promo Text (90 chars max)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              className="input-dark" 
+                              placeholder="e.g., Perfect for date night!"
+                              maxLength={90}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400">
+                            {field.value?.length || 0}/90 characters
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Display Priority</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="input-dark">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="standard">Standard</SelectItem>
+                              <SelectItem value="featured">Featured (higher visibility)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription className="text-slate-400">
+                            Featured offers appear more prominently in listings
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div>
+                      <FormLabel className="text-slate-200">Tags</FormLabel>
+                      <div className="flex flex-wrap gap-2 mt-2 p-3 border border-slate-700 rounded-lg">
+                        {COMMON_TAGS.map((tag) => (
+                          <Button
+                            key={tag}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const currentTags = form.getValues("tags") || [];
+                              if (currentTags.includes(tag)) {
+                                form.setValue("tags", currentTags.filter(t => t !== tag));
+                              } else {
+                                form.setValue("tags", [...currentTags, tag]);
+                              }
+                            }}
+                            className={`text-xs ${
+                              form.watch("tags")?.includes(tag)
+                                ? "bg-blue-600 border-blue-500 text-white"
+                                : "border-slate-600 text-slate-300"
+                            }`}
+                          >
+                            <Tag className="w-3 h-3 mr-1" />
+                            {tag}
+                          </Button>
+                        ))}
+                      </div>
+                      <p className="text-slate-400 text-sm mt-2">
+                        Selected: {form.watch("tags")?.join(", ") || "None"}
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* G) Controls Section */}
+              {activeSection === "controls" && (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-slate-100 flex items-center">
+                      <BarChart3 className="w-5 h-5 mr-2 text-blue-400" />
+                      Budget & Controls
+                    </CardTitle>
+                  </CardHeader>
+                  <CardBody className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="feeModel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Fee Model</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="input-dark">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="default">Platform Default</SelectItem>
+                                <SelectItem value="per_redemption">Per Redemption</SelectItem>
+                                <SelectItem value="percent_discount">% of Discount</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {form.watch("feeModel") !== "default" && (
+                        <FormField
+                          control={form.control}
+                          name="customFee"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">
+                                Custom Fee ({form.watch("feeModel") === "per_redemption" ? "£ per redemption" : "% of discount"})
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step={form.watch("feeModel") === "per_redemption" ? "0.01" : "1"}
+                                  className="input-dark"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="budgetCap"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200">Budget Cap (£)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="input-dark"
+                              placeholder="No budget limit"
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400">
+                            Automatically pause offer when budget is reached
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="autoPauseOnAbuse"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-slate-200">Auto-pause on Abuse Detection</FormLabel>
+                            <FormDescription className="text-slate-400 text-sm">
+                              Automatically pause if suspicious activity is detected
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </CardBody>
+                </Card>
+              )}
+
               {/* Submit Button */}
               <div className="flex justify-end space-x-4">
                 {onClose && (
