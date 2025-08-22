@@ -55,16 +55,16 @@ export default function OfferDetails() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-app min-h-screen">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => window.location.href = '/merchant'}>
+        <Button variant="outline" onClick={() => window.location.href = '/merchant'} className="border-dim bg-surface hover:border-dimStrong text-fg">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{offer.title}</h1>
-          <p className="text-gray-600">Offer Details and Analytics</p>
+          <h1 className="text-3xl font-bold text-fg">{offer.title}</h1>
+          <p className="text-soft">Offer Details and Analytics</p>
         </div>
         <div className="ml-auto">
           {getStatusBadge()}
@@ -72,41 +72,41 @@ export default function OfferDetails() {
       </div>
 
       {/* Offer Details Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Offer Information</CardTitle>
-          <CardDescription>Complete details about this offer</CardDescription>
+      <Card className="bg-card/90 border-dim shadow-elev-1">
+        <CardHeader className="border-b border-dim">
+          <CardTitle className="text-fg">Offer Information</CardTitle>
+          <CardDescription className="text-soft">Complete details about this offer</CardDescription>
         </CardHeader>
-        <CardBody className="space-y-4">
+        <CardBody className="space-y-4 p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold mb-2">Basic Information</h3>
+              <h3 className="font-semibold mb-2 text-fg">Basic Information</h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Title:</span> {offer.title}</p>
-                <p><span className="font-medium">Description:</span> {offer.description}</p>
-                <p><span className="font-medium">Category:</span> {offer.category}</p>
-                <p><span className="font-medium">Discount:</span> {getDiscountText()}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Title:</span> {offer.title}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Description:</span> {offer.description}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Category:</span> {offer.category}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Discount:</span> {getDiscountText()}</p>
                 {offer.originalValue && (
-                  <p><span className="font-medium">Original Price:</span> £{offer.originalValue}</p>
+                  <p className="text-soft"><span className="font-medium text-fg">Original Price:</span> £{offer.originalValue}</p>
                 )}
               </div>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Offer Settings</h3>
+              <h3 className="font-semibold mb-2 text-fg">Offer Settings</h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Usage Limit:</span> {offer.usageLimit}</p>
-                <p><span className="font-medium">Used:</span> {offer.usageCount || 0}</p>
-                <p><span className="font-medium">Remaining:</span> {offer.usageLimit - (offer.usageCount || 0)}</p>
-                <p><span className="font-medium">Expiry Date:</span> {format(new Date(offer.expiryDate), "MMM d, yyyy")}</p>
-                <p><span className="font-medium">Created:</span> {offer.createdAt ? format(new Date(offer.createdAt), "MMM d, yyyy") : "N/A"}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Usage Limit:</span> {offer.usageLimit}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Used:</span> {offer.usageCount || 0}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Remaining:</span> {offer.usageLimit - (offer.usageCount || 0)}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Expiry Date:</span> {format(new Date(offer.expiryDate), "MMM d, yyyy")}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Created:</span> {offer.createdAt ? format(new Date(offer.createdAt), "MMM d, yyyy") : "N/A"}</p>
               </div>
             </div>
           </div>
           
           {offer.terms && (
             <div>
-              <h3 className="font-semibold mb-2">Terms & Conditions</h3>
-              <p className="text-gray-700 bg-gray-50 p-3 rounded">{offer.terms}</p>
+              <h3 className="font-semibold mb-2 text-fg">Terms & Conditions</h3>
+              <p className="text-soft bg-surface/50 p-3 rounded-lg border border-dim">{offer.terms}</p>
             </div>
           )}
         </CardBody>
@@ -114,42 +114,42 @@ export default function OfferDetails() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-card/90 border-dim shadow-elev-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-fg">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-soft" />
           </CardHeader>
           <CardBody>
-            <div className="text-2xl font-bold">{offer.viewCount || 0}</div>
+            <div className="text-2xl font-bold text-fg">{offer.viewCount || 0}</div>
           </CardBody>
         </Card>
-        <Card>
+        <Card className="bg-card/90 border-dim shadow-elev-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Redemptions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-fg">Redemptions</CardTitle>
+            <Users className="h-4 w-4 text-soft" />
           </CardHeader>
           <CardBody>
-            <div className="text-2xl font-bold">{offer.usageCount || 0}</div>
+            <div className="text-2xl font-bold text-fg">{offer.usageCount || 0}</div>
           </CardBody>
         </Card>
-        <Card>
+        <Card className="bg-card/90 border-dim shadow-elev-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usage Rate</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-fg">Usage Rate</CardTitle>
+            <DollarSign className="h-4 w-4 text-soft" />
           </CardHeader>
           <CardBody>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-fg">
               {offer.usageLimit > 0 ? Math.round(((offer.usageCount || 0) / offer.usageLimit) * 100) : 0}%
             </div>
           </CardBody>
         </Card>
-        <Card>
+        <Card className="bg-card/90 border-dim shadow-elev-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Days Until Expiry</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-fg">Days Until Expiry</CardTitle>
+            <Calendar className="h-4 w-4 text-soft" />
           </CardHeader>
           <CardBody>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-fg">
               {Math.max(0, Math.ceil((new Date(offer.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
             </div>
           </CardBody>
@@ -157,13 +157,13 @@ export default function OfferDetails() {
       </div>
 
       {/* Recent Redemptions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Redemptions</CardTitle>
-          <CardDescription>Latest voucher redemptions for this offer</CardDescription>
+      <Card className="bg-card/90 border-dim shadow-elev-1">
+        <CardHeader className="border-b border-dim">
+          <CardTitle className="text-fg">Recent Redemptions</CardTitle>
+          <CardDescription className="text-soft">Latest voucher redemptions for this offer</CardDescription>
         </CardHeader>
-        <CardBody>
-          <div className="text-center py-8 text-gray-500">
+        <CardBody className="p-6">
+          <div className="text-center py-8 text-soft">
             <p>No recent redemptions available</p>
             <p className="text-sm">Redemption tracking will appear here once customers start using this offer</p>
           </div>

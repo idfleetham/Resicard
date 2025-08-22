@@ -57,8 +57,15 @@ export const useOffer = (id: string) => {
   return useQuery({
     queryKey: ["merchant", "offers", id],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/merchant/offers/${id}`);
-      return response.json();
+      // Try comprehensive offers first, then fall back to simple deals
+      try {
+        const response = await apiRequest('GET', `/api/offers/${id}`);
+        return response.json();
+      } catch (error) {
+        // Fallback to simple deals endpoint
+        const response = await apiRequest('GET', `/api/merchant/offers/${id}`);
+        return response.json();
+      }
     },
     enabled: !!id,
   });

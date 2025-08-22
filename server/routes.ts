@@ -1229,6 +1229,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single comprehensive offer details
+  app.get("/api/offers/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const offerId = req.params.id;
+      const offer = await storage.getOffer(offerId);
+      
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      // Check if merchant owns this offer
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant || merchant.id !== offer.merchantId) {
+        return res.status(403).json({ error: "Not authorized to view this offer" });
+      }
+      
+      res.json(offer);
+    } catch (error) {
+      console.error('Error getting offer details:', error);
+      res.status(500).json({ error: "Failed to fetch offer details" });
+    }
+  });
+
   // Get redemptions for a merchant
   app.get("/api/redemptions/merchant/:merchantId?", authenticateToken, requireRole('merchant'), async (req, res) => {
     const merchantId = req.params.merchantId ? parseInt(req.params.merchantId) : req.user.id;

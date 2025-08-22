@@ -546,10 +546,27 @@ export default function OffersManager() {
                               </Button>
                             </>
                           )}
+                          {offer.type === 'comprehensive' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => toast({ title: "Coming Soon", description: "Edit comprehensive offers feature is in development" })}
+                              className="border-dim bg-surface hover:border-dimStrong"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => window.location.href = `/merchant/offers/${offer.id}`}
+                            onClick={() => {
+                              // Route to different endpoints based on offer type
+                              if (offer.type === 'comprehensive') {
+                                window.location.href = `/merchant/offers/${offer.id}`;
+                              } else {
+                                window.location.href = `/merchant/offers/${offer.id}`;
+                              }
+                            }}
                             className="border-dim bg-surface hover:border-dimStrong"
                           >
                             <Eye className="w-4 h-4" />
