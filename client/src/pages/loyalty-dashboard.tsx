@@ -111,15 +111,15 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
             </div>
           ) : (
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-fg text-base">{tier.name}</h4>
-              <p className="text-sm text-soft/90">{tier.thresholdPoints}+ points required</p>
+              <h4 className="font-semibold text-white text-base">{tier.name}</h4>
+              <p className="text-sm text-gray-300">{tier.thresholdPoints}+ points required</p>
             </div>
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-1">
             {tier.perks?.map((perk: any, i: number) => (
-              <Badge key={i} variant="outline" className="text-xs border-border-dim bg-surface/50 text-fg">
+              <Badge key={i} variant="outline" className="text-xs border-gray-400 bg-gray-700/50 text-white">
                 {perk.value}% off
               </Badge>
             ))}
