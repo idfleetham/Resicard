@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, familyMembers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, offers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 
@@ -33,6 +33,13 @@ export interface IStorage {
   getDealsByMerchant(merchantId: number): Promise<Deal[]>;
   getActiveDeals(): Promise<DealWithMerchant[]>;
   getDealsByCategory(category: string): Promise<DealWithMerchant[]>;
+  
+  // Comprehensive Offer operations
+  createOffer(offer: InsertOffer): Promise<Offer>;
+  getOffer(id: string): Promise<Offer | undefined>;
+  getOffersByMerchant(merchantId: number): Promise<Offer[]>;
+  updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined>;
+  deleteOffer(id: string): Promise<boolean>;
   
   // Redemption operations
   createRedemption(redemption: InsertRedemption): Promise<Redemption>;
@@ -642,6 +649,59 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user || undefined;
+  }
+
+  // Comprehensive Offer operations
+  async createOffer(offerData: InsertOffer): Promise<Offer> {
+    // Convert merchantId to string and prepare data for database
+    const processedData = {
+      ...offerData,
+      merchantId: typeof offerData.merchantId === 'number' ? offerData.merchantId.toString() : offerData.merchantId,
+      tags: Array.isArray(offerData.tags) ? JSON.stringify(offerData.tags) : offerData.tags,
+      daysOfWeek: Array.isArray(offerData.daysOfWeek) ? JSON.stringify(offerData.daysOfWeek) : offerData.daysOfWeek,
+      timeSlots: typeof offerData.timeSlots === 'object' ? JSON.stringify(offerData.timeSlots) : offerData.timeSlots,
+      blackoutDates: Array.isArray(offerData.blackoutDates) ? JSON.stringify(offerData.blackoutDates) : offerData.blackoutDates,
+      locations: Array.isArray(offerData.locations) ? JSON.stringify(offerData.locations) : offerData.locations,
+    };
+
+    const [newOffer] = await db
+      .insert(offers)
+      .values(processedData)
+      .returning();
+    return newOffer;
+  }
+
+  async getOffer(id: string): Promise<Offer | undefined> {
+    const [offer] = await db.select().from(offers).where(eq(offers.id, id));
+    return offer || undefined;
+  }
+
+  async getOffersByMerchant(merchantId: number): Promise<Offer[]> {
+    return await db.select().from(offers).where(eq(offers.merchantId, merchantId.toString()));
+  }
+
+  async updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined> {
+    const processedUpdates = {
+      ...updates,
+      tags: Array.isArray(updates.tags) ? JSON.stringify(updates.tags) : updates.tags,
+      daysOfWeek: Array.isArray(updates.daysOfWeek) ? JSON.stringify(updates.daysOfWeek) : updates.daysOfWeek,
+      timeSlots: typeof updates.timeSlots === 'object' ? JSON.stringify(updates.timeSlots) : updates.timeSlots,
+      blackoutDates: Array.isArray(updates.blackoutDates) ? JSON.stringify(updates.blackoutDates) : updates.blackoutDates,
+      locations: Array.isArray(updates.locations) ? JSON.stringify(updates.locations) : updates.locations,
+      updatedAt: new Date(),
+    };
+
+    const [updatedOffer] = await db
+      .update(offers)
+      .set(processedUpdates)
+      .where(eq(offers.id, id))
+      .returning();
+    return updatedOffer || undefined;
+  }
+
+  async deleteOffer(id: string): Promise<boolean> {
+    const result = await db.delete(offers).where(eq(offers.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   async getPlatformStats(): Promise<{

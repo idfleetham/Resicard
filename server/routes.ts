@@ -373,6 +373,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create comprehensive offers
+  app.post("/api/offers", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      console.log('Received comprehensive offer data:', req.body);
+      
+      // Process dates for comprehensive offers
+      const processedData = {
+        ...req.body,
+        validFrom: req.body.validFrom ? new Date(req.body.validFrom) : undefined,
+        validTo: req.body.validTo ? new Date(req.body.validTo) : undefined,
+        merchantId: req.user.id,
+      };
+      
+      const offerData = insertOfferSchema.parse(processedData);
+      console.log('Parsed comprehensive offer data:', offerData);
+      
+      const offer = await storage.createOffer(offerData);
+      
+      res.json(offer);
+    } catch (error: any) {
+      console.error('Comprehensive offer creation error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.post("/api/deals", authenticateToken, requireRole('merchant'), async (req, res) => {
     try {
       console.log('Received deal data:', req.body);
