@@ -89,11 +89,11 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
 
   return (
     <div className="p-4 rounded-lg border border-border-dim bg-surface/30 hover:bg-surface/40 transition-colors">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 flex-1">
-          <div className={`w-4 h-4 rounded-full ${getTierColor(index)}`}></div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className={`w-4 h-4 rounded-full ${getTierColor(index)} flex-shrink-0`}></div>
           {isEditing ? (
-            <div className="flex-1 grid grid-cols-2 gap-3">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
@@ -109,33 +109,55 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
               />
             </div>
           ) : (
-            <div className="flex-1">
-              <h4 className="font-semibold text-fg">{tier.name}</h4>
-              <p className="text-sm text-soft">{tier.thresholdPoints}+ points required</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-fg text-base">{tier.name}</h4>
+              <p className="text-sm text-soft/90">{tier.thresholdPoints}+ points required</p>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {tier.perks?.map((perk: any, i: number) => (
-            <Badge key={i} variant="outline" className="text-xs border-border-dim">
-              {perk.value}% off
-            </Badge>
-          ))}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1">
+            {tier.perks?.map((perk: any, i: number) => (
+              <Badge key={i} variant="outline" className="text-xs border-border-dim bg-surface/50 text-fg">
+                {perk.value}% off
+              </Badge>
+            ))}
+          </div>
           {isEditing ? (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={handleSave}>
-                <Save className="w-4 h-4 text-green-400" />
+            <div className="flex items-center gap-1 ml-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleSave}
+                className="hover:bg-green-500/20 text-green-400 hover:text-green-300 border border-green-500/30"
+              >
+                <Save className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleCancel}>
-                <X className="w-4 h-4 text-red-400" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCancel}
+                className="hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/30"
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <div className="flex items-center gap-1 ml-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsEditing(true)}
+                className="hover:bg-blue-500/20 text-fg hover:text-blue-300 border-border-dim bg-surface/50"
+              >
                 <Edit className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={onDelete} className="text-red-400 hover:text-red-300">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onDelete} 
+                className="hover:bg-red-500/20 text-red-400 hover:text-red-300 border-red-500/30"
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
