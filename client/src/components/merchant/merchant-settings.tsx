@@ -64,8 +64,16 @@ export default function MerchantSettings() {
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const [showCropper, setShowCropper] = useState(false);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<'square' | 'landscape' | 'portrait'>('square');
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Aspect ratio configurations
+  const aspectRatios = {
+    square: { ratio: 1, label: 'Square (1:1)' },
+    landscape: { ratio: 16/9, label: 'Landscape (16:9)' },
+    portrait: { ratio: 9/16, label: 'Portrait (9:16)' }
+  };
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
 
   // Load Google Maps JavaScript API
@@ -133,13 +141,20 @@ export default function MerchantSettings() {
     mutationFn: (file: File) => {
       const formData = new FormData();
       formData.append("file", file);
+      const token = localStorage.getItem("token");
       return fetch("/api/merchant/upload/logo", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
-      }).then(res => res.json());
+      }).then(async res => {
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Upload failed: ${res.status} ${errorText}`);
+        }
+        return res.json();
+      });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["merchant", "me"] });
@@ -200,6 +215,8 @@ export default function MerchantSettings() {
       reader.addEventListener('load', () => {
         setImgSrc(reader.result?.toString() || '');
         setShowCropper(true);
+        // Reset to square by default when new image is selected
+        setSelectedAspectRatio('square');
       });
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -207,21 +224,34 @@ export default function MerchantSettings() {
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
+    updateCropForAspectRatio(width, height);
+  }, [selectedAspectRatio]);
+
+  const updateCropForAspectRatio = (imageWidth: number, imageHeight: number) => {
+    const aspectRatio = aspectRatios[selectedAspectRatio].ratio;
     const crop = centerCrop(
       makeAspectCrop(
         {
           unit: '%',
           width: 90,
         },
-        1, // Square aspect ratio
-        width,
-        height
+        aspectRatio,
+        imageWidth,
+        imageHeight
       ),
-      width,
-      height
+      imageWidth,
+      imageHeight
     );
     setCrop(crop);
-  }, []);
+  };
+
+  // Update crop when aspect ratio changes
+  const handleAspectRatioChange = (newRatio: 'square' | 'landscape' | 'portrait') => {
+    setSelectedAspectRatio(newRatio);
+    if (imgRef.current) {
+      updateCropForAspectRatio(imgRef.current.width, imgRef.current.height);
+    }
+  };
 
   const getCroppedImg = useCallback(() => {
     if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
@@ -902,12 +932,36 @@ export default function MerchantSettings() {
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-slate-900 rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-auto border border-slate-700">
                 <h3 className="text-lg font-semibold text-slate-100 mb-4">Crop Your Logo</h3>
+                
+                {/* Aspect Ratio Selector */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-slate-200 mb-2 block">Logo Format</label>
+                  <div className="flex gap-2">
+                    {Object.entries(aspectRatios).map(([key, config]) => (
+                      <Button
+                        key={key}
+                        variant={selectedAspectRatio === key ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleAspectRatioChange(key as 'square' | 'landscape' | 'portrait')}
+                        className={`
+                          ${selectedAspectRatio === key 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0' 
+                            : 'border-slate-600 text-slate-300 hover:bg-slate-800'
+                          }
+                        `}
+                      >
+                        {config.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <ReactCrop
                     crop={crop}
                     onChange={(_, percentCrop) => setCrop(percentCrop)}
                     onComplete={(c) => setCompletedCrop(c)}
-                    aspect={1}
+                    aspect={aspectRatios[selectedAspectRatio].ratio}
                     className="max-w-full"
                   >
                     <img
@@ -949,7 +1003,7 @@ export default function MerchantSettings() {
                       ) : (
                         <>
                           <Upload className="w-4 h-4 mr-2" />
-                          Upload Cropped Logo
+                          Upload Logo
                         </>
                       )}
                     </Button>
