@@ -113,6 +113,7 @@ export const offers = pgTable("offers", {
   maxLifetime: integer("max_lifetime"),
   globalUsageLimit: integer("global_usage_limit"),
   usageCount: integer("usage_count").default(0),
+  usageLimit: integer("usage_limit"), // Make nullable to match database
   staffPinRequired: boolean("staff_pin_required").default(false),
   proofType: text("proof_type").$type<"qr_only"|"code_pin"|"app_checkin">().default("qr_only"),
   refundBehavior: text("refund_behavior").$type<"restore"|"consume">().default("consume"),
