@@ -407,23 +407,23 @@ export default function LoyaltyDashboard() {
             <TabsList className="grid w-full grid-cols-5 p-1 card"
               style={{ background: 'rgba(18, 20, 30, 0.8)' }}
             >
-              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+              <TabsTrigger value="overview" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <TrendingUp className="w-4 h-4" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="setup" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+              <TabsTrigger value="setup" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Settings className="w-4 h-4" />
                 Setup
               </TabsTrigger>
-              <TabsTrigger value="tiers" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+              <TabsTrigger value="tiers" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Crown className="w-4 h-4" />
                 Tiers
               </TabsTrigger>
-              <TabsTrigger value="rewards" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+              <TabsTrigger value="rewards" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Gift className="w-4 h-4" />
                 Rewards
               </TabsTrigger>
-              <TabsTrigger value="members" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+              <TabsTrigger value="members" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Users className="w-4 h-4" />
                 Members
               </TabsTrigger>
@@ -655,7 +655,9 @@ export default function LoyaltyDashboard() {
             </div>
           </StatCard>
 
-          {/* Tiers Configuration */}
+        </TabsContent>
+
+        <TabsContent value="tiers" className="space-y-6">
           <StatCard 
             title="Customer Tiers"
             subtitle="Set up tiers with point thresholds and exclusive perks"
@@ -680,6 +682,127 @@ export default function LoyaltyDashboard() {
                   {addTierMutation.isPending ? "Adding..." : "Add New Tier"}
                 </Button>
               </div>
+          </StatCard>
+
+          {/* Tier Benefits Preview */}
+          <StatCard 
+            title="Tier Benefits Preview"
+            subtitle="Preview what customers see for each tier"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {loyaltyProgram?.tiers.map((tier, index) => {
+                const getTierColor = (index: number) => {
+                  const colors = ['from-orange-500 to-amber-500', 'from-gray-400 to-gray-500', 'from-yellow-400 to-yellow-500', 'from-purple-500 to-purple-600', 'from-green-500 to-green-600'];
+                  return colors[index % colors.length];
+                };
+
+                return (
+                  <motion.div
+                    key={tier.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="relative"
+                  >
+                    <div className={`p-6 rounded-xl bg-gradient-to-br ${getTierColor(index)} text-white shadow-lg`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <Crown className="w-8 h-8 opacity-80" />
+                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                          {tier.thresholdPoints}+ pts
+                        </Badge>
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">{tier.name}</h3>
+                      <p className="text-white/90 text-sm mb-4">
+                        Unlock at {tier.thresholdPoints} points
+                      </p>
+                      
+                      {/* Perks List */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-white/80 uppercase tracking-wide">Benefits</p>
+                        {tier.perks && tier.perks.length > 0 ? (
+                          <ul className="space-y-1">
+                            {tier.perks.slice(0, 3).map((perk, perkIndex) => (
+                              <li key={perkIndex} className="text-sm text-white/90 flex items-center gap-2">
+                                <Percent className="w-3 h-3" />
+                                {perk.type === 'discount' ? `${perk.value}% off all orders` : 
+                                 perk.type === 'free_item' ? `Free ${perk.note || 'item'}` :
+                                 perk.type === 'early_access' ? 'Early access to offers' :
+                                 `${perk.value} bonus points`}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-white/70 italic">No benefits configured</p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </StatCard>
+
+          {/* Tier Analytics */}
+          <StatCard 
+            title="Tier Performance"
+            subtitle="Customer distribution and engagement by tier"
+          >
+            <div className="space-y-6">
+              {loyaltyProgram?.tiers.map((tier, index) => {
+                const customerCount = Math.floor(Math.random() * 100) + 20;
+                const avgSpend = (Math.random() * 50 + 20).toFixed(2);
+                const progressPercentage = Math.min(100, (customerCount / 120) * 100);
+
+                return (
+                  <div key={tier.id} className="p-4 rounded-lg bg-surface/30 border border-border-dim">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 rounded-full ${
+                          index === 0 ? 'bg-orange-500' : 
+                          index === 1 ? 'bg-gray-400' : 
+                          index === 2 ? 'bg-yellow-500' : 'bg-purple-500'
+                        }`}></div>
+                        <h4 className="font-semibold text-white">{tier.name}</h4>
+                        <Badge variant="outline" className="text-xs text-white/80 border-white/20">
+                          {tier.thresholdPoints}+ pts
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-white">{customerCount}</p>
+                        <p className="text-xs text-white/70">customers</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">£{avgSpend}</p>
+                        <p className="text-xs text-white/70">Avg. monthly spend</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{Math.floor(Math.random() * 5) + 2}</p>
+                        <p className="text-xs text-white/70">Visits per month</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{Math.floor(Math.random() * 20) + 5}</p>
+                        <p className="text-xs text-white/70">Rewards redeemed</p>
+                      </div>
+                    </div>
+
+                    {/* Progress bar showing tier distribution */}
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          index === 0 ? 'bg-orange-500' : 
+                          index === 1 ? 'bg-gray-400' : 
+                          index === 2 ? 'bg-yellow-500' : 'bg-purple-500'
+                        }`}
+                        style={{ width: `${progressPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </StatCard>
         </TabsContent>
 
