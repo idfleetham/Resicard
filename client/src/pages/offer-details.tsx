@@ -62,14 +62,22 @@ export default function OfferDetails() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-fg">{offer.title}</h1>
-          <p className="text-soft">Offer Details and Analytics</p>
-        </div>
-        <div className="ml-auto">
-          {getStatusBadge()}
-        </div>
       </div>
+
+      {/* Title Card */}
+      <Card className="bg-gradient-to-br from-brand1/20 to-brand2/20 border-dim shadow-elev-1 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-brand1 to-brand2 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white font-bold text-3xl">{offer.title}</CardTitle>
+              <CardDescription className="text-white/90 text-lg">Offer Details and Analytics</CardDescription>
+            </div>
+            <div>
+              {getStatusBadge()}
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Offer Details Card */}
       <Card className="bg-gradient-to-br from-brand1/20 to-brand2/20 border-dim shadow-elev-1 overflow-hidden">
@@ -97,7 +105,7 @@ export default function OfferDetails() {
                 <p className="text-soft"><span className="font-medium text-fg">Usage Limit:</span> {offer.usageLimit}</p>
                 <p className="text-soft"><span className="font-medium text-fg">Used:</span> {offer.usageCount || 0}</p>
                 <p className="text-soft"><span className="font-medium text-fg">Remaining:</span> {offer.usageLimit - (offer.usageCount || 0)}</p>
-                <p className="text-soft"><span className="font-medium text-fg">Expiry Date:</span> {format(new Date(offer.expiryDate), "MMM d, yyyy")}</p>
+                <p className="text-soft"><span className="font-medium text-fg">Expiry Date:</span> {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : "N/A"}</p>
                 <p className="text-soft"><span className="font-medium text-fg">Created:</span> {offer.createdAt ? format(new Date(offer.createdAt), "MMM d, yyyy") : "N/A"}</p>
               </div>
             </div>
@@ -150,7 +158,7 @@ export default function OfferDetails() {
           </CardHeader>
           <CardBody>
             <div className="text-2xl font-bold text-fg">
-              {Math.max(0, Math.ceil((new Date(offer.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+              {offer.expiryDate ? Math.max(0, Math.ceil((new Date(offer.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : "N/A"}
             </div>
           </CardBody>
         </Card>
