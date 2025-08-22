@@ -308,14 +308,19 @@ export default function MerchantSettings() {
 
     // Simple address suggestions for UK (fallback when Google Maps isn't available)
     const getUKAddressSuggestions = (input: string) => {
-      if (input.length < 3) return [];
+      if (input.length < 2) return [];
       
       const ukSuggestions = [
         "Market Street, St Andrews, KY16 9AB",
         "South Street, St Andrews, KY16 9QE", 
         "North Street, St Andrews, KY16 9AJ",
         "Bell Street, St Andrews, KY16 9UR",
-        "Church Square, St Andrews, KY16 9NJ"
+        "Church Square, St Andrews, KY16 9NJ",
+        "Abbey Street, St Andrews, KY16 9LA",
+        "Castle Street, St Andrews, KY16 9AS",
+        "Golf Place, St Andrews, KY16 9JA",
+        "The Scores, St Andrews, KY16 9AR",
+        "Gregory Place, St Andrews, KY16 9SX"
       ].filter(addr => addr.toLowerCase().includes(input.toLowerCase()));
       
       return ukSuggestions.map((addr, idx) => ({
@@ -333,11 +338,12 @@ export default function MerchantSettings() {
       setInputValue(value);
       field.onChange(value);
       
-      if (value.length > 2) {
+      if (value.length >= 2) {
         const ukSuggestions = getUKAddressSuggestions(value);
         setSuggestions(ukSuggestions);
         setShowSuggestions(ukSuggestions.length > 0);
       } else {
+        setSuggestions([]);
         setShowSuggestions(false);
       }
     };
@@ -352,14 +358,16 @@ export default function MerchantSettings() {
       <div className="relative">
         <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400 z-10" />
         <Textarea 
-          className="textarea-dark pl-10" 
+          className="input-dark pl-10 min-h-[80px] resize-none" 
           placeholder="123 Market Street, St Andrews, KY16 9AB"
           value={inputValue}
           onChange={handleInput}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           onFocus={() => {
-            if (inputValue.length > 2 && suggestions.length > 0) {
-              setShowSuggestions(true);
+            if (inputValue.length >= 2) {
+              const ukSuggestions = getUKAddressSuggestions(inputValue);
+              setSuggestions(ukSuggestions);
+              setShowSuggestions(ukSuggestions.length > 0);
             }
           }}
         />
@@ -579,7 +587,7 @@ export default function MerchantSettings() {
                             <FormLabel className="text-slate-200">Email Address</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                                 <Input className="input-dark pl-10" type="email" placeholder="business@example.com" {...field} />
                               </div>
                             </FormControl>
@@ -595,7 +603,7 @@ export default function MerchantSettings() {
                             <FormLabel className="text-slate-200">Phone Number</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                                 <Input className="input-dark pl-10" type="tel" placeholder="+44 1334 123456" {...field} />
                               </div>
                             </FormControl>
@@ -625,7 +633,7 @@ export default function MerchantSettings() {
                           <FormLabel className="text-slate-200">Business Description (Optional)</FormLabel>
                           <FormControl>
                             <Textarea 
-                              className="textarea-dark"
+                              className="input-dark min-h-[80px] resize-none"
                               placeholder="Tell customers about your business..."
                               {...field} 
                             />
