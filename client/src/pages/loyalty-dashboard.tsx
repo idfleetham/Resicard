@@ -524,20 +524,20 @@ export default function LoyaltyDashboard() {
             >
                 <div className="space-y-4">
                   {loyaltyProgram?.tiers.map((tier, index) => (
-                    <div key={tier.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
+                    <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${
                           index === 0 ? 'bg-orange-500' : 
                           index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
                         }`}></div>
-                        <span className="font-medium text-fg">{tier.name}</span>
-                        <Badge variant="outline" className="text-xs">
+                        <span className="font-medium text-white">{tier.name}</span>
+                        <Badge variant="outline" className="text-xs text-white/80 border-white/20">
                           {tier.thresholdPoints}+ pts
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-fg">{Math.floor(Math.random() * 100) + 20}</p>
-                        <p className="text-xs text-soft">customers</p>
+                        <p className="font-semibold text-white">{Math.floor(Math.random() * 100) + 20}</p>
+                        <p className="text-xs text-white/70">customers</p>
                       </div>
                     </div>
                   ))}
@@ -550,17 +550,17 @@ export default function LoyaltyDashboard() {
             >
               <div className="space-y-4">
                 {loyaltyProgram?.rewards.slice(0, 3).map((reward, index) => (
-                  <div key={reward.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
+                  <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
                     <div className="flex items-center gap-3">
-                      <Coffee className="w-5 h-5 text-brown-500" />
+                      <Coffee className="w-5 h-5 text-amber-400" />
                       <div>
-                        <p className="font-medium text-fg">{reward.name}</p>
-                        <p className="text-xs text-soft">{reward.costPoints} points</p>
+                        <p className="font-medium text-white">{reward.name}</p>
+                        <p className="text-xs text-white/70">{reward.costPoints} points</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-fg">{Math.floor(Math.random() * 50) + 10}</p>
-                      <p className="text-xs text-soft">redeemed</p>
+                      <p className="font-semibold text-white">{Math.floor(Math.random() * 50) + 10}</p>
+                      <p className="text-xs text-white/70">redeemed</p>
                     </div>
                   </div>
                 ))}
@@ -863,20 +863,20 @@ export default function LoyaltyDashboard() {
                 ].map((activity, index) => {
                   const customerAlias = generateCustomerAlias({ id: activity.id, username: activity.username });
                   return (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30 border border-border-dim">
+                    <div key={index} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/30 border border-border-dim divide-y divide-white/5">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${
                           activity.type === 'earn' ? 'bg-green-500' :
                           activity.type === 'redeem' ? 'bg-red-500' : 'bg-blue-500'
                         }`}></div>
                         <div>
-                          <p className="font-medium text-fg">{customerAlias}</p>
-                          <p className="text-sm text-soft">{activity.action}</p>
+                          <p className="font-medium text-white">{customerAlias}</p>
+                          <p className="text-sm text-white/80">{activity.action}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-fg">{activity.amount}</p>
-                        <p className="text-xs text-soft">{activity.time}</p>
+                        <p className="text-sm font-medium text-white">{activity.amount}</p>
+                        <p className="text-xs text-white/70">{activity.time}</p>
                       </div>
                     </div>
                   );
@@ -898,8 +898,8 @@ export default function LoyaltyDashboard() {
                 <Users className="w-5 h-5 text-teal-400" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-fg">Loyalty Members</h3>
-                <p className="text-muted text-sm">View and manage your loyalty program members</p>
+                <h3 className="text-xl font-semibold text-white">Loyalty Members</h3>
+                <p className="text-white/80 text-sm">View and manage your loyalty program members</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -916,20 +916,20 @@ export default function LoyaltyDashboard() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-center justify-between p-6 rounded-xl bg-surface/40 border border-white/5 hover:bg-surface/60 transition-all"
+                    className="flex items-center justify-between py-4 px-6 rounded-xl bg-surface/40 border border-white/5 hover:bg-surface/60 transition-all"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
                         {customerAlias.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-fg text-lg">{customerAlias}</p>
-                        <p className="text-sm text-muted">{customer.tier} tier • {customer.visits} visits</p>
+                        <p className="font-semibold text-white text-lg">{customerAlias}</p>
+                        <p className="text-sm text-white/80">{customer.tier} tier • {customer.visits} visits</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-fg text-xl">{customer.points}</p>
-                      <p className="text-xs text-muted mb-2">points</p>
+                      <p className="font-bold text-white text-xl">{customer.points}</p>
+                      <p className="text-xs text-white/70 mb-2">points</p>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
