@@ -398,7 +398,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const offerData = insertOfferSchema.parse(processedData);
       console.log('Parsed comprehensive offer data:', offerData);
       
-      const offer = await storage.createOffer(offerData);
+      // Ensure merchant ID is properly set after parsing
+      const finalOfferData = {
+        ...offerData,
+        merchantId: merchant.id
+      };
+      console.log('Final offer data with merchant ID:', finalOfferData.merchantId);
+      
+      const offer = await storage.createOffer(finalOfferData);
       
       res.json(offer);
     } catch (error: any) {
