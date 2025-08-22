@@ -9,9 +9,15 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool } from "@neondatabase/serverless";
 import multer from "multer";
 import express from "express";
-import { merchants, deals } from "@shared/schema";
+import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, loyaltyTransactions } from "@shared/schema";
+import QRCode from "qrcode";
+import { randomUUID } from "crypto";
+import { PassKitService } from "./passkit";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Initialize PassKit service
+const passKitService = new PassKitService();
 
 // Initialize Stripe (placeholder - will work when keys are provided)
 let stripe: any = null;
@@ -1698,6 +1704,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Get loyalty events error:', error);
       res.status(500).json({ error: "Failed to fetch loyalty events" });
     }
+  });
+
+  // Apple Wallet Pass endpoints
+  app.get("/wallet/resicard.pkpass", authenticateToken, async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    if (!passKitService.isConfigured()) {
+      return res.status(503).json({ 
+        error: "Apple Wallet pass service not configured. Please set PASS_TYPE_IDENTIFIER and TEAM_IDENTIFIER environment variables." 
+      });
+    }
+
+    try {
+      const userData = {
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email,
+        loyaltyPoints: req.user.loyaltyPoints || 0,
+        loyaltyTier: req.user.loyaltyTier || 'Bronze'
+      };
+
+      const passBuffer = await passKitService.generatePass(userData);
+      
+      res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
+      res.setHeader('Content-Disposition', 'attachment; filename="resicard.pkpass"');
+      res.send(passBuffer);
+    } catch (error) {
+      console.error('Failed to generate Apple Wallet pass:', error);
+      res.status(500).json({ error: "Failed to generate pass" });
+    }
+  });
+
+  // Apple Wallet pass update endpoints (for future use)
+  app.post("/api/wallet/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier/:serialNumber", (req, res) => {
+    // Register device for pass updates
+    console.log('Device registration for pass updates:', {
+      deviceId: req.params.deviceLibraryIdentifier,
+      passType: req.params.passTypeIdentifier,
+      serialNumber: req.params.serialNumber,
+      authToken: req.headers.authorization
+    });
+    res.status(201).send();
+  });
+
+  app.delete("/api/wallet/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier/:serialNumber", (req, res) => {
+    // Unregister device for pass updates
+    console.log('Device unregistration for pass updates:', {
+      deviceId: req.params.deviceLibraryIdentifier,
+      passType: req.params.passTypeIdentifier,
+      serialNumber: req.params.serialNumber
+    });
+    res.status(200).send();
+  });
+
+  app.get("/api/wallet/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier", (req, res) => {
+    // Get list of updatable passes for device
+    const lastUpdated = req.query.passesUpdatedSince;
+    console.log('Check for pass updates:', {
+      deviceId: req.params.deviceLibraryIdentifier,
+      passType: req.params.passTypeIdentifier,
+      lastUpdated
+    });
+    
+    // Return empty list for now - implement when push updates are needed
+    res.json({
+      lastUpdated: new Date().toISOString(),
+      serialNumbers: []
+    });
+  });
+
+  app.get("/api/wallet/v1/passes/:passTypeIdentifier/:serialNumber", (req, res) => {
+    // Get updated pass
+    console.log('Request for updated pass:', {
+      passType: req.params.passTypeIdentifier,
+      serialNumber: req.params.serialNumber,
+      authToken: req.headers.authorization
+    });
+    
+    // For now, return 304 Not Modified
+    res.status(304).send();
+  });
+
+  app.post("/api/wallet/v1/log", (req, res) => {
+    // Log messages from Wallet app
+    console.log('Wallet app log:', req.body);
+    res.status(200).send();
   });
 
   const httpServer = createServer(app);
