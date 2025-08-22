@@ -33,6 +33,7 @@ function Router() {
       <Route path="/merchant-portal" component={MerchantPortal} />
       <Route path="/merchant/offers/:id" component={OfferDetails} />
       <Route path="/merchant/loyalty" component={LoyaltyDashboard} />
+      <Route path="/loyalty-dashboard" component={LoyaltyDashboard} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/edit-profile" component={EditProfile} />
       <Route component={NotFound} />
