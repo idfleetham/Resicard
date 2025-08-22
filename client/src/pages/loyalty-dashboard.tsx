@@ -32,6 +32,7 @@ import {
   Trash2,
   Target
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface LoyaltyProgram {
   id: string;
@@ -173,6 +174,7 @@ export default function LoyaltyDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
+  const [showAddReward, setShowAddReward] = useState(false);
 
   const { data: loyaltyProgram, isLoading } = useQuery({
     queryKey: ["/api/loyalty/program"],
@@ -361,7 +363,7 @@ export default function LoyaltyDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             Overview
@@ -373,6 +375,10 @@ export default function LoyaltyDashboard() {
           <TabsTrigger value="rewards" className="flex items-center gap-2">
             <Gift className="w-4 h-4" />
             Rewards
+          </TabsTrigger>
+          <TabsTrigger value="staff" className="flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            Staff Tools
           </TabsTrigger>
           <TabsTrigger value="customers" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -447,17 +453,28 @@ export default function LoyaltyDashboard() {
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white h-auto p-4 flex-col gap-2">
+                <Button 
+                  onClick={() => setActiveTab("staff")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white h-auto p-4 flex-col gap-2"
+                >
                   <Zap className="w-6 h-6" />
                   <span>Award Points</span>
                   <span className="text-xs opacity-80">Staff tool for manual awards</span>
                 </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2 border-dim">
+                <Button 
+                  onClick={() => setActiveTab("rewards")}
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2 border-dim"
+                >
                   <Plus className="w-6 h-6" />
                   <span>Add Reward</span>
                   <span className="text-xs opacity-80">Create new loyalty reward</span>
                 </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2 border-dim">
+                <Button 
+                  onClick={() => setActiveTab("setup")}
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2 border-dim"
+                >
                   <Crown className="w-6 h-6" />
                   <span>Manage Tiers</span>
                   <span className="text-xs opacity-80">Configure customer tiers</span>
@@ -660,10 +677,71 @@ export default function LoyaltyDashboard() {
               <CardDescription className="text-soft">
                 Manage rewards that customers can redeem with points or stamps
               </CardDescription>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Reward
-              </Button>
+              <Dialog open={showAddReward} onOpenChange={setShowAddReward}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Reward
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border-dim">
+                  <DialogHeader>
+                    <DialogTitle className="text-fg">Create New Reward</DialogTitle>
+                    <DialogDescription className="text-soft">
+                      Add a new reward that customers can redeem with their points or stamps
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-fg">Reward Name</Label>
+                      <Input 
+                        placeholder="e.g., Free Coffee, 20% Off Meal"
+                        className="bg-surface border-border-dim"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-fg">Cost (Points)</Label>
+                      <Input 
+                        type="number"
+                        placeholder="50"
+                        className="bg-surface border-border-dim"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-fg">Description</Label>
+                      <Input 
+                        placeholder="Brief description of the reward"
+                        className="bg-surface border-border-dim"
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch />
+                      <Label className="text-fg">Active (visible to customers)</Label>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button 
+                        onClick={() => setShowAddReward(false)}
+                        variant="outline" 
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setShowAddReward(false);
+                          toast({
+                            title: "Reward Created",
+                            description: "New reward has been added to your catalog.",
+                          });
+                        }}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                      >
+                        Create Reward
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -682,6 +760,120 @@ export default function LoyaltyDashboard() {
                       <Button variant="ghost" size="sm">
                         Stats
                       </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="staff" className="space-y-6">
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-purple-600/10 rounded-t-2xl border-b border-border-dim">
+              <CardTitle className="text-fg flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Staff Earning Tool
+              </CardTitle>
+              <CardDescription className="text-soft">
+                Award points manually to customers for purchases or special events
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label className="text-fg font-medium">Customer Phone or Email</Label>
+                    <Input 
+                      placeholder="Enter customer phone or email"
+                      className="bg-surface border-border-dim"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-fg font-medium">Purchase Amount (£)</Label>
+                    <Input 
+                      type="number"
+                      placeholder="0.00"
+                      className="bg-surface border-border-dim"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-fg font-medium">Earning Type</Label>
+                    <Select>
+                      <SelectTrigger className="bg-surface border-border-dim">
+                        <SelectValue placeholder="Select earning type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="purchase">Purchase (auto-calculated points)</SelectItem>
+                        <SelectItem value="visit">Visit (1 stamp)</SelectItem>
+                        <SelectItem value="bonus">Bonus Points</SelectItem>
+                        <SelectItem value="manual">Manual Award</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Award Points
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-surface/30 border border-border-dim">
+                    <h4 className="font-semibold text-fg mb-2">Current Customer</h4>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-soft">No customer selected</p>
+                      <p className="text-soft">Select a customer to view their loyalty status</p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-surface/30 border border-border-dim">
+                    <h4 className="font-semibold text-fg mb-2">Earning Preview</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-soft">Points to Award:</span>
+                        <span className="text-fg font-medium">0</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-soft">Stamps to Award:</span>
+                        <span className="text-fg font-medium">0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-green-600/20 via-emerald-600/15 to-teal-600/10 rounded-t-2xl border-b border-border-dim">
+              <CardTitle className="text-fg flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Recent Activity
+              </CardTitle>
+              <CardDescription className="text-soft">
+                Latest loyalty transactions and awards
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="space-y-3">
+                {[
+                  { customer: "john@example.com", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
+                  { customer: "sarah.m", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 minutes ago", type: "redeem" },
+                  { customer: "mike@gmail.com", action: "Earned 1 stamp", amount: "Visit reward", time: "1 hour ago", type: "stamp" },
+                  { customer: "emma.davis", action: "Earned 30 points", amount: "£3.00 purchase", time: "2 hours ago", type: "earn" }
+                ].map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30 border border-border-dim">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        activity.type === 'earn' ? 'bg-green-500' :
+                        activity.type === 'redeem' ? 'bg-red-500' : 'bg-blue-500'
+                      }`}></div>
+                      <div>
+                        <p className="font-medium text-fg">{activity.customer}</p>
+                        <p className="text-sm text-soft">{activity.action}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-fg">{activity.amount}</p>
+                      <p className="text-xs text-soft">{activity.time}</p>
                     </div>
                   </div>
                 ))}
