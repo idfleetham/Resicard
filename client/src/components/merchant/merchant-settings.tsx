@@ -356,9 +356,8 @@ export default function MerchantSettings() {
 
     return (
       <div className="relative">
-        <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400 z-10" />
         <Textarea 
-          className="input-dark pl-10 min-h-[80px] resize-none" 
+          className="input-dark min-h-[80px] resize-none" 
           placeholder="123 Market Street, St Andrews, KY16 9AB"
           value={inputValue}
           onChange={handleInput}
@@ -586,10 +585,7 @@ export default function MerchantSettings() {
                           <FormItem>
                             <FormLabel className="text-slate-200">Email Address</FormLabel>
                             <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
-                                <Input className="input-dark pl-10" type="email" placeholder="business@example.com" {...field} />
-                              </div>
+                              <Input className="input-dark" type="email" placeholder="business@example.com" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -602,10 +598,7 @@ export default function MerchantSettings() {
                           <FormItem>
                             <FormLabel className="text-slate-200">Phone Number</FormLabel>
                             <FormControl>
-                              <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
-                                <Input className="input-dark pl-10" type="tel" placeholder="+44 1334 123456" {...field} />
-                              </div>
+                              <Input className="input-dark" type="tel" placeholder="+44 1334 123456" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
