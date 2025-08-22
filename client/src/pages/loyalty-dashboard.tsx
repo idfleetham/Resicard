@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { generateCustomerAlias } from "@shared/schema";
 import { 
   Star, 
   Award, 
@@ -855,28 +856,31 @@ export default function LoyaltyDashboard() {
             <CardContent className="p-6 pt-0">
               <div className="space-y-3">
                 {[
-                  { customer: "john@example.com", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
-                  { customer: "sarah.m", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 minutes ago", type: "redeem" },
-                  { customer: "mike@gmail.com", action: "Earned 1 stamp", amount: "Visit reward", time: "1 hour ago", type: "stamp" },
-                  { customer: "emma.davis", action: "Earned 30 points", amount: "£3.00 purchase", time: "2 hours ago", type: "earn" }
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30 border border-border-dim">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        activity.type === 'earn' ? 'bg-green-500' :
-                        activity.type === 'redeem' ? 'bg-red-500' : 'bg-blue-500'
-                      }`}></div>
-                      <div>
-                        <p className="font-medium text-fg">{activity.customer}</p>
-                        <p className="text-sm text-soft">{activity.action}</p>
+                  { id: 201, username: "john_d", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
+                  { id: 202, username: "sarah_m", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 minutes ago", type: "redeem" },
+                  { id: 203, username: null, action: "Earned 1 stamp", amount: "Visit reward", time: "1 hour ago", type: "stamp" },
+                  { id: 204, username: "emma_d", action: "Earned 30 points", amount: "£3.00 purchase", time: "2 hours ago", type: "earn" }
+                ].map((activity, index) => {
+                  const customerAlias = generateCustomerAlias({ id: activity.id, username: activity.username });
+                  return (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30 border border-border-dim">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          activity.type === 'earn' ? 'bg-green-500' :
+                          activity.type === 'redeem' ? 'bg-red-500' : 'bg-blue-500'
+                        }`}></div>
+                        <div>
+                          <p className="font-medium text-fg">{customerAlias}</p>
+                          <p className="text-sm text-soft">{activity.action}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-fg">{activity.amount}</p>
+                        <p className="text-xs text-soft">{activity.time}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-fg">{activity.amount}</p>
-                      <p className="text-xs text-soft">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -895,30 +899,33 @@ export default function LoyaltyDashboard() {
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="space-y-4">
-                {/* Mock customer data */}
+                {/* Mock customer data with privacy aliases */}
                 {[
-                  { name: "Sarah Johnson", tier: "Gold", points: 450, visits: 12 },
-                  { name: "Mike Chen", tier: "Silver", points: 180, visits: 8 },
-                  { name: "Emily Davis", tier: "Bronze", points: 75, visits: 5 },
-                ].map((customer, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-surface/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                        {customer.name.split(' ').map(n => n[0]).join('')}
+                  { id: 101, username: "sarah_j", tier: "Gold", points: 450, visits: 12 },
+                  { id: 102, username: null, tier: "Silver", points: 180, visits: 8 },
+                  { id: 103, username: "emily_d", tier: "Bronze", points: 75, visits: 5 },
+                ].map((customer, index) => {
+                  const customerAlias = generateCustomerAlias({ id: customer.id, username: customer.username });
+                  return (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-surface/30">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          {customerAlias.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-fg">{customerAlias}</p>
+                          <p className="text-sm text-soft">{customer.tier} tier • {customer.visits} visits</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-fg">{customer.name}</p>
-                        <p className="text-sm text-soft">{customer.tier} tier • {customer.visits} visits</p>
+                      <div className="text-right">
+                        <p className="font-semibold text-fg">{customer.points} points</p>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          Award Points
+                        </Button>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-fg">{customer.points} points</p>
-                      <Button variant="ghost" size="sm" className="text-xs">
-                        Award Points
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
