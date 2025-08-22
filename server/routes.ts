@@ -1470,6 +1470,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // LOYALTY PROGRAM ENDPOINTS (Mock implementation for now)
   
+  // Mock data store for tiers (in a real app, this would be in the database)
+  let mockTiers = [
+    { id: "bronze", name: "Bronze", thresholdPoints: 0, perks: [{ type: "percentOff", value: 5 }] },
+    { id: "silver", name: "Silver", thresholdPoints: 100, perks: [{ type: "percentOff", value: 10 }] },
+    { id: "gold", name: "Gold", thresholdPoints: 500, perks: [{ type: "percentOff", value: 15 }] }
+  ];
+
   // Get merchant's loyalty program
   app.get("/api/loyalty/program", authenticateToken, async (req, res) => {
     try {
@@ -1483,11 +1490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         earnCooldownMinutes: 30,
         dailyEarnCap: 3,
         active: true,
-        tiers: [
-          { id: "bronze", name: "Bronze", thresholdPoints: 0, perks: [{ type: "percentOff", value: 5 }] },
-          { id: "silver", name: "Silver", thresholdPoints: 100, perks: [{ type: "percentOff", value: 10 }] },
-          { id: "gold", name: "Gold", thresholdPoints: 500, perks: [{ type: "percentOff", value: 15 }] }
-        ],
+        tiers: mockTiers,
         rewards: [
           { id: "reward-1", name: "Free Coffee", costPoints: 50, active: true },
           { id: "reward-2", name: "20% Off Meal", costPoints: 100, active: true }
@@ -1519,13 +1522,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { name, thresholdPoints, perks } = req.body;
       
-      // Mock response - in real implementation, save to database
+      // Create new tier and add to mock data
       const newTier = {
         id: `tier-${Date.now()}`,
         name: name || "New Tier",
         thresholdPoints: thresholdPoints || 0,
-        perks: perks || [{ type: "discount", value: 5, note: "Discount on purchases" }]
+        perks: perks || [{ type: "percentOff", value: 5 }]
       };
+
+      // Add to mock tiers array
+      mockTiers.push(newTier);
 
       res.json({ success: true, tier: newTier });
     } catch (error) {
@@ -1544,15 +1550,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { tierId } = req.params;
       const { name, thresholdPoints, perks } = req.body;
       
-      // Mock response - in real implementation, update in database
-      const updatedTier = {
-        id: tierId,
-        name,
-        thresholdPoints,
-        perks
-      };
+      // Find and update tier in mock data
+      const tierIndex = mockTiers.findIndex(tier => tier.id === tierId);
+      if (tierIndex !== -1) {
+        mockTiers[tierIndex] = {
+          id: tierId,
+          name,
+          thresholdPoints,
+          perks
+        };
+      }
 
-      res.json({ success: true, tier: updatedTier });
+      res.json({ success: true, tier: mockTiers[tierIndex] });
     } catch (error) {
       console.error("Error updating tier:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -1568,7 +1577,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { tierId } = req.params;
       
-      // Mock response - in real implementation, delete from database
+      // Remove tier from mock data
+      const tierIndex = mockTiers.findIndex(tier => tier.id === tierId);
+      if (tierIndex !== -1) {
+        mockTiers.splice(tierIndex, 1);
+      }
+      
       res.json({ success: true, deletedTierId: tierId });
     } catch (error) {
       console.error("Error deleting tier:", error);
