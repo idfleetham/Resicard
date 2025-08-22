@@ -1212,6 +1212,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get comprehensive offers for merchant
+  app.get("/api/offers/my-offers", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      // Get or create merchant record for this user
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        merchant = await storage.createMerchantFromUser(req.user);
+      }
+      
+      const offers = await storage.getOffersByMerchant(merchant.id);
+      res.json(offers);
+    } catch (error) {
+      console.error('Error getting merchant offers:', error);
+      res.status(500).json({ error: "Failed to fetch offers" });
+    }
+  });
+
   // Get redemptions for a merchant
   app.get("/api/redemptions/merchant/:merchantId?", authenticateToken, requireRole('merchant'), async (req, res) => {
     const merchantId = req.params.merchantId ? parseInt(req.params.merchantId) : req.user.id;

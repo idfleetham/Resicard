@@ -39,6 +39,12 @@ export default function OffersManager() {
   const [uploadingImageForOffer, setUploadingImageForOffer] = useState<number | null>(null);
 
   const { data: deals = [], isLoading } = useOffers();
+  
+  // Also fetch comprehensive offers
+  const { data: comprehensiveOffers = [], isLoading: isLoadingOffers } = useQuery({
+    queryKey: ["/api/offers/my-offers"],
+    queryFn: () => apiRequest("GET", "/api/offers/my-offers").then(res => res.json()),
+  });
   const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
   const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
 
@@ -356,7 +362,7 @@ export default function OffersManager() {
         {[
           {
             title: "Total Offers",
-            value: deals.length,
+            value: deals.length + comprehensiveOffers.length,
             icon: "📦",
             gradient: "from-brand1/70 to-brand2/70"
           },
@@ -517,6 +523,81 @@ export default function OffersManager() {
           )}
         </CardBody>
       </Card>
+
+      {/* Comprehensive Offers Section */}
+      {comprehensiveOffers.length > 0 && (
+        <Card className="bg-slate-900/80 border-slate-700 shadow-elev-1 mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-slate-100 text-xl">Comprehensive Offers</CardTitle>
+                <CardDescription className="text-slate-400">Advanced offers with detailed scheduling and targeting</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="grid gap-4">
+              {comprehensiveOffers.map((offer: any) => (
+                <motion.div
+                  key={offer.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-6"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-slate-100">{offer.title}</h3>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                          {offer.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                        </Badge>
+                        {offer.category && (
+                          <Badge variant="outline" className="border-slate-600 text-slate-300">
+                            {offer.category}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <p className="text-slate-400 mb-4">{offer.description}</p>
+                      
+                      <div className="flex items-center gap-6 text-sm text-slate-400">
+                        {offer.percentOff && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-green-400 font-medium">{offer.percentOff}% off</span>
+                          </div>
+                        )}
+                        {offer.audience && (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span className="capitalize">{offer.audience}</span>
+                          </div>
+                        )}
+                        {offer.mealPeriods && JSON.parse(offer.mealPeriods || '[]').length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{JSON.parse(offer.mealPeriods).join(', ')}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>Created {format(parseISO(offer.createdAt), 'MMM d, yyyy')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge className={offer.active ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
+                        {offer.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Comprehensive Offer Creator Modal */}
       {isComprehensiveOpen && (

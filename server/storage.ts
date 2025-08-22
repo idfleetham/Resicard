@@ -681,8 +681,10 @@ export class DatabaseStorage implements IStorage {
     return offer || undefined;
   }
 
-  async getOffersByMerchant(merchantId: number): Promise<Offer[]> {
-    return await db.select().from(offers).where(eq(offers.merchantId, merchantId.toString()));
+  async getOffersByMerchant(merchantId: string): Promise<Offer[]> {
+    const result = await db.select().from(offers).where(eq(offers.merchantId, merchantId));
+    console.log('Found offers for merchant', merchantId, ':', result.length);
+    return result;
   }
 
   async updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined> {
