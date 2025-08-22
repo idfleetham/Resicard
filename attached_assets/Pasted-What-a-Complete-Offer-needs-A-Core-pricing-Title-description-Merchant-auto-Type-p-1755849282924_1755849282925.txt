@@ -1,0 +1,55 @@
+What a “Complete Offer” needs
+
+A) Core & pricing
+	•	Title, description
+	•	Merchant (auto)
+	•	Type: percent | fixed | set_menu | bogo
+	•	Percent/fixed values (e.g., percent_off, fixed_price)
+	•	Optional category (Food & Drink, Retail, Services) and tags (happy-hour, lunch, family)
+
+B) Visibility & eligibility
+	•	Audience: Resident / Student / Both
+	•	Min/max basket (e.g., “20% off over £20, cap £10”)
+	•	Stacking: Can it stack with other promos? stackable: boolean
+	•	New customers only? new_customer_only: boolean
+	•	Locations: single or multiple (if merchant has more than one)
+	•	Geofence (optional): require redemption inside N meters of venue
+
+C) Scheduling (days/hours & calendars)
+	•	Active window: valid_from, valid_to
+	•	Days of week: array of ["mon","tue",...]
+	•	Hours: start/end per day (e.g., lunch 12:00–14:30)
+	•	Blackout periods: list of date ranges (graduation week, holidays)
+	•	Lead time / cool‑down: cannot redeem within X minutes of last redemption
+
+D) Redemption rules & limits
+	•	Per person: max per transaction, per day, per week, total lifetime
+	•	Per offer global cap: stop after N total redemptions
+	•	Per table / basket rule: apply once per bill, or per qualifying item
+	•	Staff PIN required: yes/no
+	•	Proof type: QR only / code + PIN / app check‑in
+	•	Refund behavior: if voided, put redemption back?
+
+E) Terms & conditions (compliance)
+	•	Free‑text T&Cs
+	•	Pre‑baked toggles: “Dine‑in only”, “Excludes alcohol”, “Service charge not included”, “Not valid on bank holidays”
+
+F) Media & presentation
+	•	Offer imageUrl (with fallback to merchant.logoUrl)
+	•	Short promo blurb (<= 90 chars)
+	•	Priority/placement (standard / featured)
+
+G) Budget & billing controls
+	•	Fee model override: default / custom per‑redemption fee / % of discount
+	•	Budget cap: pause when fee spend hits £X for the period
+	•	Auto‑pause on abuse: pause if decline rate or reversal rate > threshold
+
+H) Fraud & safety
+	•	Single‑use codes vs rotating dynamic QR
+	•	Device fingerprinting (soft): block rapid repeats from same device
+	•	Staff audit trail: who redeemed (staffUserId), station/device id
+
+I) Analytics hooks
+	•	Track impressions (views), taps (detail opens), saves, redemptions
+	•	Conversion rate and redemption value (if basket provided)
+	•	Export CSV & API

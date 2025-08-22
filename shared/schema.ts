@@ -77,23 +77,72 @@ export const merchants = pgTable("merchants", {
 export const offers = pgTable("offers", {
   id: uuid("id").primaryKey().defaultRandom(),
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  
+  // A) Core & pricing
   title: text("title").notNull(),
   description: text("description"),
-  category: text("category").notNull(),
-  type: text("type").$type<"percent"|"fixed"|"set_menu">().default("percent"),
-  percentOff: integer("percent_off"),
-  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
+  type: text("type").$type<"percent"|"fixed"|"set_menu"|"bogo">().default("percent"),
+  percentOff: integer("percent_off"), // For percentage discounts
+  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }), // For fixed price offers
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),
-  usageLimit: integer("usage_limit").notNull(),
+  category: text("category"), // Food & Drink, Retail, Services
+  tags: text("tags"), // JSON array: ["happy-hour", "lunch", "family"]
+  
+  // B) Visibility & eligibility
+  audience: text("audience").$type<"resident"|"student"|"both">().default("both"),
+  minBasket: numeric("min_basket", { precision: 10, scale: 2 }), // Min spend requirement
+  maxDiscount: numeric("max_discount", { precision: 10, scale: 2 }), // Cap on discount value
+  stackable: boolean("stackable").default(false), // Can stack with other promos
+  newCustomerOnly: boolean("new_customer_only").default(false),
+  locations: text("locations"), // JSON array of location IDs
+  geofenceRadius: integer("geofence_radius"), // Meters from venue
+  
+  // C) Scheduling
+  validFrom: timestamp("valid_from"),
+  validTo: timestamp("valid_to"),
+  daysOfWeek: text("days_of_week"), // JSON array: ["mon","tue","wed"]
+  timeSlots: text("time_slots"), // JSON: {mon: [{start:"12:00",end:"14:30"}]}
+  blackoutDates: text("blackout_dates"), // JSON array of date ranges
+  leadTime: integer("lead_time"), // Minutes between redemptions
+  
+  // D) Redemption rules & limits
+  maxPerTransaction: integer("max_per_transaction").default(1),
+  maxPerDay: integer("max_per_day"),
+  maxPerWeek: integer("max_per_week"),
+  maxLifetime: integer("max_lifetime"),
+  globalUsageLimit: integer("global_usage_limit"),
   usageCount: integer("usage_count").default(0),
-  validFrom: date("valid_from"),
-  validTo: date("valid_to"),
-  daysOfWeek: text("days_of_week"), // "mon,tue,wed" format
+  staffPinRequired: boolean("staff_pin_required").default(false),
+  proofType: text("proof_type").$type<"qr_only"|"code_pin"|"app_checkin">().default("qr_only"),
+  refundBehavior: text("refund_behavior").$type<"restore"|"consume">().default("consume"),
+  
+  // E) Terms & conditions
+  terms: text("terms"),
+  dineInOnly: boolean("dine_in_only").default(false),
+  excludesAlcohol: boolean("excludes_alcohol").default(false),
+  serviceChargeIncluded: boolean("service_charge_included").default(true),
+  validOnBankHolidays: boolean("valid_on_bank_holidays").default(true),
+  
+  // F) Media & presentation
+  imageUrl: text("image_url"),
+  shortPromo: text("short_promo"), // <= 90 chars
+  priority: text("priority").$type<"standard"|"featured">().default("standard"),
+  
+  // G) Budget & billing controls
+  feeModel: text("fee_model").$type<"default"|"per_redemption"|"percent_discount">().default("default"),
+  customFee: numeric("custom_fee", { precision: 10, scale: 2 }),
+  budgetCap: numeric("budget_cap", { precision: 10, scale: 2 }),
+  autoPauseOnAbuse: boolean("auto_pause_on_abuse").default(true),
+  
+  // H) Fraud & safety
+  singleUse: boolean("single_use").default(true),
+  deviceFingerprinting: boolean("device_fingerprinting").default(true),
+  
+  // Status and metadata
   active: boolean("active").default(true),
   archived: boolean("archived").default(false),
-  terms: text("terms"),
-  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const deals = pgTable("deals", {
@@ -114,12 +163,66 @@ export const deals = pgTable("deals", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Enhanced redemptions table with comprehensive tracking
 export const redemptions = pgTable("redemptions", {
-  id: serial("id").primaryKey(),
-  dealId: integer("deal_id").notNull(),
-  userId: integer("user_id").notNull(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  
+  // Redemption details
+  voucherCode: text("voucher_code"),
+  basketValue: numeric("basket_value", { precision: 10, scale: 2 }),
+  discountValue: numeric("discount_value", { precision: 10, scale: 2 }),
+  finalValue: numeric("final_value", { precision: 10, scale: 2 }),
+  
+  // Staff and device tracking
+  staffUserId: integer("staff_user_id"),
+  deviceId: text("device_id"),
+  stationId: text("station_id"),
+  
+  // Status and timing
+  status: text("status").$type<"pending"|"completed"|"voided"|"refunded">().default("completed"),
   redeemedAt: timestamp("redeemed_at").defaultNow(),
-  value: decimal("value", { precision: 10, scale: 2 }),
+  voidedAt: timestamp("voided_at"),
+  refundedAt: timestamp("refunded_at"),
+  
+  // Location verification
+  redemptionLatitude: numeric("redemption_latitude", { precision: 10, scale: 8 }),
+  redemptionLongitude: numeric("redemption_longitude", { precision: 11, scale: 8 }),
+  withinGeofence: boolean("within_geofence").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Analytics tracking for offers
+export const offerAnalytics = pgTable("offer_analytics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  userId: integer("user_id").references(() => users.id),
+  
+  // Event tracking
+  eventType: text("event_type").$type<"impression"|"view"|"save"|"redemption">().notNull(),
+  sessionId: text("session_id"),
+  deviceId: text("device_id"),
+  
+  // Context
+  source: text("source"), // "home", "search", "category", "merchant_page"
+  position: integer("position"), // Position in list/grid
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Blackout periods for offers
+export const offerBlackouts = pgTable("offer_blackouts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // "Graduation Week", "Christmas Period"
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  recurring: boolean("recurring").default(false), // Annual recurrence
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const vouchers = pgTable("vouchers", {
@@ -168,21 +271,73 @@ export const insertDealSchema = createInsertSchema(deals).pick({
   imageUrl: true,
 });
 
-// Schema for new offers
+// Schema for new comprehensive offers
 export const insertOfferSchema = createInsertSchema(offers).pick({
   title: true,
   description: true,
-  category: true,
   type: true,
   percentOff: true,
   fixedPrice: true,
   originalValue: true,
-  usageLimit: true,
+  category: true,
+  tags: true,
+  audience: true,
+  minBasket: true,
+  maxDiscount: true,
+  stackable: true,
+  newCustomerOnly: true,
+  locations: true,
+  geofenceRadius: true,
   validFrom: true,
   validTo: true,
   daysOfWeek: true,
+  timeSlots: true,
+  blackoutDates: true,
+  leadTime: true,
+  maxPerTransaction: true,
+  maxPerDay: true,
+  maxPerWeek: true,
+  maxLifetime: true,
+  globalUsageLimit: true,
+  staffPinRequired: true,
+  proofType: true,
+  refundBehavior: true,
   terms: true,
+  dineInOnly: true,
+  excludesAlcohol: true,
+  serviceChargeIncluded: true,
+  validOnBankHolidays: true,
   imageUrl: true,
+  shortPromo: true,
+  priority: true,
+  feeModel: true,
+  customFee: true,
+  budgetCap: true,
+  autoPauseOnAbuse: true,
+  singleUse: true,
+  deviceFingerprinting: true,
+});
+
+export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({
+  offerId: true,
+  userId: true,
+  voucherCode: true,
+  basketValue: true,
+  discountValue: true,
+  finalValue: true,
+  staffUserId: true,
+  deviceId: true,
+  stationId: true,
+  redemptionLatitude: true,
+  redemptionLongitude: true,
+});
+
+export const insertBlackoutSchema = createInsertSchema(offerBlackouts).pick({
+  offerId: true,
+  name: true,
+  startDate: true,
+  endDate: true,
+  recurring: true,
 });
 
 export const insertMerchantSchema = createInsertSchema(merchants).pick({
@@ -192,20 +347,6 @@ export const insertMerchantSchema = createInsertSchema(merchants).pick({
   address: true,
   logoUrl: true,
   businessHours: true,
-});
-
-export const insertRedemptionSchema = createInsertSchema(redemptions).pick({
-  dealId: true,
-  offerId: true,
-  userId: true,
-  merchantId: true,
-  staffUserId: true,
-  pricingType: true,
-  percentOff: true,
-  fixedPrice: true,
-  basketSubtotal: true,
-  calculatedDiscount: true,
-  value: true,
 });
 
 export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
@@ -236,7 +377,7 @@ export type InsertOffer = z.infer<typeof insertOfferSchema>;
 export type Offer = typeof offers.$inferSelect;
 export type InsertMerchant = z.infer<typeof insertMerchantSchema>;
 export type Merchant = typeof merchants.$inferSelect;
-export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
+export type InsertEnhancedRedemption = z.infer<typeof insertEnhancedRedemptionSchema>;
 export type Redemption = typeof redemptions.$inferSelect;
 export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type Voucher = typeof vouchers.$inferSelect;
