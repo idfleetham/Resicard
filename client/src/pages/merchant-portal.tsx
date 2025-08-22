@@ -225,7 +225,7 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-3">
                       <StaffEarningTool 
-                        merchantId={user?.id || ""}
+                        merchantId={user?.id?.toString() || ""}
                         program={{
                           model: "points",
                           pointsPerCurrency: 10,
@@ -238,7 +238,7 @@ export default function MerchantPortal() {
                         variant="outline" 
                         size="sm" 
                         className="w-full"
-                        onClick={() => window.open("/loyalty-dashboard", "_blank")}
+                        onClick={() => navigate("/loyalty-dashboard")}
                       >
                         Full Dashboard
                       </Button>
