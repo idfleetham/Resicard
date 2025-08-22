@@ -153,6 +153,18 @@ export default function OffersManager() {
 
   const handleEditOffer = (deal: Deal) => {
     setEditingDeal(deal);
+    form.reset({
+      title: deal.title,
+      description: deal.description,
+      category: deal.category as "food" | "entertainment" | "retail" | "services",
+      discountType: deal.discountType as "percentage" | "fixed" | "bogo" | "free_item",
+      discountValue: deal.discountValue.toString(),
+      expiryDate: format(new Date(deal.expiryDate), "yyyy-MM-dd"),
+      usageLimit: deal.usageLimit.toString(),
+      terms: deal.terms || "",
+      imageUrl: deal.imageUrl || "",
+    });
+    setIsCreateOpen(true); // Use the same dialog for editing
   };
 
   const handleUpdateOffer = (data: CreateDealData) => {
@@ -283,7 +295,13 @@ export default function OffersManager() {
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit((data) => createDealMutation.mutate(data))} className="space-y-4">
+                <form onSubmit={form.handleSubmit((data) => {
+                  if (editingDeal) {
+                    handleUpdateOffer(data);
+                  } else {
+                    createDealMutation.mutate(data);
+                  }
+                })} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -621,6 +639,76 @@ export default function OffersManager() {
             />
           </div>
         </div>
+      )}
+
+      {/* Comprehensive Offer Edit Modal */}
+      {isComprehensiveEditOpen && editingComprehensiveOffer && (
+        <Dialog open={isComprehensiveEditOpen} onOpenChange={(open) => {
+          setIsComprehensiveEditOpen(open);
+          if (!open) {
+            setEditingComprehensiveOffer(null);
+          }
+        }}>
+          <DialogContent className="max-w-md bg-card border border-dim shadow-elev-3">
+            <DialogHeader>
+              <DialogTitle className="text-fg">Edit Comprehensive Offer</DialogTitle>
+              <DialogDescription className="text-soft">
+                Update the basic settings for "{editingComprehensiveOffer.title}"
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-fg">Title</label>
+                <Input 
+                  defaultValue={editingComprehensiveOffer.title}
+                  onChange={(e) => setEditingComprehensiveOffer({...editingComprehensiveOffer, title: e.target.value})}
+                  className="bg-surface border-dim"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-fg">Description</label>
+                <Textarea 
+                  defaultValue={editingComprehensiveOffer.description}
+                  onChange={(e) => setEditingComprehensiveOffer({...editingComprehensiveOffer, description: e.target.value})}
+                  className="bg-surface border-dim"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-fg">Status</label>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={editingComprehensiveOffer.active ?? true}
+                    onCheckedChange={(checked) => setEditingComprehensiveOffer({...editingComprehensiveOffer, active: checked})}
+                  />
+                  <span className="text-sm text-soft">
+                    {editingComprehensiveOffer.active ? 'Active' : 'Paused'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsComprehensiveEditOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => {
+                    updateComprehensiveOfferMutation({
+                      id: editingComprehensiveOffer.id,
+                      data: {
+                        title: editingComprehensiveOffer.title,
+                        description: editingComprehensiveOffer.description,
+                        active: editingComprehensiveOffer.active
+                      }
+                    });
+                    setIsComprehensiveEditOpen(false);
+                  }}
+                  className="bg-gradient-to-r from-brand1 to-brand2 text-white"
+                >
+                  Update Offer
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </motion.div>
   );
