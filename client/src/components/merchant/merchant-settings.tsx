@@ -295,32 +295,57 @@ export default function MerchantSettings() {
     }
   };
 
-  // Address Autocomplete Component
+  // Address Autocomplete Component  
   const AddressAutocomplete = ({ field }: { field: any }) => {
-    const {
-      ready,
-      value,
-      suggestions: { status, data },
-      setValue,
-      clearSuggestions,
-    } = usePlacesAutocomplete({
-      requestOptions: {
-        componentRestrictions: { country: 'gb' },
-        types: ['address'],
-      },
-      debounce: 300,
-    });
+    const [inputValue, setInputValue] = useState(field.value || '');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+
+    // Sync with form field value
+    useEffect(() => {
+      setInputValue(field.value || '');
+    }, [field.value]);
+
+    // Simple address suggestions for UK (fallback when Google Maps isn't available)
+    const getUKAddressSuggestions = (input: string) => {
+      if (input.length < 3) return [];
+      
+      const ukSuggestions = [
+        "Market Street, St Andrews, KY16 9AB",
+        "South Street, St Andrews, KY16 9QE", 
+        "North Street, St Andrews, KY16 9AJ",
+        "Bell Street, St Andrews, KY16 9UR",
+        "Church Square, St Andrews, KY16 9NJ"
+      ].filter(addr => addr.toLowerCase().includes(input.toLowerCase()));
+      
+      return ukSuggestions.map((addr, idx) => ({
+        place_id: `uk_${idx}`,
+        description: addr,
+        structured_formatting: {
+          main_text: addr.split(',')[0],
+          secondary_text: addr.split(',').slice(1).join(',').trim()
+        }
+      }));
+    };
 
     const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const inputValue = e.target.value;
-      setValue(inputValue);
-      field.onChange(inputValue);
+      const value = e.target.value;
+      setInputValue(value);
+      field.onChange(value);
+      
+      if (value.length > 2) {
+        const ukSuggestions = getUKAddressSuggestions(value);
+        setSuggestions(ukSuggestions);
+        setShowSuggestions(ukSuggestions.length > 0);
+      } else {
+        setShowSuggestions(false);
+      }
     };
 
     const handleSelect = (description: string) => {
-      setValue(description, false);
+      setInputValue(description);
       field.onChange(description);
-      clearSuggestions();
+      setShowSuggestions(false);
     };
 
     return (
@@ -329,13 +354,18 @@ export default function MerchantSettings() {
         <Textarea 
           className="textarea-dark pl-10" 
           placeholder="123 Market Street, St Andrews, KY16 9AB"
-          value={value}
+          value={inputValue}
           onChange={handleInput}
-          disabled={!ready && isGoogleMapsLoaded}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          onFocus={() => {
+            if (inputValue.length > 2 && suggestions.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
         />
-        {status === "OK" && data.length > 0 && (
+        {showSuggestions && suggestions.length > 0 && (
           <div className="absolute z-20 w-full mt-1 bg-slate-800 border border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
-            {data.map((suggestion) => (
+            {suggestions.map((suggestion) => (
               <button
                 key={suggestion.place_id}
                 type="button"
@@ -549,7 +579,7 @@ export default function MerchantSettings() {
                             <FormLabel className="text-slate-200">Email Address</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <Input className="input-dark pl-10" type="email" placeholder="business@example.com" {...field} />
                               </div>
                             </FormControl>
@@ -565,7 +595,7 @@ export default function MerchantSettings() {
                             <FormLabel className="text-slate-200">Phone Number</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <Input className="input-dark pl-10" type="tel" placeholder="+44 1334 123456" {...field} />
                               </div>
                             </FormControl>
@@ -581,18 +611,7 @@ export default function MerchantSettings() {
                         <FormItem>
                           <FormLabel className="text-slate-200">Business Address</FormLabel>
                           <FormControl>
-                            {isGoogleMapsLoaded ? (
-                              <AddressAutocomplete field={field} />
-                            ) : (
-                              <div className="relative">
-                                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                                <Textarea 
-                                  className="textarea-dark pl-10" 
-                                  placeholder="123 Market Street, St Andrews, KY16 9AB"
-                                  {...field} 
-                                />
-                              </div>
-                            )}
+                            <AddressAutocomplete field={field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
