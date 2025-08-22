@@ -81,7 +81,7 @@ export const offers = pgTable("offers", {
   // A) Core & pricing
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").$type<"percent"|"fixed"|"set_menu"|"bogo">().default("percent"),
+  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"fixed_price_bundle"|"free_item_with_purchase"|"bogo"|"day_time_specific"|"limited_redemptions"|"loyalty_reward">().default("percentage_discount"),
   percentOff: integer("percent_off"), // For percentage discounts
   fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }), // For fixed price offers
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),

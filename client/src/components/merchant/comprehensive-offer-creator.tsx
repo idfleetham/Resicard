@@ -134,7 +134,7 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
     defaultValues: {
       title: "",
       description: "",
-      type: "percent",
+      type: "percentage_discount",
       audience: "both",
       stackable: false,
       newCustomerOnly: false,
@@ -298,10 +298,14 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="percent">Percentage Off</SelectItem>
-                                <SelectItem value="fixed">Fixed Price</SelectItem>
-                                <SelectItem value="set_menu">Set Menu</SelectItem>
-                                <SelectItem value="bogo">Buy One Get One</SelectItem>
+                                <SelectItem value="percentage_discount">Percentage Discount</SelectItem>
+                                <SelectItem value="fixed_amount_discount">Fixed Amount Discount</SelectItem>
+                                <SelectItem value="fixed_price_bundle">Fixed Price / Bundle Deal</SelectItem>
+                                <SelectItem value="free_item_with_purchase">Free Item with Purchase</SelectItem>
+                                <SelectItem value="bogo">BOGOF (Buy One, Get One Free)</SelectItem>
+                                <SelectItem value="day_time_specific">Day/Time-Specific Offers</SelectItem>
+                                <SelectItem value="limited_redemptions">Limited Redemptions Offer</SelectItem>
+                                <SelectItem value="loyalty_reward">Loyalty Reward Offer</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -378,13 +382,14 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                       />
                     )}
 
-                    {form.watch("type") === "percent" && (
+                    {/* Dynamic fields based on offer type */}
+                    {form.watch("type") === "percentage_discount" && (
                       <FormField
                         control={form.control}
                         name="percentOff"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Percentage Off</FormLabel>
+                            <FormLabel className="text-slate-200">Percentage Off (%)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -392,6 +397,7 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                                 min="1"
                                 max="100"
                                 className="input-dark"
+                                placeholder="e.g., 20"
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                               />
                             </FormControl>
@@ -401,27 +407,173 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                       />
                     )}
 
-                    {form.watch("type") === "fixed" && (
+                    {form.watch("type") === "fixed_amount_discount" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="fixedPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Discount Amount (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 5"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="minBasket"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Minimum Spend (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 25"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {form.watch("type") === "fixed_price_bundle" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="fixedPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Bundle Price (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 15"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="originalValue"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Original Value (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 22"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "free_item_with_purchase" || 
+                      form.watch("type") === "bogo" || 
+                      form.watch("type") === "loyalty_reward") && (
                       <FormField
                         control={form.control}
-                        name="fixedPrice"
+                        name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Fixed Price (£)</FormLabel>
+                            <FormLabel className="text-slate-200">
+                              {form.watch("type") === "free_item_with_purchase" && "Free Item Details"}
+                              {form.watch("type") === "bogo" && "BOGO Details"}
+                              {form.watch("type") === "loyalty_reward" && "Loyalty Program Details"}
+                            </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                className="input-dark"
-                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              <Textarea 
+                                {...field} 
+                                className="input-dark" 
+                                placeholder={
+                                  form.watch("type") === "free_item_with_purchase" ? "e.g., Free dessert with any main course" :
+                                  form.watch("type") === "bogo" ? "e.g., Buy one pizza, get one free" :
+                                  "e.g., Buy 5 coffees, get 1 free"
+                                }
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                    )}
+
+                    {form.watch("type") === "limited_redemptions" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="globalUsageLimit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Total Redemptions Limit</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="1"
+                                  className="input-dark"
+                                  placeholder="e.g., 50"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="maxPerDay"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Per Person Daily Limit</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="1"
+                                  className="input-dark"
+                                  placeholder="e.g., 1"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     )}
                   </CardBody>
                 </Card>
