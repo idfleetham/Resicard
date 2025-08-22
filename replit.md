@@ -8,6 +8,21 @@ Resicard St Andrews is a full-stack web application that connects verified local
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 2025)
+
+### Customer Privacy Protection Implementation
+- Added `generateCustomerAlias` utility function in shared schema for merchant views
+- Updated merchant dashboard to show customer aliases (username or user_XXXXX format) instead of real names
+- Modified staff earning tool to use customer aliases for privacy protection
+- Applied aliasing to voucher redemption notifications and displays
+
+### Reservation Provider Integration
+- Added `reservation_provider` and `reservation_url` fields to merchants table
+- Created reservation settings tab in merchant settings with dropdown for major providers
+- Supported providers: OpenTable, Resy, Bookatable (Michelin), Tock, SevenRooms, Custom
+- Implemented URL validation and test link functionality
+- Added backend API endpoint `/api/merchant/reservation` for saving settings
+
 ## System Architecture
 
 ### Frontend Architecture
