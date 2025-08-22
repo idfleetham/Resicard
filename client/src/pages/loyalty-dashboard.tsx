@@ -334,6 +334,44 @@ export default function LoyaltyDashboard() {
       <div className="pointer-events-none absolute inset-0 -z-10
           bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
       
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-50 border-b border-border-dim bg-bg/80 backdrop-blur-md">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/merchant")}
+                className="text-soft hover:text-fg hover:bg-surface/50 -ml-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Portal
+              </Button>
+              <div className="w-px h-6 bg-border-dim"></div>
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-400" />
+                <span className="font-semibold text-fg">Loyalty Dashboard</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge className={`${loyaltyProgram?.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} border-0`}>
+                {loyaltyProgram?.active ? 'Active' : 'Inactive'}
+              </Badge>
+              <Switch
+                checked={loyaltyProgram?.active || false}
+                onCheckedChange={(checked) => {
+                  if (loyaltyProgram) {
+                    updateProgramMutation.mutate({ ...loyaltyProgram, active: checked });
+                  }
+                }}
+                disabled={updateProgramMutation.isPending}
+              />
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -343,37 +381,16 @@ export default function LoyaltyDashboard() {
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-indigo-600/30 via-purple-600/25 to-pink-600/20 border border-border-dim p-6 shadow-elev-1 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/merchant")}
-              className="border-border-dim hover:bg-surface/50 text-fg"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Portal
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
-                <Star className="w-8 h-8 text-yellow-400" />
-                Loyalty Program
-              </h1>
-              <p className="text-soft mt-2">Build customer loyalty with points, stamps, and rewards</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
+              <Star className="w-8 h-8 text-yellow-400" />
+              Loyalty Program
+            </h1>
+            <p className="text-soft mt-2">Build customer loyalty with points, stamps, and rewards</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge className={`${loyaltyProgram?.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} border-0`}>
-              {loyaltyProgram?.active ? 'Active' : 'Inactive'}
-            </Badge>
-            <Switch
-              checked={loyaltyProgram?.active || false}
-              onCheckedChange={(checked) => {
-                if (loyaltyProgram) {
-                  updateProgramMutation.mutate({ ...loyaltyProgram, active: checked });
-                }
-              }}
-              disabled={updateProgramMutation.isPending}
-            />
+          <div className="text-right">
+            <p className="text-sm text-soft">Manage your customer loyalty program</p>
+            <p className="text-xs text-soft mt-1">Configure tiers, rewards, and point systems</p>
           </div>
         </div>
       </div>
