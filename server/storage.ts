@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, familyMembers, offers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 
@@ -653,16 +653,20 @@ export class DatabaseStorage implements IStorage {
 
   // Comprehensive Offer operations
   async createOffer(offerData: InsertOffer): Promise<Offer> {
-    // Convert merchantId to string and prepare data for database
+    console.log('Storage: Received offer data with merchantId:', offerData.merchantId);
+    
+    // Convert merchantId to proper format and prepare data for database
     const processedData = {
       ...offerData,
-      merchantId: typeof offerData.merchantId === 'number' ? offerData.merchantId.toString() : offerData.merchantId,
+      merchantId: offerData.merchantId ? String(offerData.merchantId) : undefined,
       tags: Array.isArray(offerData.tags) ? JSON.stringify(offerData.tags) : offerData.tags,
       daysOfWeek: Array.isArray(offerData.daysOfWeek) ? JSON.stringify(offerData.daysOfWeek) : offerData.daysOfWeek,
       timeSlots: typeof offerData.timeSlots === 'object' ? JSON.stringify(offerData.timeSlots) : offerData.timeSlots,
       blackoutDates: Array.isArray(offerData.blackoutDates) ? JSON.stringify(offerData.blackoutDates) : offerData.blackoutDates,
       locations: Array.isArray(offerData.locations) ? JSON.stringify(offerData.locations) : offerData.locations,
     };
+    
+    console.log('Storage: Processed data with merchantId:', processedData.merchantId);
 
     const [newOffer] = await db
       .insert(offers)
@@ -702,6 +706,27 @@ export class DatabaseStorage implements IStorage {
   async deleteOffer(id: string): Promise<boolean> {
     const result = await db.delete(offers).where(eq(offers.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Merchant management methods
+  async getMerchantByUserId(userId: number): Promise<Merchant | undefined> {
+    // Look for merchant by matching name with username (temporary solution)
+    const user = await this.getUserById(userId);
+    if (!user) return undefined;
+    
+    const [merchant] = await db.select().from(merchants).where(eq(merchants.name, user.username));
+    return merchant || undefined;
+  }
+
+  async createMerchantFromUser(user: User): Promise<Merchant> {
+    const [newMerchant] = await db
+      .insert(merchants)
+      .values({
+        name: user.username,
+        email: user.email || undefined,
+      })
+      .returning();
+    return newMerchant;
   }
 
   async getPlatformStats(): Promise<{

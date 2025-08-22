@@ -378,12 +378,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Received comprehensive offer data:', req.body);
       
+      // Get or create merchant record for this user
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        // Create merchant record from user data
+        merchant = await storage.createMerchantFromUser(req.user);
+      }
+      
       // Process dates for comprehensive offers
       const processedData = {
         ...req.body,
         validFrom: req.body.validFrom ? new Date(req.body.validFrom) : undefined,
         validTo: req.body.validTo ? new Date(req.body.validTo) : undefined,
-        merchantId: req.user.id,
+        merchantId: merchant.id, // Use the merchant UUID, not user ID
       };
       
       const offerData = insertOfferSchema.parse(processedData);
