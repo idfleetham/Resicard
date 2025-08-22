@@ -157,6 +157,7 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
       tags: [],
       validFrom: "",
       validTo: "",
+      mealPeriods: [],
     },
   });
 
@@ -331,6 +332,51 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                         )}
                       />
                     </div>
+
+                    {/* Meal Period Selection for Food & Drink */}
+                    {form.watch("category") === "Food & Drink" && (
+                      <FormField
+                        control={form.control}
+                        name="mealPeriods"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Meal Periods</FormLabel>
+                            <FormDescription className="text-slate-400">
+                              Select which meal periods this offer applies to
+                            </FormDescription>
+                            <div className="grid grid-cols-2 gap-2">
+                              {[
+                                { id: "breakfast", label: "Breakfast (6:00-11:30)" },
+                                { id: "lunch", label: "Lunch (11:30-17:00)" },
+                                { id: "dinner", label: "Dinner (17:00-22:00)" },
+                                { id: "late_night", label: "Late Night (22:00-6:00)" }
+                              ].map((period) => (
+                                <div key={period.id} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={period.id}
+                                    checked={field.value?.includes(period.id)}
+                                    onChange={(e) => {
+                                      const currentPeriods = field.value || [];
+                                      if (e.target.checked) {
+                                        field.onChange([...currentPeriods, period.id]);
+                                      } else {
+                                        field.onChange(currentPeriods.filter((p: string) => p !== period.id));
+                                      }
+                                    }}
+                                    className="rounded border-slate-600 bg-slate-800"
+                                  />
+                                  <label htmlFor={period.id} className="text-sm text-slate-300">
+                                    {period.label}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     {form.watch("type") === "percent" && (
                       <FormField

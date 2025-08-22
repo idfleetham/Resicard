@@ -385,6 +385,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         merchant = await storage.createMerchantFromUser(req.user);
       }
       
+      console.log('Found/created merchant:', merchant.id, 'for user:', req.user.id);
+      
       // Process dates for comprehensive offers
       const processedData = {
         ...req.body,

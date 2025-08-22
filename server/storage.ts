@@ -664,6 +664,7 @@ export class DatabaseStorage implements IStorage {
       timeSlots: typeof offerData.timeSlots === 'object' ? JSON.stringify(offerData.timeSlots) : offerData.timeSlots,
       blackoutDates: Array.isArray(offerData.blackoutDates) ? JSON.stringify(offerData.blackoutDates) : offerData.blackoutDates,
       locations: Array.isArray(offerData.locations) ? JSON.stringify(offerData.locations) : offerData.locations,
+      mealPeriods: Array.isArray(offerData.mealPeriods) ? JSON.stringify(offerData.mealPeriods) : offerData.mealPeriods,
     };
     
     console.log('Storage: Processed data with merchantId:', processedData.merchantId);

@@ -103,6 +103,7 @@ export const offers = pgTable("offers", {
   daysOfWeek: text("days_of_week"), // JSON array: ["mon","tue","wed"]
   timeSlots: text("time_slots"), // JSON: {mon: [{start:"12:00",end:"14:30"}]}
   blackoutDates: text("blackout_dates"), // JSON array of date ranges
+  mealPeriods: text("meal_periods"), // JSON array: ["breakfast","lunch","dinner","late_night"]
   leadTime: integer("lead_time"), // Minutes between redemptions
   
   // D) Redemption rules & limits
@@ -323,6 +324,7 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
     endDate: z.string(),
     recurring: z.boolean().default(false)
   })).optional(),
+  mealPeriods: z.array(z.string()).optional(),
   locations: z.array(z.string()).optional(),
   minBasket: z.number().optional(),
   maxDiscount: z.number().optional(),
