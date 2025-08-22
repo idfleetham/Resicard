@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,27 @@ export default function MerchantSettings() {
   const [showCropper, setShowCropper] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
+
+  // Load Google Maps JavaScript API
+  useEffect(() => {
+    const loadGoogleMaps = async () => {
+      try {
+        const { Loader } = await import('@googlemaps/js-api-loader');
+        const loader = new Loader({
+          apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+          version: 'weekly',
+          libraries: ['places']
+        });
+        await loader.load();
+        setIsGoogleMapsLoaded(true);
+      } catch (error) {
+        console.log('Google Maps API not available - using basic input');
+      }
+    };
+
+    loadGoogleMaps();
+  }, []);
 
   const businessForm = useForm<BusinessDetailsData>({
     resolver: zodResolver(businessDetailsSchema),
@@ -273,6 +295,63 @@ export default function MerchantSettings() {
     }
   };
 
+  // Address Autocomplete Component
+  const AddressAutocomplete = ({ field }: { field: any }) => {
+    const {
+      ready,
+      value,
+      suggestions: { status, data },
+      setValue,
+      clearSuggestions,
+    } = usePlacesAutocomplete({
+      requestOptions: {
+        componentRestrictions: { country: 'gb' },
+        types: ['address'],
+      },
+      debounce: 300,
+    });
+
+    const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const inputValue = e.target.value;
+      setValue(inputValue);
+      field.onChange(inputValue);
+    };
+
+    const handleSelect = (description: string) => {
+      setValue(description, false);
+      field.onChange(description);
+      clearSuggestions();
+    };
+
+    return (
+      <div className="relative">
+        <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400 z-10" />
+        <Textarea 
+          className="textarea-dark pl-10" 
+          placeholder="123 Market Street, St Andrews, KY16 9AB"
+          value={value}
+          onChange={handleInput}
+          disabled={!ready && isGoogleMapsLoaded}
+        />
+        {status === "OK" && data.length > 0 && (
+          <div className="absolute z-20 w-full mt-1 bg-slate-800 border border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
+            {data.map((suggestion) => (
+              <button
+                key={suggestion.place_id}
+                type="button"
+                className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 focus:bg-slate-700 focus:outline-none"
+                onClick={() => handleSelect(suggestion.description)}
+              >
+                <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
+                <div className="text-sm text-slate-400">{suggestion.structured_formatting.secondary_text}</div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Handle loading and authentication states
   if (isLoading) {
     return (
@@ -467,7 +546,7 @@ export default function MerchantSettings() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email Address</FormLabel>
+                            <FormLabel className="text-slate-200">Email Address</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
@@ -483,7 +562,7 @@ export default function MerchantSettings() {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
+                            <FormLabel className="text-slate-200">Phone Number</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
@@ -500,16 +579,20 @@ export default function MerchantSettings() {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Address</FormLabel>
+                          <FormLabel className="text-slate-200">Business Address</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                              <Textarea 
-                                className="pl-10" 
-                                placeholder="123 Market Street, St Andrews, KY16 9AB"
-                                {...field} 
-                              />
-                            </div>
+                            {isGoogleMapsLoaded ? (
+                              <AddressAutocomplete field={field} />
+                            ) : (
+                              <div className="relative">
+                                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                <Textarea 
+                                  className="textarea-dark pl-10" 
+                                  placeholder="123 Market Street, St Andrews, KY16 9AB"
+                                  {...field} 
+                                />
+                              </div>
+                            )}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -520,9 +603,10 @@ export default function MerchantSettings() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Description (Optional)</FormLabel>
+                          <FormLabel className="text-slate-200">Business Description (Optional)</FormLabel>
                           <FormControl>
                             <Textarea 
+                              className="textarea-dark"
                               placeholder="Tell customers about your business..."
                               {...field} 
                             />

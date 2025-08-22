@@ -167,6 +167,18 @@
   color: hsl(var(--fg-soft));
 }
 
+.textarea-dark {
+  @apply px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+  @apply transition-colors duration-200 min-h-[80px] resize-none;
+  background-color: hsl(var(--surface) / 0.6);
+  color: hsl(var(--fg));
+  border: 1px solid hsl(var(--border));
+}
+
+.textarea-dark::placeholder {
+  color: hsl(var(--fg-soft));
+}
+
 /* Custom coastal theme utilities */
 .coastal-gradient {
   background: linear-gradient(135deg, var(--coastal-600) 0%, var(--coastal-800) 100%);
