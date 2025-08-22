@@ -177,7 +177,15 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
   });
 
   const onSubmit = (data: OfferFormData) => {
+    console.log('Form submitted with data:', data);
     createOfferMutation.mutate(data);
+  };
+
+  const handleDirectSubmit = () => {
+    console.log('Direct submit clicked');
+    const formData = form.getValues();
+    console.log('Form values:', formData);
+    onSubmit(formData);
   };
 
   const sections = [
@@ -1258,8 +1266,21 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                   type="submit"
                   disabled={createOfferMutation.isPending}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  onClick={(e) => {
+                    console.log('Create offer button clicked');
+                    console.log('Form state:', form.formState);
+                    console.log('Form errors:', form.formState.errors);
+                  }}
                 >
                   {createOfferMutation.isPending ? "Creating..." : "Create Offer"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleDirectSubmit}
+                  disabled={createOfferMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Test Submit
                 </Button>
               </div>
             </form>
