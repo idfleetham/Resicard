@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { generateCustomerAlias } from "@shared/schema";
 import { 
   Zap, 
   User, 
@@ -42,7 +43,7 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     customerId: "",
-    customerName: "",
+    customerAlias: "", // Store alias instead of real name
     earnType: "purchase", // purchase, visit
     basketAmount: "",
     staffPin: "",
@@ -63,7 +64,7 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
       setStep(1);
       setFormData({
         customerId: "",
-        customerName: "",
+        customerAlias: "",
         earnType: "purchase",
         basketAmount: "",
         staffPin: "",
@@ -109,7 +110,7 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
       metadata: {
         staffUserId: user?.id,
         staffPin: formData.staffPin,
-        customerName: formData.customerName,
+        customerAlias: formData.customerAlias,
         notes: formData.notes,
         source: "staff_tool"
       }
@@ -189,11 +190,11 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-200">Customer Name (Optional)</Label>
+                <Label className="text-slate-200">Customer Identifier (Optional)</Label>
                 <Input
-                  placeholder="For verification"
-                  value={formData.customerName}
-                  onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                  placeholder="Username or alias for verification"
+                  value={formData.customerAlias}
+                  onChange={(e) => setFormData({...formData, customerAlias: e.target.value})}
                   className="bg-slate-800 border-slate-700 text-slate-100"
                 />
               </div>

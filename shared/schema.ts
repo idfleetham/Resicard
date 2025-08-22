@@ -71,6 +71,8 @@ export const merchants = pgTable("merchants", {
   logoUrl: text("logo_url"),
   businessHours: text("business_hours"), // JSON string
   apiKey: text("api_key"),
+  reservationProvider: text("reservation_provider"), // e.g., "opentable", "resy", "bookatable", "custom"
+  reservationUrl: text("reservation_url"), // URL for the reservation system
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -362,6 +364,8 @@ export const insertMerchantSchema = createInsertSchema(merchants).pick({
   address: true,
   logoUrl: true,
   businessHours: true,
+  reservationProvider: true,
+  reservationUrl: true,
 });
 
 export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
@@ -398,6 +402,16 @@ export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type Voucher = typeof vouchers.$inferSelect;
 export type InsertBillingRun = z.infer<typeof insertBillingRunSchema>;
 export type BillingRun = typeof billingRuns.$inferSelect;
+
+// Utility function for generating customer aliases in merchant views
+export function generateCustomerAlias(user: { id: number; username?: string | null }): string {
+  if (user.username) {
+    return user.username;
+  }
+  // Generate safe alias based on user ID
+  const hash = user.id.toString(16).padStart(6, '0');
+  return `user_${hash}`;
+}
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

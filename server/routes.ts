@@ -612,6 +612,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update merchant reservation settings
+  app.put("/api/merchant/reservation", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Mock implementation - in a real app, this would save to merchant record
+      const { provider, url } = req.body;
+      
+      // Validate URL if provider is not 'none'
+      if (provider !== 'none' && url) {
+        try {
+          new URL(url);
+        } catch {
+          return res.status(400).json({ error: "Invalid URL format" });
+        }
+      }
+
+      // Mock response - in real implementation, update the merchant record
+      res.json({ 
+        success: true, 
+        reservationProvider: provider,
+        reservationUrl: url || null
+      });
+    } catch (error: any) {
+      console.error("Error updating reservation settings:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Voucher creation routes (replaces immediate redemptions)
   app.post("/api/redemptions", authenticateToken, requireRole('resident'), async (req, res) => {
     try {

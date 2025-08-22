@@ -28,7 +28,9 @@ import {
   Camera,
   MapPin,
   Phone,
-  Mail
+  Mail,
+  Calendar,
+  ExternalLink
 } from "lucide-react";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -51,8 +53,14 @@ const businessHoursSchema = z.object({
   sunday: z.string(),
 });
 
+const reservationSchema = z.object({
+  provider: z.enum(["none", "opentable", "resy", "bookatable", "tock", "sevenrooms", "custom"]),
+  url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+});
+
 type BusinessDetailsData = z.infer<typeof businessDetailsSchema>;
 type BusinessHoursData = z.infer<typeof businessHoursSchema>;
+type ReservationData = z.infer<typeof reservationSchema>;
 
 export default function MerchantSettings() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -120,6 +128,14 @@ export default function MerchantSettings() {
     },
   });
 
+  const reservationForm = useForm<ReservationData>({
+    resolver: zodResolver(reservationSchema),
+    defaultValues: {
+      provider: "none",
+      url: "",
+    },
+  });
+
   const updateBusinessMutation = useMutation({
     mutationFn: (data: BusinessDetailsData) =>
       apiRequest("PUT", "/api/merchant", data),
@@ -131,6 +147,22 @@ export default function MerchantSettings() {
     onError: (error: any) => {
       toast({
         title: "Error saving settings",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateReservationMutation = useMutation({
+    mutationFn: (data: ReservationData) =>
+      apiRequest("PUT", "/api/merchant/reservation", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["merchant", "me"] });
+      toast({ title: "Reservation settings saved successfully" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error saving reservation settings",
         description: error.message,
         variant: "destructive",
       });
@@ -555,6 +587,18 @@ export default function MerchantSettings() {
                 >
                   <Camera className="w-4 h-4 mr-2" />
                   Logo & Branding
+                </Button>
+                <Button
+                  variant={activeTab === "reservations" ? "default" : "ghost"}
+                  className={`w-full justify-start transition-all duration-200 ${
+                    activeTab === "reservations" 
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" 
+                      : "text-slate-300 hover:text-slate-100 hover:bg-slate-800"
+                  }`}
+                  onClick={() => setActiveTab("reservations")}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Reservations
                 </Button>
                 <Button
                   variant={activeTab === "api" ? "default" : "ghost"}
@@ -1011,6 +1055,126 @@ export default function MerchantSettings() {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === "reservations" && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-slate-100">
+                    <Calendar className="w-5 h-5 text-green-400" />
+                    <span>Reservation System</span>
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Connect your reservation system to display a "Book a Table" button
+                  </CardDescription>
+                </CardHeader>
+                <CardBody>
+                  <Form {...reservationForm}>
+                    <form onSubmit={reservationForm.handleSubmit((data) => updateReservationMutation.mutate(data))} className="space-y-6">
+                      <FormField
+                        control={reservationForm.control}
+                        name="provider"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Reservation Provider</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="input-dark">
+                                  <SelectValue placeholder="Select your reservation system" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="none">No reservation system</SelectItem>
+                                <SelectItem value="opentable">OpenTable</SelectItem>
+                                <SelectItem value="resy">Resy</SelectItem>
+                                <SelectItem value="bookatable">Bookatable (Michelin)</SelectItem>
+                                <SelectItem value="tock">Tock</SelectItem>
+                                <SelectItem value="sevenrooms">SevenRooms</SelectItem>
+                                <SelectItem value="custom">Custom/Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {reservationForm.watch("provider") !== "none" && (
+                        <FormField
+                          control={reservationForm.control}
+                          name="url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Reservation URL</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  className="input-dark" 
+                                  type="url" 
+                                  placeholder="https://www.opentable.co.uk/..." 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              <p className="text-sm text-slate-400">
+                                This link will be shown to customers as a "Book a Table" button
+                              </p>
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                      <div className="flex items-center justify-between pt-4">
+                        <Button
+                          type="submit"
+                          disabled={updateReservationMutation.isPending}
+                          className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0"
+                        >
+                          {updateReservationMutation.isPending ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Save Settings
+                            </>
+                          )}
+                        </Button>
+
+                        {reservationForm.watch("provider") !== "none" && reservationForm.watch("url") && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                            onClick={() => window.open(reservationForm.getValues("url"), '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Test Link
+                          </Button>
+                        )}
+                      </div>
+                    </form>
+                  </Form>
+
+                  {reservationForm.watch("provider") !== "none" && (
+                    <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                      <h4 className="font-medium text-slate-200 mb-2">How it works</h4>
+                      <ul className="text-sm text-slate-400 space-y-1">
+                        <li>• A "Book a Table" button will appear on your business profile</li>
+                        <li>• Customers can click to visit your reservation system</li>
+                        <li>• Works with all major reservation platforms</li>
+                        <li>• You can update the link anytime</li>
+                      </ul>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </motion.div>
           )}
 
           {activeTab === "api" && (

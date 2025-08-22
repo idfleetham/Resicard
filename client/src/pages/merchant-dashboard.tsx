@@ -33,6 +33,7 @@ import { useLocation } from "wouter";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate, formatRelativeTime, getDealCategoryColor, getStatusColor } from "@/lib/utils";
 import type { Deal, Redemption } from "@shared/schema";
+import { generateCustomerAlias } from "@shared/schema";
 
 export default function MerchantDashboard() {
   const [showCreateDeal, setShowCreateDeal] = useState(false);
@@ -130,7 +131,7 @@ export default function MerchantDashboard() {
     onSuccess: (data) => {
       toast({
         title: "Voucher Redeemed Successfully",
-        description: `${data.dealTitle} has been redeemed for ${data.customerName}`,
+        description: `${data.dealTitle} has been redeemed for ${generateCustomerAlias({ id: data.userId, username: data.customerUsername })}`,
       });
       setLastScannedVoucher(data);
       setIsScanning(false);
@@ -525,7 +526,7 @@ export default function MerchantDashboard() {
                     </CardHeader>
                     <CardBody>
                       <div className="space-y-2">
-                        <p><strong>Customer:</strong> {lastScannedVoucher.customerName}</p>
+                        <p><strong>Customer:</strong> {generateCustomerAlias({ id: lastScannedVoucher.userId, username: lastScannedVoucher.customerUsername })}</p>
                         <p><strong>Deal:</strong> {lastScannedVoucher.dealTitle}</p>
                         <p><strong>Voucher:</strong> {lastScannedVoucher.voucherNumber}</p>
                         <p><strong>Time:</strong> {new Date(lastScannedVoucher.redeemedAt).toLocaleString()}</p>
