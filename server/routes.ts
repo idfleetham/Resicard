@@ -1719,12 +1719,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      // Fetch additional user/merchant data for pass
       const userData = {
         id: req.user.id,
         username: req.user.username,
         email: req.user.email,
         loyaltyPoints: req.user.loyaltyPoints || 0,
-        loyaltyTier: req.user.loyaltyTier || 'Bronze'
+        loyaltyTier: req.user.loyaltyTier || 'Standard',
+        memberSince: req.user.createdAt ? new Date(req.user.createdAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
+        merchantName: 'Resicard St Andrews', // Default - could be merchant-specific
+        offerTitle: '20% Off First Order',
+        category: 'Food & Drink',
+        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB'), // 90 days from now
+        bookingUrl: 'https://resicard.co.uk/booking',
+        contactInfo: 'Email: support@resicard.co.uk\nPhone: +44 1334 123456\nWebsite: resicard.co.uk',
+        logoUrl: undefined // Could be fetched from merchant data
       };
 
       const passBuffer = await passKitService.generatePass(userData);

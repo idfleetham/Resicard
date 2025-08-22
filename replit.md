@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Apple Wallet Pass Distribution System
+- Implemented complete Apple Wallet pass distribution without requiring App Store app
+- Created PassKit service with cryptographic signing and pass generation capabilities
+- Built branded pass design with purple-to-blue gradient strips and dark theme (#111827)
+- Comprehensive pass data including merchant info, offers, loyalty points, and QR codes
+- Web interface at `/wallet/add` with official "Add to Apple Wallet" button and QR code scanning
+- Full Apple Wallet update registration endpoints for push notifications
+- SVG-based image generation system for cross-platform compatibility
+- Automatic fallback behavior for logos and development mode support
+
 ### Customer Privacy Protection Implementation
 - Added `generateCustomerAlias` utility function in shared schema for merchant views
 - Updated merchant dashboard to show customer aliases (username or user_XXXXX format) instead of real names
@@ -66,6 +76,7 @@ Preferred communication style: Simple, everyday language.
 - **Payment Processing**: Stripe integration (configured for future payment handling)
 - **QR Code Generation**: qrcode library for voucher QR codes
 - **QR Code Scanning**: qr-scanner for merchant voucher verification
+- **Apple Wallet Integration**: PassKit with JSZip, node-forge for pass generation and signing
 - **File Upload**: Uppy with AWS S3 support (provisions for cloud storage)
 
 #### Development and Deployment

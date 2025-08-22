@@ -103,15 +103,37 @@ export default function WalletAdd() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-6 rounded-lg">
+                <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700">
                   <div className="text-center space-y-4">
-                    <div className="flex justify-center">
-                      <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        {user.username || `User ${user.id}`}
+                    {/* Pass Preview */}
+                    <div className="bg-gray-900 text-white p-4 rounded-xl shadow-lg max-w-sm mx-auto">
+                      {/* Header strip */}
+                      <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-t-lg mb-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium opacity-90">RESICARD</span>
+                          <span className="text-xs opacity-75">St Andrews</span>
+                        </div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-xs text-gray-400">Member</span>
+                          <span className="text-sm font-medium">{user.username || `User ${user.id}`}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-xs text-gray-400">Tier</span>
+                          <span className="text-sm">Standard</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-xs text-gray-400">Current Offer</span>
+                          <span className="text-sm">20% Off First Order</span>
+                        </div>
                       </div>
                     </div>
+                    
                     <p className="text-sm text-muted-foreground">
-                      Resicard St Andrews • Community Member
+                      Preview of your Resicard pass
                     </p>
                   </div>
                 </div>

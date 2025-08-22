@@ -39,6 +39,20 @@ WWDR_CERT=<base64_encoded_wwdr_certificate>
 3. **Signing Certificate**: Generate a Pass Type ID certificate (.p12 file)
 4. **WWDR Certificate**: Download the Apple Worldwide Developer Relations certificate
 
+### Pass Design Features
+
+The Resicard pass includes:
+
+- **Premium Gradient Strip**: Purple-to-blue gradient header with rounded corners
+- **Dark Theme Background**: Professional dark theme (#111827) for modern appearance
+- **Branded Logo**: Automatic fallback from merchant logo → business logo → default Resicard
+- **Comprehensive Information**:
+  - Primary: Merchant name + "Resicard" card type
+  - Secondary: Current offer, category, expiry date
+  - Auxiliary: Tier status, points balance, member since date
+- **QR Code**: Unique redemption code linked to user ID
+- **Back Fields**: Booking links, terms & conditions, contact details
+
 ### Without Apple Developer Certificates
 
 If you don't have Apple Developer certificates, you have several options:
