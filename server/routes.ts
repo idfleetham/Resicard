@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
-import { insertUserSchema, insertDealSchema, insertRedemptionSchema } from "@shared/schema";
+import { insertUserSchema, insertDealSchema, insertEnhancedRedemptionSchema, insertOfferSchema } from "@shared/schema";
 import { eq, sql, and, gt, desc, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool } from "@neondatabase/serverless";

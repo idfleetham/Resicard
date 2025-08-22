@@ -18,7 +18,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useOffers, useToggleOffer, useUpdateOffer } from "@/hooks/use-merchant-offers";
-import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload } from "lucide-react";
+import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings } from "lucide-react";
+import ComprehensiveOfferCreator from "./comprehensive-offer-creator";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -33,6 +34,7 @@ export default function OffersManager() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isComprehensiveOpen, setIsComprehensiveOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [uploadingImageForOffer, setUploadingImageForOffer] = useState<number | null>(null);
 
@@ -205,14 +207,22 @@ export default function OffersManager() {
             <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
             <p className="text-soft">Manage all your business offers</p>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Offer
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setIsComprehensiveOpen(true)}
+              className="bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-elev-1"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Advanced Offer
+            </Button>
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Quick Offer
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
               <DialogHeader>
                 <DialogTitle className="text-slate-100">Create New Offer</DialogTitle>
                 <DialogDescription className="text-slate-400">
@@ -335,8 +345,9 @@ export default function OffersManager() {
                   </div>
                 </form>
               </Form>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
@@ -506,6 +517,17 @@ export default function OffersManager() {
           )}
         </CardBody>
       </Card>
+
+      {/* Comprehensive Offer Creator Modal */}
+      {isComprehensiveOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto border border-slate-700">
+            <ComprehensiveOfferCreator 
+              onClose={() => setIsComprehensiveOpen(false)} 
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

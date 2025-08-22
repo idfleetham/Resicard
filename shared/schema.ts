@@ -399,24 +399,37 @@ export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
   }),
 }));
 
+export const offersRelations = relations(offers, ({ one, many }) => ({
+  merchant: one(merchants, {
+    fields: [offers.merchantId],
+    references: [merchants.id],
+  }),
+  redemptions: many(redemptions),
+  analytics: many(offerAnalytics),
+  blackouts: many(offerBlackouts),
+}));
+
+export const redemptionsRelations = relations(redemptions, ({ one }) => ({
+  offer: one(offers, {
+    fields: [redemptions.offerId],
+    references: [offers.id],
+  }),
+  user: one(users, {
+    fields: [redemptions.userId],
+    references: [users.id],
+  }),
+  merchant: one(merchants, {
+    fields: [redemptions.merchantId],
+    references: [merchants.id],
+  }),
+}));
+
 export const dealsRelations = relations(deals, ({ one, many }) => ({
   merchant: one(users, {
     fields: [deals.merchantId],
     references: [users.id],
   }),
-  redemptions: many(redemptions),
   vouchers: many(vouchers),
-}));
-
-export const redemptionsRelations = relations(redemptions, ({ one }) => ({
-  user: one(users, {
-    fields: [redemptions.userId],
-    references: [users.id],
-  }),
-  deal: one(deals, {
-    fields: [redemptions.dealId],
-    references: [deals.id],
-  }),
 }));
 
 export const vouchersRelations = relations(vouchers, ({ one }) => ({
