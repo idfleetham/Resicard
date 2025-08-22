@@ -141,7 +141,7 @@ export default function MerchantSettings() {
     mutationFn: (file: File) => {
       const formData = new FormData();
       formData.append("file", file);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token"); // Fixed: use correct token key
       return fetch("/api/merchant/upload/logo", {
         method: "POST",
         headers: {
