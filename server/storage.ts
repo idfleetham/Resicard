@@ -711,7 +711,7 @@ export class DatabaseStorage implements IStorage {
   // Merchant management methods
   async getMerchantByUserId(userId: number): Promise<Merchant | undefined> {
     // Look for merchant by matching name with username (temporary solution)
-    const user = await this.getUserById(userId);
+    const user = await this.getUser(userId);
     if (!user) return undefined;
     
     const [merchant] = await db.select().from(merchants).where(eq(merchants.name, user.username));
