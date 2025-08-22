@@ -112,26 +112,29 @@ export default function BillingPreview() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl shadow-xl p-6 mb-6">
-        <div className="flex justify-between items-center">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Billing Preview</h2>
-            <p className="text-slate-300">View monthly fees and download invoices</p>
+            <h1 className="text-2xl font-semibold text-fg">Billing Preview</h1>
+            <p className="text-soft">View monthly fees and download invoices</p>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-40 border-slate-600 bg-slate-700 text-white">
+              <SelectTrigger className="w-40 border-dim bg-surface text-fg">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
+              <SelectContent className="bg-surface2 border-dim">
                 {billingPeriods.map((period) => (
-                  <SelectItem key={period.id} value={period.id} className="text-white">
+                  <SelectItem key={period.id} value={period.id} className="text-fg">
                     {period.period}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={() => handleDownloadInvoice(selectedPeriod)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button 
+              onClick={() => handleDownloadInvoice(selectedPeriod)}
+              className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1"
+            >
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>

@@ -148,15 +148,15 @@ export default function TeamManagement() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl shadow-xl p-6 mb-6">
-        <div className="flex justify-between items-center">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Team Management</h2>
-            <p className="text-slate-300">Manage staff accounts, roles, and access permissions</p>
+            <h1 className="text-2xl font-semibold text-fg">Team Management</h1>
+            <p className="text-soft">Manage staff accounts, roles, and access permissions</p>
           </div>
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
                 <Plus className="w-4 h-4 mr-2" />
                 Invite Staff
               </Button>
