@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { generateCustomerAlias } from "@shared/schema";
+import { useLocation } from "wouter";
 import { 
   Star, 
   Award, 
@@ -31,7 +32,9 @@ import {
   Save,
   X,
   Trash2,
-  Target
+  Target,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -174,6 +177,7 @@ export default function LoyaltyDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddReward, setShowAddReward] = useState(false);
 
@@ -339,12 +343,23 @@ export default function LoyaltyDashboard() {
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-indigo-600/30 via-purple-600/25 to-pink-600/20 border border-border-dim p-6 shadow-elev-1 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
-              <Star className="w-8 h-8 text-yellow-400" />
-              Loyalty Program
-            </h1>
-            <p className="text-soft mt-2">Build customer loyalty with points, stamps, and rewards</p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/merchant")}
+              className="border-border-dim hover:bg-surface/50 text-fg"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Portal
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
+                <Star className="w-8 h-8 text-yellow-400" />
+                Loyalty Program
+              </h1>
+              <p className="text-soft mt-2">Build customer loyalty with points, stamps, and rewards</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Badge className={`${loyaltyProgram?.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} border-0`}>
