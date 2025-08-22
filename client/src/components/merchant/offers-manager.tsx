@@ -50,24 +50,28 @@ export default function OffersManager() {
 
   // Combine all offers into a single list
   const allOffers = [
-    ...deals.map((deal: Deal) => ({
-      ...deal,
-      type: 'simple',
-      offerType: deal.discountType,
-      createdAt: deal.createdAt,
-      isActive: deal.isActive,
-      category: deal.category,
-      title: deal.title,
-      description: deal.description,
-      discountText: deal.discountType === 'percentage' ? `${deal.discountValue}% off` :
-                   deal.discountType === 'fixed' ? `£${deal.discountValue} off` :
-                   deal.discountType === 'bogo' ? 'Buy One Get One' :
-                   deal.discountType === 'free_item' ? 'Free Item' : 
-                   String(deal.discountValue),
-      usageCount: deal.usageCount || 0,
-      usageLimit: deal.usageLimit,
-      expiryDate: deal.expiryDate,
-    })),
+    ...deals.map((deal: Deal) => {
+      const isExpired = deal.expiryDate && new Date(deal.expiryDate) < new Date();
+      return {
+        ...deal,
+        type: 'simple',
+        offerType: deal.discountType,
+        createdAt: deal.createdAt,
+        isActive: deal.isActive && !isExpired, // Mark as inactive if expired
+        category: deal.category,
+        title: deal.title,
+        description: deal.description,
+        discountText: deal.discountType === 'percentage' ? `${deal.discountValue}% off` :
+                     deal.discountType === 'fixed' ? `£${deal.discountValue} off` :
+                     deal.discountType === 'bogo' ? 'Buy One Get One' :
+                     deal.discountType === 'free_item' ? 'Free Item' : 
+                     String(deal.discountValue),
+        usageCount: deal.usageCount || 0,
+        usageLimit: deal.usageLimit,
+        expiryDate: deal.expiryDate,
+        isExpired: isExpired,
+      };
+    }),
     ...comprehensiveOffers.map((offer: any) => ({
       ...offer,
       type: 'comprehensive',
@@ -82,7 +86,6 @@ export default function OffersManager() {
     }))
   ];
   const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
-  const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
   const { mutate: toggleComprehensiveOfferMutation } = useToggleComprehensiveOffer();
   const { mutate: updateComprehensiveOfferMutation } = useUpdateComprehensiveOffer();
 
@@ -167,13 +170,37 @@ export default function OffersManager() {
     setIsCreateOpen(true); // Use the same dialog for editing
   };
 
+  const { mutate: updateOfferMutation, isPending: isUpdating } = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest('PUT', `/api/deals/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      setIsCreateOpen(false);
+      setEditingDeal(null);
+      form.reset();
+      toast({
+        title: "Offer Updated",
+        description: "Offer updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update offer",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateOffer = (data: CreateDealData) => {
     if (!editingDeal) return;
     updateOfferMutation({
       id: String(editingDeal.id),
       data: { ...data, expiryDate: new Date(data.expiryDate) },
     });
-    setEditingDeal(null);
   };
 
   const handleEditComprehensiveOffer = (offer: any) => {
@@ -280,7 +307,13 @@ export default function OffersManager() {
               <Settings className="w-4 h-4 mr-2" />
               Advanced Offer
             </Button>
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <Dialog open={isCreateOpen} onOpenChange={(open) => {
+              setIsCreateOpen(open);
+              if (!open) {
+                setEditingDeal(null);
+                form.reset();
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
                   <Plus className="w-4 h-4 mr-2" />
@@ -289,9 +322,14 @@ export default function OffersManager() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
               <DialogHeader>
-                <DialogTitle className="text-slate-100">Create New Offer</DialogTitle>
+                <DialogTitle className="text-slate-100">
+                  {editingDeal ? "Edit Offer" : "Create New Offer"}
+                </DialogTitle>
                 <DialogDescription className="text-slate-400">
-                  Create a new deal to attract customers to your business
+                  {editingDeal 
+                    ? `Update the details for "${editingDeal.title}"`
+                    : "Create a new deal to attract customers to your business"
+                  }
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
@@ -411,7 +449,10 @@ export default function OffersManager() {
                       disabled={createDealMutation.isPending}
                       className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
                     >
-                      {createDealMutation.isPending ? "Creating..." : "Create Offer"}
+                      {createDealMutation.isPending || isUpdating 
+                        ? (editingDeal ? "Updating..." : "Creating...") 
+                        : (editingDeal ? "Update Offer" : "Create Offer")
+                      }
                     </Button>
                   </div>
                 </form>
@@ -546,8 +587,12 @@ export default function OffersManager() {
                         {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
-                        <Badge className={offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
-                          {offer.isActive ? "Active" : "Inactive"}
+                        <Badge className={
+                          offer.isExpired ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+                          offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30" : 
+                          "bg-red-500/20 text-red-400 border-red-500/30"
+                        }>
+                          {offer.isExpired ? "Expired" : (offer.isActive ? "Active" : "Paused")}
                         </Badge>
                       </TableCell>
                       <TableCell>

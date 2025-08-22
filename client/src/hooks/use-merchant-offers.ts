@@ -38,6 +38,8 @@ export const useUpdateOffer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
       toast({
         title: "Offer Updated",
         description: "Offer updated successfully",
