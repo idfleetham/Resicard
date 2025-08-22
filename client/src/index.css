@@ -4,6 +4,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium Dark Tokens */
+:root {
+  --bg: 10 12 20;        /* page */
+  --surface: 18 20 30;   /* base containers */
+  --card: 24 28 42;      /* elevated cards */
+  --muted: 148 163 184;  /* slate-400 */
+  --fg: 234 238 244;     /* near-white */
+  --ring: 120 119 198;   /* indigo-ish */
+}
+
+.bg-app { background-color: rgb(var(--bg)); }
+.bg-surface { background-color: rgb(var(--surface)); }
+.bg-card { background-color: rgb(var(--card)); }
+.text-fg { color: rgb(var(--fg)); }
+.text-muted { color: rgb(var(--muted)); }
+
+/* Card baseline */
+.card {
+  @apply rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur;
+  background-color: rgba(24, 28, 42, 0.95);
+}
+.card-hover {
+  @apply transition hover:shadow-[0_18px_60px_rgba(0,0,0,0.45)] hover:border-white/15;
+}
+
+/* Gradient headers */
+.grad-primary {
+  @apply bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500;
+}
+
+/* Input + buttons */
+.input-dark {
+  @apply rounded-lg bg-surface border border-white/10 text-fg placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none;
+}
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition;
+}
+.btn-primary {
+  @apply text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 shadow-[0_8px_24px_rgba(99,102,241,0.35)];
+}
+.btn-ghost {
+  @apply border border-white/10 hover:border-white/20;
+  background-color: rgb(var(--surface));
+}
+
 /* Global styles for darker backgrounds and shadows */
 .bg-page {
   @apply bg-slate-200;

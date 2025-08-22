@@ -330,34 +330,43 @@ export default function LoyaltyDashboard() {
   }
 
   return (
-    <div data-theme="dim" className="min-h-screen bg-bg text-fg">
+    <div className="min-h-screen bg-app text-fg relative">
       <div className="pointer-events-none absolute inset-0 -z-10
-          bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
+          bg-[radial-gradient(1200px_600px_at_-10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(236,72,153,.10)_0%,transparent_52%)]" />
       
       {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 border-b border-border-dim bg-bg/80 backdrop-blur-md">
-        <div className="px-6 py-4">
+      <motion.nav 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 border-b border-white/10 bg-surface/80 backdrop-blur-xl"
+      >
+        <div className="mx-auto w-full max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
+            <div className="flex items-center gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => navigate("/merchant")}
-                className="text-soft hover:text-fg hover:bg-surface/50 -ml-2"
+                className="btn btn-ghost text-muted hover:text-fg"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4" />
                 Back to Portal
-              </Button>
-              <div className="w-px h-6 bg-border-dim"></div>
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <span className="font-semibold text-fg">Loyalty Dashboard</span>
+              </motion.button>
+              <div className="w-px h-6 bg-white/10"></div>
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
+                  <Star className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h1 className="font-semibold text-fg text-lg">Loyalty Dashboard</h1>
+                  <p className="text-xs text-muted">Customer engagement platform</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge className={`${loyaltyProgram?.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} border-0`}>
+            <div className="flex items-center gap-4">
+              <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${loyaltyProgram?.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                 {loyaltyProgram?.active ? 'Active' : 'Inactive'}
-              </Badge>
+              </div>
               <Switch
                 checked={loyaltyProgram?.active || false}
                 onCheckedChange={(checked) => {
@@ -370,56 +379,70 @@ export default function LoyaltyDashboard() {
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-6 p-6"
-      >
-      {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-600/30 via-purple-600/25 to-pink-600/20 border border-border-dim p-6 shadow-elev-1 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
-              <Star className="w-8 h-8 text-yellow-400" />
-              Loyalty Program
-            </h1>
-            <p className="text-soft mt-2">Build customer loyalty with points, stamps, and rewards</p>
+      <div className="mx-auto w-full max-w-7xl px-6 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="card card-hover p-8 mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="p-4 rounded-2xl grad-primary">
+                <Award className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-fg mb-2">Loyalty Program</h1>
+                <p className="text-muted text-lg">Build lasting customer relationships through rewards</p>
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-muted" />
+                <span className="text-2xl font-bold text-fg">12</span>
+                <span className="text-muted">Active Members</span>
+              </div>
+              <p className="text-sm text-muted">Configure tiers, rewards, and engagement</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-soft">Manage your customer loyalty program</p>
-            <p className="text-xs text-soft mt-1">Configure tiers, rewards, and point systems</p>
-          </div>
-        </div>
-      </div>
+        </motion.div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="setup" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Setup
-          </TabsTrigger>
-          <TabsTrigger value="rewards" className="flex items-center gap-2">
-            <Gift className="w-4 h-4" />
-            Rewards
-          </TabsTrigger>
-          <TabsTrigger value="staff" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            Staff Tools
-          </TabsTrigger>
-          <TabsTrigger value="customers" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Customers
-          </TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <TabsList className="grid w-full grid-cols-5 p-1 card"
+              style={{ background: 'rgba(18, 20, 30, 0.8)' }}
+            >
+              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+                <TrendingUp className="w-4 h-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="setup" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+                <Settings className="w-4 h-4" />
+                Setup
+              </TabsTrigger>
+              <TabsTrigger value="tiers" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+                <Crown className="w-4 h-4" />
+                Tiers
+              </TabsTrigger>
+              <TabsTrigger value="rewards" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+                <Gift className="w-4 h-4" />
+                Rewards
+              </TabsTrigger>
+              <TabsTrigger value="members" className="flex items-center gap-2 data-[state=active]:bg-white/10">
+                <Users className="w-4 h-4" />
+                Members
+              </TabsTrigger>
+            </TabsList>
+          </motion.div>
 
-        <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
@@ -457,64 +480,83 @@ export default function LoyaltyDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -4 }}
+                className="group"
               >
-                <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-soft text-sm">{stat.title}</p>
-                        <p className="text-2xl font-bold text-fg mt-1">{stat.value}</p>
-                        <Badge className="bg-green-500/20 text-green-400 border-0 mt-2">
-                          {stat.change}
-                        </Badge>
-                      </div>
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-elev-1`}>
-                        <stat.icon className="w-6 h-6 text-white" />
+                <div className="card card-hover p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-muted text-sm font-medium">{stat.title}</p>
+                      <p className="text-3xl font-bold text-fg mt-2 mb-3">{stat.value}</p>
+                      <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+                        <TrendingUp className="w-3 h-3" />
+                        {stat.change}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <stat.icon className="w-7 h-7 text-white" />
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
 
           {/* Quick Actions */}
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-blue-600/20 via-purple-600/15 to-indigo-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg">Quick Actions</CardTitle>
-              <CardDescription className="text-soft">Common loyalty program tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button 
-                  onClick={() => setActiveTab("staff")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white h-auto p-4 flex-col gap-2"
-                >
-                  <Zap className="w-6 h-6" />
-                  <span>Award Points</span>
-                  <span className="text-xs opacity-80">Staff tool for manual awards</span>
-                </Button>
-                <Button 
-                  onClick={() => setActiveTab("rewards")}
-                  variant="outline" 
-                  className="h-auto p-4 flex-col gap-2 border-dim"
-                >
-                  <Plus className="w-6 h-6" />
-                  <span>Add Reward</span>
-                  <span className="text-xs opacity-80">Create new loyalty reward</span>
-                </Button>
-                <Button 
-                  onClick={() => setActiveTab("setup")}
-                  variant="outline" 
-                  className="h-auto p-4 flex-col gap-2 border-dim"
-                >
-                  <Crown className="w-6 h-6" />
-                  <span>Manage Tiers</span>
-                  <span className="text-xs opacity-80">Configure customer tiers</span>
-                </Button>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="card card-hover p-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
+                <Zap className="w-5 h-5 text-indigo-400" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <h3 className="text-xl font-semibold text-fg">Quick Actions</h3>
+                <p className="text-muted text-sm">Streamline your loyalty program management</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab("tiers")}
+                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+              >
+                <Crown className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                <div>
+                  <div className="font-semibold">Manage Tiers</div>
+                  <div className="text-xs opacity-80">Configure tier benefits</div>
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab("members")}
+                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+              >
+                <Users className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                <div>
+                  <div className="font-semibold">View Members</div>
+                  <div className="text-xs opacity-80">Track customer progress</div>
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab("rewards")}
+                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+              >
+                <Gift className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                <div>
+                  <div className="font-semibold">Create Rewards</div>
+                  <div className="text-xs opacity-80">Add new incentives</div>
+                </div>
+              </motion.button>
+            </div>
+          </motion.div>
 
           {/* Program Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -918,52 +960,66 @@ export default function LoyaltyDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="customers" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-emerald-600/20 via-teal-600/15 to-cyan-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Loyalty Members
-              </CardTitle>
-              <CardDescription className="text-soft">
-                View and manage your loyalty program members
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
-              <div className="space-y-4">
-                {/* Mock customer data with privacy aliases */}
-                {[
-                  { id: 101, username: "sarah_j", tier: "Gold", points: 450, visits: 12 },
-                  { id: 102, username: null, tier: "Silver", points: 180, visits: 8 },
-                  { id: 103, username: "emily_d", tier: "Bronze", points: 75, visits: 5 },
-                ].map((customer, index) => {
-                  const customerAlias = generateCustomerAlias({ id: customer.id, username: customer.username });
-                  return (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-surface/30">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                          {customerAlias.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-fg">{customerAlias}</p>
-                          <p className="text-sm text-soft">{customer.tier} tier • {customer.visits} visits</p>
-                        </div>
+        <TabsContent value="members" className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="card card-hover p-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20">
+                <Users className="w-5 h-5 text-teal-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-fg">Loyalty Members</h3>
+                <p className="text-muted text-sm">View and manage your loyalty program members</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {/* Mock customer data with privacy aliases */}
+              {[
+                { id: 101, username: "sarah_j", tier: "Gold", points: 450, visits: 12 },
+                { id: 102, username: null, tier: "Silver", points: 180, visits: 8 },
+                { id: 103, username: "emily_d", tier: "Bronze", points: 75, visits: 5 },
+              ].map((customer, index) => {
+                const customerAlias = generateCustomerAlias({ id: customer.id, username: customer.username });
+                return (
+                  <motion.div 
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="flex items-center justify-between p-6 rounded-xl bg-surface/40 border border-white/5 hover:bg-surface/60 transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                        {customerAlias.substring(0, 2).toUpperCase()}
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-fg">{customer.points} points</p>
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          Award Points
-                        </Button>
+                      <div>
+                        <p className="font-semibold text-fg text-lg">{customerAlias}</p>
+                        <p className="text-sm text-muted">{customer.tier} tier • {customer.visits} visits</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="text-right">
+                      <p className="font-bold text-fg text-xl">{customer.points}</p>
+                      <p className="text-xs text-muted mb-2">points</p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="btn btn-ghost text-xs px-3 py-1"
+                      >
+                        Award Points
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
         </TabsContent>
-      </Tabs>
-      </motion.div>
+        </Tabs>
+      </div>
     </div>
   );
 }
