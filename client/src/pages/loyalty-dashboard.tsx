@@ -388,18 +388,14 @@ export default function LoyaltyDashboard() {
       <div className="mx-auto w-full max-w-7xl px-6 py-8">
         {/* Header */}
         <Hero 
-          title="Loyalty Program"
-          subtitle="Build lasting customer relationships through rewards and engagement"
+          title="Loyalty Program" 
+          subtitle="Build customer loyalty with points, stamps, and rewards" 
           right={
-            <div className="text-right space-y-2 text-white/90">
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5" />
-                <span className="text-2xl font-bold">12</span>
-                <span>Active Members</span>
-              </div>
-              <p className="text-sm text-white/60">Configure tiers, rewards, and engagement</p>
-            </div>
-          }
+            <Switch 
+              checked={loyaltyProgram?.active} 
+              className="data-[state=checked]:bg-emerald-500"
+            />
+          } 
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
@@ -435,108 +431,40 @@ export default function LoyaltyDashboard() {
           </motion.div>
 
           <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { 
-                title: "Active Members", 
-                value: "247", 
-                icon: Users, 
-                change: "+12%",
-                gradient: "from-blue-500/70 to-blue-600/70" 
-              },
-              { 
-                title: "Points Earned", 
-                value: "12,450", 
-                icon: Star, 
-                change: "+8%",
-                gradient: "from-yellow-500/70 to-yellow-600/70" 
-              },
-              { 
-                title: "Rewards Claimed", 
-                value: "89", 
-                icon: Gift, 
-                change: "+15%",
-                gradient: "from-green-500/70 to-green-600/70" 
-              },
-              { 
-                title: "Revenue Impact", 
-                value: "£2,340", 
-                icon: TrendingUp, 
-                change: "+22%",
-                gradient: "from-purple-500/70 to-purple-600/70" 
-              }
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <MetricTile
-                  label={stat.title}
-                  value={<span className="text-fg">{stat.value}</span>}
-                  delta={stat.change}
-                  icon={<stat.icon className="w-5 h-5 text-white" />}
-                />
-              </motion.div>
-            ))}
+          {/* Key Metrics */}
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricTile label="Active Members" value="247" delta="12%" icon={<Users className="w-5 h-5 text-white" />} />
+            <MetricTile label="Points Earned" value="12,450" delta="8%" icon={<Star className="w-5 h-5 text-white" />} />
+            <MetricTile label="Rewards Claimed" value="89" delta="15%" icon={<Gift className="w-5 h-5 text-white" />} />
+            <MetricTile label="Revenue Impact" value="£2,340" delta="22%" icon={<TrendingUp className="w-5 h-5 text-white" />} />
           </div>
 
           {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <GradientPanel>
-              <div className="flex items-center gap-3 mb-6">
-                <Zap className="w-6 h-6 text-white" />
-                <div>
-                  <h3 className="text-xl font-semibold text-white">Quick Actions</h3>
-                  <p className="text-white/70 text-sm">Streamline your loyalty program management</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveTab("tiers")}
-                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+          <GradientPanel>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+              <div className="flex gap-3">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => setActiveTab("staff")}
                 >
-                  <Crown className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                  <div>
-                    <div className="font-semibold">Manage Tiers</div>
-                    <div className="text-xs opacity-80">Configure tier benefits</div>
-                  </div>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveTab("members")}
-                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
-                >
-                  <Users className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                  <div>
-                    <div className="font-semibold">View Members</div>
-                    <div className="text-xs opacity-80">Track customer progress</div>
-                  </div>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  Award Points
+                </button>
+                <button 
+                  className="btn btn-ghost"
                   onClick={() => setActiveTab("rewards")}
-                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
                 >
-                  <Gift className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                  <div>
-                    <div className="font-semibold">Create Rewards</div>
-                    <div className="text-xs opacity-80">Add new incentives</div>
-                  </div>
-                </motion.button>
+                  Add Reward
+                </button>
+                <button 
+                  className="btn btn-ghost"
+                  onClick={() => setActiveTab("tiers")}
+                >
+                  Manage Tiers
+                </button>
               </div>
-            </GradientPanel>
-          </motion.div>
+            </div>
+          </GradientPanel>
 
           {/* Program Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
