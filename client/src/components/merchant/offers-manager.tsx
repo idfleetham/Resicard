@@ -18,7 +18,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useOffers, useToggleOffer, useUpdateOffer } from "@/hooks/use-merchant-offers";
-import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings } from "lucide-react";
+import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings, Clock } from "lucide-react";
 import ComprehensiveOfferCreator from "./comprehensive-offer-creator";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
