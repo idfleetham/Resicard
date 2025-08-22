@@ -463,60 +463,7 @@ export default function MerchantSettings() {
             </motion.div>
           )}
 
-          {activeTab === "hours" && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5" />
-                  <span>Business Hours</span>
-                </CardTitle>
-                <CardDescription>
-                  Set your operating hours for customer reference
-                </CardDescription>
-              </CardHeader>
-              <CardBody>
-                <Form {...hoursForm}>
-                  <form onSubmit={hoursForm.handleSubmit(onHoursSubmit)} className="space-y-4">
-                    {Object.entries(hoursForm.getValues()).map(([day, hours]) => (
-                      <FormField
-                        key={day}
-                        control={hoursForm.control}
-                        name={day as keyof BusinessHoursData}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="capitalize">{day}</FormLabel>
-                            <FormControl>
-                              <Input placeholder="9:00 AM - 6:00 PM or 'Closed'" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                    <Button type="submit" disabled={updateHoursMutation.isPending}>
-                      {updateHoursMutation.isPending ? (
-                        <>
-                          <Save className="w-4 h-4 mr-2 animate-pulse" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Hours
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </Form>
-              </CardBody>
-            </Card>
-            </motion.div>
-          )}
+
 
           {activeTab === "logo" && (
             <Card>
@@ -658,27 +605,86 @@ export default function MerchantSettings() {
                 </CardHeader>
                 <CardBody>
                   <Form {...hoursForm}>
-                    <form onSubmit={hoursForm.handleSubmit(onHoursSubmit)} className="space-y-4">
-                      {Object.entries(hoursForm.getValues()).map(([day, hours]) => (
-                        <FormField
-                          key={day}
-                          control={hoursForm.control}
-                          name={day as keyof BusinessHoursData}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="capitalize text-slate-200">{day}</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="9:00 AM - 6:00 PM or 'Closed'" 
-                                  {...field} 
-                                  className="bg-slate-800 border-slate-700 text-slate-100"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                    <form onSubmit={hoursForm.handleSubmit(onHoursSubmit)} className="space-y-6">
+                      {Object.entries(hoursForm.getValues()).map(([day, hours]) => {
+                        const isClosed = hours === "Closed";
+                        return (
+                          <FormField
+                            key={day}
+                            control={hoursForm.control}
+                            name={day as keyof BusinessHoursData}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between mb-3">
+                                  <FormLabel className="capitalize text-slate-200 text-base font-medium">{day}</FormLabel>
+                                  <div className="flex items-center space-x-3">
+                                    <span className="text-sm text-slate-400">Closed</span>
+                                    <Switch
+                                      checked={!isClosed}
+                                      onCheckedChange={(checked) => {
+                                        field.onChange(checked ? "9:00 AM - 6:00 PM" : "Closed");
+                                      }}
+                                      className="data-[state=checked]:bg-green-600"
+                                    />
+                                    <span className="text-sm text-slate-400">Open</span>
+                                  </div>
+                                </div>
+                                {!isClosed && (
+                                  <FormControl>
+                                    <div className="grid grid-cols-3 gap-3 items-center">
+                                      <Select
+                                        value={field.value.split(" - ")[0] || "9:00 AM"}
+                                        onValueChange={(value) => {
+                                          const endTime = field.value.split(" - ")[1] || "6:00 PM";
+                                          field.onChange(`${value} - ${endTime}`);
+                                        }}
+                                      >
+                                        <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                          <SelectValue placeholder="Start time" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-800 border-slate-700">
+                                          {[
+                                            "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
+                                            "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
+                                          ].map((time) => (
+                                            <SelectItem key={time} value={time} className="text-slate-100">
+                                              {time}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                      <span className="text-center text-slate-400 font-medium">to</span>
+                                      <Select
+                                        value={field.value.split(" - ")[1] || "6:00 PM"}
+                                        onValueChange={(value) => {
+                                          const startTime = field.value.split(" - ")[0] || "9:00 AM";
+                                          field.onChange(`${startTime} - ${value}`);
+                                        }}
+                                      >
+                                        <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                          <SelectValue placeholder="End time" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-800 border-slate-700">
+                                          {[
+                                            "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM",
+                                            "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM",
+                                            "10:00 PM", "11:00 PM", "12:00 AM"
+                                          ].map((time) => (
+                                            <SelectItem key={time} value={time} className="text-slate-100">
+                                              {time}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </FormControl>
+                                )}
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        );
+                      })}
                       <Button 
                         type="submit" 
                         disabled={updateHoursMutation.isPending}
