@@ -83,3 +83,55 @@ export const useOffers = () => {
     },
   });
 };
+
+export const useToggleComprehensiveOffer = () => {
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('POST', `/api/offers/${id}/toggle`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers/my-offers"] });
+      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
+      toast({
+        title: "Offer Updated",
+        description: `Offer ${data.active ? 'activated' : 'paused'} successfully`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update offer",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateComprehensiveOffer = () => {
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest('PUT', `/api/offers/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers/my-offers"] });
+      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
+      toast({
+        title: "Offer Updated",
+        description: "Offer updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update offer",
+        variant: "destructive",
+      });
+    },
+  });
+};

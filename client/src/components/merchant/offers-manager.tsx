@@ -17,7 +17,7 @@ import { insertDealSchema, type Deal, type InsertDeal } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useOffers, useToggleOffer, useUpdateOffer } from "@/hooks/use-merchant-offers";
+import { useOffers, useToggleOffer, useUpdateOffer, useToggleComprehensiveOffer, useUpdateComprehensiveOffer } from "@/hooks/use-merchant-offers";
 import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings, Clock } from "lucide-react";
 import ComprehensiveOfferCreator from "./comprehensive-offer-creator";
 import { format, parseISO } from "date-fns";
@@ -37,6 +37,8 @@ export default function OffersManager() {
   const [isComprehensiveOpen, setIsComprehensiveOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [uploadingImageForOffer, setUploadingImageForOffer] = useState<number | null>(null);
+  const [isComprehensiveEditOpen, setIsComprehensiveEditOpen] = useState(false);
+  const [editingComprehensiveOffer, setEditingComprehensiveOffer] = useState<any>(null);
 
   const { data: deals = [], isLoading } = useOffers();
   
@@ -81,6 +83,8 @@ export default function OffersManager() {
   ];
   const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
   const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
+  const { mutate: toggleComprehensiveOfferMutation } = useToggleComprehensiveOffer();
+  const { mutate: updateComprehensiveOfferMutation } = useUpdateComprehensiveOffer();
 
   const uploadOfferImageMutation = useMutation({
     mutationFn: ({ offerId, file }: { offerId: number; file: File }) => {
@@ -139,8 +143,12 @@ export default function OffersManager() {
     },
   });
 
-  const handleToggleOffer = (dealId: number | string) => {
-    toggleOfferMutation(String(dealId));
+  const handleToggleOffer = (dealId: number | string, isComprehensive: boolean = false) => {
+    if (isComprehensive) {
+      toggleComprehensiveOfferMutation(String(dealId));
+    } else {
+      toggleOfferMutation(String(dealId));
+    }
   };
 
   const handleEditOffer = (deal: Deal) => {
@@ -154,6 +162,11 @@ export default function OffersManager() {
       data: { ...data, expiryDate: new Date(data.expiryDate) },
     });
     setEditingDeal(null);
+  };
+
+  const handleEditComprehensiveOffer = (offer: any) => {
+    setEditingComprehensiveOffer(offer);
+    setIsComprehensiveEditOpen(true);
   };
 
   const form = useForm<CreateDealData>({
@@ -551,7 +564,8 @@ export default function OffersManager() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => toast({ title: "Coming Soon", description: "Pause comprehensive offers feature is in development" })}
+                                onClick={() => handleToggleOffer(offer.id, true)}
+                                disabled={isToggling}
                                 className="border-dim bg-surface hover:border-dimStrong"
                               >
                                 {offer.isActive ? (
@@ -563,7 +577,7 @@ export default function OffersManager() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => toast({ title: "Coming Soon", description: "Edit comprehensive offers feature is in development" })}
+                                onClick={() => handleEditComprehensiveOffer(offer)}
                                 className="border-dim bg-surface hover:border-dimStrong"
                               >
                                 <Edit className="w-4 h-4" />

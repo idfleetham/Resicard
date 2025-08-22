@@ -1252,6 +1252,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update comprehensive offer
+  app.put("/api/offers/:id", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const offerId = req.params.id;
+      const updates = req.body;
+      
+      // Check if offer exists and merchant owns it
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant || merchant.id !== offer.merchantId) {
+        return res.status(403).json({ error: "Not authorized to update this offer" });
+      }
+      
+      const updatedOffer = await storage.updateOffer(offerId, updates);
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error('Error updating offer:', error);
+      res.status(500).json({ error: "Failed to update offer" });
+    }
+  });
+
+  // Toggle comprehensive offer active status
+  app.post("/api/offers/:id/toggle", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const offerId = req.params.id;
+      
+      // Check if offer exists and merchant owns it
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant || merchant.id !== offer.merchantId) {
+        return res.status(403).json({ error: "Not authorized to toggle this offer" });
+      }
+      
+      const updatedOffer = await storage.updateOffer(offerId, { active: !offer.active });
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error('Error toggling offer:', error);
+      res.status(500).json({ error: "Failed to toggle offer" });
+    }
+  });
+
   // Get redemptions for a merchant
   app.get("/api/redemptions/merchant/:merchantId?", authenticateToken, requireRole('merchant'), async (req, res) => {
     const merchantId = req.params.merchantId ? parseInt(req.params.merchantId) : req.user.id;
