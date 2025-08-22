@@ -1510,6 +1510,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add new tier
+  app.post("/api/loyalty/tiers", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { name, thresholdPoints, perks } = req.body;
+      
+      // Mock response - in real implementation, save to database
+      const newTier = {
+        id: `tier-${Date.now()}`,
+        name: name || "New Tier",
+        thresholdPoints: thresholdPoints || 0,
+        perks: perks || [{ type: "discount", value: 5, note: "Discount on purchases" }]
+      };
+
+      res.json({ success: true, tier: newTier });
+    } catch (error) {
+      console.error("Error adding tier:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update tier
+  app.put("/api/loyalty/tiers/:tierId", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { tierId } = req.params;
+      const { name, thresholdPoints, perks } = req.body;
+      
+      // Mock response - in real implementation, update in database
+      const updatedTier = {
+        id: tierId,
+        name,
+        thresholdPoints,
+        perks
+      };
+
+      res.json({ success: true, tier: updatedTier });
+    } catch (error) {
+      console.error("Error updating tier:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete tier
+  app.delete("/api/loyalty/tiers/:tierId", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { tierId } = req.params;
+      
+      // Mock response - in real implementation, delete from database
+      res.json({ success: true, deletedTierId: tierId });
+    } catch (error) {
+      console.error("Error deleting tier:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get customer loyalty balance
   app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
     try {

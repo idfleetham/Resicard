@@ -25,7 +25,12 @@ import {
   Coffee,
   Percent,
   Clock,
-  Shield
+  Shield,
+  Edit,
+  Save,
+  X,
+  Trash2,
+  Target
 } from "lucide-react";
 
 interface LoyaltyProgram {
@@ -49,6 +54,96 @@ interface LoyaltyProgram {
     costPoints: number;
     active: boolean;
   }>;
+}
+
+// TierEditor component for inline editing
+function TierEditor({ tier, index, onUpdate, onDelete }: {
+  tier: any;
+  index: number;
+  onUpdate: (tier: any) => void;
+  onDelete: () => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(tier.name);
+  const [editPoints, setEditPoints] = useState(tier.thresholdPoints);
+
+  const handleSave = () => {
+    onUpdate({
+      ...tier,
+      name: editName,
+      thresholdPoints: parseInt(editPoints.toString())
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditName(tier.name);
+    setEditPoints(tier.thresholdPoints);
+    setIsEditing(false);
+  };
+
+  const getTierColor = (index: number) => {
+    const colors = ['bg-orange-500', 'bg-gray-400', 'bg-yellow-500', 'bg-purple-500', 'bg-green-500'];
+    return colors[index % colors.length];
+  };
+
+  return (
+    <div className="p-4 rounded-lg border border-border-dim bg-surface/30 hover:bg-surface/40 transition-colors">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-1">
+          <div className={`w-4 h-4 rounded-full ${getTierColor(index)}`}></div>
+          {isEditing ? (
+            <div className="flex-1 grid grid-cols-2 gap-3">
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="bg-bg border-border-dim text-fg"
+                placeholder="Tier name"
+              />
+              <Input
+                type="number"
+                value={editPoints}
+                onChange={(e) => setEditPoints(parseInt(e.target.value) || 0)}
+                className="bg-bg border-border-dim text-fg"
+                placeholder="Points required"
+              />
+            </div>
+          ) : (
+            <div className="flex-1">
+              <h4 className="font-semibold text-fg">{tier.name}</h4>
+              <p className="text-sm text-soft">{tier.thresholdPoints}+ points required</p>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {tier.perks?.map((perk: any, i: number) => (
+            <Badge key={i} variant="outline" className="text-xs border-border-dim">
+              {perk.value}% off
+            </Badge>
+          ))}
+          {isEditing ? (
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={handleSave}>
+                <Save className="w-4 h-4 text-green-400" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="w-4 h-4 text-red-400" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onDelete} className="text-red-400 hover:text-red-300">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function LoyaltyDashboard() {
@@ -96,6 +191,97 @@ export default function LoyaltyDashboard() {
     }
   };
 
+  // Add tier mutation
+  const addTierMutation = useMutation({
+    mutationFn: async () => {
+      const newTier = {
+        name: `Tier ${(loyaltyProgram?.tiers.length || 0) + 1}`,
+        thresholdPoints: (loyaltyProgram?.tiers[loyaltyProgram.tiers.length - 1]?.thresholdPoints || 0) + 100,
+        perks: [{ type: "discount", value: 5, note: "Discount on purchases" }]
+      };
+      const response = await apiRequest("POST", "/api/loyalty/tiers", newTier);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/program"] });
+      toast({
+        title: "Tier Added",
+        description: "New loyalty tier has been created.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Add Failed",
+        description: "Failed to add new tier.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update tier mutation
+  const updateTierMutation = useMutation({
+    mutationFn: async (tier: any) => {
+      const response = await apiRequest("PUT", `/api/loyalty/tiers/${tier.id}`, tier);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/program"] });
+      toast({
+        title: "Tier Updated",
+        description: "Tier has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update tier.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete tier mutation
+  const deleteTierMutation = useMutation({
+    mutationFn: async (tierId: string) => {
+      const response = await apiRequest("DELETE", `/api/loyalty/tiers/${tierId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/program"] });
+      toast({
+        title: "Tier Deleted",
+        description: "Tier has been removed successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete tier.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddTier = () => {
+    addTierMutation.mutate();
+  };
+
+  const handleUpdateTier = (updatedTier: any) => {
+    updateTierMutation.mutate(updatedTier);
+  };
+
+  const handleDeleteTier = (tierId: string) => {
+    if (loyaltyProgram?.tiers.length && loyaltyProgram.tiers.length <= 1) {
+      toast({
+        title: "Cannot Delete",
+        description: "At least one tier must remain in the program.",
+        variant: "destructive",
+      });
+      return;
+    }
+    deleteTierMutation.mutate(tierId);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
@@ -141,7 +327,11 @@ export default function LoyaltyDashboard() {
             </Badge>
             <Switch
               checked={loyaltyProgram?.active || false}
-              onCheckedChange={handleToggleProgram}
+              onCheckedChange={(checked) => {
+                if (loyaltyProgram) {
+                  updateProgramMutation.mutate({ ...loyaltyProgram, active: checked });
+                }
+              }}
               disabled={updateProgramMutation.isPending}
             />
           </div>
@@ -416,32 +606,22 @@ export default function LoyaltyDashboard() {
             <CardContent className="p-6 pt-0">
               <div className="space-y-4">
                 {loyaltyProgram?.tiers.map((tier, index) => (
-                  <div key={tier.id} className="p-4 rounded-lg border-border-dim bg-surface/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full ${
-                          index === 0 ? 'bg-orange-500' : 
-                          index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
-                        }`}></div>
-                        <div>
-                          <h4 className="font-semibold text-fg">{tier.name}</h4>
-                          <p className="text-sm text-soft">{tier.thresholdPoints}+ points required</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {tier.perks.map((perk, i) => (
-                          <Badge key={i} variant="outline" className="text-xs">
-                            {perk.value}% off
-                          </Badge>
-                        ))}
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </div>
-                    </div>
-                  </div>
+                  <TierEditor 
+                    key={tier.id} 
+                    tier={tier} 
+                    index={index}
+                    onUpdate={(updatedTier) => handleUpdateTier(updatedTier)}
+                    onDelete={() => handleDeleteTier(tier.id)}
+                  />
                 ))}
-                <Button variant="outline" className="w-full border-dashed border-dim">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-dashed border-border-dim hover:bg-surface/50"
+                  onClick={handleAddTier}
+                  disabled={addTierMutation.isPending}
+                >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add New Tier
+                  {addTierMutation.isPending ? "Adding..." : "Add New Tier"}
                 </Button>
               </div>
             </CardContent>
