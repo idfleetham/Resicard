@@ -415,8 +415,18 @@ export default function ResidentDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">My Voucher Wallet</h2>
-                <div className="text-sm text-muted-foreground">
-                  {activeVouchers.length} active • {usedVouchers.length} used
+                <div className="flex items-center gap-4">
+                  <Button 
+                    variant="outline"
+                    className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/20"
+                    onClick={() => window.location.href = '/wallet/add'}
+                  >
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    Add to Apple Wallet
+                  </Button>
+                  <div className="text-sm text-muted-foreground">
+                    {activeVouchers.length} active • {usedVouchers.length} used
+                  </div>
                 </div>
               </div>
 
