@@ -328,6 +328,8 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   locations: z.array(z.string()).optional(),
   minBasket: z.number().optional(),
   maxDiscount: z.number().optional(),
+  // Override type field to use new enum values
+  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
 });
 
 export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({
