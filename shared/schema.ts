@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -473,5 +473,139 @@ export type VoucherWithDeal = Voucher & {
 export type UserRole = 'resident' | 'merchant' | 'admin';
 
 export type SubscriptionType = 'individual' | 'family';
+
+// Loyalty Program Tables
+export const loyaltyPrograms = pgTable("loyalty_programs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  model: text("model").$type<"points"|"stamps"|"hybrid">().default("points"),
+  pointsPerCurrency: integer("points_per_currency").default(10), // e.g. 10 points per £1
+  minBasketEarn: numeric("min_basket_earn", { precision: 10, scale: 2 }).default("0.00"),
+  earnCooldownMinutes: integer("earn_cooldown_minutes").default(30),
+  dailyEarnCap: integer("daily_earn_cap").default(3), // per user per day
+  stackingAllowed: boolean("stacking_allowed").default(false),
+  expiryDays: integer("expiry_days"), // rewards expiry, optional
+  createdAt: timestamp("created_at").defaultNow(),
+  active: boolean("active").default(true),
+});
+
+export const loyaltyTiers = pgTable("loyalty_tiers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // Bronze, Silver, Gold
+  thresholdPoints: integer("threshold_points").notNull(), // or stamps
+  rollingDays: integer("rolling_days").default(90), // 90-day rolling window
+  perks: jsonb("perks"), // [{type:"percentOff", value:10, note:"Mon–Thu"}]
+  sortOrder: integer("sort_order").default(0),
+});
+
+export const loyaltyBalances = pgTable("loyalty_balances", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").default(0),
+  stamps: integer("stamps").default(0),
+  tierId: uuid("tier_id").references(() => loyaltyTiers.id), // current tier
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const loyaltyEvents = pgTable("loyalty_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id),
+  type: text("type").$type<"earn_points"|"earn_stamp"|"redeem_reward"|"adjust"|"tier_change">().notNull(),
+  amount: integer("amount"), // points or stamps change (+/-)
+  metadata: jsonb("metadata"), // {basket, staffUserId, deviceId, source:"qr|pin"}
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const loyaltyRewards = pgTable("loyalty_rewards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // e.g., Free Coffee
+  costPoints: integer("cost_points"), // for points model
+  costStamps: integer("cost_stamps"), // for stamps model
+  terms: text("terms"),
+  active: boolean("active").default(true),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations for loyalty system
+export const loyaltyProgramRelations = relations(loyaltyPrograms, ({ one, many }) => ({
+  merchant: one(merchants, {
+    fields: [loyaltyPrograms.merchantId],
+    references: [merchants.id]
+  }),
+  tiers: many(loyaltyTiers),
+  rewards: many(loyaltyRewards),
+  events: many(loyaltyEvents),
+  balances: many(loyaltyBalances),
+}));
+
+export const loyaltyTierRelations = relations(loyaltyTiers, ({ one, many }) => ({
+  program: one(loyaltyPrograms, {
+    fields: [loyaltyTiers.programId],
+    references: [loyaltyPrograms.id]
+  }),
+  balances: many(loyaltyBalances),
+}));
+
+export const loyaltyBalanceRelations = relations(loyaltyBalances, ({ one }) => ({
+  merchant: one(merchants, {
+    fields: [loyaltyBalances.merchantId],
+    references: [merchants.id]
+  }),
+  user: one(users, {
+    fields: [loyaltyBalances.userId],
+    references: [users.id]
+  }),
+  tier: one(loyaltyTiers, {
+    fields: [loyaltyBalances.tierId],
+    references: [loyaltyTiers.id]
+  }),
+}));
+
+export const loyaltyEventRelations = relations(loyaltyEvents, ({ one }) => ({
+  merchant: one(merchants, {
+    fields: [loyaltyEvents.merchantId],
+    references: [merchants.id]
+  }),
+  user: one(users, {
+    fields: [loyaltyEvents.userId],
+    references: [users.id]
+  }),
+  program: one(loyaltyPrograms, {
+    fields: [loyaltyEvents.programId],
+    references: [loyaltyPrograms.id]
+  }),
+}));
+
+export const loyaltyRewardRelations = relations(loyaltyRewards, ({ one }) => ({
+  program: one(loyaltyPrograms, {
+    fields: [loyaltyRewards.programId],
+    references: [loyaltyPrograms.id]
+  }),
+}));
+
+// Loyalty types
+export type LoyaltyProgram = typeof loyaltyPrograms.$inferSelect;
+export type InsertLoyaltyProgram = typeof loyaltyPrograms.$inferInsert;
+export type LoyaltyTier = typeof loyaltyTiers.$inferSelect;
+export type InsertLoyaltyTier = typeof loyaltyTiers.$inferInsert;
+export type LoyaltyBalance = typeof loyaltyBalances.$inferSelect;
+export type InsertLoyaltyBalance = typeof loyaltyBalances.$inferInsert;
+export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
+export type InsertLoyaltyEvent = typeof loyaltyEvents.$inferInsert;
+export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
+export type InsertLoyaltyReward = typeof loyaltyRewards.$inferInsert;
+
+// Loyalty schemas
+export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms);
+export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers);
+export const insertLoyaltyBalanceSchema = createInsertSchema(loyaltyBalances);
+export const insertLoyaltyEventSchema = createInsertSchema(loyaltyEvents);
+export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards);
 export type SubscriptionPlan = 'monthly' | 'annual';
 export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';

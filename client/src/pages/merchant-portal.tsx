@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,9 @@ import {
   Archive,
   Play,
   Pause,
-  Building2
+  Building2,
+  Star,
+  Gift
 } from "lucide-react";
 
 // Import components for each tab
@@ -32,6 +34,7 @@ import QRRedemption from "../components/merchant/qr-redemption";
 import BillingPreview from "../components/merchant/billing-preview";
 import TeamManagement from "../components/merchant/team-management";
 import MerchantSettings from "../components/merchant/merchant-settings";
+import { StaffEarningTool } from "../components/loyalty/staff-earning-tool";
 
 export default function MerchantPortal() {
   const { user, isLoading, logout } = useAuth();
@@ -140,7 +143,7 @@ export default function MerchantPortal() {
         {/* Main Content */}
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 bg-surface border-dim">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-dim">
             <TabsTrigger value="offers" className="flex items-center space-x-2 data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
@@ -152,6 +155,10 @@ export default function MerchantPortal() {
             <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
               <QrCode className="w-4 h-4" />
               <span className="hidden sm:inline">QR Scan</span>
+            </TabsTrigger>
+            <TabsTrigger value="loyalty" className="flex items-center space-x-2 data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+              <Star className="w-4 h-4" />
+              <span className="hidden sm:inline">Loyalty</span>
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center space-x-2 data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
               <CreditCard className="w-4 h-4" />
@@ -177,6 +184,139 @@ export default function MerchantPortal() {
 
           <TabsContent value="qr-redemption" className="mt-6">
             <QRRedemption />
+          </TabsContent>
+
+          <TabsContent value="loyalty" className="mt-6">
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Star className="w-5 h-5 text-yellow-400" />
+                      Loyalty Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">Active Members</span>
+                        <span className="font-semibold">247</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">Points Earned</span>
+                        <span className="font-semibold">12,450</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">Rewards Claimed</span>
+                        <span className="font-semibold">89</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-green-400" />
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <StaffEarningTool 
+                        merchantId={user?.id || ""}
+                        program={{
+                          model: "points",
+                          pointsPerCurrency: 10,
+                          minBasketEarn: 5.00,
+                          earnCooldownMinutes: 30,
+                          dailyEarnCap: 3
+                        }}
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => navigate("/merchant/loyalty")}
+                      >
+                        Full Dashboard
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Program Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                        Active
+                      </Badge>
+                      <p className="text-sm text-soft">Points Model</p>
+                      <p className="text-xs text-soft">10 points per £1 spent</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">This Month</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">New Members</span>
+                        <span className="font-semibold text-green-400">+24</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">Repeat Visits</span>
+                        <span className="font-semibold text-blue-400">156</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-soft text-sm">Revenue Impact</span>
+                        <span className="font-semibold text-purple-400">£2,340</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Activity */}
+              <Card className="bg-card/90 border border-dim">
+                <CardHeader>
+                  <CardTitle>Recent Loyalty Activity</CardTitle>
+                  <CardDescription>Latest customer loyalty interactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { customer: "Sarah J.", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 min ago" },
+                      { customer: "Mike C.", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 min ago" },
+                      { customer: "Emily D.", action: "Earned 40 points", amount: "£4.00 purchase", time: "1 hour ago" },
+                    ].map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                            {activity.customer.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-fg">{activity.customer}</p>
+                            <p className="text-sm text-soft">{activity.action}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-fg">{activity.amount}</p>
+                          <p className="text-xs text-soft">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="billing" className="mt-6">

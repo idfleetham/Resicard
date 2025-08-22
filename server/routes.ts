@@ -1468,6 +1468,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // LOYALTY PROGRAM ENDPOINTS (Mock implementation for now)
+  
+  // Get merchant's loyalty program
+  app.get("/api/loyalty/program", authenticateToken, async (req, res) => {
+    try {
+      // Mock response until DB is set up
+      res.json({
+        id: "mock-program-1",
+        merchantId: req.user.merchantId || req.user.id,
+        model: "points",
+        pointsPerCurrency: 10,
+        minBasketEarn: 5.00,
+        earnCooldownMinutes: 30,
+        dailyEarnCap: 3,
+        active: true,
+        tiers: [
+          { id: "bronze", name: "Bronze", thresholdPoints: 0, perks: [{ type: "percentOff", value: 5 }] },
+          { id: "silver", name: "Silver", thresholdPoints: 100, perks: [{ type: "percentOff", value: 10 }] },
+          { id: "gold", name: "Gold", thresholdPoints: 500, perks: [{ type: "percentOff", value: 15 }] }
+        ],
+        rewards: [
+          { id: "reward-1", name: "Free Coffee", costPoints: 50, active: true },
+          { id: "reward-2", name: "20% Off Meal", costPoints: 100, active: true }
+        ]
+      });
+    } catch (error) {
+      console.error('Get loyalty program error:', error);
+      res.status(500).json({ error: "Failed to fetch loyalty program" });
+    }
+  });
+
+  // Create/Update loyalty program
+  app.post("/api/loyalty/program", authenticateToken, async (req, res) => {
+    try {
+      // Mock response
+      res.json({ success: true, program: req.body });
+    } catch (error) {
+      console.error('Create loyalty program error:', error);
+      res.status(500).json({ error: "Failed to save loyalty program" });
+    }
+  });
+
+  // Get customer loyalty balance
+  app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
+    try {
+      // Mock customer balance
+      res.json({
+        points: 75,
+        stamps: 3,
+        tier: { name: "Silver", perks: [{ type: "percentOff", value: 10 }] }
+      });
+    } catch (error) {
+      console.error('Get loyalty balance error:', error);
+      res.status(500).json({ error: "Failed to fetch loyalty balance" });
+    }
+  });
+
+  // Earn points/stamps (staff endpoint)
+  app.post("/api/loyalty/earn", authenticateToken, async (req, res) => {
+    try {
+      const { amount, type } = req.body;
+      
+      // Mock earning logic
+      const pointsAdded = type === 'purchase' ? Math.floor(amount * 10) : 0;
+      const stampsAdded = type === 'visit' ? 1 : 0;
+      
+      res.json({ 
+        success: true, 
+        pointsAdded, 
+        stampsAdded,
+        newBalance: { points: 85, stamps: 4 }
+      });
+    } catch (error) {
+      console.error('Earn loyalty error:', error);
+      res.status(500).json({ error: "Failed to process earning" });
+    }
+  });
+
+  // Redeem reward
+  app.post("/api/loyalty/redeem", authenticateToken, async (req, res) => {
+    try {
+      const { rewardId } = req.body;
+      
+      // Mock redemption
+      res.json({ 
+        success: true, 
+        message: "Reward redeemed successfully!",
+        pointsDeducted: 50
+      });
+    } catch (error) {
+      console.error('Redeem reward error:', error);
+      res.status(500).json({ error: "Failed to redeem reward" });
+    }
+  });
+
+  // Get loyalty events/history  
+  app.get("/api/loyalty/events/:merchantId", authenticateToken, async (req, res) => {
+    try {
+      // Mock events
+      res.json([
+        {
+          id: "event-1",
+          type: "earn_points",
+          amount: 25,
+          createdAt: new Date(Date.now() - 86400000), // 1 day ago
+          metadata: { purchase: 2.50 }
+        },
+        {
+          id: "event-2", 
+          type: "redeem_reward",
+          amount: -50,
+          createdAt: new Date(Date.now() - 172800000), // 2 days ago
+          metadata: { rewardName: "Free Coffee" }
+        }
+      ]);
+    } catch (error) {
+      console.error('Get loyalty events error:', error);
+      res.status(500).json({ error: "Failed to fetch loyalty events" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

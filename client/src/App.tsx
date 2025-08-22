@@ -16,6 +16,7 @@ import MerchantPortal from "@/pages/merchant-portal";
 import AdminDashboard from "@/pages/admin-dashboard";
 import EditProfile from "@/pages/edit-profile";
 import OfferDetails from "@/pages/offer-details";
+import LoyaltyDashboard from "@/pages/loyalty-dashboard";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/merchant" component={MerchantPortal} />
       <Route path="/merchant-portal" component={MerchantPortal} />
       <Route path="/merchant/offers/:id" component={OfferDetails} />
+      <Route path="/merchant/loyalty" component={LoyaltyDashboard} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/edit-profile" component={EditProfile} />
       <Route component={NotFound} />

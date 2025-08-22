@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DigitalMembershipCard from "@/components/digital-membership-card";
 import DocumentVerification from "@/components/document-verification";
 import SubscriptionManagement from "@/components/subscription-management";
+import { CustomerLoyaltyCard } from "@/components/loyalty/customer-loyalty-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function ResidentDashboard() {
