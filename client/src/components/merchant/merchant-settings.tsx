@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
+import ReactCrop, { centerCrop, makeAspectCrop, type Crop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,12 @@ export default function MerchantSettings() {
   const [activeTab, setActiveTab] = useState("business");
   const [apiKey] = useState("sk_live_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>('');
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<Crop>();
+  const [showCropper, setShowCropper] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const businessForm = useForm<BusinessDetailsData>({
     resolver: zodResolver(businessDetailsSchema),
@@ -164,10 +172,93 @@ export default function MerchantSettings() {
     updateHoursMutation.mutate(data);
   };
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      uploadLogoMutation.mutate(file);
+  const selectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImgSrc(reader.result?.toString() || '');
+        setShowCropper(true);
+      });
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const crop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        1, // Square aspect ratio
+        width,
+        height
+      ),
+      width,
+      height
+    );
+    setCrop(crop);
+  }, []);
+
+  const getCroppedImg = useCallback(() => {
+    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
+      return;
+    }
+
+    const image = imgRef.current;
+    const canvas = previewCanvasRef.current;
+    const crop = completedCrop;
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) return;
+
+    const pixelRatio = window.devicePixelRatio;
+    canvas.width = crop.width * pixelRatio * scaleX;
+    canvas.height = crop.height * pixelRatio * scaleY;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width * scaleX,
+      crop.height * scaleY
+    );
+
+    return new Promise<File>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'logo.png', { type: 'image/png' });
+          resolve(file);
+        }
+      }, 'image/png', 1);
+    });
+  }, [completedCrop]);
+
+  const handleCropComplete = async () => {
+    try {
+      const croppedFile = await getCroppedImg();
+      if (croppedFile) {
+        uploadLogoMutation.mutate(croppedFile);
+        setShowCropper(false);
+        setImgSrc('');
+      }
+    } catch (error) {
+      toast({
+        title: "Error processing image",
+        description: "Failed to crop the image",
+        variant: "destructive",
+      });
     }
   };
 
@@ -466,64 +557,7 @@ export default function MerchantSettings() {
 
 
 
-          {activeTab === "logo" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Camera className="w-5 h-5" />
-                  <span>Logo & Branding</span>
-                </CardTitle>
-                <CardDescription>
-                  Upload your business logo and manage branding
-                </CardDescription>
-              </CardHeader>
-              <CardBody className="space-y-6">
-                <div>
-                  <h4 className="font-medium mb-4">Current Logo</h4>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain rounded-lg" />
-                      ) : (
-                        <Camera className="w-8 h-8 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label htmlFor="logo-upload">
-                        <Button asChild>
-                          <span>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload Logo
-                          </span>
-                        </Button>
-                      </label>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Recommended: Square image, max 2MB
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Camera className="w-4 h-4 text-yellow-600" />
-                    <span className="font-medium text-yellow-800">Logo Upload Placeholder</span>
-                  </div>
-                  <p className="text-sm text-yellow-700">
-                    Logo upload functionality is a placeholder in this demo. In a full implementation, 
-                    this would integrate with cloud storage for secure file uploads.
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
-          )}
 
           {activeTab === "api" && (
             <Card>
@@ -731,7 +765,7 @@ export default function MerchantSettings() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={handleLogoUpload}
+                          onChange={selectFile}
                           className="hidden"
                           id="logo-upload"
                         />
@@ -743,14 +777,82 @@ export default function MerchantSettings() {
                           Upload Logo
                         </label>
                         <p className="text-sm text-slate-400 mt-2">
-                          Upload a square image (recommended: 400x400px, max 2MB)
+                          Upload any image - you'll be able to crop and resize it
                         </p>
+                        {uploadLogoMutation.isPending && (
+                          <div className="flex items-center text-sm text-blue-400 mt-2">
+                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                            Uploading logo...
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 </CardBody>
               </Card>
             </motion.div>
+          )}
+
+          {/* Image Cropper Modal */}
+          {showCropper && imgSrc && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-slate-900 rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-auto border border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-100 mb-4">Crop Your Logo</h3>
+                <div className="space-y-4">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(_, percentCrop) => setCrop(percentCrop)}
+                    onComplete={(c) => setCompletedCrop(c)}
+                    aspect={1}
+                    className="max-w-full"
+                  >
+                    <img
+                      ref={imgRef}
+                      alt="Crop me"
+                      src={imgSrc}
+                      onLoad={onImageLoad}
+                      className="max-w-full max-h-[60vh]"
+                    />
+                  </ReactCrop>
+                  
+                  {/* Hidden canvas for cropping */}
+                  <canvas
+                    ref={previewCanvasRef}
+                    className="hidden"
+                  />
+                  
+                  <div className="flex items-center justify-between pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCropper(false);
+                        setImgSrc('');
+                      }}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCropComplete}
+                      disabled={!completedCrop || uploadLogoMutation.isPending}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                    >
+                      {uploadLogoMutation.isPending ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload Cropped Logo
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {activeTab === "api" && (
