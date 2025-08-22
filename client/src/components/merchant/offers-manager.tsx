@@ -57,7 +57,11 @@ export default function OffersManager() {
       category: deal.category,
       title: deal.title,
       description: deal.description,
-      discountText: getDiscountText(deal),
+      discountText: deal.discountType === 'percentage' ? `${deal.discountValue}% off` :
+                   deal.discountType === 'fixed' ? `£${deal.discountValue} off` :
+                   deal.discountType === 'bogo' ? 'Buy One Get One' :
+                   deal.discountType === 'free_item' ? 'Free Item' : 
+                   String(deal.discountValue),
       usageCount: deal.usageCount || 0,
       usageLimit: deal.usageLimit,
       expiryDate: deal.expiryDate,
