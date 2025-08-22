@@ -34,7 +34,7 @@ const offerSchema = z.object({
   // A) Core & pricing
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  type: z.enum(["percent", "fixed", "set_menu", "bogo"]),
+  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
   percentOff: z.number().min(1).max(100).optional(),
   fixedPrice: z.number().min(0).optional(),
   originalValue: z.number().min(0).optional(),
@@ -95,6 +95,9 @@ const offerSchema = z.object({
   // H) Fraud & safety
   singleUse: z.boolean().default(true),
   deviceFingerprinting: z.boolean().default(true),
+  
+  // I) Meal periods for Food & Drink
+  mealPeriods: z.array(z.string()).optional(),
 });
 
 type OfferFormData = z.infer<typeof offerSchema>;
