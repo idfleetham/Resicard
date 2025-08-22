@@ -57,12 +57,15 @@ export const useOffer = (id: string) => {
   return useQuery({
     queryKey: ["merchant", "offers", id],
     queryFn: async () => {
-      // Try comprehensive offers first, then fall back to simple deals
-      try {
+      // Check if id looks like a UUID (comprehensive offer) or integer (simple deal)
+      const isUUID = id.includes('-') && id.length === 36;
+      
+      if (isUUID) {
+        // Try comprehensive offers endpoint for UUID ids
         const response = await apiRequest('GET', `/api/offers/${id}`);
         return response.json();
-      } catch (error) {
-        // Fallback to simple deals endpoint
+      } else {
+        // Use simple deals endpoint for integer ids
         const response = await apiRequest('GET', `/api/merchant/offers/${id}`);
         return response.json();
       }

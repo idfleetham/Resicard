@@ -547,14 +547,28 @@ export default function OffersManager() {
                             </>
                           )}
                           {offer.type === 'comprehensive' && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => toast({ title: "Coming Soon", description: "Edit comprehensive offers feature is in development" })}
-                              className="border-dim bg-surface hover:border-dimStrong"
-                            >
-                              <Settings className="w-4 h-4" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toast({ title: "Coming Soon", description: "Pause comprehensive offers feature is in development" })}
+                                className="border-dim bg-surface hover:border-dimStrong"
+                              >
+                                {offer.isActive ? (
+                                  <Pause className="w-4 h-4" />
+                                ) : (
+                                  <Play className="w-4 h-4" />
+                                )}
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => toast({ title: "Coming Soon", description: "Edit comprehensive offers feature is in development" })}
+                                className="border-dim bg-surface hover:border-dimStrong"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </>
                           )}
                           <Button 
                             variant="outline" 

@@ -72,10 +72,10 @@ export default function OfferDetails() {
       </div>
 
       {/* Offer Details Card */}
-      <Card className="bg-card/90 border-dim shadow-elev-1">
-        <CardHeader className="border-b border-dim">
-          <CardTitle className="text-fg">Offer Information</CardTitle>
-          <CardDescription className="text-soft">Complete details about this offer</CardDescription>
+      <Card className="bg-gradient-to-br from-brand1/20 to-brand2/20 border-dim shadow-elev-1 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-brand1 to-brand2 text-white border-b border-dim">
+          <CardTitle className="text-white font-bold">Offer Information</CardTitle>
+          <CardDescription className="text-white/90">Complete details about this offer</CardDescription>
         </CardHeader>
         <CardBody className="space-y-4 p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,28 +114,28 @@ export default function OfferDetails() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-card/90 border-dim shadow-elev-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="bg-gradient-to-br from-brand1/10 to-brand2/10 border-dim shadow-elev-1 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-brand1/20 to-brand2/20">
             <CardTitle className="text-sm font-medium text-fg">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-soft" />
+            <Eye className="h-4 w-4 text-brand1" />
           </CardHeader>
           <CardBody>
             <div className="text-2xl font-bold text-fg">{offer.viewCount || 0}</div>
           </CardBody>
         </Card>
-        <Card className="bg-card/90 border-dim shadow-elev-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="bg-gradient-to-br from-brand1/10 to-brand2/10 border-dim shadow-elev-1 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-brand1/20 to-brand2/20">
             <CardTitle className="text-sm font-medium text-fg">Redemptions</CardTitle>
-            <Users className="h-4 w-4 text-soft" />
+            <Users className="h-4 w-4 text-brand1" />
           </CardHeader>
           <CardBody>
             <div className="text-2xl font-bold text-fg">{offer.usageCount || 0}</div>
           </CardBody>
         </Card>
-        <Card className="bg-card/90 border-dim shadow-elev-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="bg-gradient-to-br from-brand1/10 to-brand2/10 border-dim shadow-elev-1 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-brand1/20 to-brand2/20">
             <CardTitle className="text-sm font-medium text-fg">Usage Rate</CardTitle>
-            <DollarSign className="h-4 w-4 text-soft" />
+            <DollarSign className="h-4 w-4 text-brand1" />
           </CardHeader>
           <CardBody>
             <div className="text-2xl font-bold text-fg">
@@ -143,10 +143,10 @@ export default function OfferDetails() {
             </div>
           </CardBody>
         </Card>
-        <Card className="bg-card/90 border-dim shadow-elev-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="bg-gradient-to-br from-brand1/10 to-brand2/10 border-dim shadow-elev-1 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-brand1/20 to-brand2/20">
             <CardTitle className="text-sm font-medium text-fg">Days Until Expiry</CardTitle>
-            <Calendar className="h-4 w-4 text-soft" />
+            <Calendar className="h-4 w-4 text-brand1" />
           </CardHeader>
           <CardBody>
             <div className="text-2xl font-bold text-fg">
@@ -157,10 +157,10 @@ export default function OfferDetails() {
       </div>
 
       {/* Recent Redemptions */}
-      <Card className="bg-card/90 border-dim shadow-elev-1">
-        <CardHeader className="border-b border-dim">
-          <CardTitle className="text-fg">Recent Redemptions</CardTitle>
-          <CardDescription className="text-soft">Latest voucher redemptions for this offer</CardDescription>
+      <Card className="bg-gradient-to-br from-brand1/20 to-brand2/20 border-dim shadow-elev-1 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-brand1 to-brand2 text-white border-b border-dim">
+          <CardTitle className="text-white font-bold">Recent Redemptions</CardTitle>
+          <CardDescription className="text-white/90">Latest voucher redemptions for this offer</CardDescription>
         </CardHeader>
         <CardBody className="p-6">
           <div className="text-center py-8 text-soft">
