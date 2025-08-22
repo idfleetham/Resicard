@@ -14,6 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { generateCustomerAlias } from "@shared/schema";
 import { useLocation } from "wouter";
+import Hero from "@/ui/Hero";
+import MetricTile from "@/ui/MetricTile";
+import { GradientPanel } from "@/ui/GradientPanel";
+import { StatCard } from "@/ui/StatCard";
 import { 
   Star, 
   Award, 
@@ -383,32 +387,20 @@ export default function LoyaltyDashboard() {
 
       <div className="mx-auto w-full max-w-7xl px-6 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="card card-hover p-8 mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="p-4 rounded-2xl grad-primary">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-fg mb-2">Loyalty Program</h1>
-                <p className="text-muted text-lg">Build lasting customer relationships through rewards</p>
-              </div>
-            </div>
-            <div className="text-right space-y-2">
+        <Hero 
+          title="Loyalty Program"
+          subtitle="Build lasting customer relationships through rewards and engagement"
+          right={
+            <div className="text-right space-y-2 text-white/90">
               <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-muted" />
-                <span className="text-2xl font-bold text-fg">12</span>
-                <span className="text-muted">Active Members</span>
+                <Users className="w-5 h-5" />
+                <span className="text-2xl font-bold">12</span>
+                <span>Active Members</span>
               </div>
-              <p className="text-sm text-muted">Configure tiers, rewards, and engagement</p>
+              <p className="text-sm text-white/60">Configure tiers, rewards, and engagement</p>
             </div>
-          </div>
-        </motion.div>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <motion.div
@@ -480,24 +472,13 @@ export default function LoyaltyDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -4 }}
-                className="group"
               >
-                <div className="card card-hover p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-muted text-sm font-medium">{stat.title}</p>
-                      <p className="text-3xl font-bold text-fg mt-2 mb-3">{stat.value}</p>
-                      <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
-                        <TrendingUp className="w-3 h-3" />
-                        {stat.change}
-                      </div>
-                    </div>
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <stat.icon className="w-7 h-7 text-white" />
-                    </div>
-                  </div>
-                </div>
+                <MetricTile
+                  label={stat.title}
+                  value={<span className="text-fg">{stat.value}</span>}
+                  delta={stat.change}
+                  icon={<stat.icon className="w-5 h-5 text-white" />}
+                />
               </motion.div>
             ))}
           </div>
@@ -507,65 +488,62 @@ export default function LoyaltyDashboard() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="card card-hover p-8"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
-                <Zap className="w-5 h-5 text-indigo-400" />
+            <GradientPanel>
+              <div className="flex items-center gap-3 mb-6">
+                <Zap className="w-6 h-6 text-white" />
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Quick Actions</h3>
+                  <p className="text-white/70 text-sm">Streamline your loyalty program management</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold text-fg">Quick Actions</h3>
-                <p className="text-muted text-sm">Streamline your loyalty program management</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("tiers")}
+                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+                >
+                  <Crown className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">Manage Tiers</div>
+                    <div className="text-xs opacity-80">Configure tier benefits</div>
+                  </div>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("members")}
+                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+                >
+                  <Users className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">View Members</div>
+                    <div className="text-xs opacity-80">Track customer progress</div>
+                  </div>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("rewards")}
+                  className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
+                >
+                  <Gift className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">Create Rewards</div>
+                    <div className="text-xs opacity-80">Add new incentives</div>
+                  </div>
+                </motion.button>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab("tiers")}
-                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
-              >
-                <Crown className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                <div>
-                  <div className="font-semibold">Manage Tiers</div>
-                  <div className="text-xs opacity-80">Configure tier benefits</div>
-                </div>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab("members")}
-                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
-              >
-                <Users className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                <div>
-                  <div className="font-semibold">View Members</div>
-                  <div className="text-xs opacity-80">Track customer progress</div>
-                </div>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab("rewards")}
-                className="btn btn-primary h-auto p-6 flex-col gap-3 text-left group"
-              >
-                <Gift className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                <div>
-                  <div className="font-semibold">Create Rewards</div>
-                  <div className="text-xs opacity-80">Add new incentives</div>
-                </div>
-              </motion.button>
-            </div>
+            </GradientPanel>
           </motion.div>
 
           {/* Program Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-orange-600/20 via-yellow-600/15 to-amber-600/10 rounded-t-2xl border-b border-border-dim">
-                <CardTitle className="text-fg">Tier Distribution</CardTitle>
-                <CardDescription className="text-soft">Customer distribution across tiers</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 pt-0">
+            <StatCard 
+              title="Tier Distribution"
+              subtitle="Customer distribution across tiers"
+            >
                 <div className="space-y-4">
                   {loyaltyProgram?.tiers.map((tier, index) => (
                     <div key={tier.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
@@ -586,46 +564,39 @@ export default function LoyaltyDashboard() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+            </StatCard>
 
-            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-green-600/20 via-emerald-600/15 to-teal-600/10 rounded-t-2xl border-b border-border-dim">
-                <CardTitle className="text-fg">Popular Rewards</CardTitle>
-                <CardDescription className="text-soft">Most redeemed rewards this month</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 pt-0">
-                <div className="space-y-4">
-                  {loyaltyProgram?.rewards.slice(0, 3).map((reward, index) => (
-                    <div key={reward.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
-                      <div className="flex items-center gap-3">
-                        <Coffee className="w-5 h-5 text-brown-500" />
-                        <div>
-                          <p className="font-medium text-fg">{reward.name}</p>
-                          <p className="text-xs text-soft">{reward.costPoints} points</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-fg">{Math.floor(Math.random() * 50) + 10}</p>
-                        <p className="text-xs text-soft">redeemed</p>
+            <StatCard 
+              title="Popular Rewards"
+              subtitle="Most redeemed rewards this month"
+            >
+              <div className="space-y-4">
+                {loyaltyProgram?.rewards.slice(0, 3).map((reward, index) => (
+                  <div key={reward.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
+                    <div className="flex items-center gap-3">
+                      <Coffee className="w-5 h-5 text-brown-500" />
+                      <div>
+                        <p className="font-medium text-fg">{reward.name}</p>
+                        <p className="text-xs text-soft">{reward.costPoints} points</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="text-right">
+                      <p className="font-semibold text-fg">{Math.floor(Math.random() * 50) + 10}</p>
+                      <p className="text-xs text-soft">redeemed</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </StatCard>
           </div>
         </TabsContent>
 
         <TabsContent value="setup" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-indigo-600/20 via-blue-600/15 to-cyan-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg">Program Configuration</CardTitle>
-              <CardDescription className="text-soft">
-                Configure your loyalty program rules and earning mechanics
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0 space-y-6">
+          <StatCard 
+            title="Program Configuration"
+            subtitle="Configure your loyalty program rules and earning mechanics"
+          >
+            <div className="space-y-6">
               {/* Program Model */}
               <div className="space-y-3">
                 <Label className="text-fg font-medium">Program Model</Label>
@@ -703,21 +674,14 @@ export default function LoyaltyDashboard() {
               >
                 {updateProgramMutation.isPending ? "Saving..." : "Save Configuration"}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </StatCard>
 
           {/* Tiers Configuration */}
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-yellow-600/20 via-orange-600/15 to-red-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg flex items-center gap-2">
-                <Crown className="w-5 h-5" />
-                Customer Tiers
-              </CardTitle>
-              <CardDescription className="text-soft">
-                Set up tiers with point thresholds and exclusive perks
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
+          <StatCard 
+            title="Customer Tiers"
+            subtitle="Set up tiers with point thresholds and exclusive perks"
+          >
               <div className="space-y-4">
                 {loyaltyProgram?.tiers.map((tier, index) => (
                   <TierEditor 
@@ -738,27 +702,22 @@ export default function LoyaltyDashboard() {
                   {addTierMutation.isPending ? "Adding..." : "Add New Tier"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </StatCard>
         </TabsContent>
 
         <TabsContent value="rewards" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-pink-600/20 via-purple-600/15 to-indigo-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg flex items-center gap-2">
-                <Gift className="w-5 h-5" />
-                Rewards Catalog
-              </CardTitle>
-              <CardDescription className="text-soft">
-                Manage rewards that customers can redeem with points or stamps
-              </CardDescription>
-              <Dialog open={showAddReward} onOpenChange={setShowAddReward}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add New Reward
-                  </Button>
-                </DialogTrigger>
+          <StatCard 
+            title="Rewards Catalog"
+            subtitle="Manage rewards that customers can redeem with points or stamps"
+          >
+            <div className="mb-6">
+            <Dialog open={showAddReward} onOpenChange={setShowAddReward}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Reward
+                </Button>
+              </DialogTrigger>
                 <DialogContent className="bg-card border-border-dim">
                   <DialogHeader>
                     <DialogTitle className="text-fg">Create New Reward</DialogTitle>
@@ -817,8 +776,7 @@ export default function LoyaltyDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
+            </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {loyaltyProgram?.rewards.map((reward) => (
                   <div key={reward.id} className="p-4 rounded-lg border-border-dim bg-surface/30">
@@ -839,22 +797,14 @@ export default function LoyaltyDashboard() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+          </StatCard>
         </TabsContent>
 
         <TabsContent value="staff" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-purple-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Staff Earning Tool
-              </CardTitle>
-              <CardDescription className="text-soft">
-                Award points manually to customers for purchases or special events
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
+          <StatCard 
+            title="Staff Earning Tool"
+            subtitle="Award points manually to customers for purchases or special events"
+          >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="space-y-3">
@@ -914,20 +864,12 @@ export default function LoyaltyDashboard() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </StatCard>
 
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-green-600/20 via-emerald-600/15 to-teal-600/10 rounded-t-2xl border-b border-border-dim">
-              <CardTitle className="text-fg flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription className="text-soft">
-                Latest loyalty transactions and awards
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
+          <StatCard 
+            title="Recent Activity"
+            subtitle="Latest loyalty transactions and awards"
+          >
               <div className="space-y-3">
                 {[
                   { id: 201, username: "john_d", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
@@ -956,8 +898,7 @@ export default function LoyaltyDashboard() {
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
+          </StatCard>
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">
