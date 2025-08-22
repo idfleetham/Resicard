@@ -115,14 +115,18 @@ export default function LoyaltyDashboard() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6 p-6"
-    >
+    <div data-theme="dim" className="min-h-screen bg-bg text-fg">
+      <div className="pointer-events-none absolute inset-0 -z-10
+          bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6 p-6"
+      >
       {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-purple-500/25 via-blue-500/20 to-teal-500/25 border border-border-dim p-6 shadow-elev-1">
+      <div className="rounded-2xl bg-gradient-to-r from-indigo-600/30 via-purple-600/25 to-pink-600/20 border border-border-dim p-6 shadow-elev-1 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-fg flex items-center gap-3">
@@ -203,7 +207,7 @@ export default function LoyaltyDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
+                <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -224,8 +228,8 @@ export default function LoyaltyDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-            <CardHeader>
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-blue-600/20 via-purple-600/15 to-indigo-600/10 rounded-t-2xl border-b border-border-dim">
               <CardTitle className="text-fg">Quick Actions</CardTitle>
               <CardDescription className="text-soft">Common loyalty program tasks</CardDescription>
             </CardHeader>
@@ -252,8 +256,8 @@ export default function LoyaltyDashboard() {
 
           {/* Program Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-              <CardHeader>
+            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-orange-600/20 via-yellow-600/15 to-amber-600/10 rounded-t-2xl border-b border-border-dim">
                 <CardTitle className="text-fg">Tier Distribution</CardTitle>
                 <CardDescription className="text-soft">Customer distribution across tiers</CardDescription>
               </CardHeader>
@@ -281,8 +285,8 @@ export default function LoyaltyDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-              <CardHeader>
+            <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-green-600/20 via-emerald-600/15 to-teal-600/10 rounded-t-2xl border-b border-border-dim">
                 <CardTitle className="text-fg">Popular Rewards</CardTitle>
                 <CardDescription className="text-soft">Most redeemed rewards this month</CardDescription>
               </CardHeader>
@@ -310,8 +314,8 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="setup" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-            <CardHeader>
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-indigo-600/20 via-blue-600/15 to-cyan-600/10 rounded-t-2xl border-b border-border-dim">
               <CardTitle className="text-fg">Program Configuration</CardTitle>
               <CardDescription className="text-soft">
                 Configure your loyalty program rules and earning mechanics
@@ -399,8 +403,8 @@ export default function LoyaltyDashboard() {
           </Card>
 
           {/* Tiers Configuration */}
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-            <CardHeader>
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-yellow-600/20 via-orange-600/15 to-red-600/10 rounded-t-2xl border-b border-border-dim">
               <CardTitle className="text-fg flex items-center gap-2">
                 <Crown className="w-5 h-5" />
                 Customer Tiers
@@ -445,8 +449,8 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="rewards" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-            <CardHeader>
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-pink-600/20 via-purple-600/15 to-indigo-600/10 rounded-t-2xl border-b border-border-dim">
               <CardTitle className="text-fg flex items-center gap-2">
                 <Gift className="w-5 h-5" />
                 Rewards Catalog
@@ -485,8 +489,8 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="customers" className="space-y-6">
-          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1">
-            <CardHeader>
+          <Card className="bg-card/90 border-border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-emerald-600/20 via-teal-600/15 to-cyan-600/10 rounded-t-2xl border-b border-border-dim">
               <CardTitle className="text-fg flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Loyalty Members
@@ -526,6 +530,7 @@ export default function LoyaltyDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
