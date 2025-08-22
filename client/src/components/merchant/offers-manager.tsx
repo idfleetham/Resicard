@@ -45,6 +45,36 @@ export default function OffersManager() {
     queryKey: ["/api/offers/my-offers"],
     queryFn: () => apiRequest("GET", "/api/offers/my-offers").then(res => res.json()),
   });
+
+  // Combine all offers into a single list
+  const allOffers = [
+    ...deals.map((deal: Deal) => ({
+      ...deal,
+      type: 'simple',
+      offerType: deal.discountType,
+      createdAt: deal.createdAt,
+      isActive: deal.isActive,
+      category: deal.category,
+      title: deal.title,
+      description: deal.description,
+      discountText: getDiscountText(deal),
+      usageCount: deal.usageCount || 0,
+      usageLimit: deal.usageLimit,
+      expiryDate: deal.expiryDate,
+    })),
+    ...comprehensiveOffers.map((offer: any) => ({
+      ...offer,
+      type: 'comprehensive',
+      offerType: offer.type,
+      isActive: offer.active ?? true,
+      discountText: offer.percentOff ? `${offer.percentOff}% off` : 
+                   offer.fixedAmount ? `$${offer.fixedAmount} off` : 
+                   offer.fixedPrice ? `$${offer.fixedPrice}` : 'Special offer',
+      usageCount: 0, // TODO: implement usage tracking for comprehensive offers
+      usageLimit: offer.usageLimit || '∞',
+      expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
+    }))
+  ];
   const { mutate: toggleOfferMutation, isPending: isToggling } = useToggleOffer();
   const { mutate: updateOfferMutation, isPending: isUpdating } = useUpdateOffer();
 
@@ -362,27 +392,28 @@ export default function OffersManager() {
         {[
           {
             title: "Total Offers",
-            value: deals.length + comprehensiveOffers.length,
+            value: allOffers.length,
             icon: "📦",
             gradient: "from-brand1/70 to-brand2/70"
           },
           {
             title: "Active Offers", 
-            value: deals.filter((deal: Deal) => deal.isActive).length,
+            value: allOffers.filter(offer => offer.isActive).length,
             icon: "▶",
             gradient: "from-green-500/70 to-green-600/70"
           },
           {
             title: "Total Redemptions",
-            value: deals.reduce((sum: number, deal: Deal) => sum + (deal.usageCount || 0), 0),
+            value: allOffers.reduce((sum: number, offer: any) => sum + (offer.usageCount || 0), 0),
             icon: "👥",
             gradient: "from-purple-500/70 to-purple-600/70"
           },
           {
             title: "Expiring Soon",
-            value: deals.filter((deal: Deal) => {
+            value: allOffers.filter((offer: any) => {
+              const expiry = offer.expiryDate ? new Date(offer.expiryDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
               const daysUntilExpiry = Math.ceil(
-                (new Date(deal.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                (expiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
               );
               return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
             }).length,
@@ -418,7 +449,7 @@ export default function OffersManager() {
           </CardDescription>
         </CardHeader>
         <CardBody className="p-5">
-          {deals.length === 0 ? (
+          {allOffers.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -443,7 +474,7 @@ export default function OffersManager() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-soft">Image</TableHead>
+                    <TableHead className="text-soft">Type</TableHead>
                     <TableHead className="text-soft">Title</TableHead>
                     <TableHead className="text-soft">Discount</TableHead>
                     <TableHead className="text-soft">Category</TableHead>
@@ -454,61 +485,67 @@ export default function OffersManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
-                  {deals.map((deal: Deal) => (
-                    <TableRow key={deal.id} className="hover:bg-white/[0.03]">
+                  {allOffers.map((offer: any) => (
+                    <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
                       <TableCell>
-                        <img
-                          src={deal.imageUrl || user?.profilePhoto || "/api/placeholder/64/64"}
-                          alt={deal.title}
-                          className="h-12 w-12 rounded-xl ring-1 ring-dim bg-white/[0.06] object-cover"
-                          onError={(e) => {
-                            // Fallback to merchant logo, then to placeholder
-                            const target = e.target as HTMLImageElement;
-                            if (target.src !== user?.profilePhoto && user?.profilePhoto) {
-                              target.src = user.profilePhoto;
-                            } else {
-                              target.src = "/api/placeholder/64/64";
-                            }
-                          }}
-                        />
+                        <Badge className={offer.type === 'simple' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-purple-500/20 text-purple-400 border-purple-500/30"}>
+                          {offer.type === 'simple' ? 'Simple' : 'Advanced'}
+                        </Badge>
                       </TableCell>
-                      <TableCell className="font-medium text-fg">{deal.title}</TableCell>
-                      <TableCell className="text-soft">{getDiscountText(deal)}</TableCell>
-                      <TableCell className="text-soft">{deal.category}</TableCell>
+                      <TableCell className="font-medium text-fg">
+                        <div>
+                          <div>{offer.title}</div>
+                          {offer.type === 'comprehensive' && offer.offerType && (
+                            <div className="text-xs text-soft capitalize">
+                              {offer.offerType.replace('_', ' ')}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-soft">{offer.discountText}</TableCell>
+                      <TableCell className="text-soft">{offer.category}</TableCell>
                       <TableCell className="text-soft">
-                        {deal.usageCount || 0} / {deal.usageLimit}
+                        {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
                       <TableCell className="text-soft">
-                        {format(new Date(deal.expiryDate), "MMM d, yyyy")}
+                        {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
-                      <TableCell>{getStatusBadge(deal)}</TableCell>
+                      <TableCell>
+                        <Badge className={offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
+                          {offer.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleToggleOffer(deal.id)}
-                            disabled={isToggling}
-                            className="border-dim bg-surface hover:border-dimStrong"
-                          >
-                            {deal.isActive ? (
-                              <Pause className="w-4 h-4" />
-                            ) : (
-                              <Play className="w-4 h-4" />
-                            )}
-                          </Button>
+                          {offer.type === 'simple' && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleToggleOffer(offer.id)}
+                                disabled={isToggling}
+                                className="border-dim bg-surface hover:border-dimStrong"
+                              >
+                                {offer.isActive ? (
+                                  <Pause className="w-4 h-4" />
+                                ) : (
+                                  <Play className="w-4 h-4" />
+                                )}
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditOffer(offer)}
+                                className="border-dim bg-surface hover:border-dimStrong"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleEditOffer(deal)}
-                            className="border-dim bg-surface hover:border-dimStrong"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => window.location.href = `/merchant/offers/${deal.id}`}
+                            onClick={() => window.location.href = `/merchant/offers/${offer.id}`}
                             className="border-dim bg-surface hover:border-dimStrong"
                           >
                             <Eye className="w-4 h-4" />
@@ -524,80 +561,7 @@ export default function OffersManager() {
         </CardBody>
       </Card>
 
-      {/* Comprehensive Offers Section */}
-      {comprehensiveOffers.length > 0 && (
-        <Card className="bg-slate-900/80 border-slate-700 shadow-elev-1 mt-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-slate-100 text-xl">Comprehensive Offers</CardTitle>
-                <CardDescription className="text-slate-400">Advanced offers with detailed scheduling and targeting</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div className="grid gap-4">
-              {comprehensiveOffers.map((offer: any) => (
-                <motion.div
-                  key={offer.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-6"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-slate-100">{offer.title}</h3>
-                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                          {offer.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                        </Badge>
-                        {offer.category && (
-                          <Badge variant="outline" className="border-slate-600 text-slate-300">
-                            {offer.category}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <p className="text-slate-400 mb-4">{offer.description}</p>
-                      
-                      <div className="flex items-center gap-6 text-sm text-slate-400">
-                        {offer.percentOff && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-green-400 font-medium">{offer.percentOff}% off</span>
-                          </div>
-                        )}
-                        {offer.audience && (
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            <span className="capitalize">{offer.audience}</span>
-                          </div>
-                        )}
-                        {offer.mealPeriods && JSON.parse(offer.mealPeriods || '[]').length > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{JSON.parse(offer.mealPeriods).join(', ')}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Created {format(parseISO(offer.createdAt), 'MMM d, yyyy')}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge className={offer.active ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
-                        {offer.active ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardBody>
-        </Card>
-      )}
+
 
       {/* Comprehensive Offer Creator Modal */}
       {isComprehensiveOpen && (
