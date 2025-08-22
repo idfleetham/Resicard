@@ -178,7 +178,7 @@ export default function OffersManager() {
 
   const handleEditComprehensiveOffer = (offer: any) => {
     setEditingComprehensiveOffer(offer);
-    setIsComprehensiveEditOpen(true);
+    setIsComprehensiveOpen(true); // Open the full creator panel instead
   };
 
   const form = useForm<CreateDealData>({
@@ -635,81 +635,17 @@ export default function OffersManager() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-900 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto border border-slate-700">
             <ComprehensiveOfferCreator 
-              onClose={() => setIsComprehensiveOpen(false)} 
+              onClose={() => {
+                setIsComprehensiveOpen(false);
+                setEditingComprehensiveOffer(null);
+              }}
+              editingOffer={editingComprehensiveOffer} // Pass the offer to edit
             />
           </div>
         </div>
       )}
 
-      {/* Comprehensive Offer Edit Modal */}
-      {isComprehensiveEditOpen && editingComprehensiveOffer && (
-        <Dialog open={isComprehensiveEditOpen} onOpenChange={(open) => {
-          setIsComprehensiveEditOpen(open);
-          if (!open) {
-            setEditingComprehensiveOffer(null);
-          }
-        }}>
-          <DialogContent className="max-w-md bg-card border border-dim shadow-elev-3">
-            <DialogHeader>
-              <DialogTitle className="text-fg">Edit Comprehensive Offer</DialogTitle>
-              <DialogDescription className="text-soft">
-                Update the basic settings for "{editingComprehensiveOffer.title}"
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-fg">Title</label>
-                <Input 
-                  defaultValue={editingComprehensiveOffer.title}
-                  onChange={(e) => setEditingComprehensiveOffer({...editingComprehensiveOffer, title: e.target.value})}
-                  className="bg-surface border-dim"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-fg">Description</label>
-                <Textarea 
-                  defaultValue={editingComprehensiveOffer.description}
-                  onChange={(e) => setEditingComprehensiveOffer({...editingComprehensiveOffer, description: e.target.value})}
-                  className="bg-surface border-dim"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-fg">Status</label>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    checked={editingComprehensiveOffer.active ?? true}
-                    onCheckedChange={(checked) => setEditingComprehensiveOffer({...editingComprehensiveOffer, active: checked})}
-                  />
-                  <span className="text-sm text-soft">
-                    {editingComprehensiveOffer.active ? 'Active' : 'Paused'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsComprehensiveEditOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={() => {
-                    updateComprehensiveOfferMutation({
-                      id: editingComprehensiveOffer.id,
-                      data: {
-                        title: editingComprehensiveOffer.title,
-                        description: editingComprehensiveOffer.description,
-                        active: editingComprehensiveOffer.active
-                      }
-                    });
-                    setIsComprehensiveEditOpen(false);
-                  }}
-                  className="bg-gradient-to-r from-brand1 to-brand2 text-white"
-                >
-                  Update Offer
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+
     </motion.div>
   );
 }

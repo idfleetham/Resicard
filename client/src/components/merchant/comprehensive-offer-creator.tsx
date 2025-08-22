@@ -126,7 +126,7 @@ const DAYS_OF_WEEK = [
   { value: "sun", label: "Sunday" },
 ];
 
-export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () => void }) {
+export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { onClose?: () => void; editingOffer?: any }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState("core");
@@ -134,7 +134,50 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
   const form = useForm<OfferFormData>({
     resolver: zodResolver(offerSchema),
     mode: "onSubmit",
-    defaultValues: {
+    defaultValues: editingOffer ? {
+      title: editingOffer.title || "",
+      description: editingOffer.description || "",
+      type: editingOffer.type || "percentage_discount",
+      percentOff: editingOffer.percentOff || undefined,
+      fixedPrice: editingOffer.fixedPrice || undefined,
+      originalValue: editingOffer.originalValue || undefined,
+      category: editingOffer.category || "",
+      tags: Array.isArray(editingOffer.tags) ? editingOffer.tags : (editingOffer.tags ? JSON.parse(editingOffer.tags) : []),
+      audience: editingOffer.audience || "both",
+      minBasket: editingOffer.minBasket || undefined,
+      maxDiscount: editingOffer.maxDiscount || undefined,
+      stackable: editingOffer.stackable || false,
+      newCustomerOnly: editingOffer.newCustomerOnly || false,
+      geofenceRadius: editingOffer.geofenceRadius || undefined,
+      validFrom: editingOffer.validFrom ? editingOffer.validFrom.split('T')[0] : new Date().toISOString().split('T')[0],
+      validTo: editingOffer.validTo ? editingOffer.validTo.split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      daysOfWeek: Array.isArray(editingOffer.daysOfWeek) ? editingOffer.daysOfWeek : (editingOffer.daysOfWeek ? JSON.parse(editingOffer.daysOfWeek) : []),
+      timeSlots: typeof editingOffer.timeSlots === 'object' ? editingOffer.timeSlots : (editingOffer.timeSlots ? JSON.parse(editingOffer.timeSlots) : {}),
+      blackoutDates: Array.isArray(editingOffer.blackoutDates) ? editingOffer.blackoutDates : (editingOffer.blackoutDates ? JSON.parse(editingOffer.blackoutDates) : []),
+      leadTime: editingOffer.leadTime || 0,
+      maxPerTransaction: editingOffer.maxPerTransaction || 1,
+      maxPerDay: editingOffer.maxPerDay || undefined,
+      maxPerWeek: editingOffer.maxPerWeek || undefined,
+      maxLifetime: editingOffer.maxLifetime || undefined,
+      globalUsageLimit: editingOffer.globalUsageLimit || undefined,
+      staffPinRequired: editingOffer.staffPinRequired || false,
+      proofType: editingOffer.proofType || "qr_only",
+      terms: editingOffer.terms || "",
+      dineInOnly: editingOffer.dineInOnly || false,
+      excludesAlcohol: editingOffer.excludesAlcohol || false,
+      serviceChargeIncluded: editingOffer.serviceChargeIncluded !== false,
+      validOnBankHolidays: editingOffer.validOnBankHolidays !== false,
+      imageUrl: editingOffer.imageUrl || "",
+      shortPromo: editingOffer.shortPromo || "",
+      priority: editingOffer.priority || "standard",
+      feeModel: editingOffer.feeModel || "default",
+      customFee: editingOffer.customFee || undefined,
+      budgetCap: editingOffer.budgetCap || undefined,
+      autoPauseOnAbuse: editingOffer.autoPauseOnAbuse !== false,
+      singleUse: editingOffer.singleUse !== false,
+      deviceFingerprinting: editingOffer.deviceFingerprinting !== false,
+      mealPeriods: Array.isArray(editingOffer.mealPeriods) ? editingOffer.mealPeriods : (editingOffer.mealPeriods ? JSON.parse(editingOffer.mealPeriods) : []),
+    } : {
       title: "",
       description: "",
       type: "percentage_discount",
@@ -170,15 +213,22 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
   });
 
   const createOfferMutation = useMutation({
-    mutationFn: (data: OfferFormData) => apiRequest("POST", "/api/offers", data),
+    mutationFn: (data: OfferFormData) => {
+      if (editingOffer) {
+        return apiRequest("PUT", `/api/offers/${editingOffer.id}`, data);
+      } else {
+        return apiRequest("POST", "/api/offers", data);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
-      toast({ title: "Offer created successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/offers/my-offers"] });
+      toast({ title: editingOffer ? "Offer updated successfully!" : "Offer created successfully!" });
       onClose?.();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating offer",
+        title: editingOffer ? "Error updating offer" : "Error creating offer",
         description: error.message,
         variant: "destructive",
       });
@@ -206,10 +256,10 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-slate-100">
             <Plus className="w-5 h-5 text-blue-400" />
-            <span>Create Comprehensive Offer</span>
+            <span>{editingOffer ? "Edit Comprehensive Offer" : "Create Comprehensive Offer"}</span>
           </CardTitle>
           <CardDescription className="text-slate-400">
-            Build a complete offer with advanced targeting, scheduling, and controls
+            {editingOffer ? "Update your comprehensive offer with advanced targeting, scheduling, and controls" : "Build a complete offer with advanced targeting, scheduling, and controls"}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -1466,7 +1516,7 @@ export default function ComprehensiveOfferCreator({ onClose }: { onClose?: () =>
                   disabled={createOfferMutation.isPending}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  {createOfferMutation.isPending ? "Creating..." : "Create Offer"}
+                  {createOfferMutation.isPending ? (editingOffer ? "Updating..." : "Creating...") : (editingOffer ? "Update Offer" : "Create Offer")}
                 </Button>
               </div>
             </form>
