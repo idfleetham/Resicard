@@ -135,8 +135,8 @@ export default function OffersManager() {
     },
   });
 
-  const handleToggleOffer = (dealId: number) => {
-    toggleOfferMutation(dealId);
+  const handleToggleOffer = (dealId: number | string) => {
+    toggleOfferMutation(String(dealId));
   };
 
   const handleEditOffer = (deal: Deal) => {
@@ -146,7 +146,7 @@ export default function OffersManager() {
   const handleUpdateOffer = (data: CreateDealData) => {
     if (!editingDeal) return;
     updateOfferMutation({
-      id: editingDeal.id,
+      id: String(editingDeal.id),
       data: { ...data, expiryDate: new Date(data.expiryDate) },
     });
     setEditingDeal(null);
