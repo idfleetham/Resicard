@@ -36,12 +36,12 @@ export default function DealCard({
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
   const getImageForDeal = (deal: DealWithMerchant) => {
-    // First priority: Deal-specific image URL if available
+    // First priority: Deal-specific image URL if available (this now includes uploaded logos)
     if (deal.imageUrl) {
       return deal.imageUrl;
     }
     
-    // Second priority: Map specific businesses to their uploaded images
+    // Second priority: Map specific businesses to their uploaded images (fallback for old data)
     const businessImages: Record<string, string> = {
       "The Dunvegan": dunveganImage,
       "The Dunvegan Hotel": dunveganImage,

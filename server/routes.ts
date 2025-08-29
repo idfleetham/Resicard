@@ -10,10 +10,12 @@ import { db } from "./db";
 import { Pool } from "@neondatabase/serverless";
 import multer from "multer";
 import express from "express";
+import fs from "fs";
 import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards } from "@shared/schema";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { PassKitService } from "./passkit";
+import { ObjectStorageService } from "./objectStorage";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -95,6 +97,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files statically
   app.use("/uploads", express.static("uploads"));
+
+  // Serve public objects from cloud storage
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   // Simple placeholder image endpoint
   app.get("/api/placeholder/:width/:height", (req, res) => {
@@ -318,7 +336,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
-      const logoUrl = `/uploads/${req.file.filename}`;
+      const objectStorageService = new ObjectStorageService();
+      const fileName = `merchant-logos/${merchantId}-${Date.now()}-${req.file.originalname}`;
+      
+      // Upload to cloud storage
+      const logoUrl = await objectStorageService.uploadToPublicStorage(
+        req.file.buffer || fs.readFileSync(req.file.path),
+        fileName,
+        req.file.mimetype
+      );
+      
+      // Clean up temp file
+      if (req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
       
       // Update user profile photo field to store logo URL
       const updatedUser = await storage.updateUser(merchantId, {
@@ -372,8 +403,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = [];
       
       for (const offer of activeOffers) {
-        // Get merchant info
+        // Get merchant info from merchants table
         const [merchant] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
+        
+        // Get user info to access profilePhoto (logo)
+        let merchantUser = null;
+        if (merchant?.createdBy) {
+          const [user] = await db.select().from(users).where(eq(users.id, merchant.createdBy));
+          merchantUser = user;
+        }
         
         const convertedOffer = {
           id: offer.id,
@@ -388,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isActive: true,
           expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           terms: offer.terms || offer.description || offer.title,
-          imageUrl: merchant?.logoUrl || null,
+          imageUrl: merchantUser?.profilePhoto || merchant?.logoUrl || null,
           createdAt: offer.createdAt,
           merchantId: offer.merchantId,
           merchantName: merchant?.name || 'Unknown Business',
