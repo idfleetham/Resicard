@@ -7,11 +7,50 @@ import { Download, QrCode, Smartphone, Shield, CheckCircle } from "lucide-react"
 import QRCodeLib from "qrcode";
 
 export default function WalletAdd() {
-  const { user } = useAuth();
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [passUrl, setPassUrl] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  // Safe auth loading that won't crash on mobile
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Check for error parameters first
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      // If there's an error, skip auth loading to show error page immediately
+      if (error) {
+        setAuthLoading(false);
+        return;
+      }
+      
+      // Only try to load auth if there's no error
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => res.ok ? res.json() : null)
+        .then(userData => {
+          setUser(userData);
+          setAuthLoading(false);
+        })
+        .catch(() => {
+          setAuthLoading(false);
+        });
+      } else {
+        setAuthLoading(false);
+      }
+    } catch (err) {
+      console.error('Auth loading error:', err);
+      setAuthLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -61,6 +100,14 @@ export default function WalletAdd() {
 
   // Check if user came from QR code with error
   const hasError = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('error') : null;
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   if (!user && !hasError) {
     return (
