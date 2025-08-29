@@ -190,12 +190,15 @@ export default function Register() {
 
   const onResidentSubmit = async (data: ResidentFormData) => {
     try {
+      console.log('Form submission data:', data);
+      console.log('Form validation errors:', residentForm.formState.errors);
       await register(data);
       toast({
         title: "Welcome to Resicard!",
         description: "Your resident account has been created successfully.",
       });
     } catch (error: any) {
+      console.error('Registration error:', error);
       toast({
         title: "Registration Failed",
         description: error.message || "Failed to create account",
