@@ -18,6 +18,7 @@ import EditProfile from "@/pages/edit-profile";
 import OfferDetails from "@/pages/offer-details";
 import LoyaltyDashboard from "@/pages/loyalty-dashboard";
 import WalletAdd from "@/pages/wallet-add";
+import VerifyVoucher from "@/pages/verify-voucher";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/wallet/add" component={WalletAdd} />
       <Route path="/edit-profile" component={EditProfile} />
+      <Route path="/verify-voucher" component={VerifyVoucher} />
       <Route component={NotFound} />
     </Switch>
   );

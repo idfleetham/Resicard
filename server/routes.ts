@@ -616,6 +616,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public voucher verification endpoint (no auth required)
+  app.get("/api/vouchers/verify", async (req, res) => {
+    try {
+      const { v: voucherNumber, d: dealId, u: userId } = req.query;
+      
+      if (!voucherNumber || !dealId || !userId) {
+        return res.status(400).json({ message: "Missing required voucher parameters" });
+      }
+      
+      // Find the voucher
+      const voucher = await storage.getVoucherByNumber(voucherNumber as string);
+      if (!voucher) {
+        return res.status(404).json({ message: "Voucher not found" });
+      }
+      
+      // Get deal information
+      const deal = await storage.getDeal(dealId as string);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      // Get customer information
+      const customer = await storage.getUser(parseInt(userId as string));
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      // Get merchant information
+      const merchant = await storage.getUser(deal.merchantId);
+      if (!merchant) {
+        return res.status(404).json({ message: "Merchant not found" });
+      }
+      
+      // Return voucher details for verification
+      res.json({
+        voucherNumber: voucher.voucherNumber,
+        dealId: voucher.dealId,
+        userId: customer.id,
+        dealTitle: deal.title,
+        merchantName: merchant.businessName || merchant.username,
+        discountType: deal.discountType,
+        discountValue: deal.discountValue,
+        isUsed: voucher.isUsed,
+        usedAt: voucher.usedAt,
+        expiresAt: voucher.expiresAt,
+        customerName: customer.username,
+        customerPhoto: customer.profilePhoto
+      });
+    } catch (error: any) {
+      console.error('Voucher verification error:', error);
+      res.status(500).json({ message: error.message || "Failed to verify voucher" });
+    }
+  });
+
   app.get("/api/deals/merchant/:merchantId", authenticateToken, async (req, res) => {
     try {
       const merchantId = parseInt(req.params.merchantId);

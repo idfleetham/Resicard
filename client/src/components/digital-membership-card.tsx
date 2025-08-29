@@ -129,14 +129,7 @@ export default function DigitalMembershipCard({
               <div className="flex justify-center mb-4">
                 <div className="bg-white p-4 rounded-lg shadow-lg border">
                   <QRCodeGenerator 
-                    value={JSON.stringify({
-                      voucherNumber: voucher.voucherNumber,
-                      dealId: voucher.dealId,
-                      userId: user.id,
-                      merchantName: voucher.merchantName,
-                      dealTitle: voucher.dealTitle,
-                      timestamp: Date.now()
-                    })}
+                    value={`${window.location.origin}/verify-voucher?v=${voucher.voucherNumber}&d=${voucher.dealId}&u=${user.id}`}
                     size={160}
                   />
                   <p className="text-xs text-center text-muted-foreground mt-2">
