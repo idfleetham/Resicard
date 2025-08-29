@@ -17,7 +17,7 @@ import { MapPin, Eye, EyeOff, Home, Store, Upload, FileText, User, CheckCircle, 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { validatePostcode } from "@/lib/utils";
-import stAndrewsImage from "@assets/image_1756459095742.png";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 const baseSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -242,10 +242,21 @@ export default function Register() {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: `url(${stAndrewsImage})`,
+          backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+        }}
+      />
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'grayscale(100%) contrast(1.2) brightness(0.5)',
+          mixBlendMode: 'multiply',
         }}
       />
       <div className="absolute inset-0 bg-black/60"></div>

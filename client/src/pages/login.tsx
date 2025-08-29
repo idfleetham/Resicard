@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { MapPin, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import stAndrewsImage from "@assets/image_1756459095742.png";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -55,10 +55,21 @@ export default function Login() {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: `url(${stAndrewsImage})`,
+          backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+        }}
+      />
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'grayscale(100%) contrast(1.2) brightness(0.5)',
+          mixBlendMode: 'multiply',
         }}
       />
       <div className="absolute inset-0 bg-black/60"></div>
