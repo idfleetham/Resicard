@@ -427,36 +427,47 @@ export default function ResidentDashboard() {
 
           {/* Voucher Wallet Tab */}
           {activeTab === "wallet" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">My Voucher Wallet</h2>
-                <div className="flex items-center gap-4">
-                  <Button 
-                    variant="outline"
-                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-full px-6"
-                    onClick={() => window.location.href = '/wallet/add'}
-                  >
-                    <Smartphone className="w-4 h-4 mr-2" />
-                    Add to Apple Wallet
-                  </Button>
-                  <div className="text-sm text-gray-500 bg-gray-100 rounded-full px-4 py-2">
-                    {activeVouchers.length} active • {usedVouchers.length} used
+            <div className="space-y-10">
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">My Voucher Wallet</h2>
+                    <p className="text-gray-600 mt-2">Manage your active vouchers and redeem exclusive deals</p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <Button 
+                      className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-6 py-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                      onClick={() => window.location.href = '/wallet/add'}
+                    >
+                      <Smartphone className="w-5 h-5 mr-2" />
+                      Add to Apple Wallet
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">{activeVouchers.length} active</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">{usedVouchers.length} used</span>
                   </div>
                 </div>
               </div>
 
               {vouchers.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                  <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                    <Ticket className="h-10 w-10 text-gray-400" />
+                <div className="bg-white rounded-3xl shadow-xl border-0 p-16 text-center">
+                  <div className="p-6 bg-gradient-to-br from-indigo-100 to-violet-100 rounded-full w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                    <Ticket className="h-12 w-12 text-indigo-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No vouchers yet</h3>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  <h3 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">No vouchers yet</h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
                     Start creating vouchers from available deals to build your wallet.
                   </p>
                   <Button 
                     onClick={() => setActiveTab("deals")}
-                    className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full px-8 py-3 font-semibold"
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-10 py-4 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
                   >
                     Browse Deals
                   </Button>
@@ -465,34 +476,43 @@ export default function ResidentDashboard() {
                 <>
                   {/* Active Vouchers Section */}
                   {activeVouchers.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        Active Vouchers ({activeVouchers.length})
+                    <div className="space-y-6">
+                      <h3 className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-emerald-100 rounded-xl">
+                          <CheckCircle className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                          Active Vouchers ({activeVouchers.length})
+                        </span>
                       </h3>
-                      <div className="grid gap-4">
+                      <div className="grid gap-6">
                         {activeVouchers.map((voucher) => (
-                          <div key={voucher.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                          <div key={voucher.id} className="bg-white rounded-3xl shadow-xl border-0 p-8 ring-1 ring-gray-100 hover:shadow-2xl transition-all duration-300">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <h3 className="font-semibold">{voucher.dealTitle}</h3>
-                                    <Badge variant="default">Active</Badge>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <h3 className="font-bold text-xl text-gray-900">{voucher.dealTitle}</h3>
+                                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-3 py-1 rounded-full">Active</Badge>
                                   </div>
-                                  <p className="text-muted-foreground mb-2">{voucher.merchantName}</p>
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <span className="font-medium">
-                                      {voucher.discountType === 'percentage' 
-                                        ? `${voucher.discountValue}% off`
-                                        : `£${voucher.discountValue} off`
-                                      }
-                                    </span>
-                                    <span className="text-muted-foreground">
+                                  <p className="text-gray-600 mb-4 flex items-center">
+                                    <MapPin className="w-4 h-4 mr-2" />
+                                    {voucher.merchantName}
+                                  </p>
+                                  <div className="flex items-center gap-6 text-sm mb-4">
+                                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl">
+                                      <span className="text-lg font-bold text-white">
+                                        {voucher.discountType === 'percentage' 
+                                          ? `${voucher.discountValue}% OFF`
+                                          : `£${voucher.discountValue} OFF`
+                                        }
+                                      </span>
+                                    </div>
+                                    <span className="text-gray-600 font-medium">
                                       Expires: {formatDate(voucher.expiresAt)}
                                     </span>
                                   </div>
-                                  <div className="mt-2 text-xs font-mono bg-gray-100 px-2 py-1 rounded">
-                                    {voucher.voucherNumber}
+                                  <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
+                                    <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
                                   </div>
                                 </div>
                                 <div className="text-right">
@@ -533,15 +553,14 @@ export default function ResidentDashboard() {
                                       </Button>
                                     </div>
                                   ) : (
-                                    <div className="space-y-2">
-                                      <Badge variant="outline">Ready to use</Badge>
+                                    <div className="space-y-3">
+                                      <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 px-3 py-1 rounded-full">Ready to use</Badge>
                                       <Button
-                                        size="sm"
                                         onClick={() => {
                                           setSelectedVoucher(voucher);
                                           setShowRedemptionCard(true);
                                         }}
-                                        className="block w-full"
+                                        className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-6 py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                                       >
                                         <User className="h-4 w-4 mr-2" />
                                         Show QR Code
@@ -604,11 +623,14 @@ export default function ResidentDashboard() {
 
           {/* Verification Tab */}
           {activeTab === "verification" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">Residency Verification</h2>
+            <div className="space-y-10">
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8 text-center">
+                <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4">Residency Verification</h2>
+                <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                  Complete your verification to unlock exclusive local deals and prove you're a St Andrews resident.
+                </p>
               </div>
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <div className="bg-white rounded-3xl shadow-xl border-0 p-10">
                 <DocumentVerification />
               </div>
             </div>
@@ -616,17 +638,24 @@ export default function ResidentDashboard() {
 
           {/* Subscription Tab */}
           {activeTab === "subscription" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">Subscription Management</h2>
-                {subscription?.isActive && (
-                  <Badge className="bg-gradient-to-r from-indigo-100 to-violet-100 text-indigo-700 border-0 px-4 py-2 rounded-full">
-                    {subscription.type} • {subscription.plan}
-                  </Badge>
-                )}
+            <div className="space-y-10">
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4">Subscription Management</h2>
+                    <p className="text-gray-600 text-lg">Manage your Resicard membership and unlock exclusive deals</p>
+                  </div>
+                  {subscription?.isActive && (
+                    <div className="text-right">
+                      <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-0 px-6 py-3 rounded-2xl text-lg font-bold">
+                        {subscription.type} • {subscription.plan}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <div className="bg-white rounded-3xl shadow-xl border-0 p-10">
                 <SubscriptionManagement 
                   subscription={subscription}
                   plans={plans}
@@ -639,7 +668,7 @@ export default function ResidentDashboard() {
 
               {/* Legacy subscription creation for non-active users */}
               {!subscription?.isActive && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-3xl shadow-xl border-0 p-8">
                     <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
                     <p className="text-muted-foreground mb-6">
                       Subscribe to create vouchers from deals and build your savings wallet.
