@@ -802,7 +802,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark text-black"
+                                className="input-dark !text-black"
                               />
                             </FormControl>
                             <FormMessage />
@@ -820,7 +820,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark text-black"
+                                className="input-dark !text-black"
                               />
                             </FormControl>
                             <FormMessage />

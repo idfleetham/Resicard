@@ -272,7 +272,7 @@ export default function MerchantDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Merchant Header */}
           <Card className="mb-8 bg-card border border-white/40 shadow-xl shadow-white/20">
-            <CardBody className="p-6">
+            <CardBody className="p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   {user?.profilePhoto ? (
