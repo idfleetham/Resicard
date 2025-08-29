@@ -65,12 +65,12 @@ export default function OfferDetails() {
       </div>
 
       {/* Title Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-8">
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-white font-bold text-3xl mb-2">{offer.title}</h1>
-              <p className="text-slate-300 text-lg">Offer Details and Analytics</p>
+              <p className="text-indigo-100 text-lg">Offer Details and Analytics</p>
             </div>
             <div>
               {getStatusBadge()}
@@ -80,7 +80,7 @@ export default function OfferDetails() {
       </div>
 
       {/* Offer Details Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
         <div className="bg-slate-50 border-b border-slate-200/60 p-6">
           <h2 className="text-slate-900 font-semibold text-xl mb-1">Offer Information</h2>
           <p className="text-slate-600">Complete details about this offer</p>
@@ -90,24 +90,24 @@ export default function OfferDetails() {
             <div className="space-y-6">
               <h3 className="font-semibold text-lg text-slate-900 mb-4 pb-2 border-b border-slate-200">Basic Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Title</p>
                   <p className="text-slate-900 font-semibold">{offer.title}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Category</p>
                   <p className="text-slate-900">{offer.category}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2">
+                <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Description</p>
                   <p className="text-slate-900">{offer.description}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Discount</p>
                   <p className="text-slate-900 font-semibold">{getDiscountText()}</p>
                 </div>
                 {offer.originalValue && (
-                  <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                     <p className="text-sm font-medium text-slate-500 mb-1">Original Price</p>
                     <p className="text-slate-900">£{offer.originalValue}</p>
                   </div>
@@ -117,23 +117,23 @@ export default function OfferDetails() {
             <div className="space-y-6">
               <h3 className="font-semibold text-lg text-slate-900 mb-4 pb-2 border-b border-slate-200">Offer Settings</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Usage Limit</p>
                   <p className="text-slate-900 font-semibold">{offer.usageLimit}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Used</p>
                   <p className="text-slate-900">{offer.usageCount || 0}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Remaining</p>
                   <p className="text-slate-900">{offer.usageLimit - (offer.usageCount || 0)}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4">
+                <div className="bg-slate-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Expiry Date</p>
                   <p className="text-slate-900">{offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : "N/A"}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2">
+                <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2 shadow-md hover:shadow-lg transition-shadow duration-200">
                   <p className="text-sm font-medium text-slate-500 mb-1">Created</p>
                   <p className="text-slate-900">{offer.createdAt ? format(new Date(offer.createdAt), "MMM d, yyyy") : "N/A"}</p>
                 </div>
@@ -144,7 +144,7 @@ export default function OfferDetails() {
           {offer.terms && (
             <div className="mt-8 pt-6 border-t border-slate-200">
               <h3 className="font-semibold text-lg text-slate-900 mb-4">Terms & Conditions</h3>
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-200">
                 <p className="text-slate-700">{offer.terms}</p>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function OfferDetails() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between mb-3">
             <div className="bg-slate-100 rounded-lg p-2">
               <Eye className="h-5 w-5 text-slate-600" />
@@ -163,7 +163,7 @@ export default function OfferDetails() {
           <div className="text-2xl font-bold text-slate-900 mb-1">{offer.viewCount || 0}</div>
           <p className="text-slate-600 text-sm">Total Views</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between mb-3">
             <div className="bg-slate-100 rounded-lg p-2">
               <Users className="h-5 w-5 text-slate-600" />
@@ -172,7 +172,7 @@ export default function OfferDetails() {
           <div className="text-2xl font-bold text-slate-900 mb-1">{offer.usageCount || 0}</div>
           <p className="text-slate-600 text-sm">Redemptions</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between mb-3">
             <div className="bg-slate-100 rounded-lg p-2">
               <DollarSign className="h-5 w-5 text-slate-600" />
@@ -183,7 +183,7 @@ export default function OfferDetails() {
           </div>
           <p className="text-slate-600 text-sm">Usage Rate</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between mb-3">
             <div className="bg-slate-100 rounded-lg p-2">
               <Calendar className="h-5 w-5 text-slate-600" />
@@ -197,7 +197,7 @@ export default function OfferDetails() {
       </div>
 
       {/* Recent Redemptions */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
         <div className="bg-slate-50 border-b border-slate-200/60 p-6">
           <h2 className="text-slate-900 font-semibold text-xl mb-1">Recent Redemptions</h2>
           <p className="text-slate-600">Latest voucher redemptions for this offer</p>
