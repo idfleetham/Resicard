@@ -60,7 +60,7 @@ export default function WalletAdd() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-700 text-white">
         <div className="max-w-4xl mx-auto px-6 py-16">
@@ -84,7 +84,7 @@ export default function WalletAdd() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-6 py-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Add to Wallet Section */}
           <motion.div
@@ -92,17 +92,17 @@ export default function WalletAdd() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-gray-900">
+            <Card className="h-full bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100 hover:shadow-3xl hover:-translate-y-1 transition-all duration-300">
+              <CardHeader className="p-8 pb-0">
+                <CardTitle className="flex items-center gap-3 text-gray-900 text-2xl font-bold">
                   <Download className="w-6 h-6 text-blue-600" />
                   Add to Apple Wallet
                 </CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-gray-600 text-base">
                   Tap the button below to add your Resicard pass to Apple Wallet
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-8 pt-6">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                   <div className="text-center space-y-4">
                     {/* Pass Preview */}
@@ -186,17 +186,17 @@ export default function WalletAdd() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-gray-900">
+            <Card className="h-full bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100 hover:shadow-3xl hover:-translate-y-1 transition-all duration-300">
+              <CardHeader className="p-8 pb-0">
+                <CardTitle className="flex items-center gap-3 text-gray-900 text-2xl font-bold">
                   <QrCode className="w-6 h-6 text-blue-600" />
                   Scan QR Code
                 </CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-gray-600 text-base">
                   Or scan this QR code with your iPhone camera
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-8 pt-6">
                 <div className="flex justify-center">
                   <div className="bg-white p-6 rounded-2xl shadow-lg">
                     {qrCodeUrl ? (
@@ -246,14 +246,14 @@ export default function WalletAdd() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mt-12"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-gray-900">About Apple Wallet Passes</CardTitle>
-              <CardDescription className="text-gray-600">
+          <Card className="bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100">
+            <CardHeader className="p-8 pb-0">
+              <CardTitle className="text-gray-900 text-2xl font-bold">About Apple Wallet Passes</CardTitle>
+              <CardDescription className="text-gray-600 text-base">
                 Everything you need to know about your digital Resicard
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-8 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-medium mb-2 text-gray-900">What's included:</h4>
