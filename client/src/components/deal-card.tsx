@@ -211,7 +211,7 @@ export default function DealCard({
               Already in Wallet
             </>
           ) : !canRedeem ? (
-            isExpired ? "Deal Expired" : "Fully Redeemed"
+            isExpired ? "Offer Expired" : "Fully Redeemed"
           ) : (
             <>
               <Ticket className="w-4 h-4 mr-2" />
