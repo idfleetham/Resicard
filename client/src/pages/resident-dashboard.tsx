@@ -232,7 +232,7 @@ export default function ResidentDashboard() {
           />
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">Welcome back, {user.username}! 🎉</h1>
+              <h1 className="text-4xl font-bold mb-4" style={{color: 'yellow', backgroundColor: 'red'}}>UPDATED DESIGN - Welcome back, {user.username}! 🎉</h1>
               <p className="text-xl opacity-90 mb-6">
                 Discover exclusive local deals and build your savings with Resicard
               </p>
@@ -280,7 +280,7 @@ export default function ResidentDashboard() {
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                Browse Deals
+                🔥 Browse Deals (NEW UI)
                 {activeTab === "deals" && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
                 )}
