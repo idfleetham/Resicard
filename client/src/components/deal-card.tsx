@@ -130,9 +130,12 @@ export default function DealCard({
           </h3>
           
           {showMerchantInfo && (
-            <div className="flex items-center text-slate-600">
-              <MapPin className="w-4 h-4 mr-1" />
-              <span className="font-medium text-sm">{deal.merchantName}</span>
+            <div className="space-y-1">
+              <div className="font-semibold text-sm text-slate-800">{deal.merchantName}</div>
+              <div className="flex items-center text-slate-600">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span className="text-sm">{deal.merchantAddress || 'St Andrews, Scotland'}</span>
+              </div>
             </div>
           )}
           
@@ -142,9 +145,9 @@ export default function DealCard({
         </div>
 
         {/* Discount Highlight - Only show for monetary discounts */}
-        {(deal.discountType === 'percentage' || deal.discountType === 'fixed') && (
-          <div className="inline-flex items-center px-3 py-2 bg-slate-100 rounded-lg">
-            <span className="text-xl font-bold text-slate-800">
+        {(deal.discountType === 'percentage' || deal.discountType === 'fixed') && deal.discountValue && Number(deal.discountValue) > 0 && (
+          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full shadow-sm">
+            <span className="text-lg font-bold text-white">
               {deal.discountType === 'percentage' 
                 ? `${deal.discountValue}% OFF`
                 : `${formatCurrency(Number(deal.discountValue))} OFF`
@@ -171,14 +174,14 @@ export default function DealCard({
           </div>
         </div>
 
-        {/* Pill Button with Icon */}
+        {/* Pill Button with Purple-to-Red Gradient */}
         <Button
           onClick={() => onRedeem && onRedeem(deal.id)}
           disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
           className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
             hasExistingVoucher 
               ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
-              : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg hover:shadow-xl"
+              : "bg-gradient-to-r from-purple-600 to-red-500 hover:from-purple-700 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
           }`}
         >
           {(isLoading && loadingDealId === deal.id) ? (
