@@ -592,6 +592,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: deals.createdAt,
         merchantName: users.businessName,
         merchantAddress: users.businessAddress,
+        username: users.username,
       })
       .from(deals)
       .innerJoin(users, eq(deals.merchantId, users.id))
@@ -599,8 +600,8 @@ export class DatabaseStorage implements IStorage {
 
     return result.map(row => ({
       ...row,
-      merchantName: row.merchantName || '',
-      merchantAddress: row.merchantAddress || '',
+      merchantName: row.merchantName || row.username || 'Unknown Business',
+      merchantAddress: row.merchantAddress || 'Address not provided',
     }));
   }
 
@@ -624,6 +625,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: deals.createdAt,
         merchantName: users.businessName,
         merchantAddress: users.businessAddress,
+        username: users.username,
       })
       .from(deals)
       .innerJoin(users, eq(deals.merchantId, users.id))
@@ -631,8 +633,8 @@ export class DatabaseStorage implements IStorage {
 
     return result.map(row => ({
       ...row,
-      merchantName: row.merchantName || '',
-      merchantAddress: row.merchantAddress || '',
+      merchantName: row.merchantName || row.username || 'Unknown Business',
+      merchantAddress: row.merchantAddress || 'Address not provided',
     }));
   }
 

@@ -131,10 +131,17 @@ export default function DealCard({
           
           {showMerchantInfo && (
             <div className="space-y-1">
-              <div className="font-semibold text-sm text-slate-800">{deal.merchantName}</div>
+              <div className="font-semibold text-sm text-slate-800">
+                {deal.merchantName && deal.merchantName.trim() !== '' ? deal.merchantName : 'Business Name Not Set'}
+              </div>
               <div className="flex items-center text-slate-600">
-                <MapPin className="w-4 h-4 mr-1" />
-                <span className="text-sm">{deal.merchantAddress || 'St Andrews, Scotland'}</span>
+                <MapPin className="w-4 h-4 mr-1 text-red-500" />
+                <span className="text-sm">
+                  {deal.merchantAddress && deal.merchantAddress.trim() !== '' && deal.merchantAddress !== 'Address not provided' 
+                    ? deal.merchantAddress 
+                    : 'St Andrews, Scotland'
+                  }
+                </span>
               </div>
             </div>
           )}
