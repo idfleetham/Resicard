@@ -17,7 +17,7 @@ import { MapPin, Eye, EyeOff, Home, Store, Upload, FileText, User, CheckCircle, 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { validatePostcode } from "@/lib/utils";
-import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
+import stAndrewsImage from "@assets/image_1756459095742.png";
 
 const baseSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -242,24 +242,13 @@ export default function Register() {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: `url(${heroImage})`,
+          backgroundImage: `url(${stAndrewsImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
       />
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          filter: 'grayscale(100%) contrast(1.1) brightness(0.3)',
-          mixBlendMode: 'multiply',
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
+      <div className="absolute inset-0 bg-black/60"></div>
       
       {/* Content */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
@@ -510,7 +499,7 @@ export default function Register() {
 
                     <Button 
                       type="submit" 
-                      className="w-full coastal-gradient"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200"
                       disabled={isLoading}
                     >
                       {isLoading ? 'Creating Account...' : 'Create Resident Account'}
@@ -713,7 +702,7 @@ export default function Register() {
 
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200"
                       disabled={isLoading}
                     >
                       {isLoading ? 'Creating Account...' : 'Create Student Account'}
@@ -897,7 +886,7 @@ export default function Register() {
 
                     <Button 
                       type="submit" 
-                      className="w-full bg-slate-600 hover:bg-slate-700"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200"
                       disabled={isLoading}
                     >
                       {isLoading ? 'Submitting Application...' : 'Submit Business Application'}
