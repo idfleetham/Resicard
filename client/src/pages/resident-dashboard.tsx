@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -269,61 +269,102 @@ export default function ResidentDashboard() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Premium Tab Navigation - Redesigned UI */}
+          {/* Enhanced Tab Navigation */}
           <div className="relative mb-12">
-            <div className="flex space-x-8 border-b border-gray-200 max-w-2xl">
-              <button
-                onClick={() => setActiveTab("deals")}
-                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "deals"
-                    ? "text-indigo-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Browse Deals
-                {activeTab === "deals" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("wallet")}
-                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "wallet"
-                    ? "text-indigo-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                My Wallet
-                {activeTab === "wallet" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("verification")}
-                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "verification"
-                    ? "text-indigo-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Verification
-                {activeTab === "verification" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("subscription")}
-                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "subscription"
-                    ? "text-indigo-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Subscription
-                {activeTab === "subscription" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
-                )}
-              </button>
+            <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-2 max-w-4xl mx-auto">
+              <div className="flex space-x-1">
+                <button
+                  onClick={() => setActiveTab("deals")}
+                  className={`group relative flex items-center space-x-3 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex-1 ${
+                    activeTab === "deals"
+                      ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-xl transform scale-[1.02]"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.01]"
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    activeTab === "deals" 
+                      ? "bg-white/20" 
+                      : "bg-indigo-50 group-hover:bg-indigo-100"
+                  }`}>
+                    <Tag className={`h-5 w-5 ${
+                      activeTab === "deals" ? "text-white" : "text-indigo-600"
+                    }`} />
+                  </div>
+                  <span>Browse Deals</span>
+                  {activeTab === "deals" && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 animate-pulse" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("wallet")}
+                  className={`group relative flex items-center space-x-3 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex-1 ${
+                    activeTab === "wallet"
+                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-xl transform scale-[1.02]"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.01]"
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    activeTab === "wallet" 
+                      ? "bg-white/20" 
+                      : "bg-emerald-50 group-hover:bg-emerald-100"
+                  }`}>
+                    <Wallet className={`h-5 w-5 ${
+                      activeTab === "wallet" ? "text-white" : "text-emerald-600"
+                    }`} />
+                  </div>
+                  <span>My Wallet</span>
+                  {activeTab === "wallet" && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 animate-pulse" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("verification")}
+                  className={`group relative flex items-center space-x-3 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex-1 ${
+                    activeTab === "verification"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xl transform scale-[1.02]"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.01]"
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    activeTab === "verification" 
+                      ? "bg-white/20" 
+                      : "bg-amber-50 group-hover:bg-amber-100"
+                  }`}>
+                    <Shield className={`h-5 w-5 ${
+                      activeTab === "verification" ? "text-white" : "text-amber-600"
+                    }`} />
+                  </div>
+                  <span>Verification</span>
+                  {activeTab === "verification" && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 animate-pulse" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("subscription")}
+                  className={`group relative flex items-center space-x-3 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex-1 ${
+                    activeTab === "subscription"
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl transform scale-[1.02]"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.01]"
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    activeTab === "subscription" 
+                      ? "bg-white/20" 
+                      : "bg-purple-50 group-hover:bg-purple-100"
+                  }`}>
+                    <Crown className={`h-5 w-5 ${
+                      activeTab === "subscription" ? "text-white" : "text-purple-600"
+                    }`} />
+                  </div>
+                  <span>Subscription</span>
+                  {activeTab === "subscription" && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 animate-pulse" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
