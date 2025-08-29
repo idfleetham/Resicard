@@ -116,7 +116,7 @@ export const offers = pgTable("offers", {
   globalUsageLimit: integer("global_usage_limit"),
   usageCount: integer("usage_count").default(0),
   usageLimit: integer("usage_limit"), // Make nullable to match database
-  voucherTimeoutHours: integer("voucher_timeout_hours").default(24), // Hours before unclaimed voucher expires
+  voucherTimeoutHours: integer("voucher_timeout_hours").default(24), // Hours to make booking after claiming voucher
   staffPinRequired: boolean("staff_pin_required").default(false),
   proofType: text("proof_type").$type<"qr_only"|"code_pin"|"app_checkin">().default("qr_only"),
   refundBehavior: text("refund_behavior").$type<"restore"|"consume">().default("consume"),

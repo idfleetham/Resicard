@@ -71,7 +71,7 @@ const offerSchema = z.object({
   maxPerWeek: z.number().min(1).optional(),
   maxLifetime: z.number().min(1).optional(),
   globalUsageLimit: z.number().min(1).optional(),
-  voucherTimeoutHours: z.number().min(1).max(168).default(24), // 1 hour to 7 days
+  voucherTimeoutHours: z.number().min(1).max(168).default(24), // Hours to make booking after claiming
   staffPinRequired: z.boolean().default(false),
   proofType: z.enum(["qr_only", "code_pin", "app_checkin"]).default("qr_only"),
 
@@ -1075,7 +1075,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="voucherTimeoutHours"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Voucher Claim Timeout (Hours)</FormLabel>
+                            <FormLabel className="text-slate-200">Booking Required Within (Hours)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1088,7 +1088,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               />
                             </FormControl>
                             <FormDescription className="text-slate-400 text-sm">
-                              How long customers have to use their voucher after claiming (1-168 hours)
+                              Customers must make a booking/reservation within this timeframe after claiming voucher (1-168 hours)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
