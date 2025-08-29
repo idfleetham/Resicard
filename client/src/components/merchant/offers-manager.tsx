@@ -262,7 +262,7 @@ export default function OffersManager() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-card/90 border border-dim shadow-elev-1">
+            <Card key={i} className="bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg">
               <CardBody className="p-6">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20 bg-surface" />
@@ -272,7 +272,7 @@ export default function OffersManager() {
             </Card>
           ))}
         </div>
-        <Card className="bg-card/90 border border-dim shadow-elev-1">
+        <Card className="bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg">
           <CardBody className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -320,7 +320,7 @@ export default function OffersManager() {
                   Quick Offer
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+              <DialogContent className="max-w-2xl bg-white border-slate-200">
               <DialogHeader>
                 <DialogTitle className="text-slate-100">
                   {editingDeal ? "Edit Offer" : "Create New Offer"}
@@ -362,11 +362,11 @@ export default function OffersManager() {
                           <FormLabel className="text-slate-200">Category</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                              <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                                 <SelectValue placeholder="Select category" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-slate-800 border-slate-700">
+                            <SelectContent className="bg-white border-slate-200">
                               <SelectItem value="Food & Drink">Food & Drink</SelectItem>
                               <SelectItem value="Retail">Retail</SelectItem>
                               <SelectItem value="Services">Services</SelectItem>
@@ -440,7 +440,7 @@ export default function OffersManager() {
                       type="button" 
                       variant="outline" 
                       onClick={() => setIsCreateOpen(false)}
-                      className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                      className="border-slate-300 hover:bg-slate-100 text-slate-700"
                     >
                       Cancel
                     </Button>
@@ -517,7 +517,7 @@ export default function OffersManager() {
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
+      <Card className="bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg hover:shadow-xl transition">
         <CardHeader className="border-b border-dim">
           <CardTitle className="text-fg">Your Offers</CardTitle>
           <CardDescription className="text-soft">
@@ -546,23 +546,23 @@ export default function OffersManager() {
               </Button>
             </motion.div>
           ) : (
-            <div className="rounded-xl bg-surface/80 border border-dim shadow-elev-1 overflow-hidden">
+            <div className="rounded-xl bg-white/90 border border-slate-200 shadow-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-soft">Type</TableHead>
-                    <TableHead className="text-soft">Title</TableHead>
-                    <TableHead className="text-soft">Discount</TableHead>
-                    <TableHead className="text-soft">Category</TableHead>
-                    <TableHead className="text-soft">Usage</TableHead>
-                    <TableHead className="text-soft">Expiry</TableHead>
-                    <TableHead className="text-soft">Status</TableHead>
-                    <TableHead className="text-soft">Actions</TableHead>
+                  <TableRow className="bg-slate-50 sticky top-0 border-b border-slate-200">
+                    <TableHead className="text-slate-700 font-semibold">Type</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Title</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Discount</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Category</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Usage</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Expiry</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Status</TableHead>
+                    <TableHead className="text-slate-700 font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
                   {allOffers.map((offer: any) => (
-                    <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
+                    <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-slate-50">
                       <TableCell>
                         <Badge className={offer.type === 'simple' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-purple-500/20 text-purple-400 border-purple-500/30"}>
                           {offer.type === 'simple' ? 'Simple' : 'Advanced'}
@@ -678,7 +678,7 @@ export default function OffersManager() {
       {/* Comprehensive Offer Creator Modal */}
       {isComprehensiveOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto border border-slate-700">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto border border-slate-200 shadow-2xl">
             <ComprehensiveOfferCreator 
               onClose={() => {
                 setIsComprehensiveOpen(false);

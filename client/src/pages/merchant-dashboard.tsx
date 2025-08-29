@@ -245,7 +245,7 @@ export default function MerchantDashboard() {
       <>
         <Navigation />
         <div data-theme="dim" className="min-h-screen bg-bg text-fg flex items-center justify-center">
-          <Card variant="elevated" className="max-w-md mx-4 bg-card">
+          <Card className="max-w-md mx-4 bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
             <CardBody className="p-8 text-center">
               <div className="bg-amber-500/20 p-4 rounded-full inline-block mb-4">
                 <Users className="h-8 w-8 text-amber-400" />
@@ -271,7 +271,7 @@ export default function MerchantDashboard() {
       <div data-theme="dim" className="min-h-screen bg-bg text-fg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Merchant Header */}
-          <Card variant="elevated" className="mb-8 bg-card border-dim">
+          <Card className="mb-8 bg-white/95 backdrop-blur-sm border border-white/20 shadow-xl">
             <CardBody className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -385,7 +385,7 @@ export default function MerchantDashboard() {
             </TabsList>
 
             <TabsContent value="deals" className="space-y-6">
-              <Card variant="elevated">
+              <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-lg">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Your Deals</CardTitle>
