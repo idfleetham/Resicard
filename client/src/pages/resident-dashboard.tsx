@@ -331,7 +331,7 @@ export default function ResidentDashboard() {
           {activeTab === "deals" && (
             <>
               {/* Premium Filters */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8 mb-8">
                 <div className="flex flex-wrap items-center gap-6">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-indigo-50 rounded-lg">
@@ -369,22 +369,22 @@ export default function ResidentDashboard() {
 
               {/* Deal Cards */}
               {dealsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-                      <div className="aspect-video bg-gray-200 rounded-t-2xl" />
-                      <div className="p-6 space-y-4">
-                        <div className="h-6 bg-gray-200 rounded w-3/4" />
-                        <div className="h-4 bg-gray-200 rounded w-1/2" />
-                        <div className="h-4 bg-gray-200 rounded w-full" />
-                        <div className="h-4 bg-gray-200 rounded w-2/3" />
-                        <div className="h-10 bg-gray-200 rounded-full w-full" />
+                    <div key={i} className="bg-white rounded-3xl shadow-xl border-0 animate-pulse">
+                      <div className="aspect-video bg-gradient-to-br from-purple-200 to-pink-200 rounded-t-3xl" />
+                      <div className="p-8 space-y-6">
+                        <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl w-3/4" />
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2" />
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-full" />
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-2/3" />
+                        <div className="h-12 bg-gradient-to-r from-purple-200 to-pink-200 rounded-2xl w-full" />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : filteredDeals.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                   {filteredDeals.map((deal) => {
                     const hasExistingVoucher = vouchers.some(v => v.dealId === deal.id && !v.isUsed);
                     return (

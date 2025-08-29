@@ -54,24 +54,28 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <div className="group overflow-hidden bg-white rounded-2xl shadow-lg border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 transform">
       {/* 16:9 Aspect Ratio Image */}
-      <div className="relative aspect-video overflow-hidden">
+      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-indigo-400 to-violet-600">
         <img 
           src={getImageForDeal(deal)} 
           alt={deal.title} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop";
+          }}
         />
         {/* Category Badge on Image */}
-        <div className="absolute top-3 left-3">
-          <Badge className="bg-white/90 text-gray-700 border-0 text-xs font-semibold shadow-sm">
+        <div className="absolute top-4 left-4">
+          <Badge className="bg-black/20 backdrop-blur-sm text-white border-0 text-xs font-bold shadow-lg px-3 py-1 rounded-full">
             <Tag className="w-3 h-3 mr-1" />
             {deal.category.charAt(0).toUpperCase() + deal.category.slice(1)}
           </Badge>
         </div>
         {/* Expiry Badge on Image */}
-        <div className="absolute top-3 right-3">
-          <Badge className={`${getExpiryBadgeColor()} text-xs font-medium border`}>
+        <div className="absolute top-4 right-4">
+          <Badge className="bg-black/20 backdrop-blur-sm text-white border-0 text-xs font-bold shadow-lg px-3 py-1 rounded-full">
             <Clock className="w-3 h-3 mr-1" />
             {(() => {
               const now = new Date();
@@ -96,7 +100,7 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-8 space-y-6">
         {/* Title Hierarchy */}
         <div className="space-y-2">
           <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
@@ -116,8 +120,8 @@ export default function DealCard({
         </div>
 
         {/* Discount Highlight */}
-        <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl">
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+        <div className="inline-flex items-center px-4 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl shadow-lg">
+          <span className="text-2xl font-bold text-white drop-shadow-sm">
             {deal.discountType === 'percentage' 
               ? `${deal.discountValue}% OFF`
               : `${formatCurrency(Number(deal.discountValue))} OFF`
@@ -144,10 +148,10 @@ export default function DealCard({
         <Button
           onClick={() => onRedeem?.(deal.id)}
           disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
-          className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
+          className={`w-full rounded-2xl py-4 font-bold transition-all duration-300 transform hover:scale-105 ${
             hasExistingVoucher 
               ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
-              : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg hover:shadow-xl"
+              : "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white shadow-xl hover:shadow-2xl"
           }`}
         >
           {(isLoading && loadingDealId === deal.id) ? (
