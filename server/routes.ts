@@ -1873,8 +1873,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wallet/pass", async (req, res) => {
     try {
       if (!process.env.PASS_TYPE_IDENTIFIER || !process.env.TEAM_IDENTIFIER) {
-        // Instead of returning an error, redirect to the wallet add page with a message
-        return res.redirect('/wallet/add?error=not_configured');
+        // Serve a simple HTML error page directly
+        return res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Wallet Configuration</title>
+</head>
+<body style="margin:0;font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:1.5rem;padding:2rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);max-width:28rem;width:100%">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+      <div style="width:2rem;height:2rem;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <span style="color:#dc2626;font-size:1.125rem">⚠</span>
+      </div>
+      <h1 style="color:#7f1d1d;font-weight:600;font-size:1.125rem;margin:0">Apple Wallet Configuration</h1>
+    </div>
+    <p style="color:#b91c1c;margin:1rem 0;line-height:1.5">
+      Apple Wallet integration is not yet configured on this server. The digital membership card feature will be available once the administrator sets up the required certificates.
+    </p>
+    <p style="color:#dc2626;font-size:0.875rem;margin:1rem 0 0 0">
+      Please contact support for assistance or check back later.
+    </p>
+    <div style="margin-top:1.5rem">
+      <a href="/" style="display:inline-block;background:#3b82f6;color:white;padding:0.5rem 1rem;border-radius:0.5rem;text-decoration:none;font-size:0.875rem;font-weight:500">
+        Return to Home
+      </a>
+    </div>
+  </div>
+</body>
+</html>
+        `);
       }
 
       // For now, redirect to the authenticated endpoint
@@ -1882,8 +1912,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.redirect('/wallet/resicard.pkpass');
     } catch (error) {
       console.error('Pass generation error:', error);
-      // Redirect to wallet add page with error message instead of JSON error
-      res.redirect('/wallet/add?error=generation_failed');
+      // Serve error page directly instead of redirect
+      res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Wallet Error</title>
+</head>
+<body style="margin:0;font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:1.5rem;padding:2rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);max-width:28rem;width:100%">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+      <div style="width:2rem;height:2rem;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <span style="color:#dc2626;font-size:1.125rem">⚠</span>
+      </div>
+      <h1 style="color:#7f1d1d;font-weight:600;font-size:1.125rem;margin:0">Apple Wallet Error</h1>
+    </div>
+    <p style="color:#b91c1c;margin:1rem 0;line-height:1.5">
+      Failed to generate Apple Wallet pass. There was a technical issue with the pass generation service.
+    </p>
+    <p style="color:#dc2626;font-size:0.875rem;margin:1rem 0 0 0">
+      Please try again later or contact support for assistance.
+    </p>
+    <div style="margin-top:1.5rem">
+      <a href="/" style="display:inline-block;background:#3b82f6;color:white;padding:0.5rem 1rem;border-radius:0.5rem;text-decoration:none;font-size:0.875rem;font-weight:500">
+        Return to Home
+      </a>
+    </div>
+  </div>
+</body>
+</html>
+      `);
     }
   });
 
