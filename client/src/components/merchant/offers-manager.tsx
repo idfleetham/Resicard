@@ -555,14 +555,14 @@ export default function OffersManager() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-slate-300 font-medium">Type</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Title</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Discount</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Category</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Usage</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Expiry</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Status</TableHead>
-                    <TableHead className="text-slate-300 font-medium">Actions</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Type</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Title</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Discount</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Category</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Usage</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Expiry</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Status</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
@@ -583,12 +583,12 @@ export default function OffersManager() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-slate-200">{offer.discountText}</TableCell>
-                      <TableCell className="text-slate-200">{offer.category}</TableCell>
-                      <TableCell className="text-slate-200">
+                      <TableCell className="text-slate-200 text-base">{offer.discountText}</TableCell>
+                      <TableCell className="text-slate-200 text-base">{offer.category}</TableCell>
+                      <TableCell className="text-slate-200 text-base">
                         {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
-                      <TableCell className="text-slate-200">
+                      <TableCell className="text-slate-200 text-base">
                         {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
