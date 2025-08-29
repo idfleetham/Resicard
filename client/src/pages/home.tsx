@@ -41,37 +41,48 @@ export default function Home() {
         <Navigation />
         <div className="min-h-screen">
           {/* Hero Section */}
-          <div className="relative text-white">
+          <div className="relative h-screen text-white overflow-hidden">
             <div 
-              className="absolute inset-0"
+              className="absolute inset-0 w-full h-full"
               style={{
-                backgroundImage: `url("${heroImage}")`,
+                backgroundImage: `url(${heroImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'grayscale(100%) contrast(1.1) brightness(0.4)',
+                backgroundRepeat: 'no-repeat',
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: `url(${heroImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                filter: 'grayscale(100%) contrast(1.2) brightness(0.5)',
+                mixBlendMode: 'multiply',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40"></div>
             
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+            <div className="relative flex items-center justify-center h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
                 <div className="mb-12">
-                  <h1 className="text-8xl font-bold mb-6 text-white" style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.8)' }}>
+                  <h1 className="text-8xl font-bold mb-6 text-white" style={{ textShadow: '4px 4px 12px rgba(0,0,0,0.9)' }}>
                     Resicard©
                   </h1>
-                  <h2 className="text-5xl font-light text-white/95 mb-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                  <h2 className="text-5xl font-light text-white/95 mb-8" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
                     St Andrews
                   </h2>
                 </div>
-                <p className="text-2xl mb-16 text-white/90 max-w-4xl mx-auto leading-relaxed font-light" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
+                <p className="text-2xl mb-16 text-white/90 max-w-4xl mx-auto leading-relaxed font-light" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
                   Your exclusive community membership for premium local deals, verified businesses, and exceptional savings in Scotland's historic town
                 </p>
 
                 <div className="space-x-6">
                   <Button 
                     size="lg" 
-                    className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border-2 border-white/30 hover:border-white/50 rounded-2xl px-16 py-6 text-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                    className="bg-white/15 backdrop-blur-md hover:bg-white/25 text-white border-2 border-white/40 hover:border-white/60 rounded-2xl px-16 py-6 text-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
                     onClick={() => setShowRoleSelector(true)}
                   >
                     <Rocket className="h-6 w-6 mr-3" />
