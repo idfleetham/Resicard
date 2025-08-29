@@ -704,34 +704,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { dealId } = req.body;
       const userId = req.user.id;
       
-      const deal = await storage.getDeal(dealId);
-      if (!deal) {
-        return res.status(404).json({ message: "Deal not found" });
-      }
+      // Check if dealId is a UUID (comprehensive offer) or integer (simple deal)
+      const isUUID = typeof dealId === 'string' && dealId.includes('-');
+      let deal, activeVouchersCount;
       
-      if (!deal.isActive || new Date(deal.expiryDate) < new Date()) {
-        return res.status(400).json({ message: "Deal is no longer active" });
-      }
-      
-      // Check current voucher count for this deal
-      const activeVouchersCount = await storage.getActiveVouchersCount(dealId);
-      if (activeVouchersCount >= deal.usageLimit) {
-        return res.status(400).json({ message: "Deal voucher limit reached" });
+      if (isUUID) {
+        // Handle comprehensive offers
+        const [offer] = await db.select().from(offers).where(eq(offers.id, dealId));
+        if (!offer) {
+          return res.status(404).json({ message: "Offer not found" });
+        }
+        
+        if (!offer.active || (offer.validTo && new Date(offer.validTo) < new Date())) {
+          return res.status(400).json({ message: "Offer is no longer active" });
+        }
+        
+        // For comprehensive offers, we'll create vouchers differently
+        // Convert offer to deal-like format for voucher creation
+        deal = {
+          id: dealId,
+          title: offer.title,
+          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          usageLimit: offer.maxPerTransaction || 100,
+          isActive: offer.active ?? true
+        };
+        
+        // Count existing vouchers for this offer (use a different storage method or mock for now)
+        activeVouchersCount = 0; // For now, allow unlimited comprehensive offer redemptions
+      } else {
+        // Handle simple deals (integer IDs)
+        const dealIdNum = parseInt(dealId);
+        deal = await storage.getDeal(dealIdNum);
+        if (!deal) {
+          return res.status(404).json({ message: "Deal not found" });
+        }
+        
+        if (!deal.isActive || new Date(deal.expiryDate) < new Date()) {
+          return res.status(400).json({ message: "Deal is no longer active" });
+        }
+        
+        activeVouchersCount = await storage.getActiveVouchersCount(dealIdNum);
+        if (activeVouchersCount >= deal.usageLimit) {
+          return res.status(400).json({ message: "Deal voucher limit reached" });
+        }
       }
       
       // Generate unique voucher number
       const voucherNumber = `${dealId}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
       
       // Create voucher that expires with the deal
+      // For UUID deals (comprehensive offers), we need to store the UUID in the voucherNumber for tracking
+      // but use a placeholder dealId for the database
       const voucher = await storage.createVoucher({
-        dealId,
+        dealId: isUUID ? -1 : parseInt(dealId), // Use -1 as placeholder for UUID offers
         userId,
         voucherNumber,
         expiresAt: new Date(deal.expiryDate),
       });
+
+      // Store the original dealId (UUID or integer) in the voucher response for frontend use
+      const voucherWithOriginalId = {
+        ...voucher,
+        originalDealId: dealId // Keep the original dealId for frontend compatibility
+      };
       
       res.json({ 
-        voucher, 
+        voucher: voucherWithOriginalId, 
         voucherPosition: `${activeVouchersCount + 1} of ${deal.usageLimit}`,
         message: "Voucher created successfully" 
       });
