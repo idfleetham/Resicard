@@ -9,7 +9,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool } from "@neondatabase/serverless";
 import multer from "multer";
 import express from "express";
-import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, loyaltyTransactions } from "@shared/schema";
+import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards } from "@shared/schema";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { PassKitService } from "./passkit";
@@ -549,9 +549,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create redemption record
       await storage.createRedemption({
-        dealId: dealId,
+        offerId: `deal_${dealId}`, // Convert deal ID to offer ID format
         userId: userId,
-        value: null,
+        discountValue: null,
       });
       
       res.json({

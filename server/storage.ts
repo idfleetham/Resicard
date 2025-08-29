@@ -153,25 +153,6 @@ export class MemStorage implements IStorage {
       // Merchant portal fields
       merchantId: null,
       staffPin: null,
-      subscriptionType: null,
-      subscriptionPlan: null,
-      subscriptionStatus: "inactive",
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      membershipExpiry: insertUser.role === 'resident' 
-        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
-        : null,
-      // Document verification fields
-      documentType: null,
-      documentFile: null,
-      documentStatus: null,
-      documentSubmittedAt: null,
-      documentReviewedAt: null,
-      documentReviewedBy: null,
-      isResidencyVerified: false,
-      // Merchant portal fields
-      merchantId: null,
-      staffPin: null,
       createdAt: new Date(),
     };
     this.users.set(id, user);
@@ -293,23 +274,30 @@ export class MemStorage implements IStorage {
   }
 
   async createRedemption(redemption: InsertRedemption): Promise<Redemption> {
-    const id = this.currentRedemptionId++;
+    const redemptionId = `redemption_${this.currentRedemptionId++}`;
     const newRedemption: Redemption = {
-      id,
-      dealId: redemption.dealId,
+      id: redemptionId,
+      offerId: redemption.offerId,
       userId: redemption.userId,
-      value: redemption.value || null,
+      merchantId: '',  // Will be set properly in real implementation
+      voucherCode: redemption.voucherCode || null,
+      basketValue: redemption.basketValue || null,
+      discountValue: redemption.discountValue || null,
+      finalValue: redemption.finalValue || null,
+      staffUserId: redemption.staffUserId || null,
+      deviceId: redemption.deviceId || null,
+      stationId: redemption.stationId || null,
+      status: 'completed',
       redeemedAt: new Date(),
+      voidedAt: null,
+      refundedAt: null,
+      redemptionLatitude: redemption.redemptionLatitude || null,
+      redemptionLongitude: redemption.redemptionLongitude || null,
+      withinGeofence: true,
+      createdAt: new Date(),
     };
     
-    // Update deal usage count
-    const deal = this.deals.get(redemption.dealId);
-    if (deal) {
-      deal.usageCount = (deal.usageCount || 0) + 1;
-      this.deals.set(deal.id, deal);
-    }
-    
-    this.redemptions.set(id, newRedemption);
+    this.redemptions.set(this.currentRedemptionId - 1, newRedemption);
     return newRedemption;
   }
 
@@ -358,6 +346,123 @@ export class MemStorage implements IStorage {
       totalDeals: Array.from(this.deals.values()).filter(d => d.isActive).length,
       totalRedemptions: allRedemptions.length,
       totalRevenue,
+    };
+  }
+
+  // Document verification methods
+  async submitDocument(userId: number, documentData: { documentType: string; documentFile: string }): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      documentType: documentData.documentType,
+      documentFile: documentData.documentFile,
+      documentStatus: 'pending',
+      documentSubmittedAt: new Date(),
+    });
+  }
+
+  async getPendingDocuments(): Promise<User[]> {
+    return Array.from(this.users.values()).filter(user => user.documentStatus === 'pending');
+  }
+
+  async approveDocument(userId: number, reviewerId: number): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      documentStatus: 'approved',
+      documentReviewedAt: new Date(),
+      documentReviewedBy: reviewerId,
+      isResidencyVerified: true,
+    });
+  }
+
+  async rejectDocument(userId: number, reviewerId: number): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      documentStatus: 'rejected',
+      documentReviewedAt: new Date(),
+      documentReviewedBy: reviewerId,
+    });
+  }
+
+  // Comprehensive Offer operations (stub implementations)
+  async createOffer(offer: InsertOffer): Promise<Offer> {
+    throw new Error('Offers not implemented in MemStorage');
+  }
+
+  async getOffer(id: string): Promise<Offer | undefined> {
+    throw new Error('Offers not implemented in MemStorage');
+  }
+
+  async getOffersByMerchant(merchantId: number): Promise<Offer[]> {
+    return [];
+  }
+
+  async updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined> {
+    throw new Error('Offers not implemented in MemStorage');
+  }
+
+  async deleteOffer(id: string): Promise<boolean> {
+    return false;
+  }
+
+  // Voucher operations (stub implementations)
+  async createVoucher(voucher: InsertVoucher): Promise<Voucher> {
+    throw new Error('Vouchers not implemented in MemStorage');
+  }
+
+  async getVouchersByUser(userId: number): Promise<VoucherWithDeal[]> {
+    return [];
+  }
+
+  async getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined> {
+    return undefined;
+  }
+
+  async useVoucher(voucherNumber: string): Promise<Voucher | undefined> {
+    return undefined;
+  }
+
+  async getActiveVouchersCount(dealId: number): Promise<number> {
+    return 0;
+  }
+
+  // Subscription operations
+  async updateUserSubscription(userId: number, subscriptionData: {
+    subscriptionType: string;
+    subscriptionPlan: string;
+    subscriptionStatus: string;
+    membershipExpiry: Date;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  }): Promise<User | undefined> {
+    return this.updateUser(userId, subscriptionData);
+  }
+
+  // Family member operations (stub implementations)
+  async createFamilyMembers(userId: number, familyMembers: InsertFamilyMember[]): Promise<FamilyMember[]> {
+    return [];
+  }
+
+  async getFamilyMembersByUser(userId: number): Promise<FamilyMember[]> {
+    return [];
+  }
+
+  // Merchant-related methods
+  async getMerchantByUserId(userId: number): Promise<Merchant | undefined> {
+    // Stub implementation - in real app would have separate merchant table
+    return undefined;
+  }
+
+  async createMerchantFromUser(user: any): Promise<Merchant> {
+    // Stub implementation - creates a mock merchant record
+    return {
+      id: `merchant_${user.id}`,
+      name: user.businessName || user.username || 'Unknown Business',
+      email: user.email,
+      phone: user.businessPhone || null,
+      address: user.businessAddress || null,
+      logoUrl: user.profilePhoto || null,
+      businessHours: null,
+      apiKey: null,
+      reservationProvider: null,
+      reservationUrl: null,
+      createdAt: new Date(),
     };
   }
 }
@@ -852,4 +957,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

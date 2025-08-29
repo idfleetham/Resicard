@@ -397,6 +397,7 @@ export type Offer = typeof offers.$inferSelect;
 export type InsertMerchant = z.infer<typeof insertMerchantSchema>;
 export type Merchant = typeof merchants.$inferSelect;
 export type InsertEnhancedRedemption = z.infer<typeof insertEnhancedRedemptionSchema>;
+export type InsertRedemption = InsertEnhancedRedemption;
 export type Redemption = typeof redemptions.$inferSelect;
 export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type Voucher = typeof vouchers.$inferSelect;
