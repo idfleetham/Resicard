@@ -251,7 +251,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-2 sm:p-6 space-y-4 sm:space-y-6">
       <Card className="bg-slate-900/50 border-slate-700">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-slate-100">
@@ -264,7 +264,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Navigation Sidebar */}
         <div className="lg:col-span-1">
           <Card className="bg-slate-900/50 border-slate-700 sticky top-6">
@@ -337,7 +337,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="type"
@@ -461,7 +461,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     )}
 
                     {form.watch("type") === "fixed_amount_discount" && (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="fixedPrice"
@@ -508,7 +508,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     )}
 
                     {form.watch("type") === "fixed_price_bundle" && (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="fixedPrice"
@@ -585,7 +585,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     )}
 
                     {form.watch("type") === "limited_redemptions" && (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="globalUsageLimit"
@@ -642,7 +642,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="audience"
@@ -689,7 +689,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="maxDiscount"
@@ -734,7 +734,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="stackable"
@@ -791,7 +791,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="validFrom"
@@ -936,7 +936,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               </div>
 
                               {isDayEnabled && !daySlots.allDay && (
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <div>
                                     <label className="text-sm text-slate-300 block mb-1">Start Time</label>
                                     <input
@@ -1051,7 +1051,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <FormField
                               control={form.control}
                               name={`blackoutDates.${index}.name`}
@@ -1103,7 +1103,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="maxPerTransaction"
@@ -1146,7 +1146,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="maxPerWeek"
@@ -1215,7 +1215,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="proofType"
@@ -1261,7 +1261,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="singleUse"
@@ -1336,7 +1336,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="dineInOnly"
@@ -1380,7 +1380,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="serviceChargeIncluded"
@@ -1547,7 +1547,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="feeModel"

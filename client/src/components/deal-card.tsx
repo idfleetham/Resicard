@@ -122,10 +122,10 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
         {/* Title Hierarchy */}
         <div className="space-y-2">
-          <h3 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
+          <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
             {deal.title}
           </h3>
           

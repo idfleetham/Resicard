@@ -269,11 +269,11 @@ export default function MerchantDashboard() {
     <>
       <Navigation />
       <div data-theme="dim" className="min-h-screen bg-bg text-fg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           {/* Merchant Header */}
           <Card className="mb-8 bg-card border border-white/40 shadow-xl shadow-white/20">
-            <CardBody className="p-8">
-              <div className="flex items-center justify-between">
+            <CardBody className="p-4 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center">
                   {user?.profilePhoto ? (
                     <img 
@@ -288,7 +288,7 @@ export default function MerchantDashboard() {
                   )}
                   
                   <div className="ml-4">
-                    <h1 className="text-2xl font-bold text-fg">{user.businessName}</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-fg">{user.businessName}</h1>
                     <p className="text-sm text-soft">@{user.username}</p>
                     {user.businessAddress && (
                       <p className="text-sm text-soft flex items-center mt-1">
@@ -299,7 +299,7 @@ export default function MerchantDashboard() {
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 sm:space-x-4">
                   <Select
                     defaultValue="dim"
                     onValueChange={(v) => {

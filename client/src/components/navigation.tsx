@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { MapPin, Bell, User, LogOut, Settings, CreditCard } from "lucide-react";
+import { MapPin, Bell, User, LogOut, Settings, CreditCard, Menu, X } from "lucide-react";
 import { useLocation } from "wouter";
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleRoleNavigation = () => {
     if (!user) return;
@@ -42,11 +44,12 @@ export default function Navigation() {
             >
               <MapPin className="h-6 w-6 text-primary mr-2" />
               <span className="text-xl font-bold text-slate-900">Resicard</span>
-              <span className="text-sm text-slate-600 ml-2">St Andrews</span>
+              <span className="text-sm text-slate-600 ml-2 hidden sm:inline">St Andrews</span>
             </button>
           </div>
           
-          <div className="flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 <Button
@@ -120,7 +123,109 @@ export default function Navigation() {
               </>
             )}
           </div>
+          
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-slate-600 hover:text-slate-900"
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
+        
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-200 bg-white">
+            <div className="px-4 py-2 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      handleRoleNavigation();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setLocation('/edit-profile');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  {user?.role === 'resident' && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        handleRoleNavigation();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Subscription
+                    </Button>
+                  )}
+                  <div className="pt-2 border-t border-slate-200">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout ({user?.username})
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setLocation('/login');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setLocation('/register');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white"
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

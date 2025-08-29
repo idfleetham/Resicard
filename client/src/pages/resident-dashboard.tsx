@@ -252,37 +252,37 @@ export default function ResidentDashboard() {
               opacity: 0.3,
             }}
           />
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8 sm:py-12">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4 text-white">Your Dashboard</h1>
-              <p className="text-xl opacity-90 mb-6">
+              <h1 className="text-2xl sm:text-4xl font-bold mb-4 text-white">Your Dashboard</h1>
+              <p className="text-base sm:text-xl opacity-90 mb-6">
                 Discover exclusive local deals and build your savings with Resicard
               </p>
               
               {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-4xl mx-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <Ticket className="h-8 w-8" />
+                    <Ticket className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <div className="text-2xl font-bold">{vouchers.length}</div>
-                  <div className="text-sm opacity-90">Total Vouchers</div>
+                  <div className="text-lg sm:text-2xl font-bold">{vouchers.length}</div>
+                  <div className="text-xs sm:text-sm opacity-90">Total Vouchers</div>
                 </div>
                 
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <CheckCircle className="h-8 w-8" />
+                    <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <div className="text-2xl font-bold">{activeVouchers.length}</div>
-                  <div className="text-sm opacity-90">Active Vouchers</div>
+                  <div className="text-lg sm:text-2xl font-bold">{activeVouchers.length}</div>
+                  <div className="text-xs sm:text-sm opacity-90">Active Vouchers</div>
                 </div>
                 
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <PiggyBank className="h-8 w-8" />
+                    <PiggyBank className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <div className="text-2xl font-bold">{usedVouchers.length}</div>
-                  <div className="text-sm opacity-90">Redeemed</div>
+                  <div className="text-lg sm:text-2xl font-bold">{usedVouchers.length}</div>
+                  <div className="text-xs sm:text-sm opacity-90">Redeemed</div>
                 </div>
               </div>
             </div>
@@ -290,7 +290,7 @@ export default function ResidentDashboard() {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           {/* Enhanced Tab Navigation */}
           <div className="relative mb-12">
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-2 max-w-4xl mx-auto">
