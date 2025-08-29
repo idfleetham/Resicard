@@ -711,25 +711,25 @@ export class DatabaseStorage implements IStorage {
               id: offers.id,
               title: offers.title,
               merchantId: offers.merchantId,
-              discountValue: offers.discountValue,
-              discountType: offers.discountType,
+              percentOff: offers.percentOff,
+              type: offers.type,
             })
             .from(offers)
             .where(eq(offers.id, offerId));
 
           if (offer) {
-            // Get merchant info
+            // Get merchant info from merchants table using UUID
             const [merchant] = await db
-              .select({ businessName: users.businessName })
-              .from(users)
-              .where(eq(users.id, offer.merchantId));
+              .select({ businessName: merchants.businessName })
+              .from(merchants)
+              .where(eq(merchants.id, offer.merchantId));
 
             result.push({
               ...voucher,
               dealTitle: offer.title,
               merchantName: merchant?.businessName || 'Unknown Merchant',
-              discountValue: offer.discountValue || '0',
-              discountType: offer.discountType || 'percentage',
+              discountValue: offer.percentOff?.toString() || '0',
+              discountType: offer.type || 'percentage_discount',
             });
           }
         }
