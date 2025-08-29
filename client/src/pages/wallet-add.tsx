@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Download, QrCode, Smartphone, Shield, CheckCircle } from "lucide-react";
+import { Download, QrCode, Smartphone, Shield, CheckCircle, ArrowLeft, Home } from "lucide-react";
 import QRCodeLib from "qrcode";
 
 export default function WalletAdd() {
@@ -111,21 +111,71 @@ export default function WalletAdd() {
 
   if (!user && !hasError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100">
-          <CardHeader className="p-8">
-            <CardTitle className="text-gray-900">Sign In Required</CardTitle>
-            <CardDescription className="text-gray-600">
-              Please sign in to add your Resicard to Apple Wallet
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        {/* Navigation Header */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-4xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <a 
+                href="/" 
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="font-medium">Back to Home</span>
+              </a>
+              <div className="flex items-center gap-2 text-gray-800 font-semibold">
+                <span>Resicard</span>
+                <span className="text-blue-600">•</span>
+                <span className="text-gray-600 font-normal">Apple Wallet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center p-6 min-h-[calc(100vh-80px)]">
+          <Card className="w-full max-w-md bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100">
+            <CardHeader className="p-8">
+              <CardTitle className="text-gray-900">Sign In Required</CardTitle>
+              <CardDescription className="text-gray-600">
+                Please sign in to add your Resicard to Apple Wallet
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <a 
+                href="/login" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-medium text-center block transition-colors"
+              >
+                Sign In
+              </a>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <a 
+              href="/" 
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-medium">Back to Home</span>
+            </a>
+            <div className="flex items-center gap-2 text-gray-800 font-semibold">
+              <span>Resicard</span>
+              <span className="text-blue-600">•</span>
+              <span className="text-gray-600 font-normal">Apple Wallet</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-700 text-white">
         <div className="max-w-4xl mx-auto px-6 py-16">
