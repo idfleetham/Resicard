@@ -1,15 +1,9 @@
-import { Card, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, Calendar, Ticket, MapPin, Clock, Tag } from "lucide-react";
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
 import type { DealWithMerchant } from "@shared/schema";
-import dunveganImage from "@assets/Dunny_1749765361824.jpg";
-import maishaImage from "@assets/Image 12-06-2025 at 22.53_1749765379387.jpeg";
-import tailendImage from "@assets/Image 12-06-2025 at 22.53_1749765669944.jpeg";
-import standrewsLinksImage from "@assets/Image 12-06-2025 at 22.55_1749765379381.jpeg";
-import golfCityTaxisImage from "@assets/Image 12-06-2025 at 22.54_1749765379387.jpeg";
 
 interface DealCardProps {
   deal: DealWithMerchant;
@@ -33,27 +27,7 @@ export default function DealCard({
   const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
-  const getImageForDeal = (deal: DealWithMerchant) => {
-    // First priority: Deal-specific image URL if available
-    if (deal.imageUrl) {
-      return deal.imageUrl;
-    }
-    
-    // Second priority: Map specific businesses to their uploaded images
-    const businessImages: Record<string, string> = {
-      "The Dunvegan": dunveganImage,
-      "Maisha": maishaImage,
-      "Tailend": tailendImage,
-      "St Andrews Links": standrewsLinksImage,
-      "Golf City Taxis": golfCityTaxisImage,
-    };
-    
-    // Use business-specific image if available
-    if (businessImages[deal.merchantName]) {
-      return businessImages[deal.merchantName];
-    }
-    
-    // Fallback to category images
+  const getImageForDeal = (deal: DealWithMerchant): string => {
     const categoryImages: Record<string, string> = {
       restaurant: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop",
       bar: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&h=300&fit=crop",
@@ -80,8 +54,8 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300" style={{ border: '5px solid lime', backgroundColor: 'lightblue' }}>
-      {/* 16:9 Aspect Ratio Image - NEW DESIGN TEST */}
+    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300" style={{ border: '3px solid red' }}>
+      {/* 16:9 Aspect Ratio Image */}
       <div className="relative aspect-video overflow-hidden">
         <img 
           src={getImageForDeal(deal)} 
@@ -126,7 +100,7 @@ export default function DealCard({
         {/* Title Hierarchy */}
         <div className="space-y-2">
           <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
-            {deal.title}
+            {deal.title} - NEW DESIGN TEST
           </h3>
           
           {showMerchantInfo && (
@@ -159,19 +133,16 @@ export default function DealCard({
               {deal.usageLimit - (deal.usageCount || 0)} left
             </span>
           </div>
-          <div className="relative">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="h-2 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-              />
-            </div>
-          </div>
+          
+          <Progress 
+            value={usagePercentage} 
+            className="h-2 bg-gray-100"
+          />
         </div>
 
-        {/* Pill Button with Icon */}
+        {/* Call to Action Button */}
         <Button
-          onClick={() => onRedeem && onRedeem(deal.id)}
+          onClick={() => onRedeem?.(deal.id)}
           disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
           className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
             hasExistingVoucher 
