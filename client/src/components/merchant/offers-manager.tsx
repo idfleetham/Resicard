@@ -262,7 +262,7 @@ export default function OffersManager() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-card/90 border border-white/20 shadow-lg shadow-white/10">
+            <Card key={i} className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
               <CardBody className="p-6">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20 bg-surface" />
@@ -272,7 +272,7 @@ export default function OffersManager() {
             </Card>
           ))}
         </div>
-        <Card className="bg-card/90 border border-white/20 shadow-lg shadow-white/10">
+        <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
           <CardBody className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -293,7 +293,7 @@ export default function OffersManager() {
       className="space-y-6"
     >
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/20 shadow-lg shadow-white/10 p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
@@ -503,7 +503,7 @@ export default function OffersManager() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <div className="rounded-2xl bg-white/[0.03] border border-white/20 shadow-lg shadow-white/10 p-5">
+            <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 p-5">
               <div className="flex items-center justify-between">
                 <span className="text-slate-300">{stat.title}</span>
                 <span className={`inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-elev-1`}>
@@ -517,8 +517,8 @@ export default function OffersManager() {
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-card/90 border border-white/20 shadow-lg shadow-white/10 hover:shadow-xl hover:shadow-white/15 hover:border-white/30 transition">
-        <CardHeader className="border-b border-white/15">
+      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
+        <CardHeader className="border-b border-white/30">
           <CardTitle className="text-fg">Your Offers</CardTitle>
           <CardDescription className="text-slate-300">
             Manage all your business offers and track their performance
@@ -546,7 +546,7 @@ export default function OffersManager() {
               </Button>
             </motion.div>
           ) : (
-            <div className="rounded-xl bg-surface/80 border border-white/20 shadow-lg shadow-white/10 overflow-hidden">
+            <div className="rounded-xl bg-surface/80 border border-white/40 shadow-xl shadow-white/20 overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
