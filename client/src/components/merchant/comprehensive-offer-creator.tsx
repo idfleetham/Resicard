@@ -237,7 +237,15 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
   const onSubmit = (data: OfferFormData) => {
     console.log('Form submitted with data:', data);
-    createOfferMutation.mutate(data);
+    
+    // Parse timeSlots if it's a string
+    const processedData = {
+      ...data,
+      timeSlots: typeof data.timeSlots === 'string' ? JSON.parse(data.timeSlots || '{}') : data.timeSlots
+    };
+    
+    console.log('Processed data:', processedData);
+    createOfferMutation.mutate(processedData);
   };
 
   const sections = [
