@@ -577,38 +577,47 @@ export default function ResidentDashboard() {
 
                   {/* Redeemed Vouchers Section */}
                   {usedVouchers.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-gray-500" />
-                        Redeemed Vouchers ({usedVouchers.length})
+                    <div className="space-y-6">
+                      <h3 className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-gray-100 rounded-xl">
+                          <CheckCircle className="h-6 w-6 text-gray-500" />
+                        </div>
+                        <span className="bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent">
+                          Redeemed Vouchers ({usedVouchers.length})
+                        </span>
                       </h3>
-                      <div className="grid gap-4">
+                      <div className="grid gap-6">
                         {usedVouchers.map((voucher) => (
-                          <div key={voucher.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 opacity-60">
+                          <div key={voucher.id} className="bg-white rounded-3xl shadow-lg border-0 p-8 ring-1 ring-gray-200 opacity-75">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <h3 className="font-semibold">{voucher.dealTitle}</h3>
-                                    <Badge variant="secondary">Used</Badge>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <h3 className="font-bold text-xl text-gray-700">{voucher.dealTitle}</h3>
+                                    <Badge className="bg-gray-100 text-gray-600 border-gray-200 px-3 py-1 rounded-full">Used</Badge>
                                   </div>
-                                  <p className="text-muted-foreground mb-2">{voucher.merchantName}</p>
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <span className="font-medium">
-                                      {voucher.discountType === 'percentage' 
-                                        ? `${voucher.discountValue}% off`
-                                        : `£${voucher.discountValue} off`
-                                      }
-                                    </span>
-                                    <span className="text-muted-foreground">
+                                  <p className="text-gray-500 mb-4 flex items-center">
+                                    <MapPin className="w-4 h-4 mr-2" />
+                                    {voucher.merchantName}
+                                  </p>
+                                  <div className="flex items-center gap-6 text-sm mb-4">
+                                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-300 to-gray-400 rounded-2xl">
+                                      <span className="text-lg font-bold text-white">
+                                        {voucher.discountType === 'percentage' 
+                                          ? `${voucher.discountValue}% OFF`
+                                          : `£${voucher.discountValue} OFF`
+                                        }
+                                      </span>
+                                    </div>
+                                    <span className="text-gray-500 font-medium">
                                       Used: {formatDate(voucher.usedAt || '')}
                                     </span>
                                   </div>
-                                  <div className="mt-2 text-xs font-mono bg-gray-100 px-2 py-1 rounded">
-                                    {voucher.voucherNumber}
+                                  <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
+                                    <span className="text-gray-400">Voucher Code:</span> {voucher.voucherNumber}
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <Badge variant="secondary">Redeemed</Badge>
+                                  <Badge className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 border-gray-200 px-4 py-2 rounded-full">Redeemed</Badge>
                                 </div>
                             </div>
                           </div>
