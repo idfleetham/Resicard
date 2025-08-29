@@ -252,6 +252,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   businessCategory: true,
   businessAddress: true,
   businessPhone: true,
+  profilePhoto: true,
 });
 
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).pick({
