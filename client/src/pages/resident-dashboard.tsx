@@ -682,7 +682,7 @@ export default function ResidentDashboard() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl shadow-xl border-0 p-10">
+              <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 ring-1 ring-gray-100">
                 <SubscriptionManagement 
                   subscription={subscription}
                   plans={plans}

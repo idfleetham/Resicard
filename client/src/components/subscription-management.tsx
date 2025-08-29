@@ -142,52 +142,54 @@ export default function SubscriptionManagement({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Current Subscription Status */}
       {subscription && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Current Subscription
-              <Badge className={getStatusColor(subscription.status)}>
-                {subscription.status || 'inactive'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Type</p>
-                <p className="text-lg flex items-center gap-2">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-8 border border-emerald-200">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-100 rounded-2xl">
+                <CreditCard className="h-6 w-6 text-emerald-600" />
+              </div>
+              <span className="text-2xl font-bold text-emerald-800">Current Subscription</span>
+            </div>
+            <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
+              {subscription.status === 'active' ? 'Active' : subscription.status || 'Inactive'}
+            </Badge>
+          </div>
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-white/60 rounded-2xl p-4">
+                <p className="text-emerald-600 font-bold mb-2">Type</p>
+                <p className="text-xl font-bold text-emerald-800 flex items-center gap-2">
                   {subscription.type === 'family' ? (
-                    <><Users className="h-4 w-4" /> Family</>
+                    <><Users className="h-5 w-5" /> Family</>
                   ) : (
-                    <><User className="h-4 w-4" /> Individual</>
+                    <><User className="h-5 w-5" /> Individual</>
                   )}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium">Plan</p>
-                <p className="text-lg capitalize">{subscription.plan}</p>
+              <div className="bg-white/60 rounded-2xl p-4">
+                <p className="text-emerald-600 font-bold mb-2">Plan</p>
+                <p className="text-xl font-bold text-emerald-800 capitalize">{subscription.plan}</p>
               </div>
             </div>
             
             {subscription.expiresAt && (
-              <div>
-                <p className="text-sm font-medium">Next Billing Date</p>
-                <p className="text-lg flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+              <div className="bg-white/60 rounded-2xl p-4">
+                <p className="text-emerald-600 font-bold mb-2">Next Billing Date</p>
+                <p className="text-xl font-bold text-emerald-800 flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
                   {formatDate(subscription.expiresAt)}
                 </p>
               </div>
             )}
 
             {subscription.status === 'active' && (
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-4">
                 <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button className="bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 rounded-2xl px-6 py-3 font-bold shadow-sm hover:shadow-md transition-all duration-300">
                       <X className="h-4 w-4 mr-2" />
                       Cancel Subscription
                     </Button>
@@ -218,24 +220,29 @@ export default function SubscriptionManagement({
                 </Dialog>
               </div>
             )}
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Change Subscription</CardTitle>
-          <CardDescription>
+      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 rounded-3xl p-8 border border-indigo-200">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-3 bg-indigo-100 rounded-2xl">
+              <Users className="h-6 w-6 text-indigo-600" />
+            </div>
+            <span className="text-2xl font-bold text-indigo-800">Change Subscription</span>
+          </div>
+          <p className="text-indigo-700 text-lg">
             Select a new subscription type and plan
-          </CardDescription>
-        </CardHeader>
-        <CardBody className="space-y-6">
+          </p>
+        </div>
+        <div className="space-y-8">
           {/* Subscription Type Selection */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium">Subscription Type</label>
+          <div className="space-y-4">
+            <label className="text-lg font-bold text-indigo-800">Subscription Type</label>
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger>
+              <SelectTrigger className="h-14 rounded-2xl border-2 border-indigo-200 text-lg bg-white/60">
                 <SelectValue placeholder="Select subscription type" />
               </SelectTrigger>
               <SelectContent>
@@ -257,42 +264,42 @@ export default function SubscriptionManagement({
 
           {/* Plan Selection */}
           {selectedType && (
-            <div className="space-y-3">
-              <label className="text-sm font-medium">Billing Plan</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <label className="text-lg font-bold text-indigo-800">Billing Plan</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {plans?.[selectedType] && Object.entries(plans[selectedType]).map(([planKey, planData]: [string, any]) => (
-                  <Card 
+                  <div 
                     key={planKey}
-                    className={`cursor-pointer border-2 transition-colors ${
+                    className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 transform hover:scale-105 ${
                       selectedPlan === planKey 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:border-primary/50'
-                    } ${isCurrentPlan(selectedType, planKey) ? 'ring-2 ring-green-500' : ''}`}
+                        ? 'border-indigo-400 bg-white shadow-xl' 
+                        : 'border-indigo-200 bg-white/60 hover:border-indigo-400 hover:bg-white hover:shadow-lg'
+                    } ${isCurrentPlan(selectedType, planKey) ? 'ring-2 ring-emerald-500' : ''}`}
                     onClick={() => setSelectedPlan(planKey)}
                   >
-                    <CardBody className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium capitalize">{planKey}</h3>
-                        {isCurrentPlan(selectedType, planKey) && (
-                          <Badge variant="secondary">
-                            <Check className="h-3 w-3 mr-1" />
-                            Current
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-2xl font-bold text-primary">
-                        {formatCurrency(planData.price)}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          /{planKey === 'monthly' ? 'month' : 'year'}
-                        </span>
-                      </p>
-                      {planKey === 'annual' && planData.discount && (
-                        <p className="text-sm text-green-600 mt-1">
-                          Save {planData.discount}% compared to monthly
-                        </p>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-bold text-xl text-indigo-800 capitalize">{planKey}</h3>
+                      {isCurrentPlan(selectedType, planKey) && (
+                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 px-3 py-1 rounded-2xl font-bold">
+                          <Check className="h-3 w-3 mr-1" />
+                          Current
+                        </Badge>
                       )}
-                    </CardBody>
-                  </Card>
+                    </div>
+                    <p className="text-3xl font-bold text-indigo-600 mb-2">
+                      {formatCurrency(planData.price)}
+                      <span className="text-lg font-normal text-indigo-500">
+                        /{planKey === 'monthly' ? 'month' : 'year'}
+                      </span>
+                    </p>
+                    {planKey === 'annual' && planData.discount && (
+                      <div className="inline-flex items-center px-3 py-1 bg-emerald-100 rounded-2xl">
+                        <span className="text-emerald-700 font-bold text-sm">
+                          Save {planData.discount}% compared to monthly
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -300,15 +307,15 @@ export default function SubscriptionManagement({
 
           {/* Action Buttons */}
           {selectedType && selectedPlan && (
-            <div className="space-y-4">
-              <Separator />
+            <div className="space-y-6">
+              <div className="h-px bg-gradient-to-r from-transparent via-indigo-300 to-transparent"></div>
               
-              <div className="flex items-center justify-between">
+              <div className="bg-white/60 rounded-3xl p-6 flex items-center justify-between">
                 <div>
-                  <p className="font-medium">
+                  <p className="font-bold text-xl text-indigo-800">
                     {selectedType === 'family' ? 'Family' : 'Individual'} - {selectedPlan}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-indigo-600 text-lg">
                     {formatCurrency(getPlanPrice(selectedType, selectedPlan))} per {selectedPlan === 'monthly' ? 'month' : 'year'}
                   </p>
                 </div>
@@ -316,7 +323,7 @@ export default function SubscriptionManagement({
                 <Button 
                   onClick={handleSubscriptionChange}
                   disabled={changeSubscriptionMutation.isPending || isCurrentPlan(selectedType, selectedPlan)}
-                  className="min-w-[140px]"
+                  className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl px-8 py-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 min-w-[160px]"
                 >
                   {changeSubscriptionMutation.isPending ? "Processing..." : 
                    isCurrentPlan(selectedType, selectedPlan) ? "Current Plan" : "Update Subscription"}
@@ -324,18 +331,22 @@ export default function SubscriptionManagement({
               </div>
 
               {!isCurrentPlan(selectedType, selectedPlan) && (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-medium">Note about subscription changes:</p>
-                    <p>Changes will take effect immediately. You'll be charged/credited the prorated amount.</p>
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-amber-100 rounded-xl">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div className="text-amber-800">
+                      <p className="font-bold text-lg mb-2">Note about subscription changes:</p>
+                      <p className="text-amber-700">Changes will take effect immediately. You'll be charged/credited the prorated amount.</p>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Stripe Checkout Dialog */}
       <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
