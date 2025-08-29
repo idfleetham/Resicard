@@ -14,17 +14,23 @@ export default function WalletAdd() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const baseUrl = window.location.origin;
     const passDownloadUrl = `${baseUrl}/api/wallet/pass`;
     setPassUrl(passDownloadUrl);
     
     // Check for error parameters in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    if (error === 'not_configured') {
-      setErrorMessage('Apple Wallet integration is not yet configured. Please contact support.');
-    } else if (error === 'generation_failed') {
-      setErrorMessage('Failed to generate Apple Wallet pass. Please try again later.');
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      if (error === 'not_configured') {
+        setErrorMessage('Apple Wallet integration is not yet configured. Please contact support.');
+      } else if (error === 'generation_failed') {
+        setErrorMessage('Failed to generate Apple Wallet pass. Please try again later.');
+      }
+    } catch (err) {
+      console.error('Error parsing URL parameters:', err);
     }
     
     // Generate QR code even if user is not logged in (for error display)
@@ -36,10 +42,10 @@ export default function WalletAdd() {
         light: '#FFFFFF'
       }
     }).then(setQrCodeUrl).catch(console.error);
-  }, [user]);
+  }, []);
 
   const handleAddToWallet = async () => {
-    if (!user) return;
+    if (!user || typeof window === 'undefined') return;
     
     setIsGenerating(true);
     try {
@@ -47,14 +53,14 @@ export default function WalletAdd() {
       window.location.href = passUrl;
     } catch (error) {
       console.error('Failed to add to wallet:', error);
+      setErrorMessage('Failed to redirect to Apple Wallet. Please try again.');
     } finally {
       setIsGenerating(false);
     }
   };
 
   // Check if user came from QR code with error
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasError = urlParams.get('error');
+  const hasError = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('error') : null;
 
   if (!user && !hasError) {
     return (
@@ -109,8 +115,11 @@ export default function WalletAdd() {
                 <span className="text-red-600 text-lg">⚠</span>
               </div>
               <div>
-                <h3 className="text-red-900 font-semibold">Configuration Issue</h3>
+                <h3 className="text-red-900 font-semibold">Apple Wallet Issue</h3>
                 <p className="text-red-700">{errorMessage}</p>
+                <p className="text-red-600 text-sm mt-2">
+                  Contact support or try again later for assistance.
+                </p>
               </div>
             </div>
           </div>
