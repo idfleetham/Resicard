@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, User, Save, ArrowLeft, X } from "lucide-react";
+import { Upload, User, Save, ArrowLeft, X, Smartphone } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -115,27 +115,32 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
-        <div className="flex items-center space-x-4">
-          <Link href={user.role === 'resident' ? '/resident-dashboard' : '/merchant-dashboard'}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">Edit Profile</h1>
+        <div className="relative coastal-gradient text-white rounded-3xl shadow-2xl border-0 p-8 overflow-hidden">
+          <div className="relative z-10 flex items-center space-x-4">
+            <Link href={user.role === 'resident' ? '/resident-dashboard' : '/merchant-dashboard'}>
+              <Button variant="ghost" size="sm" className="p-3 hover:bg-white/20 text-white border-white/30 rounded-2xl">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold text-white">Edit Profile</h1>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5" />
-              <span>Profile Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+        {/* Profile Form */}
+        <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 ring-1 ring-gray-100">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold flex items-center gap-3 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              <div className="p-2 bg-blue-100 rounded-xl">
+                <User className="h-6 w-6 text-blue-600" />
+              </div>
+              Profile Information
+            </h2>
+          </div>
+          <div>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Profile Photo Section */}
@@ -221,18 +226,20 @@ export default function EditProfile() {
                 </Button>
               </form>
             </Form>
-          </CardBody>
-        </Card>
+          </div>
+        </div>
 
         {/* Digital Membership Card Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5" />
-              <span>Digital Membership Card Preview</span>
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+        <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 ring-1 ring-gray-100">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+              <div className="p-2 bg-indigo-100 rounded-xl">
+                <User className="h-6 w-6 text-indigo-600" />
+              </div>
+              Digital Membership Card Preview
+            </h2>
+          </div>
+          <div>
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-16 w-16 border-2 border-white">
@@ -251,8 +258,19 @@ export default function EditProfile() {
                 </div>
               </div>
             </div>
-          </CardBody>
-        </Card>
+            
+            {/* Add to Apple Wallet Button */}
+            <div className="mt-6 flex justify-center">
+              <Button 
+                className="bg-black hover:bg-gray-800 text-white rounded-2xl px-8 py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                onClick={() => window.location.href = '/wallet/add'}
+              >
+                <Smartphone className="w-5 h-5 mr-2" />
+                Add to Apple Wallet
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
