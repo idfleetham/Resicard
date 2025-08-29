@@ -15,7 +15,7 @@ export default function WalletAdd() {
   useEffect(() => {
     if (user) {
       const baseUrl = window.location.origin;
-      const passDownloadUrl = `${baseUrl}/wallet/resicard.pkpass`;
+      const passDownloadUrl = `${baseUrl}/api/wallet/pass`;
       setPassUrl(passDownloadUrl);
       
       // Generate QR code
@@ -23,7 +23,7 @@ export default function WalletAdd() {
         width: 200,
         margin: 2,
         color: {
-          dark: '#0C0E1A',
+          dark: '#1f2937',
           light: '#FFFFFF'
         }
       }).then(setQrCodeUrl).catch(console.error);
@@ -62,7 +62,7 @@ export default function WalletAdd() {
   return (
     <div className="min-h-screen bg-bg">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white">
+      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-700 text-white">
         <div className="max-w-4xl mx-auto px-6 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -94,21 +94,21 @@ export default function WalletAdd() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Download className="w-6 h-6 text-indigo-500" />
+                <CardTitle className="flex items-center gap-3 text-gray-900">
+                  <Download className="w-6 h-6 text-blue-600" />
                   Add to Apple Wallet
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Tap the button below to add your Resicard pass to Apple Wallet
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                   <div className="text-center space-y-4">
                     {/* Pass Preview */}
                     <div className="bg-gray-900 text-white p-4 rounded-xl shadow-lg max-w-sm mx-auto">
                       {/* Header strip */}
-                      <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-t-lg mb-4">
+                      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-t-lg mb-4">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium opacity-90">RESICARD</span>
                           <span className="text-xs opacity-75">St Andrews</span>
@@ -132,7 +132,7 @@ export default function WalletAdd() {
                       </div>
                     </div>
                     
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-600">
                       Preview of your Resicard pass
                     </p>
                   </div>
@@ -164,15 +164,15 @@ export default function WalletAdd() {
                   )}
                 </Button>
 
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-gray-700">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>Instant access to deals and rewards</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-gray-700">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>Automatic updates when you earn points</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-gray-700">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>Works offline - no internet required</span>
                 </div>
@@ -188,11 +188,11 @@ export default function WalletAdd() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <QrCode className="w-6 h-6 text-purple-500" />
+                <CardTitle className="flex items-center gap-3 text-gray-900">
+                  <QrCode className="w-6 h-6 text-blue-600" />
                   Scan QR Code
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Or scan this QR code with your iPhone camera
                 </CardDescription>
               </CardHeader>
@@ -214,8 +214,8 @@ export default function WalletAdd() {
                 </div>
 
                 <div className="text-center space-y-2">
-                  <p className="text-sm font-medium">How to scan:</p>
-                  <ol className="text-sm text-muted-foreground space-y-1">
+                  <p className="text-sm font-medium text-gray-900">How to scan:</p>
+                  <ol className="text-sm text-gray-700 space-y-1">
                     <li>1. Open Camera app on your iPhone</li>
                     <li>2. Point camera at the QR code</li>
                     <li>3. Tap the notification that appears</li>
@@ -223,12 +223,12 @@ export default function WalletAdd() {
                   </ol>
                 </div>
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-blue-500 mt-0.5" />
+                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-medium text-blue-900 dark:text-blue-100">Secure & Private</p>
-                      <p className="text-blue-700 dark:text-blue-200">
+                      <p className="font-medium text-blue-900">Secure & Private</p>
+                      <p className="text-blue-700">
                         Your pass is cryptographically signed and contains no sensitive data.
                       </p>
                     </div>
@@ -248,16 +248,16 @@ export default function WalletAdd() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>About Apple Wallet Passes</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-gray-900">About Apple Wallet Passes</CardTitle>
+              <CardDescription className="text-gray-600">
                 Everything you need to know about your digital Resicard
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium mb-2">What's included:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
+                  <h4 className="font-medium mb-2 text-gray-900">What's included:</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Your member name and tier status</li>
                     <li>• Current loyalty points balance</li>
                     <li>• Valid location information</li>
@@ -265,8 +265,8 @@ export default function WalletAdd() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Automatic updates:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
+                  <h4 className="font-medium mb-2 text-gray-900">Automatic updates:</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Points balance updates automatically</li>
                     <li>• Tier changes reflect immediately</li>
                     <li>• Special offers and notifications</li>

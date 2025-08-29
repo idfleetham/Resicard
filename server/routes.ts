@@ -1869,6 +1869,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Apple Wallet Pass endpoints
+  // Public Apple Wallet pass endpoint (no auth required for QR code access)
+  app.get("/api/wallet/pass", async (req, res) => {
+    try {
+      if (!process.env.PASS_TYPE_IDENTIFIER || !process.env.TEAM_IDENTIFIER) {
+        return res.status(503).json({
+          error: "Apple Wallet pass generation not configured",
+          message: "Contact administrator to set up Apple Wallet integration"
+        });
+      }
+
+      // For now, redirect to the authenticated endpoint
+      // In production, this would generate a pass based on QR code parameters
+      res.redirect('/wallet/resicard.pkpass');
+    } catch (error) {
+      console.error('Pass generation error:', error);
+      res.status(500).json({ error: "Failed to generate pass" });
+    }
+  });
+
   app.get("/wallet/resicard.pkpass", authenticateToken, async (req, res) => {
     if (!req.user) {
       return res.status(401).json({ error: "Authentication required" });
