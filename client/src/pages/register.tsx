@@ -255,11 +255,10 @@ export default function Register() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          filter: 'grayscale(100%) contrast(1.2) brightness(0.5)',
-          mixBlendMode: 'multiply',
+          filter: 'grayscale(100%) contrast(1.1) brightness(1.2)',
         }}
       />
-      <div className="absolute inset-0 bg-black/60"></div>
+      <div className="absolute inset-0 bg-black/30"></div>
       
       {/* Content */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
