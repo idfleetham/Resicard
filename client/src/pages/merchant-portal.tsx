@@ -99,35 +99,6 @@ export default function MerchantPortal() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Select
-                    defaultValue="dim"
-                    onValueChange={(v) => {
-                      console.log('Theme changing to:', v);
-                      
-                      // Apply theme attribute
-                      document.documentElement.setAttribute('data-theme', v);
-                      document.body.setAttribute('data-theme', v);
-                      
-                      // Force a complete style recalculation
-                      const root = document.documentElement;
-                      root.style.setProperty('--force-update', Math.random().toString());
-                      
-                      // Also trigger a class change to force re-render
-                      root.classList.remove('theme-dim', 'theme-high');
-                      root.classList.add(`theme-${v}`);
-                      
-                      // Log for debugging
-                      console.log('Theme applied, data-theme:', root.getAttribute('data-theme'));
-                    }}
-                  >
-                    <SelectTrigger className="w-[160px] border-border-dim bg-surface text-fg">
-                      <SelectValue placeholder="Theme" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-surface2 border-border-dim">
-                      <SelectItem value="dim" className="text-fg">Dim</SelectItem>
-                      <SelectItem value="high" className="text-fg">High Contrast</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     Verified Business
                   </Badge>
@@ -144,31 +115,31 @@ export default function MerchantPortal() {
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-border-border-dim">
-            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
             </TabsTrigger>
-            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">Redemptions</span>
             </TabsTrigger>
-            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <QrCode className="w-4 h-4" />
               <span className="hidden sm:inline">QR Scan</span>
             </TabsTrigger>
-            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <Star className="w-4 h-4" />
               <span className="hidden sm:inline">Loyalty</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <CreditCard className="w-4 h-4" />
               <span className="hidden sm:inline">Billing</span>
             </TabsTrigger>
-            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Team</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1">
+            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
@@ -190,9 +161,9 @@ export default function MerchantPortal() {
             <div className="space-y-6">
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
+                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-lg flex items-center gap-2 text-white">
                       <Star className="w-5 h-5 text-yellow-400" />
                       Loyalty Overview
                     </CardTitle>
@@ -215,9 +186,9 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-lg flex items-center gap-2 text-white">
                       <Gift className="w-5 h-5 text-green-400" />
                       Quick Actions
                     </CardTitle>
@@ -246,9 +217,9 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
+                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Program Status</CardTitle>
+                    <CardTitle className="text-lg text-white">Program Status</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -261,9 +232,9 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">This Month</CardTitle>
+                    <CardTitle className="text-lg text-white">This Month</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -285,7 +256,7 @@ export default function MerchantPortal() {
               </div>
 
               {/* Recent Activity */}
-              <Card className="bg-card/90 border border-border-dim">
+              <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle>Recent Loyalty Activity</CardTitle>
                   <CardDescription>Latest customer loyalty interactions</CardDescription>
