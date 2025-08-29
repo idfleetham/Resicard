@@ -82,10 +82,9 @@ export default function Home() {
                 <div className="space-x-6">
                   <Button 
                     size="lg" 
-                    className="bg-white/15 backdrop-blur-md hover:bg-white/25 text-white border-2 border-white/40 hover:border-white/60 rounded-xl px-12 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                    className="bg-white/15 backdrop-blur-md hover:bg-white/25 text-white border-2 border-purple-400 hover:border-purple-300 rounded-xl px-12 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
                     onClick={() => setShowRoleSelector(true)}
                   >
-                    <Rocket className="h-5 w-5 mr-2" />
                     Begin Your Journey
                   </Button>
                 </div>
@@ -106,40 +105,40 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
-                    <Ticket className="h-6 w-6 text-slate-700" />
+                  <div className="p-2 bg-blue-100 rounded-lg inline-block mb-4">
+                    <Ticket className="h-6 w-6 text-blue-600" />
                   </div>
-                  <div className="text-3xl font-bold text-slate-800 mb-2">
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
                     {deals.filter(deal => deal.isActive).length}
                   </div>
                   <div className="text-slate-600 text-base font-medium">Active Deals</div>
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
-                    <Users className="h-6 w-6 text-slate-700" />
+                  <div className="p-2 bg-green-100 rounded-lg inline-block mb-4">
+                    <Users className="h-6 w-6 text-green-600" />
                   </div>
-                  <div className="text-3xl font-bold text-slate-800 mb-2">
+                  <div className="text-3xl font-bold text-green-600 mb-2">
                     {platformStats?.totalBusinesses || 0}
                   </div>
                   <div className="text-slate-600 text-base font-medium">Local Businesses</div>
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
-                    <CheckCircle className="h-6 w-6 text-slate-700" />
+                  <div className="p-2 bg-purple-100 rounded-lg inline-block mb-4">
+                    <CheckCircle className="h-6 w-6 text-purple-600" />
                   </div>
-                  <div className="text-3xl font-bold text-slate-800 mb-2">
+                  <div className="text-3xl font-bold text-purple-600 mb-2">
                     {platformStats?.totalRedemptions || 0}
                   </div>
                   <div className="text-slate-600 text-base font-medium">Voucher Redemptions</div>
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
-                    <Calendar className="h-6 w-6 text-slate-700" />
+                  <div className="p-2 bg-indigo-100 rounded-lg inline-block mb-4">
+                    <Calendar className="h-6 w-6 text-indigo-600" />
                   </div>
-                  <div className="text-3xl font-bold text-slate-800 mb-2">
+                  <div className="text-3xl font-bold text-indigo-600 mb-2">
                     {platformStats?.totalUsers || 0}
                   </div>
                   <div className="text-slate-600 text-base font-medium">Active Members</div>
@@ -212,8 +211,8 @@ export default function Home() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-slate-700">1</span>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-blue-600">1</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-4">Sign Up & Verify</h3>
                   <p className="text-slate-600 text-base leading-relaxed">
@@ -222,8 +221,8 @@ export default function Home() {
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-slate-700">2</span>
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-purple-600">2</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-4">Browse Premium Deals</h3>
                   <p className="text-slate-600 text-base leading-relaxed">
@@ -232,8 +231,8 @@ export default function Home() {
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-slate-700">3</span>
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-green-600">3</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-4">Create Vouchers & Save</h3>
                   <p className="text-slate-600 text-base leading-relaxed">
