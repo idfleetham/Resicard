@@ -82,11 +82,11 @@ export default function RedemptionsFeed() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Redemptions</h1>
-            <p className="text-soft">Track and manage customer voucher redemptions</p>
+            <p className="text-slate-300">Track and manage customer voucher redemptions</p>
           </div>
           <Button 
             onClick={handleExportCSV}
@@ -100,9 +100,9 @@ export default function RedemptionsFeed() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-soft">Total Redemptions</span>
+            <span className="text-slate-300">Total Redemptions</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-green-500/70 to-green-600/70 text-white shadow-elev-1">
               📈
             </span>
@@ -110,9 +110,9 @@ export default function RedemptionsFeed() {
           <div className="mt-3 text-3xl font-semibold text-fg">{getTotalRedemptions()}</div>
         </div>
         
-        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-soft">Total Value</span>
+            <span className="text-slate-300">Total Value</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500/70 to-blue-600/70 text-white shadow-elev-1">
               £
             </span>
@@ -120,9 +120,9 @@ export default function RedemptionsFeed() {
           <div className="mt-3 text-3xl font-semibold text-fg">£{getTotalValue()}</div>
         </div>
         
-        <div className="rounded-2xl bg-white/[0.03] border border-dim shadow-elev-1 p-5">
+        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-soft">This Period</span>
+            <span className="text-slate-300">This Period</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-purple-500/70 to-purple-600/70 text-white shadow-elev-1">
               📅
             </span>
@@ -134,8 +134,8 @@ export default function RedemptionsFeed() {
 
 
       {/* Filters */}
-      <Card className="bg-card/90 border border-dim shadow-elev-1">
-        <CardHeader className="border-b border-dim">
+      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1">
+        <CardHeader className="border-b border-white/40 shadow-xl shadow-white/20">
           <CardTitle className="text-lg text-fg">Filters</CardTitle>
         </CardHeader>
         <CardBody className="p-5">
@@ -189,18 +189,18 @@ export default function RedemptionsFeed() {
       </Card>
 
       {/* Redemptions Table */}
-      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-        <CardHeader className="border-b border-dim">
+      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition">
+        <CardHeader className="border-b border-white/40 shadow-xl shadow-white/20">
           <CardTitle className="text-fg">Recent Redemptions</CardTitle>
-          <CardDescription className="text-soft">
+          <CardDescription className="text-slate-300">
             Live feed of customer redemptions for your offers
           </CardDescription>
         </CardHeader>
         <CardBody className="p-5">
           {filteredRedemptions.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-soft mb-4">No redemptions found</p>
-              <p className="text-sm text-softer">
+              <p className="text-slate-300 mb-4">No redemptions found</p>
+              <p className="text-sm text-slate-300er">
                 {redemptions.length === 0 
                   ? "No customer has redeemed your offers yet"
                   : "Try adjusting your filters to see more redemptions"
@@ -208,40 +208,40 @@ export default function RedemptionsFeed() {
               </p>
             </div>
           ) : (
-            <div className="rounded-xl bg-surface/80 border border-dim shadow-elev-1 overflow-hidden">
+            <div className="rounded-xl bg-surface/80 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-soft">Date & Time</TableHead>
-                    <TableHead className="text-soft">Deal</TableHead>
-                    <TableHead className="text-soft">Customer</TableHead>
-                    <TableHead className="text-soft">Discount</TableHead>
-                    <TableHead className="text-soft">Original Price</TableHead>
-                    <TableHead className="text-soft">Staff</TableHead>
-                    <TableHead className="text-soft">Status</TableHead>
-                    <TableHead className="text-soft">Actions</TableHead>
+                    <TableHead className="text-slate-300">Date & Time</TableHead>
+                    <TableHead className="text-slate-300">Deal</TableHead>
+                    <TableHead className="text-slate-300">Customer</TableHead>
+                    <TableHead className="text-slate-300">Discount</TableHead>
+                    <TableHead className="text-slate-300">Original Price</TableHead>
+                    <TableHead className="text-slate-300">Staff</TableHead>
+                    <TableHead className="text-slate-300">Status</TableHead>
+                    <TableHead className="text-slate-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
                   {filteredRedemptions.map((redemption: any) => (
                     <TableRow key={redemption.id} className="hover:bg-white/[0.03]">
-                      <TableCell className="text-soft">
+                      <TableCell className="text-slate-300">
                         {format(parseISO(redemption.redeemedAt || redemption.createdAt), "MMM d, yyyy HH:mm")}
                       </TableCell>
                       <TableCell className="font-medium text-fg">
                         {redemption.dealTitle || redemption.offerTitle || "Unknown Deal"}
                       </TableCell>
-                      <TableCell className="text-soft">{redemption.customerName || "Guest"}</TableCell>
+                      <TableCell className="text-slate-300">{redemption.customerName || "Guest"}</TableCell>
                       <TableCell className="text-green-400 font-medium">
                         £{redemption.calculatedDiscount || redemption.value || "0.00"}
                       </TableCell>
-                      <TableCell className="text-soft">
+                      <TableCell className="text-slate-300">
                         £{redemption.basketSubtotal || "N/A"}
                       </TableCell>
-                      <TableCell className="text-soft">{redemption.staffName || "System"}</TableCell>
+                      <TableCell className="text-slate-300">{redemption.staffName || "System"}</TableCell>
                       <TableCell>{getStatusBadge(redemption)}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" className="border-dim bg-surface hover:border-dimStrong">
+                        <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 bg-surface hover:border-white/40 shadow-xl shadow-white/20Strong">
                           <Eye className="w-4 h-4" />
                         </Button>
                       </TableCell>

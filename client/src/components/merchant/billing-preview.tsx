@@ -112,18 +112,18 @@ export default function BillingPreview() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Billing Preview</h1>
-            <p className="text-soft">View monthly fees and download invoices</p>
+            <p className="text-slate-300">View monthly fees and download invoices</p>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-40 border-dim bg-surface text-fg">
+              <SelectTrigger className="w-40 border-white/40 shadow-xl shadow-white/20 bg-surface text-fg">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-surface2 border-dim">
+              <SelectContent className="bg-surface2 border-white/40 shadow-xl shadow-white/20">
                 {billingPeriods.map((period) => (
                   <SelectItem key={period.id} value={period.id} className="text-fg">
                     {period.period}
@@ -190,12 +190,12 @@ export default function BillingPreview() {
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="text-soft">Redemption Processing Fee</TableCell>
-                <TableCell className="text-soft">{currentPeriod.redemptions}</TableCell>
-                <TableCell className="text-soft">£{feePerRedemption}</TableCell>
-                <TableCell className="text-right text-soft">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+                <TableCell className="text-slate-300">Redemption Processing Fee</TableCell>
+                <TableCell className="text-slate-300">{currentPeriod.redemptions}</TableCell>
+                <TableCell className="text-slate-300">£{feePerRedemption}</TableCell>
+                <TableCell className="text-right text-slate-300">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
               </TableRow>
-              <TableRow className="border-t-2 border-dimStrong font-medium">
+              <TableRow className="border-t-2 border-white/40 shadow-xl shadow-white/20Strong font-medium">
                 <TableCell className="text-fg font-semibold" colSpan={3}>Total Due</TableCell>
                 <TableCell className="text-right text-fg font-semibold">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
               </TableRow>
@@ -203,12 +203,12 @@ export default function BillingPreview() {
           </Table>
 
           {currentPeriod.status === 'draft' && (
-            <div className="mt-4 p-4 bg-surface/50 border border-dim rounded-lg">
+            <div className="mt-4 p-4 bg-surface/50 border border-white/40 shadow-xl shadow-white/20 rounded-lg">
               <div className="flex items-start space-x-3">
                 <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-medium text-fg">Draft Invoice</h4>
-                  <p className="text-xs text-soft mt-1">
+                  <p className="text-xs text-slate-300 mt-1">
                     This is a draft invoice. The final amount will be calculated at the end of the billing period 
                     and collected via direct debit on {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}.
                   </p>
@@ -232,21 +232,21 @@ export default function BillingPreview() {
             </div>
             <div>
               <p className="font-medium text-fg">Direct Debit</p>
-              <p className="text-sm text-soft">Fees are automatically collected monthly</p>
+              <p className="text-sm text-slate-300">Fees are automatically collected monthly</p>
             </div>
           </div>
           
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-soft">Collection Date:</span>
+              <span className="text-slate-300">Collection Date:</span>
               <span className="text-fg">End of each month</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-soft">Processing Fee:</span>
+              <span className="text-slate-300">Processing Fee:</span>
               <span className="text-fg">£0.50 per redemption</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-soft">VAT:</span>
+              <span className="text-slate-300">VAT:</span>
               <span className="text-fg">Included</span>
             </div>
           </div>

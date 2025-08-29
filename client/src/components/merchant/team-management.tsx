@@ -148,11 +148,11 @@ export default function TeamManagement() {
   return (
     <div className="space-y-6 bg-bg min-h-screen p-6">
       {/* Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Team Management</h1>
-            <p className="text-soft">Manage staff accounts, roles, and access permissions</p>
+            <p className="text-slate-300">Manage staff accounts, roles, and access permissions</p>
           </div>
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
@@ -238,7 +238,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-soft text-sm">Total Staff</p>
+                <p className="text-slate-300 text-sm">Total Staff</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.length}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
@@ -249,7 +249,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-soft text-sm">Active</p>
+                <p className="text-slate-300 text-sm">Active</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "active").length}</p>
               </div>
               <UserCheck className="h-8 w-8 text-green-500" />
@@ -260,7 +260,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-soft text-sm">Pending</p>
+                <p className="text-slate-300 text-sm">Pending</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "pending").length}</p>
               </div>
               <UserX className="h-8 w-8 text-orange-500" />
@@ -281,7 +281,7 @@ export default function TeamManagement() {
               variant="outline"
               size="sm"
               onClick={() => setShowPins(!showPins)}
-              className="border-dim hover:bg-surface/50"
+              className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50"
             >
               {showPins ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
               {showPins ? "Hide PINs" : "Show PINs"}
@@ -305,13 +305,13 @@ export default function TeamManagement() {
               {staffMembers.map((member) => (
                 <TableRow key={member.id}>
                   <TableCell className="font-medium text-fg">{member.name}</TableCell>
-                  <TableCell className="text-soft">{member.email}</TableCell>
+                  <TableCell className="text-slate-300">{member.email}</TableCell>
                   <TableCell>{getRoleBadge(member.role)}</TableCell>
                   <TableCell>{getStatusBadge(member.status)}</TableCell>
-                  <TableCell className="text-soft font-mono">
+                  <TableCell className="text-slate-300 font-mono">
                     {showPins ? member.staffPin : "••••"}
                   </TableCell>
-                  <TableCell className="text-soft">
+                  <TableCell className="text-slate-300">
                     {member.lastActive 
                       ? new Date(member.lastActive).toLocaleDateString()
                       : "Never"
@@ -319,10 +319,10 @@ export default function TeamManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
-                      <Button variant="outline" size="sm" className="border-dim hover:bg-surface/50">
+                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50">
                         <RotateCcw className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm" className="border-dim hover:bg-surface/50">
+                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -348,7 +348,7 @@ export default function TeamManagement() {
               <Key className="h-5 w-5 text-blue-500 mt-0.5" />
               <div>
                 <h4 className="text-sm font-medium text-fg">PIN Requirements</h4>
-                <p className="text-xs text-soft mt-1">
+                <p className="text-xs text-slate-300 mt-1">
                   All staff members are assigned a unique 4-digit PIN for voucher redemption.
                   PINs can be rotated for security purposes.
                 </p>
@@ -358,7 +358,7 @@ export default function TeamManagement() {
               <Shield className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
                 <h4 className="text-sm font-medium text-fg">Security Best Practices</h4>
-                <p className="text-xs text-soft mt-1">
+                <p className="text-xs text-slate-300 mt-1">
                   Regularly rotate PINs and ensure staff don't share their access codes.
                   Monitor redemption activity for suspicious patterns.
                 </p>

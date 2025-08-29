@@ -124,28 +124,28 @@ export default function QRRedemption() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">QR & Code Redemption</h1>
-            <p className="text-soft">Redeem customer vouchers and generate QR codes for your offers</p>
+            <p className="text-slate-300">Redeem customer vouchers and generate QR codes for your offers</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-6">
         {/* Main Voucher Redemption Card */}
-        <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition p-5">
+        <div className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition p-5">
           <h2 className="text-2xl font-semibold mb-1 text-fg">Redeem Voucher</h2>
-          <p className="text-soft mb-4">Enter voucher code or scan QR to process customer redemption</p>
+          <p className="text-slate-300 mb-4">Enter voucher code or scan QR to process customer redemption</p>
 
           {/* Custom Tab Buttons */}
-          <div className="mb-4 inline-flex rounded-xl border border-dim bg-surface overflow-hidden">
+          <div className="mb-4 inline-flex rounded-xl border border-white/40 shadow-xl shadow-white/20 bg-surface overflow-hidden">
             <button
               className={`px-4 py-2 text-sm transition-colors ${
                 activeTab === 'manual'
                   ? 'bg-surface2 text-fg'
-                  : 'text-soft hover:bg-white/[0.03]'
+                  : 'text-slate-300 hover:bg-white/[0.03]'
               }`}
               onClick={() => setActiveTab('manual')}
             >
@@ -155,7 +155,7 @@ export default function QRRedemption() {
               className={`px-4 py-2 text-sm transition-colors ${
                 activeTab === 'qr-scan'
                   ? 'bg-surface2 text-fg'
-                  : 'text-soft hover:bg-white/[0.03]'
+                  : 'text-slate-300 hover:bg-white/[0.03]'
               }`}
               onClick={() => setActiveTab('qr-scan')}
             >
@@ -188,7 +188,7 @@ export default function QRRedemption() {
 
               <div>
                 <label className="block text-sm font-medium tracking-wide text-fg mb-1">
-                  Basket Amount <span className="text-soft">(Optional)</span>
+                  Basket Amount <span className="text-slate-300">(Optional)</span>
                 </label>
                 <Input
                   type="number"
@@ -198,7 +198,7 @@ export default function QRRedemption() {
                   onChange={(e) => setBasketAmount(e.target.value)}
                   className="input-dark"
                 />
-                <p className="text-xs text-soft/80 mt-1">Enter basket total for percentage discounts</p>
+                <p className="text-xs text-slate-300/80 mt-1">Enter basket total for percentage discounts</p>
               </div>
 
               <div className="pt-2">
@@ -222,10 +222,10 @@ export default function QRRedemption() {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl bg-surface border border-dim p-4">
+            <div className="rounded-xl bg-surface border border-white/40 shadow-xl shadow-white/20 p-4">
               <div className="text-center py-8">
-                <Camera className="w-12 h-12 mx-auto mb-4 text-soft" />
-                <p className="text-soft mb-4">Camera preview and scanner go here</p>
+                <Camera className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                <p className="text-slate-300 mb-4">Camera preview and scanner go here</p>
                 <button 
                   onClick={handleScanQR}
                   disabled={isScanning}
@@ -245,7 +245,7 @@ export default function QRRedemption() {
                 </button>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-dim">
+              <div className="mt-4 pt-4 border-t border-white/40 shadow-xl shadow-white/20">
                 <label className="block text-sm font-medium tracking-wide text-fg mb-1">Staff PIN</label>
                 <Input
                   type="password"
@@ -260,13 +260,13 @@ export default function QRRedemption() {
         </div>
 
         {/* QR Code Generation Card */}
-        <div className="bg-card/90 border border-dim rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition p-5">
-          <div className="border-b border-dim pb-4 mb-4">
+        <div className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition p-5">
+          <div className="border-b border-white/40 shadow-xl shadow-white/20 pb-4 mb-4">
             <h2 className="text-lg font-semibold text-fg flex items-center space-x-2">
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
             </h2>
-            <p className="text-soft text-sm mt-1">Create QR codes for your offers to display in-store</p>
+            <p className="text-slate-300 text-sm mt-1">Create QR codes for your offers to display in-store</p>
           </div>
 
           <div className="space-y-4">
@@ -278,7 +278,7 @@ export default function QRRedemption() {
                 onChange={(e) => setSelectedOffer(e.target.value)}
                 className="input-dark"
               />
-              <p className="text-xs text-soft/80 mt-1">
+              <p className="text-xs text-slate-300/80 mt-1">
                 Placeholder: In full implementation, this would be a dropdown of active offers
               </p>
             </div>
@@ -304,12 +304,12 @@ export default function QRRedemption() {
             </div>
             
             {qrCodeUrl && (
-              <div className="text-center pt-4 border-t border-dim">
+              <div className="text-center pt-4 border-t border-white/40 shadow-xl shadow-white/20">
                 <p className="text-sm font-medium mb-2 text-fg">Generated QR Code</p>
-                <div className="inline-block p-4 bg-surface border border-dim rounded-lg">
+                <div className="inline-block p-4 bg-surface border border-white/40 shadow-xl shadow-white/20 rounded-lg">
                   <img src={qrCodeUrl} alt="Offer QR Code" className="w-32 h-32" />
                 </div>
-                <p className="text-xs text-soft mt-2">
+                <p className="text-xs text-slate-300 mt-2">
                   Print this QR code and display it in your store
                 </p>
               </div>

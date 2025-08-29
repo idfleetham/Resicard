@@ -442,7 +442,7 @@ export default function MerchantSettings() {
                 onClick={() => handleSelect(suggestion.description)}
               >
                 <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
-                <div className="text-sm text-slate-400">{suggestion.structured_formatting.secondary_text}</div>
+                <div className="text-sm text-slate-300">{suggestion.structured_formatting.secondary_text}</div>
               </button>
             ))}
           </div>
@@ -478,10 +478,10 @@ export default function MerchantSettings() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
+        <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 p-8 text-center">
           <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Authentication Required</h3>
-            <p className="text-slate-400 mb-4">Please log in to access merchant settings.</p>
+            <p className="text-slate-300 mb-4">Please log in to access merchant settings.</p>
             <Button 
               onClick={() => window.location.href = '/login'}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
@@ -497,10 +497,10 @@ export default function MerchantSettings() {
   if (user.role !== 'merchant') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="bg-slate-900/50 border-slate-700 p-8 text-center">
+        <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 p-8 text-center">
           <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Access Denied</h3>
-            <p className="text-slate-400 mb-4">This page is only accessible to merchant accounts.</p>
+            <p className="text-slate-300 mb-4">This page is only accessible to merchant accounts.</p>
             <Button 
               onClick={() => window.location.href = '/'}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
@@ -521,24 +521,24 @@ export default function MerchantSettings() {
       className="space-y-6"
     >
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-dim p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Business Settings</h1>
-            <p className="text-soft">Manage your business profile and account details</p>
+            <p className="text-slate-300">Manage your business profile and account details</p>
           </div>
         </div>
       </div>
 
-      <Card className="bg-card/90 border border-dim shadow-elev-1 hover:shadow-elev-2 hover:border-dimStrong transition">
-        <CardHeader className="border-b border-dim">
+      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 hover:shadow-elev-2 hover:border-white/40Strong transition">
+        <CardHeader className="border-b border-white/40">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-fg">Settings</CardTitle>
-              <CardDescription className="text-soft">
+              <CardDescription className="text-slate-300">
                 Manage your merchant account settings and preferences
               </CardDescription>
             </div>
@@ -549,7 +549,7 @@ export default function MerchantSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Navigation */}
         <div className="lg:col-span-1">
-          <Card className="bg-card/90 border border-dim shadow-elev-1">
+          <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1">
             <CardBody className="p-4">
               <nav className="space-y-2">
                 <Button
@@ -625,13 +625,13 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Building2 className="w-5 h-5 text-blue-400" />
                     <span>Business Details</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-300">
                     Update your business information and contact details
                   </CardDescription>
                 </CardHeader>
@@ -806,13 +806,13 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Clock className="w-5 h-5 text-green-400" />
                     <span>Business Hours</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-300">
                     Set your operating hours for customer reference
                   </CardDescription>
                 </CardHeader>
@@ -831,7 +831,7 @@ export default function MerchantSettings() {
                                 <div className="flex items-center justify-between mb-3">
                                   <FormLabel className="capitalize text-slate-200 text-base font-medium">{day}</FormLabel>
                                   <div className="flex items-center space-x-3">
-                                    <span className="text-sm text-slate-400">Closed</span>
+                                    <span className="text-sm text-slate-300">Closed</span>
                                     <Switch
                                       checked={!isClosed}
                                       onCheckedChange={(checked) => {
@@ -839,7 +839,7 @@ export default function MerchantSettings() {
                                       }}
                                       className="data-[state=checked]:bg-green-600"
                                     />
-                                    <span className="text-sm text-slate-400">Open</span>
+                                    <span className="text-sm text-slate-300">Open</span>
                                   </div>
                                 </div>
                                 {!isClosed && (
@@ -866,7 +866,7 @@ export default function MerchantSettings() {
                                           ))}
                                         </SelectContent>
                                       </Select>
-                                      <span className="text-center text-slate-400 font-medium">to</span>
+                                      <span className="text-center text-slate-300 font-medium">to</span>
                                       <Select
                                         value={field.value.split(" - ")[1] || "6:00 PM"}
                                         onValueChange={(value) => {
@@ -918,13 +918,13 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Camera className="w-5 h-5 text-purple-400" />
                     <span>Logo & Branding</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-300">
                     Upload your business logo and customize branding
                   </CardDescription>
                 </CardHeader>
@@ -954,7 +954,7 @@ export default function MerchantSettings() {
                           <Upload className="w-4 h-4 mr-2" />
                           Upload Logo
                         </label>
-                        <p className="text-sm text-slate-400 mt-2">
+                        <p className="text-sm text-slate-300 mt-2">
                           Upload any image - you'll be able to crop and resize it
                         </p>
                         {uploadLogoMutation.isPending && (
@@ -1063,13 +1063,13 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Calendar className="w-5 h-5 text-green-400" />
                     <span>Reservation System</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-300">
                     Connect your reservation system to display a "Book a Table" button
                   </CardDescription>
                 </CardHeader>
@@ -1119,7 +1119,7 @@ export default function MerchantSettings() {
                                 />
                               </FormControl>
                               <FormMessage />
-                              <p className="text-sm text-slate-400">
+                              <p className="text-sm text-slate-300">
                                 This link will be shown to customers as a "Book a Table" button
                               </p>
                             </FormItem>
@@ -1164,7 +1164,7 @@ export default function MerchantSettings() {
                   {reservationForm.watch("provider") !== "none" && (
                     <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
                       <h4 className="font-medium text-slate-200 mb-2">How it works</h4>
-                      <ul className="text-sm text-slate-400 space-y-1">
+                      <ul className="text-sm text-slate-300 space-y-1">
                         <li>• A "Book a Table" button will appear on your business profile</li>
                         <li>• Customers can click to visit your reservation system</li>
                         <li>• Works with all major reservation platforms</li>
@@ -1183,13 +1183,13 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-slate-900/50 border-slate-700 hover:shadow-xl hover:border-slate-600 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Key className="w-5 h-5 text-yellow-400" />
                     <span>API Access</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-300">
                     Manage API keys for third-party integrations
                   </CardDescription>
                 </CardHeader>
@@ -1220,7 +1220,7 @@ export default function MerchantSettings() {
                         <RefreshCw className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-300">
                       Keep your API key secret. It provides full access to your merchant account.
                     </p>
                   </div>
@@ -1229,7 +1229,7 @@ export default function MerchantSettings() {
                     <h4 className="font-medium text-slate-200">API Documentation</h4>
                     <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                       <h5 className="font-medium mb-2 text-slate-200">Available Endpoints</h5>
-                      <ul className="space-y-1 text-sm text-slate-400">
+                      <ul className="space-y-1 text-sm text-slate-300">
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">GET /api/offers</code> - List your offers</li>
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">POST /api/offers</code> - Create new offer</li>
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">GET /api/redemptions</code> - List redemptions</li>
@@ -1243,7 +1243,7 @@ export default function MerchantSettings() {
                     <div className="flex items-center space-x-2">
                       <Badge className="bg-slate-700 text-slate-300 border-slate-600">No Active Integrations</Badge>
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-slate-300">
                       Connect third-party applications using your API key to automate offer management and redemption processing.
                     </p>
                   </div>
