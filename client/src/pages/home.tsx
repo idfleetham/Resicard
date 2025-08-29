@@ -76,7 +76,7 @@ export default function Home() {
                   </h2>
                 </div>
                 <p className="text-lg mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed font-light" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
-                  Your exclusive community membership for premium local deals, verified businesses, and exceptional savings in Scotland's historic town
+                  Your exclusive community membership for premium local offers, verified businesses, and exceptional savings in Scotland's historic town
                 </p>
 
                 <div className="space-x-6">
@@ -111,7 +111,7 @@ export default function Home() {
                   <div className="text-3xl font-bold text-blue-600 mb-2">
                     {deals.filter(deal => deal.isActive).length}
                   </div>
-                  <div className="text-slate-600 text-base font-medium">Active Deals</div>
+                  <div className="text-slate-600 text-base font-medium">Active Offers</div>
                 </div>
                 
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
@@ -147,7 +147,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* All Deals */}
+          {/* All Offers */}
           <div className="bg-white py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
@@ -224,7 +224,7 @@ export default function Home() {
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center inline-block mb-6">
                     <span className="text-xl font-bold text-purple-600">2</span>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">Browse Premium Deals</h3>
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">Browse Premium Offers</h3>
                   <p className="text-slate-600 text-base leading-relaxed">
                     Explore exclusive offers from verified restaurants, bars, cafes, and premium local businesses
                   </p>

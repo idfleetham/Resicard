@@ -1,4 +1,4 @@
-# Resicard St Andrews - Community Deals Platform
+# Resicard St Andrews - Community Offers Platform
 
 ## Overview
 
