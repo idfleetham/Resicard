@@ -41,34 +41,41 @@ export default function Home() {
         <Navigation />
         <div className="min-h-screen">
           {/* Hero Section */}
-          <div className="relative bg-gradient-to-br from-slate-900 via-indigo-900 to-violet-900 text-white overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-48 translate-x-48"></div>
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-36 -translate-x-36"></div>
-            <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-white/10 rounded-full -translate-x-24 -translate-y-24"></div>
+          <div className="relative text-white">
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("${heroImage}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'grayscale(100%) contrast(1.1) brightness(0.4)',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
             
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
               <div className="text-center">
-                <div className="mb-8 text-center">
-                  <h1 className="text-7xl font-bold mb-4 bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+                <div className="mb-12">
+                  <h1 className="text-8xl font-bold mb-6 text-white" style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.8)' }}>
                     Resicard©
                   </h1>
-                  <h2 className="text-4xl font-semibold text-white/90 mb-6">
+                  <h2 className="text-5xl font-light text-white/95 mb-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                     St Andrews
                   </h2>
                 </div>
-                <p className="text-2xl mb-12 text-white/80 max-w-3xl mx-auto leading-relaxed">
-                  Your premium community membership for exclusive local deals, verified businesses, and exceptional savings in St Andrews
+                <p className="text-2xl mb-16 text-white/90 max-w-4xl mx-auto leading-relaxed font-light" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
+                  Your exclusive community membership for premium local deals, verified businesses, and exceptional savings in Scotland's historic town
                 </p>
 
                 <div className="space-x-6">
                   <Button 
                     size="lg" 
-                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 rounded-3xl px-12 py-6 text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                    className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border-2 border-white/30 hover:border-white/50 rounded-2xl px-16 py-6 text-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
                     onClick={() => setShowRoleSelector(true)}
                   >
                     <Rocket className="h-6 w-6 mr-3" />
-                    Get Started Today
+                    Begin Your Journey
                   </Button>
                 </div>
               </div>
@@ -76,68 +83,68 @@ export default function Home() {
           </div>
 
           {/* Stats Section */}
-          <div className="bg-gradient-to-r from-gray-50 to-slate-100 py-20">
+          <div className="bg-slate-50 py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4">
+              <div className="text-center mb-20">
+                <h2 className="text-5xl font-bold text-slate-800 mb-6">
                   Trusted by the Community
                 </h2>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Join thousands of St Andrews residents saving with verified local businesses
+                <p className="text-2xl text-slate-600 max-w-3xl mx-auto font-light">
+                  Join thousands of St Andrews residents experiencing exceptional savings with our curated collection of local businesses
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-gradient-to-r from-indigo-100 to-violet-100 rounded-2xl inline-block mb-6">
-                    <Ticket className="h-10 w-10 text-indigo-600" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
+                    <Ticket className="h-8 w-8 text-slate-700" />
                   </div>
-                  <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-3">
+                  <div className="text-4xl font-bold text-slate-800 mb-3">
                     {deals.filter(deal => deal.isActive).length}
                   </div>
-                  <div className="text-gray-600 text-lg font-semibold">Active Deals</div>
+                  <div className="text-slate-600 text-lg font-medium">Active Deals</div>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl inline-block mb-6">
-                    <Users className="h-10 w-10 text-emerald-600" />
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
+                    <Users className="h-8 w-8 text-slate-700" />
                   </div>
-                  <div className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3">
+                  <div className="text-4xl font-bold text-slate-800 mb-3">
                     {platformStats?.totalBusinesses || 0}
                   </div>
-                  <div className="text-gray-600 text-lg font-semibold">Local Businesses</div>
+                  <div className="text-slate-600 text-lg font-medium">Local Businesses</div>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl inline-block mb-6">
-                    <CheckCircle className="h-10 w-10 text-amber-600" />
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
+                    <CheckCircle className="h-8 w-8 text-slate-700" />
                   </div>
-                  <div className="text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-3">
+                  <div className="text-4xl font-bold text-slate-800 mb-3">
                     {platformStats?.totalRedemptions || 0}
                   </div>
-                  <div className="text-gray-600 text-lg font-semibold">Voucher Redemptions</div>
+                  <div className="text-slate-600 text-lg font-medium">Voucher Redemptions</div>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-2xl inline-block mb-6">
-                    <Calendar className="h-10 w-10 text-blue-600" />
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
+                    <Calendar className="h-8 w-8 text-slate-700" />
                   </div>
-                  <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-3">
+                  <div className="text-4xl font-bold text-slate-800 mb-3">
                     {platformStats?.totalUsers || 0}
                   </div>
-                  <div className="text-gray-600 text-lg font-semibold">Active Members</div>
+                  <div className="text-slate-600 text-lg font-medium">Active Members</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* All Deals */}
-          <div className="bg-white py-20">
+          <div className="bg-white py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-16">
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-6">
+              <div className="text-center mb-20">
+                <h2 className="text-5xl font-bold text-slate-800 mb-6">
                   Current Local Deals
                 </h2>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
                   Discover exclusive offers from our handpicked collection of verified local businesses
                 </p>
               </div>
@@ -168,11 +175,11 @@ export default function Home() {
               </div>
             )}
             
-            <div className="text-center mt-16">
+            <div className="text-center mt-20">
               <Button 
                 size="lg" 
                 onClick={() => setShowRoleSelector(true)}
-                className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-3xl px-12 py-6 text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                className="bg-slate-800 hover:bg-slate-900 text-white rounded-2xl px-16 py-6 text-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
               >
                 Join to Access All Deals
               </Button>
@@ -181,44 +188,44 @@ export default function Home() {
           </div>
 
           {/* How it Works */}
-          <div className="bg-gradient-to-r from-gray-50 to-slate-100 py-20">
+          <div className="bg-slate-50 py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-16">
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-6">
+              <div className="text-center mb-20">
+                <h2 className="text-5xl font-bold text-slate-800 mb-6">
                   How Resicard© Works
                 </h2>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
                   Three simple steps to unlock exclusive savings at your favorite local spots
                 </p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-6 bg-gradient-to-r from-indigo-100 to-violet-100 rounded-3xl inline-block mb-8">
-                    <span className="text-4xl font-bold text-indigo-600">1</span>
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
+                    <span className="text-2xl font-bold text-slate-700">1</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Sign Up & Verify</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
+                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Sign Up & Verify</h3>
+                  <p className="text-slate-600 text-lg leading-relaxed">
                     Register with your postcode to verify you're within 10 miles of St Andrews and complete your residency verification
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-6 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-3xl inline-block mb-8">
-                    <span className="text-4xl font-bold text-emerald-600">2</span>
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
+                    <span className="text-2xl font-bold text-slate-700">2</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Browse Premium Deals</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
+                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Browse Premium Deals</h3>
+                  <p className="text-slate-600 text-lg leading-relaxed">
                     Explore exclusive offers from verified restaurants, bars, cafes, and premium local businesses
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 text-center ring-1 ring-gray-100 hover:shadow-3xl transition-all duration-300 transform hover:scale-105">
-                  <div className="p-6 bg-gradient-to-r from-amber-100 to-orange-100 rounded-3xl inline-block mb-8">
-                    <span className="text-4xl font-bold text-amber-600">3</span>
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
+                    <span className="text-2xl font-bold text-slate-700">3</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Create Vouchers & Save</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
+                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Create Vouchers & Save</h3>
+                  <p className="text-slate-600 text-lg leading-relaxed">
                     Build your digital voucher wallet and redeem instantly at participating businesses with QR codes
                   </p>
                 </div>
@@ -228,19 +235,19 @@ export default function Home() {
         </div>
         
         {/* Footer */}
-        <footer className="bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <footer className="bg-slate-900 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
-              <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+              <h3 className="text-4xl font-bold mb-6 text-white">
                 Resicard© St Andrews
               </h3>
-              <p className="text-white/70 text-lg mb-6">
-                Your premium community membership platform
+              <p className="text-slate-300 text-xl mb-8 font-light">
+                Your exclusive community membership platform
               </p>
-              <div className="text-white/60 text-sm">
-                <p>&copy; 2024 Resicard St Andrews. All rights reserved.</p>
-                <div className="mt-4 space-x-6">
-                  <Link href="/admin-signup" className="text-white/70 hover:text-white transition-colors duration-300 font-semibold">
+              <div className="text-slate-400">
+                <p className="text-lg">&copy; 2024 Resicard St Andrews. All rights reserved.</p>
+                <div className="mt-6 space-x-8">
+                  <Link href="/admin-signup" className="text-slate-300 hover:text-white transition-colors duration-300 font-medium text-lg">
                     Admin Portal
                   </Link>
                 </div>
