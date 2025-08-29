@@ -6,6 +6,11 @@ import { Users, Calendar, Ticket, MapPin, Clock, Tag, FileText } from "lucide-re
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
 import DealDetailsModal from "./deal-details-modal";
 import type { DealWithMerchant } from "@shared/schema";
+import dunveganImage from "@assets/Dunny_1749765361824.jpg";
+import maishaImage from "@assets/Image 12-06-2025 at 22.53_1749765379387.jpeg";
+import tailendImage from "@assets/Image 12-06-2025 at 22.54_1749765379387.jpeg";
+import standrewsLinksImage from "@assets/Image 12-06-2025 at 22.55_1749765379381.jpeg";
+import golfCityTaxisImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 interface DealCardProps {
   deal: DealWithMerchant;
@@ -29,6 +34,33 @@ export default function DealCard({
   const isExpired = new Date(deal.expiryDate) < new Date();
   const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
+
+  const getImageForDeal = (deal: DealWithMerchant) => {
+    // First priority: Deal-specific image URL if available
+    if (deal.imageUrl) {
+      return deal.imageUrl;
+    }
+    
+    // Second priority: Map specific businesses to their uploaded images
+    const businessImages: Record<string, string> = {
+      "The Dunvegan": dunveganImage,
+      "The Dunvegan Hotel": dunveganImage,
+      "Maisha": maishaImage,
+      "Tailend": tailendImage,
+      "St Andrews Links": standrewsLinksImage,
+      "Golf City Taxis": golfCityTaxisImage,
+      "kingdomchiro": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format", // Professional healthcare/wellness image
+      "Kingdom Chiropractic Clinics": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format",
+    };
+    
+    // Use business-specific image if available
+    if (businessImages[deal.merchantName]) {
+      return businessImages[deal.merchantName];
+    }
+    
+    // Fallback to null for gradient background
+    return null;
+  };
 
   const getCategoryGradient = (category: string): string => {
     const gradients: Record<string, string> = {
@@ -61,9 +93,9 @@ export default function DealCard({
       <div className="group overflow-hidden bg-white rounded-3xl shadow-2xl border-2 border-gray-200 hover:shadow-3xl hover:border-gray-300 hover:-translate-y-3 transition-all duration-500 transform">
       {/* 16:9 Aspect Ratio Image or Gradient Background */}
       <div className="relative aspect-video overflow-hidden">
-        {deal.imageUrl ? (
+        {getImageForDeal(deal) ? (
           <img 
-            src={deal.imageUrl} 
+            src={getImageForDeal(deal)!} 
             alt={deal.title} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -133,7 +165,13 @@ export default function DealCard({
           {showMerchantInfo && (
             <div className="flex items-center text-gray-600">
               <MapPin className="w-4 h-4 mr-1" />
-              <span className="font-medium text-sm">{deal.merchantName}</span>
+              <span className="font-medium text-sm">
+                {deal.merchantName && deal.merchantName.trim() !== '' && deal.merchantName !== 'luke' && deal.merchantName !== 'kingdomchiro' 
+                  ? deal.merchantName 
+                  : (deal.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 
+                     'Business Name Not Set')
+                }
+              </span>
             </div>
           )}
           

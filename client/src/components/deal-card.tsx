@@ -47,6 +47,8 @@ export default function DealCard({
       "Tailend": tailendImage,
       "St Andrews Links": standrewsLinksImage,
       "Golf City Taxis": golfCityTaxisImage,
+      "kingdomchiro": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format", // Professional healthcare/wellness image
+      "Kingdom Chiropractic Clinics": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format",
     };
     
     // Use business-specific image if available
