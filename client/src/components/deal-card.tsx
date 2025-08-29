@@ -42,6 +42,7 @@ export default function DealCard({
     // Second priority: Map specific businesses to their uploaded images
     const businessImages: Record<string, string> = {
       "The Dunvegan": dunveganImage,
+      "The Dunvegan Hotel": dunveganImage,
       "Maisha": maishaImage,
       "Tailend": tailendImage,
       "St Andrews Links": standrewsLinksImage,
@@ -135,7 +136,6 @@ export default function DealCard({
                 {deal.merchantName && deal.merchantName.trim() !== '' && deal.merchantName !== 'luke' && deal.merchantName !== 'kingdomchiro' 
                   ? deal.merchantName 
                   : (deal.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 
-                     deal.merchantName === 'luke' ? 'Luke\'s Business' : 
                      'Business Name Not Set')
                 }
               </div>
