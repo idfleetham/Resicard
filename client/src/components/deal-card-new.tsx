@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, Calendar, Ticket, MapPin, Clock, Tag } from "lucide-react";
+import { Users, Calendar, Ticket, MapPin, Clock, Tag, FileText } from "lucide-react";
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
+import DealDetailsModal from "./deal-details-modal";
 import type { DealWithMerchant } from "@shared/schema";
 
 interface DealCardProps {
@@ -22,6 +24,7 @@ export default function DealCard({
   loadingDealId,
   hasExistingVoucher = false
 }: DealCardProps) {
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
   const isExpired = new Date(deal.expiryDate) < new Date();
   const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
@@ -54,7 +57,8 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-3xl shadow-xl border-0 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 transform ring-1 ring-gray-100">
+    <>
+      <div className="group overflow-hidden bg-white rounded-3xl shadow-2xl border-2 border-gray-200 hover:shadow-3xl hover:border-gray-300 hover:-translate-y-3 transition-all duration-500 transform">
       {/* 16:9 Aspect Ratio Image or Gradient Background */}
       <div className="relative aspect-video overflow-hidden">
         {deal.imageUrl ? (
@@ -163,36 +167,54 @@ export default function DealCard({
           />
         </div>
 
-        {/* Call to Action Button */}
-        <Button
-          onClick={() => onRedeem?.(deal.id)}
-          disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
-          className={`w-full rounded-2xl py-4 font-bold transition-all duration-300 transform hover:scale-105 ${
-            hasExistingVoucher 
-              ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
-              : "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white shadow-xl hover:shadow-2xl"
-          }`}
-        >
-          {(isLoading && loadingDealId === deal.id) ? (
-            <>
-              <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Creating...
-            </>
-          ) : hasExistingVoucher ? (
-            <>
-              <Ticket className="w-4 h-4 mr-2" />
-              Already in Wallet
-            </>
-          ) : !canRedeem ? (
-            isExpired ? "Deal Expired" : "Fully Redeemed"
-          ) : (
-            <>
-              <Ticket className="w-4 h-4 mr-2" />
-              Add to Wallet
-            </>
-          )}
-        </Button>
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button
+            onClick={() => onRedeem?.(deal.id)}
+            disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
+            className={`w-full rounded-2xl py-4 font-bold transition-all duration-300 transform hover:scale-105 ${
+              hasExistingVoucher 
+                ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
+                : "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white shadow-xl hover:shadow-2xl"
+            }`}
+          >
+            {(isLoading && loadingDealId === deal.id) ? (
+              <>
+                <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Creating...
+              </>
+            ) : hasExistingVoucher ? (
+              <>
+                <Ticket className="w-4 h-4 mr-2" />
+                Already in Wallet
+              </>
+            ) : !canRedeem ? (
+              isExpired ? "Deal Expired" : "Fully Redeemed"
+            ) : (
+              <>
+                <Ticket className="w-4 h-4 mr-2" />
+                Add to Wallet
+              </>
+            )}
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="w-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-semibold py-3 px-6 rounded-2xl transition-all duration-300"
+            onClick={() => setShowDetailsModal(true)}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            View Details & T&Cs
+          </Button>
+        </div>
       </div>
-    </div>
+      </div>
+      
+      <DealDetailsModal 
+        deal={deal}
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+      />
+    </>
   );
 }
