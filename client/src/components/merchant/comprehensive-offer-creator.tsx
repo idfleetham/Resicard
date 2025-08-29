@@ -53,10 +53,7 @@ const offerSchema = z.object({
   validFrom: z.string(),
   validTo: z.string(),
   daysOfWeek: z.array(z.string()).default([]),
-  timeSlots: z.record(z.array(z.object({
-    start: z.string(),
-    end: z.string()
-  }))).default({}),
+  timeSlots: z.string().default("{}"), // JSON string storing daily schedule data
   blackoutDates: z.array(z.object({
     name: z.string(),
     startDate: z.string(),
@@ -153,7 +150,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       validFrom: editingOffer.validFrom ? editingOffer.validFrom.split('T')[0] : new Date().toISOString().split('T')[0],
       validTo: editingOffer.validTo ? editingOffer.validTo.split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       daysOfWeek: Array.isArray(editingOffer.daysOfWeek) ? editingOffer.daysOfWeek : (editingOffer.daysOfWeek ? JSON.parse(editingOffer.daysOfWeek) : []),
-      timeSlots: typeof editingOffer.timeSlots === 'object' ? editingOffer.timeSlots : (editingOffer.timeSlots ? JSON.parse(editingOffer.timeSlots) : {}),
+      timeSlots: editingOffer.timeSlots || "{}",
       blackoutDates: Array.isArray(editingOffer.blackoutDates) ? editingOffer.blackoutDates : (editingOffer.blackoutDates ? JSON.parse(editingOffer.blackoutDates) : []),
       leadTime: editingOffer.leadTime || 0,
       maxPerTransaction: editingOffer.maxPerTransaction || 1,
@@ -187,7 +184,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       stackable: false,
       newCustomerOnly: false,
       daysOfWeek: [],
-      timeSlots: {},
+      timeSlots: "{}",
       blackoutDates: [],
       leadTime: 0,
       maxPerTransaction: 1,
@@ -805,7 +802,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark"
+                                className="input-dark text-black"
                               />
                             </FormControl>
                             <FormMessage />
@@ -823,7 +820,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark"
+                                className="input-dark text-black"
                               />
                             </FormControl>
                             <FormMessage />
@@ -832,53 +829,175 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="daysOfWeek"
-                      render={() => (
-                        <FormItem>
-                          <FormLabel className="text-slate-200">Days of Week</FormLabel>
-                          <div className="grid grid-cols-4 gap-2">
-                            {DAYS_OF_WEEK.map((day) => (
-                              <FormField
-                                key={day.value}
-                                control={form.control}
-                                name="daysOfWeek"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={day.value}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
+                    {/* Enhanced Daily Scheduling with Hours */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-slate-200 text-lg">Daily Scheduling</FormLabel>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Apply all day to every day
+                              const newTimeSlots = {};
+                              DAYS_OF_WEEK.forEach(day => {
+                                newTimeSlots[day.value] = { allDay: true, startTime: "00:00", endTime: "23:59" };
+                              });
+                              form.setValue("timeSlots", JSON.stringify(newTimeSlots));
+                              form.setValue("daysOfWeek", DAYS_OF_WEEK.map(d => d.value));
+                            }}
+                            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                          >
+                            Every Day (All Day)
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4">
+                        {DAYS_OF_WEEK.map((day) => {
+                          const timeSlots = form.watch("timeSlots");
+                          let daySlots = {};
+                          try {
+                            daySlots = timeSlots ? JSON.parse(timeSlots)[day.value] || {} : {};
+                          } catch (e) {
+                            daySlots = {};
+                          }
+                          
+                          const isDayEnabled = form.watch("daysOfWeek")?.includes(day.value);
+                          
+                          return (
+                            <div key={day.value} className="border border-slate-700 rounded-lg p-4 bg-slate-800/30">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center space-x-3">
+                                  <FormField
+                                    control={form.control}
+                                    name="daysOfWeek"
+                                    render={({ field }) => (
                                       <FormControl>
                                         <input
                                           type="checkbox"
-                                          checked={field.value?.includes(day.value)}
-                                          onChange={(checked) => {
-                                            return checked.target.checked
-                                              ? field.onChange([...field.value, day.value])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== day.value
-                                                  )
-                                                )
+                                          checked={field.value?.includes(day.value) || false}
+                                          onChange={(e) => {
+                                            const isChecked = e.target.checked;
+                                            const newDays = isChecked
+                                              ? [...(field.value || []), day.value]
+                                              : field.value?.filter(d => d !== day.value) || [];
+                                            field.onChange(newDays);
+                                            
+                                            if (!isChecked) {
+                                              // Remove time slots for this day when unchecked
+                                              const currentSlots = form.getValues("timeSlots");
+                                              let slots = {};
+                                              try {
+                                                slots = currentSlots ? JSON.parse(currentSlots) : {};
+                                              } catch (e) {
+                                                slots = {};
+                                              }
+                                              delete slots[day.value];
+                                              form.setValue("timeSlots", JSON.stringify(slots));
+                                            }
                                           }}
                                           className="rounded border-slate-600 bg-slate-800"
                                         />
                                       </FormControl>
-                                      <FormLabel className="text-sm text-slate-300">
-                                        {day.label}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                    )}
+                                  />
+                                  <span className="text-slate-200 font-medium">{day.label}</span>
+                                </div>
+                                
+                                {isDayEnabled && (
+                                  <div className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={daySlots.allDay || false}
+                                      onChange={(e) => {
+                                        const currentSlots = form.getValues("timeSlots");
+                                        let slots = {};
+                                        try {
+                                          slots = currentSlots ? JSON.parse(currentSlots) : {};
+                                        } catch (e) {
+                                          slots = {};
+                                        }
+                                        
+                                        slots[day.value] = {
+                                          ...slots[day.value],
+                                          allDay: e.target.checked,
+                                          startTime: e.target.checked ? "00:00" : (slots[day.value]?.startTime || "09:00"),
+                                          endTime: e.target.checked ? "23:59" : (slots[day.value]?.endTime || "17:00")
+                                        };
+                                        form.setValue("timeSlots", JSON.stringify(slots));
+                                      }}
+                                      className="rounded border-slate-600 bg-slate-800"
+                                    />
+                                    <span className="text-sm text-slate-300">All Day</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {isDayEnabled && !daySlots.allDay && (
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-sm text-slate-300 block mb-1">Start Time</label>
+                                    <input
+                                      type="time"
+                                      step="600"
+                                      value={daySlots.startTime || "09:00"}
+                                      onChange={(e) => {
+                                        const currentSlots = form.getValues("timeSlots");
+                                        let slots = {};
+                                        try {
+                                          slots = currentSlots ? JSON.parse(currentSlots) : {};
+                                        } catch (e) {
+                                          slots = {};
+                                        }
+                                        
+                                        slots[day.value] = {
+                                          ...slots[day.value],
+                                          startTime: e.target.value
+                                        };
+                                        form.setValue("timeSlots", JSON.stringify(slots));
+                                      }}
+                                      className="w-full px-3 py-2 text-black bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-slate-300 block mb-1">End Time</label>
+                                    <input
+                                      type="time"
+                                      step="600"
+                                      value={daySlots.endTime || "17:00"}
+                                      onChange={(e) => {
+                                        const currentSlots = form.getValues("timeSlots");
+                                        let slots = {};
+                                        try {
+                                          slots = currentSlots ? JSON.parse(currentSlots) : {};
+                                        } catch (e) {
+                                          slots = {};
+                                        }
+                                        
+                                        slots[day.value] = {
+                                          ...slots[day.value],
+                                          endTime: e.target.value
+                                        };
+                                        form.setValue("timeSlots", JSON.stringify(slots));
+                                      }}
+                                      className="w-full px-3 py-2 text-black bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {isDayEnabled && daySlots.allDay && (
+                                <div className="text-sm text-slate-400 italic">
+                                  Available 24/7 on {day.label}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
                     <FormField
                       control={form.control}
