@@ -691,50 +691,67 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVouchersByUser(userId: number): Promise<VoucherWithDeal[]> {
-    // Get all vouchers for the user
-    const allVouchers = await db
-      .select()
-      .from(vouchers)
-      .where(eq(vouchers.userId, userId));
+    try {
+      // Get all vouchers for the user
+      const allVouchers = await db
+        .select()
+        .from(vouchers)
+        .where(eq(vouchers.userId, userId));
 
-    const result: VoucherWithDeal[] = [];
+      console.log(`Found ${allVouchers.length} vouchers for user ${userId}`);
 
-    for (const voucher of allVouchers) {
-      if (voucher.dealId === -1) {
-        // This is a UUID offer voucher - extract deal info from voucherNumber
-        // UUID pattern: 8-4-4-4-12 characters (e.g., 208783e2-cc55-42ce-9efc-a47d7eff7f1c)
-        const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})-/i);
-        if (uuidMatch) {
-          const offerId = uuidMatch[1].toLowerCase(); // Convert to lowercase to match database
-          // Fetch offer details from the offers table
-          const [offer] = await db
-            .select({
-              id: offers.id,
-              title: offers.title,
-              merchantId: offers.merchantId,
-              percentOff: offers.percentOff,
-              type: offers.type,
-            })
-            .from(offers)
-            .where(eq(offers.id, offerId));
+      const result: VoucherWithDeal[] = [];
 
-          if (offer) {
-            // Get merchant info from merchants table using UUID
-            const [merchant] = await db
-              .select({ businessName: merchants.businessName })
-              .from(merchants)
-              .where(eq(merchants.id, offer.merchantId));
+      for (const voucher of allVouchers) {
+        console.log(`Processing voucher ${voucher.id}, dealId: ${voucher.dealId}, voucherNumber: ${voucher.voucherNumber}`);
+        
+        if (voucher.dealId === -1) {
+          // This is a UUID offer voucher - extract deal info from voucherNumber
+          // UUID pattern: 8-4-4-4-12 characters (e.g., 208783e2-cc55-42ce-9efc-a47d7eff7f1c)
+          const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})-/i);
+          console.log(`UUID match result:`, uuidMatch);
+          
+          if (uuidMatch) {
+            const offerId = uuidMatch[1].toLowerCase(); // Convert to lowercase to match database
+            console.log(`Looking for offer with ID: ${offerId}`);
+            
+            // Fetch offer details from the offers table
+            const [offer] = await db
+              .select({
+                id: offers.id,
+                title: offers.title,
+                merchantId: offers.merchantId,
+                percentOff: offers.percentOff,
+                type: offers.type,
+              })
+              .from(offers)
+              .where(eq(offers.id, offerId));
 
-            result.push({
-              ...voucher,
-              dealTitle: offer.title,
-              merchantName: merchant?.businessName || 'Unknown Merchant',
-              discountValue: offer.percentOff?.toString() || '0',
-              discountType: offer.type || 'percentage_discount',
-            });
+            console.log(`Found offer:`, offer);
+
+            if (offer) {
+              // Get merchant info from merchants table using UUID
+              const [merchant] = await db
+                .select({ businessName: merchants.businessName })
+                .from(merchants)
+                .where(eq(merchants.id, offer.merchantId));
+
+              console.log(`Found merchant:`, merchant);
+
+              result.push({
+                ...voucher,
+                dealTitle: offer.title,
+                merchantName: merchant?.businessName || 'Unknown Merchant',
+                discountValue: offer.percentOff?.toString() || '0',
+                discountType: offer.type || 'percentage_discount',
+              });
+            } else {
+              console.log(`No offer found for ID: ${offerId}`);
+            }
+          } else {
+            console.log(`No UUID match for voucher number: ${voucher.voucherNumber}`);
           }
-        }
-      } else {
+        } else {
         // This is a regular deal voucher - use the existing join logic
         const [dealVoucher] = await db
           .select({
@@ -772,6 +789,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     return result;
+    } catch (error) {
+      console.error('Error in getVouchersByUser:', error);
+      throw error;
+    }
   }
 
   async getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined> {
