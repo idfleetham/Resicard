@@ -80,7 +80,7 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300" style={{ border: '5px solid lime', backgroundColor: 'lightblue' }}>
+    <div className="group overflow-hidden bg-white rounded-xl shadow-md border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       {/* 16:9 Aspect Ratio Image - NEW DESIGN TEST */}
       <div className="relative aspect-video overflow-hidden">
         <img 
@@ -122,28 +122,28 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-6 space-y-4" style={{ backgroundColor: 'yellow' }}>
+      <div className="p-5 space-y-4">
         {/* Title Hierarchy */}
         <div className="space-y-2">
-          <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+          <h3 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
             {deal.title}
           </h3>
           
           {showMerchantInfo && (
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center text-slate-600">
               <MapPin className="w-4 h-4 mr-1" />
               <span className="font-medium text-sm">{deal.merchantName}</span>
             </div>
           )}
           
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+          <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
             {deal.description}
           </p>
         </div>
 
         {/* Discount Highlight */}
-        <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl">
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+        <div className="inline-flex items-center px-3 py-2 bg-slate-100 rounded-lg">
+          <span className="text-xl font-bold text-slate-800">
             {deal.discountType === 'percentage' 
               ? `${deal.discountValue}% OFF`
               : `${formatCurrency(Number(deal.discountValue))} OFF`

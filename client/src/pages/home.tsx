@@ -94,68 +94,68 @@ export default function Home() {
           </div>
 
           {/* Stats Section */}
-          <div className="bg-slate-50 py-24">
+          <div className="bg-slate-50 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-20">
-                <h2 className="text-5xl font-bold text-slate-800 mb-6">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-slate-800 mb-4">
                   Trusted by the Community
                 </h2>
-                <p className="text-2xl text-slate-600 max-w-3xl mx-auto font-light">
+                <p className="text-xl text-slate-600 max-w-3xl mx-auto font-light">
                   Join thousands of St Andrews residents experiencing exceptional savings with our curated collection of local businesses
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
-                    <Ticket className="h-8 w-8 text-slate-700" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
+                    <Ticket className="h-6 w-6 text-slate-700" />
                   </div>
-                  <div className="text-4xl font-bold text-slate-800 mb-3">
+                  <div className="text-3xl font-bold text-slate-800 mb-2">
                     {deals.filter(deal => deal.isActive).length}
                   </div>
-                  <div className="text-slate-600 text-lg font-medium">Active Deals</div>
+                  <div className="text-slate-600 text-base font-medium">Active Deals</div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
-                    <Users className="h-8 w-8 text-slate-700" />
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
+                    <Users className="h-6 w-6 text-slate-700" />
                   </div>
-                  <div className="text-4xl font-bold text-slate-800 mb-3">
+                  <div className="text-3xl font-bold text-slate-800 mb-2">
                     {platformStats?.totalBusinesses || 0}
                   </div>
-                  <div className="text-slate-600 text-lg font-medium">Local Businesses</div>
+                  <div className="text-slate-600 text-base font-medium">Local Businesses</div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
-                    <CheckCircle className="h-8 w-8 text-slate-700" />
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
+                    <CheckCircle className="h-6 w-6 text-slate-700" />
                   </div>
-                  <div className="text-4xl font-bold text-slate-800 mb-3">
+                  <div className="text-3xl font-bold text-slate-800 mb-2">
                     {platformStats?.totalRedemptions || 0}
                   </div>
-                  <div className="text-slate-600 text-lg font-medium">Voucher Redemptions</div>
+                  <div className="text-slate-600 text-base font-medium">Voucher Redemptions</div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-3 bg-slate-100 rounded-xl inline-block mb-6">
-                    <Calendar className="h-8 w-8 text-slate-700" />
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="p-2 bg-slate-100 rounded-lg inline-block mb-4">
+                    <Calendar className="h-6 w-6 text-slate-700" />
                   </div>
-                  <div className="text-4xl font-bold text-slate-800 mb-3">
+                  <div className="text-3xl font-bold text-slate-800 mb-2">
                     {platformStats?.totalUsers || 0}
                   </div>
-                  <div className="text-slate-600 text-lg font-medium">Active Members</div>
+                  <div className="text-slate-600 text-base font-medium">Active Members</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* All Deals */}
-          <div className="bg-white py-24">
+          <div className="bg-white py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-20">
-                <h2 className="text-5xl font-bold text-slate-800 mb-6">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-slate-800 mb-4">
                   Current Local Deals
                 </h2>
-                <p className="text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
+                <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
                   Discover exclusive offers from our handpicked collection of verified local businesses
                 </p>
               </div>
@@ -186,11 +186,11 @@ export default function Home() {
               </div>
             )}
             
-            <div className="text-center mt-20">
+            <div className="text-center mt-12">
               <Button 
                 size="lg" 
                 onClick={() => setShowRoleSelector(true)}
-                className="bg-slate-800 hover:bg-slate-900 text-white rounded-2xl px-16 py-6 text-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl px-12 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
               >
                 Join to Access All Deals
               </Button>
@@ -199,44 +199,44 @@ export default function Home() {
           </div>
 
           {/* How it Works */}
-          <div className="bg-slate-50 py-24">
+          <div className="bg-slate-50 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-20">
-                <h2 className="text-5xl font-bold text-slate-800 mb-6">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-slate-800 mb-4">
                   How Resicard© Works
                 </h2>
-                <p className="text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
+                <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
                   Three simple steps to unlock exclusive savings at your favorite local spots
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
-                    <span className="text-2xl font-bold text-slate-700">1</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-slate-700">1</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Sign Up & Verify</h3>
-                  <p className="text-slate-600 text-lg leading-relaxed">
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">Sign Up & Verify</h3>
+                  <p className="text-slate-600 text-base leading-relaxed">
                     Register with your postcode to verify you're within 10 miles of St Andrews and complete your residency verification
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
-                    <span className="text-2xl font-bold text-slate-700">2</span>
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-slate-700">2</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Browse Premium Deals</h3>
-                  <p className="text-slate-600 text-lg leading-relaxed">
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">Browse Premium Deals</h3>
+                  <p className="text-slate-600 text-base leading-relaxed">
                     Explore exclusive offers from verified restaurants, bars, cafes, and premium local businesses
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-8">
-                    <span className="text-2xl font-bold text-slate-700">3</span>
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center inline-block mb-6">
+                    <span className="text-xl font-bold text-slate-700">3</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-6">Create Vouchers & Save</h3>
-                  <p className="text-slate-600 text-lg leading-relaxed">
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">Create Vouchers & Save</h3>
+                  <p className="text-slate-600 text-base leading-relaxed">
                     Build your digital voucher wallet and redeem instantly at participating businesses with QR codes
                   </p>
                 </div>
@@ -247,18 +247,18 @@ export default function Home() {
         
         {/* Footer */}
         <footer className="bg-slate-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <h3 className="text-4xl font-bold mb-6 text-white">
+              <h3 className="text-3xl font-bold mb-4 text-white">
                 Resicard© St Andrews
               </h3>
-              <p className="text-slate-300 text-xl mb-8 font-light">
+              <p className="text-slate-300 text-lg mb-6 font-light">
                 Your exclusive community membership platform
               </p>
               <div className="text-slate-400">
-                <p className="text-lg">&copy; 2024 Resicard St Andrews. All rights reserved.</p>
-                <div className="mt-6 space-x-8">
-                  <Link href="/admin-signup" className="text-slate-300 hover:text-white transition-colors duration-300 font-medium text-lg">
+                <p className="text-base">&copy; 2024 Resicard St Andrews. All rights reserved.</p>
+                <div className="mt-4 space-x-6">
+                  <Link href="/admin-signup" className="text-slate-300 hover:text-white transition-colors duration-300 font-medium">
                     Admin Portal
                   </Link>
                 </div>
