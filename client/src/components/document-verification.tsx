@@ -170,8 +170,8 @@ export default function DocumentVerification() {
   const getStatusBadge = () => {
     if (!user?.documentStatus) {
       return (
-        <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-          <AlertTriangle className="h-3 w-3 mr-1" />
+        <Badge className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
+          <AlertTriangle className="h-4 w-4 mr-2" />
           Not Submitted
         </Badge>
       );
@@ -180,22 +180,22 @@ export default function DocumentVerification() {
     switch (user.documentStatus) {
       case "pending":
         return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-            <Clock className="h-3 w-3 mr-1" />
+          <Badge className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
+            <Clock className="h-4 w-4 mr-2" />
             Under Review
           </Badge>
         );
       case "approved":
         return (
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            <CheckCircle className="h-3 w-3 mr-1" />
+          <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
+            <CheckCircle className="h-4 w-4 mr-2" />
             Verified
           </Badge>
         );
       case "rejected":
         return (
-          <Badge variant="secondary" className="bg-red-100 text-red-800">
-            <XCircle className="h-3 w-3 mr-1" />
+          <Badge className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
+            <XCircle className="h-4 w-4 mr-2" />
             Rejected
           </Badge>
         );
@@ -208,33 +208,37 @@ export default function DocumentVerification() {
   const isVerified = user?.isResidencyVerified;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>Residency Verification</span>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 bg-gradient-to-r from-indigo-100 to-violet-100 rounded-2xl">
+            <FileText className="h-6 w-6 text-indigo-600" />
           </div>
-          {getStatusBadge()}
-        </CardTitle>
-      </CardHeader>
-      <CardBody className="space-y-4">
+          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Residency Verification</span>
+        </div>
+        {getStatusBadge()}
+      </div>
+      <div className="space-y-6">
         {isVerified ? (
-          <div className="text-center py-6">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-green-800">Residency Verified</h3>
-            <p className="text-sm text-gray-600 mt-2">
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-8 text-center border border-emerald-200">
+            <div className="p-4 bg-emerald-100 rounded-2xl inline-block mb-6">
+              <CheckCircle className="h-12 w-12 text-emerald-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-emerald-800 mb-3">Residency Verified</h3>
+            <p className="text-emerald-700 text-lg">
               Your residency has been verified. You can now use vouchers for redemption.
             </p>
           </div>
         ) : (
           <>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-2 bg-amber-100 rounded-xl">
+                  <AlertTriangle className="h-5 w-5 text-amber-600" />
+                </div>
                 <div>
-                  <h4 className="font-semibold text-amber-800">Verification Required</h4>
-                  <p className="text-sm text-amber-700 mt-1">
+                  <h4 className="font-bold text-amber-800 text-lg mb-2">Verification Required</h4>
+                  <p className="text-amber-700">
                     To use vouchers for redemption, please upload a document proving your St Andrews residency.
                     Your membership card and vouchers cannot be used until verification is complete.
                   </p>
@@ -243,24 +247,28 @@ export default function DocumentVerification() {
             </div>
 
             {user?.documentStatus === "pending" ? (
-              <div className="text-center py-6">
-                <Clock className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-yellow-800">Under Review</h3>
-                <p className="text-sm text-gray-600 mt-2">
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-3xl p-8 text-center border border-yellow-200">
+                <div className="p-4 bg-yellow-100 rounded-2xl inline-block mb-6">
+                  <Clock className="h-12 w-12 text-yellow-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-yellow-800 mb-3">Under Review</h3>
+                <p className="text-yellow-700 text-lg mb-4">
                   Your document is being reviewed by our team. We'll notify you once the verification is complete.
                 </p>
                 {user.documentSubmittedAt && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Submitted on {new Date(user.documentSubmittedAt).toLocaleDateString()}
-                  </p>
+                  <div className="inline-flex items-center px-4 py-2 bg-white/60 rounded-2xl">
+                    <span className="text-yellow-600 font-medium">
+                      Submitted on {new Date(user.documentSubmittedAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 )}
               </div>
             ) : canSubmitNewDocument ? (
-              <div className="space-y-4">
+              <div className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-3xl p-8 space-y-6 border border-indigo-100">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Document Type</label>
+                  <label className="block text-lg font-bold mb-3 text-gray-800">Document Type</label>
                   <Select value={selectedDocumentType} onValueChange={setSelectedDocumentType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-14 rounded-2xl border-2 border-gray-200 text-lg">
                       <SelectValue placeholder="Select document type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -274,29 +282,33 @@ export default function DocumentVerification() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Upload Document</label>
+                  <label className="block text-lg font-bold mb-3 text-gray-800">Upload Document</label>
                   <div
                     {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 ${
                       isDragActive
-                        ? "border-primary bg-primary/5"
-                        : "border-gray-300 hover:border-primary"
+                        ? "border-indigo-400 bg-indigo-50 scale-105"
+                        : "border-gray-300 hover:border-indigo-400 hover:bg-indigo-50"
                     }`}
                   >
                     <input {...getInputProps()} />
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600">
+                    <div className="p-4 bg-indigo-100 rounded-2xl inline-block mb-4">
+                      <Upload className="h-10 w-10 text-indigo-600" />
+                    </div>
+                    <p className="text-lg font-medium text-gray-700 mb-2">
                       {isDragActive
                         ? "Drop the document here..."
                         : "Drag & drop a document here, or click to select"}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-gray-500">
                       PNG, JPG, PDF up to 10MB. Document should clearly show your name and St Andrews address.
                     </p>
                     {fileName && (
-                      <p className="text-sm text-green-600 mt-2 font-medium">
-                        Selected: {fileName}
-                      </p>
+                      <div className="mt-4 inline-flex items-center px-4 py-2 bg-emerald-100 rounded-2xl">
+                        <span className="text-emerald-700 font-bold">
+                          Selected: {fileName}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -312,16 +324,16 @@ export default function DocumentVerification() {
                     handleSubmit();
                   }} 
                   disabled={isUploading || !selectedDocumentType || !documentFile}
-                  className="w-full"
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
+                  <FileText className="h-5 w-5 mr-2" />
                   {isUploading ? "Submitting..." : "Submit for Verification"}
                 </Button>
               </div>
             ) : null}
           </>
         )}
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 }
