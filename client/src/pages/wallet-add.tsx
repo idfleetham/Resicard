@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { motion } from "framer-motion";
 import { Download, QrCode, Smartphone, Shield, CheckCircle, ArrowLeft, Home } from "lucide-react";
 import QRCodeLib from "qrcode";
-import cardBackgroundImage from "@assets/DF611683-0C55-429D-9633-95A8FD10F9CE_1_105_c_1749807319428.jpeg";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 export default function WalletAdd() {
   const [user, setUser] = useState<any>(null);
@@ -249,11 +249,11 @@ export default function WalletAdd() {
                       <div 
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url("${cardBackgroundImage}")`,
-                          filter: 'grayscale(100%) contrast(1.1) brightness(0.3)',
+                          backgroundImage: `url("${heroImage}")`,
+                          filter: 'grayscale(100%) contrast(1.2) brightness(0.6)',
                         }}
                       />
-                      <div className="absolute inset-0 bg-black/50" />
+                      <div className="absolute inset-0 bg-black/30" />
                       
                       <div className="relative z-10">
                         {/* Header strip */}
