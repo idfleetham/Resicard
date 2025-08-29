@@ -428,30 +428,37 @@ export default function ResidentDashboard() {
           {/* Voucher Wallet Tab */}
           {activeTab === "wallet" && (
             <div className="space-y-10">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">My Voucher Wallet</h2>
-                    <p className="text-gray-600 mt-2">Manage your active vouchers and redeem exclusive deals</p>
+              <div className="relative bg-gradient-to-br from-indigo-500 via-purple-600 to-violet-700 rounded-3xl shadow-2xl border-0 p-10 overflow-hidden">
+                {/* Decorative Background Elements */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-4xl font-bold text-white mb-3">My Voucher Wallet</h2>
+                      <p className="text-white/80 text-lg">Manage your active vouchers and redeem exclusive deals</p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Button 
+                        className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 rounded-2xl px-6 py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                        onClick={() => window.location.href = '/wallet/add'}
+                      >
+                        <Smartphone className="w-5 h-5 mr-2" />
+                        Add to Apple Wallet
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <Button 
-                      className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-6 py-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                      onClick={() => window.location.href = '/wallet/add'}
-                    >
-                      <Smartphone className="w-5 h-5 mr-2" />
-                      Add to Apple Wallet
-                    </Button>
-                  </div>
-                </div>
-                <div className="mt-6 flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-700">{activeVouchers.length} active</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-700">{usedVouchers.length} used</span>
+                  <div className="mt-8 flex items-center space-x-8">
+                    <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3">
+                      <div className="w-4 h-4 bg-emerald-400 rounded-full shadow-lg"></div>
+                      <span className="text-white font-semibold">{activeVouchers.length} active vouchers</span>
+                    </div>
+                    <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3">
+                      <div className="w-4 h-4 bg-white/60 rounded-full shadow-lg"></div>
+                      <span className="text-white font-semibold">{usedVouchers.length} redeemed</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -633,11 +640,18 @@ export default function ResidentDashboard() {
           {/* Verification Tab */}
           {activeTab === "verification" && (
             <div className="space-y-10">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8 text-center">
-                <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4">Residency Verification</h2>
-                <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                  Complete your verification to unlock exclusive local deals and prove you're a St Andrews resident.
-                </p>
+              <div className="relative bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-3xl shadow-2xl border-0 p-10 overflow-hidden text-center">
+                {/* Decorative Background Elements */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+                <div className="absolute top-0 left-0 w-56 h-56 bg-white/10 rounded-full -translate-y-28 -translate-x-28"></div>
+                <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/5 rounded-full translate-y-20 translate-x-20"></div>
+                
+                <div className="relative z-10">
+                  <h2 className="text-4xl font-bold text-white mb-4">Residency Verification</h2>
+                  <p className="text-white/80 text-lg max-w-2xl mx-auto">
+                    Complete your verification to unlock exclusive local deals and prove you're a St Andrews resident.
+                  </p>
+                </div>
               </div>
               <div className="bg-white rounded-3xl shadow-xl border-0 p-10">
                 <DocumentVerification />
@@ -648,19 +662,26 @@ export default function ResidentDashboard() {
           {/* Subscription Tab */}
           {activeTab === "subscription" && (
             <div className="space-y-10">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border-0 p-8">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4">Subscription Management</h2>
-                    <p className="text-gray-600 text-lg">Manage your Resicard membership and unlock exclusive deals</p>
-                  </div>
-                  {subscription?.isActive && (
-                    <div className="text-right">
-                      <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-0 px-6 py-3 rounded-2xl text-lg font-bold">
-                        {subscription.type} • {subscription.plan}
-                      </Badge>
+              <div className="relative bg-gradient-to-br from-amber-500 via-orange-600 to-red-700 rounded-3xl shadow-2xl border-0 p-10 overflow-hidden">
+                {/* Decorative Background Elements */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+                <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-36 translate-x-36"></div>
+                <div className="absolute bottom-0 left-0 w-52 h-52 bg-white/5 rounded-full translate-y-26 -translate-x-26"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-4xl font-bold text-white mb-3">Subscription Management</h2>
+                      <p className="text-white/80 text-lg">Manage your Resicard membership and unlock exclusive deals</p>
                     </div>
-                  )}
+                    {subscription?.isActive && (
+                      <div className="text-right">
+                        <Badge className="bg-white/20 backdrop-blur-sm text-white border border-white/30 px-6 py-3 rounded-2xl text-lg font-bold shadow-lg">
+                          {subscription.type} • {subscription.plan}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
