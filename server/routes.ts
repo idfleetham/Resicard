@@ -90,7 +90,7 @@ const upload = multer({ dest: "uploads/" });
 
 // Helper function to get merchant ID from authenticated user
 function getMerchantId(req: any): number {
-  return req.user.id;
+  return parseInt(req.user.id);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -352,7 +352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update user profile photo field to store logo URL
-      const updatedUser = await storage.updateUser(merchantId, {
+      const updatedUser = await storage.updateUserProfile(merchantId, {
         profilePhoto: logoUrl
       });
       
@@ -406,10 +406,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get merchant info from merchants table
         const [merchant] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
         
-        // Get user info to access profilePhoto (logo)
+        // Get user info to access profilePhoto (logo) - find user who created this merchant
         let merchantUser = null;
-        if (merchant?.createdBy) {
-          const [user] = await db.select().from(users).where(eq(users.id, merchant.createdBy));
+        // Since merchants table doesn't have createdBy, we need to find the user another way
+        // For now, let's try to match by email if available
+        if (merchant?.email) {
+          const [user] = await db.select().from(users).where(eq(users.email, merchant.email));
           merchantUser = user;
         }
         
