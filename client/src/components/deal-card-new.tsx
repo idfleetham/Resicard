@@ -27,20 +27,20 @@ export default function DealCard({
   const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
-  const getImageForDeal = (deal: DealWithMerchant): string => {
-    const categoryImages: Record<string, string> = {
-      restaurant: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop",
-      bar: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&h=300&fit=crop",
-      cafe: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=300&fit=crop",
-      pub: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=300&fit=crop",
-      takeaway: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&h=300&fit=crop",
-      "fine-dining": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=300&fit=crop",
-      sports: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=300&fit=crop",
-      transport: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&h=300&fit=crop",
-      "food-drink": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=300&fit=crop",
+  const getCategoryGradient = (category: string): string => {
+    const gradients: Record<string, string> = {
+      restaurant: "from-orange-400 via-red-500 to-pink-500",
+      bar: "from-purple-400 via-pink-500 to-red-500", 
+      cafe: "from-amber-400 via-orange-500 to-red-500",
+      pub: "from-green-400 via-blue-500 to-purple-500",
+      takeaway: "from-yellow-400 via-orange-500 to-red-500",
+      "fine-dining": "from-indigo-400 via-purple-500 to-pink-500",
+      sports: "from-blue-400 via-cyan-500 to-teal-500",
+      transport: "from-gray-400 via-blue-500 to-indigo-500",
+      "food-drink": "from-emerald-400 via-teal-500 to-cyan-500",
     };
     
-    return categoryImages[deal.category.toLowerCase()] || categoryImages.restaurant;
+    return gradients[category.toLowerCase()] || gradients.restaurant;
   };
 
   const getExpiryBadgeColor = () => {
@@ -54,18 +54,27 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-2xl shadow-lg border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 transform">
-      {/* 16:9 Aspect Ratio Image */}
-      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-indigo-400 to-violet-600">
-        <img 
-          src={getImageForDeal(deal)} 
-          alt={deal.title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=300&fit=crop";
-          }}
-        />
+    <div className="group overflow-hidden bg-white rounded-3xl shadow-xl border-0 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 transform ring-1 ring-gray-100">
+      {/* 16:9 Aspect Ratio Gradient Background */}
+      <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${getCategoryGradient(deal.category)}`}>
+        {/* Animated Background Patterns */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent animate-pulse"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.15),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+        
+        {/* Geometric Patterns */}
+        <div className="absolute inset-0">
+          <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white/20 rounded-full"></div>
+          <div className="absolute bottom-4 left-4 w-12 h-12 border-2 border-white/20 rounded-lg rotate-45"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/10 rounded-full"></div>
+        </div>
+        
+        {/* Category Icon */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+            <Tag className="w-10 h-10 text-white drop-shadow-lg" />
+          </div>
+        </div>
         {/* Category Badge on Image */}
         <div className="absolute top-4 left-4">
           <Badge className="bg-black/20 backdrop-blur-sm text-white border-0 text-xs font-bold shadow-lg px-3 py-1 rounded-full">
