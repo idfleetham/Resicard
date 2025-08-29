@@ -362,109 +362,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Deal routes
+  // Offer routes (renamed from deals)  
   app.get("/api/deals", async (req, res) => {
     try {
-      const { category } = req.query;
-      let deals;
+      // Get comprehensive offers directly
+      const activeOffers = await db.select().from(offers).where(eq(offers.active, true));
+      console.log(`Found ${activeOffers.length} active comprehensive offers`);
       
-      if (category) {
-        deals = await storage.getDealsByCategory(category as string);
-        console.log(`Legacy deals by category "${category}":`, deals.length);
-      } else {
-        deals = await storage.getActiveDeals();
-        console.log(`Legacy active deals:`, deals.length);
+      const result = [];
+      
+      for (const offer of activeOffers) {
+        // Get merchant info
+        const [merchant] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
+        
+        const convertedOffer = {
+          id: offer.id,
+          title: offer.title,
+          description: offer.description || '',
+          category: offer.category || 'General',
+          discountType: offer.type === 'percentage_discount' ? 'percentage' : 'fixed',
+          discountValue: offer.percentOff || 0,
+          originalValue: null,
+          usageLimit: offer.maxPerTransaction || 100,
+          usageCount: 0,
+          isActive: true,
+          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          terms: offer.terms || offer.description || offer.title,
+          imageUrl: merchant?.logoUrl || null,
+          createdAt: offer.createdAt,
+          merchantId: offer.merchantId,
+          merchantName: merchant?.name || 'Unknown Business',
+          merchantAddress: merchant?.address || 'Address not provided'
+        };
+        
+        result.push(convertedOffer);
       }
       
-      // Also fetch comprehensive offers and combine them
-      let allOffers = [];
-      let comprehensiveOffers = [];
-      let convertedOffers = [];
+      console.log(`Returning ${result.length} offers:`, result.map(r => r.title));
+      res.json(result);
       
-      try {
-        console.log('Fetching comprehensive offers...');
-        allOffers = await db.select().from(offers)
-          .where(eq(offers.active, true));
-        console.log(`Found ${allOffers.length} active offers:`, allOffers.map(o => o.title));
-        
-        // Filter only active offers (not expired) - keep all offers for now to debug
-        comprehensiveOffers = allOffers; // Temporarily disable date filtering to debug
-        console.log(`All active offers (no date filter): ${comprehensiveOffers.length}`);
-        comprehensiveOffers.forEach(offer => {
-          console.log(`- "${offer.title}" (validTo: ${offer.validTo})`);
-        });
-      console.log(`After filtering expired: ${comprehensiveOffers.length} offers`);
-      
-      // Convert comprehensive offers to deal format for homepage compatibility
-      const convertedOffers = [];
-      
-      for (const offer of comprehensiveOffers) {
-        try {
-          console.log(`Processing offer: ${offer.title} with merchantId: ${offer.merchantId}`);
-          
-          // Get merchant info to use logo as default image
-          const [merchantRecord] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
-          console.log(`Found merchant record:`, merchantRecord);
-          
-          // Use merchant logo_url first, fallback to user profile photo by merchant name
-          let merchantLogo = merchantRecord?.logoUrl;
-          if (!merchantLogo && merchantRecord?.name) {
-            const [user] = await db.select().from(users).where(eq(users.username, merchantRecord.name));
-            merchantLogo = user?.profilePhoto;
-          }
-          
-          const convertedOffer = {
-            id: offer.id,
-            title: offer.title,
-            description: offer.description || '',
-            category: offer.category || 'General',
-            discountType: offer.type === 'percentage_discount' ? 'percentage' : 
-                         offer.type === 'fixed_amount_discount' ? 'fixed' :
-                         offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
-            discountValue: offer.percentOff || 0,
-            originalValue: null,
-            usageLimit: offer.maxPerTransaction || 100,
-            usageCount: 0,
-            isActive: offer.active ?? true,
-            expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            terms: offer.description || offer.title,
-            imageUrl: merchantLogo || null,
-            createdAt: offer.createdAt,
-            merchantId: offer.merchantId,
-            merchantName: merchantRecord?.name || 'Unknown',
-            merchantAddress: merchantRecord?.address || 'Address not provided'
-          };
-          
-          console.log(`Successfully converted offer: ${convertedOffer.title}`);
-          convertedOffers.push(convertedOffer);
-        } catch (error) {
-          console.error(`Error converting offer ${offer.title}:`, error);
-        }
-      }
-      
-        console.log(`Total converted offers: ${convertedOffers.length}`);
-        
-        
-        console.log(`Before combination - Legacy deals: ${deals.length}, Converted offers: ${convertedOffers.length}`);
-        
-        // Combine simple deals and comprehensive offers
-        const allDeals = [...deals, ...convertedOffers];
-        console.log(`After combination - Total deals: ${allDeals.length}`);
-        console.log(`Sample deal titles:`, allDeals.slice(0,3).map(d => d.title));
-        
-      } catch (error) {
-        console.error('Error processing comprehensive offers:', error);
-        convertedOffers = []; // fallback to empty array
-      }
-      
-      // Final combination and response outside the try-catch
-      const finalDeals = [...deals, ...convertedOffers];
-      console.log(`FINAL RESPONSE: ${finalDeals.length} deals total`);
-      
-      res.json(finalDeals);
     } catch (error: any) {
       console.error('Error in /api/deals endpoint:', error);
-      res.status(400).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
   });
 

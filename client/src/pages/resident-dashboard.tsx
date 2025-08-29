@@ -312,7 +312,7 @@ export default function ResidentDashboard() {
                       activeTab === "deals" ? "text-white" : "text-indigo-600"
                     }`} />
                   </div>
-                  <span>Browse Deals</span>
+                  <span>Browse Offers</span>
                   {activeTab === "deals" && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 animate-pulse" />
                   )}
@@ -390,7 +390,7 @@ export default function ResidentDashboard() {
             </div>
           </div>
 
-          {/* Browse Deals Tab */}
+          {/* Browse Offers Tab */}
           {activeTab === "deals" && (
             <>
               {/* Premium Filters */}
@@ -538,7 +538,7 @@ export default function ResidentDashboard() {
                     onClick={() => setActiveTab("deals")}
                     className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-10 py-4 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
                   >
-                    Browse Deals
+                    Browse Offers
                   </Button>
                 </div>
               ) : (

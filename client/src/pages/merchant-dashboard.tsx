@@ -45,12 +45,12 @@ export default function MerchantDashboard() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
 
-  // Fetch merchant's deals
-  const { data: deals = [], isLoading: dealsLoading } = useQuery({
-    queryKey: ['/api/deals/merchant', user?.id],
+  // Fetch merchant's offers
+  const { data: offers = [], isLoading: offersLoading } = useQuery({
+    queryKey: ['/api/offers/merchant', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const response = await apiRequestWithAuth('GET', `/api/deals/merchant/${user.id}`);
+      const response = await apiRequestWithAuth('GET', `/api/offers/merchant/${user.id}`);
       return response.json() as Promise<Deal[]>;
     },
     enabled: !!user,
@@ -78,10 +78,10 @@ export default function MerchantDashboard() {
     enabled: !!user,
   });
 
-  // Update deal mutation
+  // Update offer mutation
   const updateDealMutation = useMutation({
-    mutationFn: async ({ dealId, updates }: { dealId: number; updates: Partial<Deal> }) => {
-      const response = await apiRequestWithAuth('PUT', `/api/deals/${dealId}`, updates);
+    mutationFn: async ({ offerId, updates }: { offerId: number; updates: Partial<Deal> }) => {
+      const response = await apiRequestWithAuth('PUT', `/api/offers/${offerId}`, updates);
       return response.json();
     },
     onSuccess: () => {
@@ -89,21 +89,21 @@ export default function MerchantDashboard() {
         title: "Deal Updated",
         description: "Deal has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/offers/merchant'] });
     },
     onError: (error: any) => {
       toast({
         title: "Update Failed",
-        description: error.message || "Failed to update deal",
+        description: error.message || "Failed to update offer",
         variant: "destructive",
       });
     },
   });
 
-  // Delete deal mutation
+  // Delete offer mutation
   const deleteDealMutation = useMutation({
-    mutationFn: async (dealId: number) => {
-      const response = await apiRequestWithAuth('DELETE', `/api/deals/${dealId}`);
+    mutationFn: async (offerId: number) => {
+      const response = await apiRequestWithAuth('DELETE', `/api/offers/${offerId}`);
       return response.json();
     },
     onSuccess: () => {
@@ -111,12 +111,12 @@ export default function MerchantDashboard() {
         title: "Deal Deleted",
         description: "Deal has been deleted successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/offers/merchant'] });
     },
     onError: (error: any) => {
       toast({
         title: "Delete Failed",
-        description: error.message || "Failed to delete deal",
+        description: error.message || "Failed to delete offer",
         variant: "destructive",
       });
     },
@@ -131,12 +131,12 @@ export default function MerchantDashboard() {
     onSuccess: (data) => {
       toast({
         title: "Voucher Redeemed Successfully",
-        description: `${data.dealTitle} has been redeemed for ${generateCustomerAlias({ id: data.userId, username: data.customerUsername })}`,
+        description: `${data.offerTitle} has been redeemed for ${generateCustomerAlias({ id: data.userId, username: data.customerUsername })}`,
       });
       setLastScannedVoucher(data);
       setIsScanning(false);
       queryClient.invalidateQueries({ queryKey: ['/api/redemptions/merchant'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/deals/merchant'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/offers/merchant'] });
     },
     onError: (error: any) => {
       console.error('Voucher redemption error:', error);
@@ -162,8 +162,8 @@ export default function MerchantDashboard() {
     },
   });
 
-  const handleToggleDeal = (dealId: number, isActive: boolean | null) => {
-    updateDealMutation.mutate({ dealId, updates: { isActive: !(isActive ?? false) } });
+  const handleToggleDeal = (offerId: number, isActive: boolean | null) => {
+    updateDealMutation.mutate({ offerId, updates: { isActive: !(isActive ?? false) } });
   };
 
   const handleQRScan = (qrData: string) => {
@@ -171,7 +171,7 @@ export default function MerchantDashboard() {
       const voucherData = JSON.parse(qrData);
       
       // Validate required fields
-      if (!voucherData.voucherNumber || !voucherData.dealId || !voucherData.userId) {
+      if (!voucherData.voucherNumber || !voucherData.offerId || !voucherData.userId) {
         toast({
           title: "Invalid QR Code",
           description: "The scanned QR code is missing required voucher data",
@@ -183,7 +183,7 @@ export default function MerchantDashboard() {
       // Show preview of what's being redeemed
       toast({
         title: "Processing Voucher",
-        description: `Redeeming voucher for ${voucherData.dealTitle || 'deal'} from ${voucherData.merchantName || 'merchant'}`,
+        description: `Redeeming voucher for ${voucherData.offerTitle || 'offer'} from ${voucherData.merchantName || 'merchant'}`,
       });
       
       redeemVoucherMutation.mutate(voucherData);
@@ -197,28 +197,28 @@ export default function MerchantDashboard() {
     }
   };
 
-  const handleDeleteDeal = (dealId: number) => {
-    if (confirm('Are you sure you want to delete this deal? This action cannot be undone.')) {
-      deleteDealMutation.mutate(dealId);
+  const handleDeleteDeal = (offerId: number) => {
+    if (confirm('Are you sure you want to delete this offer? This action cannot be undone.')) {
+      deleteDealMutation.mutate(offerId);
     }
   };
 
-  const handleEditDeal = (deal: Deal) => {
-    setEditingDeal(deal);
+  const handleEditDeal = (offer: Deal) => {
+    setEditingDeal(offer);
   };
 
-  const getDealStatus = (deal: Deal) => {
-    const isExpired = new Date(deal.expiryDate) < new Date();
-    const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
+  const getDealStatus = (offer: Deal) => {
+    const isExpired = new Date(offer.expiryDate) < new Date();
+    const isFullyUsed = (offer.usageCount || 0) >= offer.usageLimit;
     
     if (isExpired) return 'expired';
     if (isFullyUsed) return 'fully-used';
-    if (!deal.isActive) return 'paused';
+    if (!offer.isActive) return 'paused';
     return 'active';
   };
 
   // Calculate stats
-  const activeDeals = deals.filter(d => d.isActive && new Date(d.expiryDate) > new Date());
+  const activeOffers = offers.filter(d => d.isActive && new Date(d.expiryDate) > new Date());
   const totalRedemptions = redemptions.length;
   const thisWeekRedemptions = redemptions.filter(r => {
     if (!r.redeemedAt) return false;
@@ -377,18 +377,18 @@ export default function MerchantDashboard() {
           </div>
 
           {/* Main Dashboard Tabs */}
-          <Tabs defaultValue="deals" className="w-full">
+          <Tabs defaultValue="offers" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="deals">Manage Deals</TabsTrigger>
+              <TabsTrigger value="offers">Manage Offers</TabsTrigger>
               <TabsTrigger value="scanner">QR Scanner</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="deals" className="space-y-6">
+            <TabsContent value="offers" className="space-y-6">
               <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Your Deals</CardTitle>
+                    <CardTitle>Your Offers</CardTitle>
                     <Button 
                       onClick={() => setShowCreateDeal(true)}
                       className="coastal-gradient"
@@ -399,7 +399,7 @@ export default function MerchantDashboard() {
                   </div>
                 </CardHeader>
                 <CardBody className="p-6">
-                  {dealsLoading ? (
+                  {offersLoading ? (
                     <div className="space-y-4">
                       {[...Array(3)].map((_, i) => (
                         <div key={i} className="border border-border rounded-lg p-4 animate-pulse">
@@ -418,13 +418,13 @@ export default function MerchantDashboard() {
                         </div>
                       ))}
                     </div>
-                  ) : deals.length === 0 ? (
+                  ) : offers.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="bg-muted rounded-full p-6 mx-auto w-20 h-20 flex items-center justify-center mb-4">
                         <Ticket className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-lg font-semibold text-foreground mb-2">No deals yet</h3>
-                      <p className="text-muted-foreground mb-4">Create your first deal to start attracting customers</p>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No offers yet</h3>
+                      <p className="text-muted-foreground mb-4">Create your first offer to start attracting customers</p>
                       <Button 
                         onClick={() => setShowCreateDeal(true)}
                         className="coastal-gradient"
@@ -435,29 +435,29 @@ export default function MerchantDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {deals.map((deal) => {
-                        const status = getDealStatus(deal);
-                        const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
+                      {offers.map((offer) => {
+                        const status = getDealStatus(offer);
+                        const usagePercentage = ((offer.usageCount || 0) / offer.usageLimit) * 100;
                         
                         return (
-                          <div key={deal.id} className="border border-border rounded-lg p-4">
+                          <div key={offer.id} className="border border-border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-foreground">{deal.title}</h3>
-                                  <Badge className={getDealCategoryColor(deal.category)}>
-                                    {deal.category}
+                                  <h3 className="text-lg font-semibold text-foreground">{offer.title}</h3>
+                                  <Badge className={getDealCategoryColor(offer.category)}>
+                                    {offer.category}
                                   </Badge>
                                   <Badge className={getStatusColor(status)}>
                                     {status}
                                   </Badge>
                                 </div>
-                                <p className="text-sm text-muted-foreground mb-2">{deal.description}</p>
+                                <p className="text-sm text-muted-foreground mb-2">{offer.description}</p>
                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                  <span>Expires: {formatRelativeTime(deal.expiryDate)}</span>
-                                  <span>{deal.usageCount || 0}/{deal.usageLimit} used</span>
-                                  {deal.originalValue && Number(deal.originalValue) > 0 && (
-                                    <span>Value: {formatCurrency(Number(deal.originalValue))}</span>
+                                  <span>Expires: {formatRelativeTime(offer.expiryDate)}</span>
+                                  <span>{offer.usageCount || 0}/{offer.usageLimit} used</span>
+                                  {offer.originalValue && Number(offer.originalValue) > 0 && (
+                                    <span>Value: {formatCurrency(Number(offer.originalValue))}</span>
                                   )}
                                 </div>
                               </div>
@@ -466,7 +466,7 @@ export default function MerchantDashboard() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleEditDeal(deal)}
+                                  onClick={() => handleEditDeal(offer)}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -474,15 +474,15 @@ export default function MerchantDashboard() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleToggleDeal(deal.id, deal.isActive)}
+                                  onClick={() => handleToggleDeal(offer.id, offer.isActive)}
                                 >
-                                  {deal.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                  {offer.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                                 </Button>
                                 
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleDeleteDeal(deal.id)}
+                                  onClick={() => handleDeleteDeal(offer.id)}
                                   className="text-destructive hover:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -527,7 +527,7 @@ export default function MerchantDashboard() {
                     <CardBody>
                       <div className="space-y-2">
                         <p><strong>Customer:</strong> {generateCustomerAlias({ id: lastScannedVoucher.userId, username: lastScannedVoucher.customerUsername })}</p>
-                        <p><strong>Deal:</strong> {lastScannedVoucher.dealTitle}</p>
+                        <p><strong>Deal:</strong> {lastScannedVoucher.offerTitle}</p>
                         <p><strong>Voucher:</strong> {lastScannedVoucher.voucherNumber}</p>
                         <p><strong>Time:</strong> {new Date(lastScannedVoucher.redeemedAt).toLocaleString()}</p>
                       </div>
@@ -545,29 +545,29 @@ export default function MerchantDashboard() {
                 </CardHeader>
                 <CardBody>
                   {(() => {
-                    // Calculate total revenue across all deals
+                    // Calculate total revenue across all offers
                     let totalMerchantRevenue = 0;
                     
-                    deals.forEach(deal => {
-                      const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
-                      const vouchersRedeemed = dealRedemptions.length;
+                    offers.forEach(offer => {
+                      const offerRedemptions = redemptions.filter(r => r.offerId === offer.id);
+                      const vouchersRedeemed = offerRedemptions.length;
                       
-                      let dealValue = 0;
-                      const discountVal = parseFloat((deal.discountValue as string) || '0');
-                      const originalVal = parseFloat((deal.originalValue as string) || '0');
+                      let offerValue = 0;
+                      const discountVal = parseFloat((offer.discountValue as string) || '0');
+                      const originalVal = parseFloat((offer.originalValue as string) || '0');
                       
-                      if (deal.discountType === 'percentage' && originalVal > 0) {
-                        // For percentage deals, use the discount amount (what customer saves)
-                        dealValue = originalVal * (discountVal / 100);
-                      } else if (deal.discountType === 'fixed') {
-                        // For fixed deals, use the discount value (what customer saves)
-                        dealValue = discountVal;
+                      if (offer.discountType === 'percentage' && originalVal > 0) {
+                        // For percentage offers, use the discount amount (what customer saves)
+                        offerValue = originalVal * (discountVal / 100);
+                      } else if (offer.discountType === 'fixed') {
+                        // For fixed offers, use the discount value (what customer saves)
+                        offerValue = discountVal;
                       } else {
                         // Default fallback
-                        dealValue = discountVal || originalVal;
+                        offerValue = discountVal || originalVal;
                       }
                       
-                      totalMerchantRevenue += vouchersRedeemed * dealValue;
+                      totalMerchantRevenue += vouchersRedeemed * offerValue;
                     });
                     
                     const monthlyRevenue = totalMerchantRevenue / 12;
@@ -613,44 +613,44 @@ export default function MerchantDashboard() {
                 </CardHeader>
                 <CardBody>
                   <div className="space-y-4">
-                    {deals.map((deal) => {
-                      const dealRedemptions = redemptions.filter(r => r.dealId === deal.id);
-                      const vouchersCreated = deal.usageCount || 0;
-                      const vouchersRedeemed = dealRedemptions.length;
+                    {offers.map((offer) => {
+                      const offerRedemptions = redemptions.filter(r => r.offerId === offer.id);
+                      const vouchersCreated = offer.usageCount || 0;
+                      const vouchersRedeemed = offerRedemptions.length;
                       
-                      // Calculate actual revenue based on deal value
-                      let dealValue = 0;
-                      const discountVal = parseFloat((deal.discountValue as string) || '0');
-                      const originalVal = parseFloat((deal.originalValue as string) || '0');
+                      // Calculate actual revenue based on offer value
+                      let offerValue = 0;
+                      const discountVal = parseFloat((offer.discountValue as string) || '0');
+                      const originalVal = parseFloat((offer.originalValue as string) || '0');
                       
-                      if (deal.discountType === 'percentage' && originalVal > 0) {
-                        // For percentage deals, use the discount amount (what customer saves)
-                        dealValue = originalVal * (discountVal / 100);
-                      } else if (deal.discountType === 'fixed') {
-                        // For fixed deals, use the discount value (what customer saves)
-                        dealValue = discountVal;
+                      if (offer.discountType === 'percentage' && originalVal > 0) {
+                        // For percentage offers, use the discount amount (what customer saves)
+                        offerValue = originalVal * (discountVal / 100);
+                      } else if (offer.discountType === 'fixed') {
+                        // For fixed offers, use the discount value (what customer saves)
+                        offerValue = discountVal;
                       } else {
                         // Default fallback
-                        dealValue = discountVal || originalVal;
+                        offerValue = discountVal || originalVal;
                       }
                       
-                      const totalRevenue = vouchersRedeemed * dealValue;
+                      const totalRevenue = vouchersRedeemed * offerValue;
                       
                       return (
-                        <div key={deal.id} className="border rounded-lg p-4 bg-gray-50">
+                        <div key={offer.id} className="border rounded-lg p-4 bg-gray-50">
                           <div className="flex justify-between items-start mb-3">
                             <div>
-                              <h4 className="font-semibold text-lg">{deal.title}</h4>
-                              <p className="text-sm text-muted-foreground">{deal.category}</p>
+                              <h4 className="font-semibold text-lg">{offer.title}</h4>
+                              <p className="text-sm text-muted-foreground">{offer.category}</p>
                               <p className="text-xs text-muted-foreground">
-                                Value: {deal.discountType === 'percentage' 
-                                  ? `${deal.discountValue}% off £${deal.originalValue || 0}`
-                                  : `£${deal.discountValue} ${deal.originalValue ? `(was £${deal.originalValue})` : ''}`
+                                Value: {offer.discountType === 'percentage' 
+                                  ? `${offer.discountValue}% off £${offer.originalValue || 0}`
+                                  : `£${offer.discountValue} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
                                 }
                               </p>
                             </div>
-                            <Badge variant={deal.isActive ? "default" : "secondary"}>
-                              {deal.isActive ? "Active" : "Inactive"}
+                            <Badge variant={offer.isActive ? "default" : "secondary"}>
+                              {offer.isActive ? "Active" : "Inactive"}
                             </Badge>
                           </div>
                           
@@ -681,10 +681,10 @@ export default function MerchantDashboard() {
                       );
                     })}
                     
-                    {deals.length === 0 && (
+                    {offers.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No deals created yet. Create your first deal to see analytics.</p>
+                        <p>No offers created yet. Create your first offer to see analytics.</p>
                       </div>
                     )}
                   </div>

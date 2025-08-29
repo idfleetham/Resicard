@@ -152,7 +152,7 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
                 <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                  Current Local Deals
+                  Current Local Offers
                 </h2>
                 <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
                   Discover exclusive offers from our handpicked collection of verified local businesses
@@ -191,7 +191,7 @@ export default function Home() {
                 onClick={() => setShowRoleSelector(true)}
                 className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl px-12 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
               >
-                Join to Access All Deals
+                Join to Access All Offers
               </Button>
             </div>
             </div>
