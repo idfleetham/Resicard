@@ -281,7 +281,7 @@ export default function TeamManagement() {
               variant="outline"
               size="sm"
               onClick={() => setShowPins(!showPins)}
-              className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50"
+              className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white"
             >
               {showPins ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
               {showPins ? "Hide PINs" : "Show PINs"}
@@ -319,10 +319,10 @@ export default function TeamManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
-                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50">
+                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white">
                         <RotateCcw className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50">
+                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
