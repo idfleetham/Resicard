@@ -732,7 +732,7 @@ export class DatabaseStorage implements IStorage {
             if (offer) {
               // Get merchant info from merchants table using UUID
               const [merchant] = await db
-                .select({ businessName: merchants.businessName })
+                .select({ businessName: merchants.name })
                 .from(merchants)
                 .where(eq(merchants.id, offer.merchantId));
 
