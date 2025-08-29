@@ -32,7 +32,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-surface shadow-sm border-b border-dim">
+    <nav className="bg-white shadow-sm border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -41,8 +41,8 @@ export default function Navigation() {
               className="flex-shrink-0 flex items-center hover:opacity-80 transition-opacity"
             >
               <MapPin className="h-6 w-6 text-primary mr-2" />
-              <span className="text-xl font-bold text-fg">Resicard</span>
-              <span className="text-sm text-soft ml-2">St Andrews</span>
+              <span className="text-xl font-bold text-slate-900">Resicard</span>
+              <span className="text-sm text-slate-600 ml-2">St Andrews</span>
             </button>
           </div>
           
@@ -53,7 +53,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={handleRoleNavigation}
-                  className="text-soft hover:text-fg"
+                  className="text-slate-600 hover:text-slate-900"
                 >
                   <User className="h-4 w-4 mr-2" />
                   Dashboard
@@ -62,7 +62,7 @@ export default function Navigation() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-soft hover:text-fg"
+                  className="text-slate-600 hover:text-slate-900"
                 >
                   <Bell className="h-4 w-4 mr-2" />
                   Notifications
@@ -70,7 +70,7 @@ export default function Navigation() {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-soft hover:text-fg">
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
                       <User className="h-4 w-4 mr-2" />
                       {user?.username}
                     </Button>
@@ -106,12 +106,14 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setLocation('/login')}
+                  className="text-slate-600 hover:text-slate-900"
                 >
                   Login
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => setLocation('/register')}
+                  className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white"
                 >
                   Sign Up
                 </Button>
