@@ -231,17 +231,17 @@ export default function OffersManager() {
 
   const getStatusBadge = (deal: Deal) => {
     if (!deal.isActive) return (
-      <Badge className="inline-flex items-center gap-1 rounded-full border border-yellow-400/30 bg-yellow-500/12 px-2 py-0.5 text-xs text-yellow-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-yellow-400/30 bg-yellow-500/12 px-2 py-0.5 text-sm text-yellow-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
         Paused
       </Badge>
     );
     if (new Date(deal.expiryDate) < new Date()) return (
-      <Badge className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/12 px-2 py-0.5 text-xs text-red-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/12 px-2 py-0.5 text-sm text-red-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
         Expired
       </Badge>
     );
     return (
-      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-xs text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-sm text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
         Active
       </Badge>
     );
@@ -351,7 +351,7 @@ export default function OffersManager() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Deal Title</FormLabel>
+                          <FormLabel className="text-slate-200 text-base">Deal Title</FormLabel>
                           <FormControl>
                             <Input placeholder="20% off all meals" {...field} className="input-dark" />
                           </FormControl>
@@ -364,7 +364,7 @@ export default function OffersManager() {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Category</FormLabel>
+                          <FormLabel className="text-slate-200 text-base">Category</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
@@ -390,7 +390,7 @@ export default function OffersManager() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-200">Description</FormLabel>
+                        <FormLabel className="text-slate-200 text-base">Description</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Describe your offer..."
@@ -408,7 +408,7 @@ export default function OffersManager() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-200">Offer Image</FormLabel>
+                        <FormLabel className="text-slate-200 text-base">Offer Image</FormLabel>
                         <FormControl>
                           <div className="space-y-2">
                             <Input
@@ -577,7 +577,7 @@ export default function OffersManager() {
                         <div>
                           <div>{offer.title}</div>
                           {offer.type === 'comprehensive' && offer.offerType && (
-                            <div className="text-xs text-slate-300 capitalize">
+                            <div className="text-sm text-slate-300 capitalize">
                               {offer.offerType.replace('_', ' ')}
                             </div>
                           )}

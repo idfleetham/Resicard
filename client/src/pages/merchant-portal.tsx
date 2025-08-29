@@ -171,15 +171,15 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">Active Members</span>
+                        <span className="text-soft text-base">Active Members</span>
                         <span className="font-semibold">247</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">Points Earned</span>
+                        <span className="text-soft text-base">Points Earned</span>
                         <span className="font-semibold">12,450</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">Rewards Claimed</span>
+                        <span className="text-soft text-base">Rewards Claimed</span>
                         <span className="font-semibold">89</span>
                       </div>
                     </div>
@@ -226,8 +226,8 @@ export default function MerchantPortal() {
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                         Active
                       </Badge>
-                      <p className="text-sm text-soft">Points Model</p>
-                      <p className="text-xs text-soft">10 points per £1 spent</p>
+                      <p className="text-base text-soft">Points Model</p>
+                      <p className="text-sm text-soft">10 points per £1 spent</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -239,15 +239,15 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">New Members</span>
+                        <span className="text-soft text-base">New Members</span>
                         <span className="font-semibold text-green-400">+24</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">Repeat Visits</span>
+                        <span className="text-soft text-base">Repeat Visits</span>
                         <span className="font-semibold text-blue-400">156</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-sm">Revenue Impact</span>
+                        <span className="text-soft text-base">Revenue Impact</span>
                         <span className="font-semibold text-purple-400">£2,340</span>
                       </div>
                     </div>
@@ -275,12 +275,12 @@ export default function MerchantPortal() {
                           </div>
                           <div>
                             <p className="font-medium text-fg">{activity.customer}</p>
-                            <p className="text-sm text-soft">{activity.action}</p>
+                            <p className="text-base text-soft">{activity.action}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium text-fg">{activity.amount}</p>
-                          <p className="text-xs text-soft">{activity.time}</p>
+                          <p className="text-base font-medium text-fg">{activity.amount}</p>
+                          <p className="text-sm text-soft">{activity.time}</p>
                         </div>
                       </div>
                     ))}
