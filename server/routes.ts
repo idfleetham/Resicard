@@ -385,26 +385,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Convert comprehensive offers to deal format for homepage compatibility
-      const convertedOffers = comprehensiveOffers.map(offer => ({
-        id: offer.id,
-        title: offer.title,
-        description: offer.description,
-        category: offer.category,
-        discountType: offer.type === 'percentage_discount' ? 'percentage' : 
-                     offer.type === 'fixed_amount_discount' ? 'fixed' :
-                     offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
-        discountValue: offer.percentOff || offer.fixedAmount || 0,
-        originalValue: null,
-        usageLimit: offer.maxPerTransaction || 100,
-        usageCount: 0,
-        isActive: offer.active ?? true,
-        expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        terms: offer.description,
-        imageUrl: null,
-        createdAt: offer.createdAt,
-        merchantId: offer.merchantId,
-        merchantName: offer.merchantName || 'Unknown',
-        merchantAddress: offer.merchantAddress || 'Address not provided'
+      const convertedOffers = await Promise.all(comprehensiveOffers.map(async offer => {
+        // Get merchant info to use logo as default image
+        // For comprehensive offers, merchantId is a UUID string, get merchant record first
+        const [merchantRecord] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
+        // Use merchant logo_url first, fallback to user profile photo by merchant name
+        let merchantLogo = merchantRecord?.logoUrl;
+        if (!merchantLogo && merchantRecord?.name) {
+          const [user] = await db.select().from(users).where(eq(users.username, merchantRecord.name));
+          merchantLogo = user?.profilePhoto;
+        }
+        
+        return {
+          id: offer.id,
+          title: offer.title,
+          description: offer.description,
+          category: offer.category,
+          discountType: offer.type === 'percentage_discount' ? 'percentage' : 
+                       offer.type === 'fixed_amount_discount' ? 'fixed' :
+                       offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
+          discountValue: offer.percentOff || offer.fixedPrice || 0,
+          originalValue: null,
+          usageLimit: offer.maxPerTransaction || 100,
+          usageCount: 0,
+          isActive: offer.active ?? true,
+          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          terms: offer.description,
+          imageUrl: merchantLogo || null, // Use merchant logo as default
+          createdAt: offer.createdAt,
+          merchantId: offer.merchantId,
+          merchantName: merchantRecord?.name || 'Unknown',
+          merchantAddress: merchantRecord?.address || 'Address not provided'
+        };
       }));
       
       // Combine simple deals and comprehensive offers
