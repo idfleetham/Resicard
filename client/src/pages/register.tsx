@@ -740,9 +740,9 @@ export default function Register() {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>First Name</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">First Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} />
+                              <Input placeholder="John" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -754,9 +754,9 @@ export default function Register() {
                         name="surname"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Surname</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">Surname</FormLabel>
                             <FormControl>
-                              <Input placeholder="Doe" {...field} />
+                              <Input placeholder="Doe" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -768,9 +768,9 @@ export default function Register() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">Username</FormLabel>
                             <FormControl>
-                              <Input placeholder="businessowner" {...field} />
+                              <Input placeholder="businessowner" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -782,9 +782,9 @@ export default function Register() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email Address</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">Email Address</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="business@example.com" {...field} />
+                              <Input type="email" placeholder="business@example.com" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -797,17 +797,18 @@ export default function Register() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel className="text-slate-900 font-semibold">Password</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Input 
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Create a secure password"
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
                                 {...field} 
                               />
                               <button
                                 type="button"
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
                                 onClick={() => setShowPassword(!showPassword)}
                               >
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -825,9 +826,9 @@ export default function Register() {
                         name="businessName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Name</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">Business Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="The Seafood Ristorante" {...field} />
+                              <Input placeholder="The Seafood Ristorante" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -839,10 +840,10 @@ export default function Register() {
                         name="businessCategory"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Category</FormLabel>
+                            <FormLabel className="text-slate-900 font-semibold">Business Category</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                                   <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                               </FormControl>
@@ -869,11 +870,11 @@ export default function Register() {
                       name="businessAddress"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Address</FormLabel>
+                          <FormLabel className="text-slate-900 font-semibold">Business Address</FormLabel>
                           <FormControl>
                             <Textarea 
                               placeholder="123 Market Street, St Andrews, KY16 9XX"
-                              className="h-20"
+                              className="h-20 bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
                               {...field} 
                             />
                           </FormControl>
@@ -887,9 +888,9 @@ export default function Register() {
                       name="businessPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Phone</FormLabel>
+                          <FormLabel className="text-slate-900 font-semibold">Business Phone</FormLabel>
                           <FormControl>
-                            <Input placeholder="01334 123456" {...field} />
+                            <Input placeholder="01334 123456" {...field} className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
