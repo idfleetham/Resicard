@@ -238,10 +238,27 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const onSubmit = (data: OfferFormData) => {
     console.log('Form submitted with data:', data);
     
-    // Parse timeSlots if it's a string
+    // Parse and convert timeSlots format
+    let timeSlots = typeof data.timeSlots === 'string' ? JSON.parse(data.timeSlots || '{}') : data.timeSlots;
+    
+    // Convert from {day: {startTime, endTime}} to {day: [{start, end}]} format
+    const convertedTimeSlots: Record<string, Array<{start: string, end: string}>> = {};
+    
+    Object.entries(timeSlots).forEach(([day, slot]) => {
+      if (slot && typeof slot === 'object') {
+        const typedSlot = slot as any;
+        if (typedSlot.startTime && typedSlot.endTime) {
+          convertedTimeSlots[day] = [{
+            start: typedSlot.startTime,
+            end: typedSlot.endTime
+          }];
+        }
+      }
+    });
+    
     const processedData = {
       ...data,
-      timeSlots: typeof data.timeSlots === 'string' ? JSON.parse(data.timeSlots || '{}') : data.timeSlots
+      timeSlots: convertedTimeSlots
     };
     
     console.log('Processed data:', processedData);
