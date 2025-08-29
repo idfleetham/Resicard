@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -119,6 +119,28 @@ export default function ResidentDashboard() {
       toast({
         title: "Failed to Create Voucher",
         description: error.message || "Unable to create voucher",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete voucher mutation
+  const deleteVoucherMutation = useMutation({
+    mutationFn: async (voucherId: number) => {
+      const response = await apiRequestWithAuth('DELETE', `/api/vouchers/${voucherId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Voucher Deleted",
+        description: "Voucher has been removed from your wallet.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/vouchers/user'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Delete Voucher",
+        description: error.message || "Unable to delete voucher",
         variant: "destructive",
       });
     },
@@ -602,16 +624,27 @@ export default function ResidentDashboard() {
                                   ) : (
                                     <div className="space-y-3">
                                       <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 px-3 py-1 rounded-full">Ready to use</Badge>
-                                      <Button
-                                        onClick={() => {
-                                          setSelectedVoucher(voucher);
-                                          setShowRedemptionCard(true);
-                                        }}
-                                        className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-6 py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                                      >
-                                        <User className="h-4 w-4 mr-2" />
-                                        Show QR Code
-                                      </Button>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={() => {
+                                            setSelectedVoucher(voucher);
+                                            setShowRedemptionCard(true);
+                                          }}
+                                          className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white rounded-2xl px-4 py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex-1"
+                                        >
+                                          <User className="h-4 w-4 mr-2" />
+                                          Show QR Code
+                                        </Button>
+                                        <Button
+                                          onClick={() => deleteVoucherMutation.mutate(voucher.id)}
+                                          disabled={deleteVoucherMutation.isPending}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-2xl px-3"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -664,7 +697,19 @@ export default function ResidentDashboard() {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <Badge className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 border-gray-200 px-4 py-2 rounded-full">Redeemed</Badge>
+                                  <div className="flex flex-col items-end gap-3">
+                                    <Badge className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 border-gray-200 px-4 py-2 rounded-full">Redeemed</Badge>
+                                    <Button
+                                      onClick={() => deleteVoucherMutation.mutate(voucher.id)}
+                                      disabled={deleteVoucherMutation.isPending}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-2xl px-3"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
+                                    </Button>
+                                  </div>
                                 </div>
                             </div>
                           </div>

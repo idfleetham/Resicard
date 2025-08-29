@@ -819,6 +819,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/vouchers/:id", authenticateToken, async (req, res) => {
+    try {
+      const voucherId = parseInt(req.params.id);
+      const userId = req.user.id;
+      
+      if (isNaN(voucherId)) {
+        return res.status(400).json({ message: "Invalid voucher ID" });
+      }
+      
+      const deleted = await storage.deleteVoucher(voucherId, userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Voucher not found or not authorized" });
+      }
+      
+      res.json({ message: "Voucher deleted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.get("/api/redemptions/user/:userId", authenticateToken, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);

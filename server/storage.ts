@@ -52,6 +52,7 @@ export interface IStorage {
   getVouchersByUser(userId: number): Promise<VoucherWithDeal[]>;
   getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined>;
   useVoucher(voucherNumber: string): Promise<Voucher | undefined>;
+  deleteVoucher(voucherId: number, userId: number): Promise<boolean>;
   getActiveVouchersCount(dealId: number): Promise<number>;
   
   // Subscription operations
@@ -698,22 +699,16 @@ export class DatabaseStorage implements IStorage {
         .from(vouchers)
         .where(eq(vouchers.userId, userId));
 
-      console.log(`Found ${allVouchers.length} vouchers for user ${userId}`);
-
       const result: VoucherWithDeal[] = [];
 
       for (const voucher of allVouchers) {
-        console.log(`Processing voucher ${voucher.id}, dealId: ${voucher.dealId}, voucherNumber: ${voucher.voucherNumber}`);
-        
         if (voucher.dealId === -1) {
           // This is a UUID offer voucher - extract deal info from voucherNumber
           // UUID pattern: 8-4-4-4-12 characters (e.g., 208783e2-cc55-42ce-9efc-a47d7eff7f1c)
           const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})-/i);
-          console.log(`UUID match result:`, uuidMatch);
           
           if (uuidMatch) {
             const offerId = uuidMatch[1].toLowerCase(); // Convert to lowercase to match database
-            console.log(`Looking for offer with ID: ${offerId}`);
             
             // Fetch offer details from the offers table
             const [offer] = await db
@@ -727,16 +722,12 @@ export class DatabaseStorage implements IStorage {
               .from(offers)
               .where(eq(offers.id, offerId));
 
-            console.log(`Found offer:`, offer);
-
             if (offer) {
               // Get merchant info from merchants table using UUID
               const [merchant] = await db
                 .select({ businessName: merchants.name })
                 .from(merchants)
                 .where(eq(merchants.id, offer.merchantId));
-
-              console.log(`Found merchant:`, merchant);
 
               result.push({
                 ...voucher,
@@ -745,11 +736,7 @@ export class DatabaseStorage implements IStorage {
                 discountValue: offer.percentOff?.toString() || '0',
                 discountType: offer.type || 'percentage_discount',
               });
-            } else {
-              console.log(`No offer found for ID: ${offerId}`);
             }
-          } else {
-            console.log(`No UUID match for voucher number: ${voucher.voucherNumber}`);
           }
         } else {
         // This is a regular deal voucher - use the existing join logic
@@ -807,6 +794,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(vouchers.voucherNumber, voucherNumber))
       .returning();
     return voucher || undefined;
+  }
+
+  async deleteVoucher(voucherId: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(vouchers)
+      .where(
+        and(
+          eq(vouchers.id, voucherId),
+          eq(vouchers.userId, userId) // Ensure user can only delete their own vouchers
+        )
+      );
+    
+    // Return true if a row was deleted
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async getActiveVouchersCount(dealId: number): Promise<number> {
