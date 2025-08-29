@@ -446,18 +446,21 @@ export default function ResidentDashboard() {
               </div>
 
               {vouchers.length === 0 ? (
-                <Card>
-                  <CardBody className="p-12 text-center">
-                    <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No vouchers yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Start creating vouchers from available deals to build your wallet.
-                    </p>
-                    <Button onClick={() => setActiveTab("deals")}>
-                      Browse Deals
-                    </Button>
-                  </CardBody>
-                </Card>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                  <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                    <Ticket className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No vouchers yet</h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Start creating vouchers from available deals to build your wallet.
+                  </p>
+                  <Button 
+                    onClick={() => setActiveTab("deals")}
+                    className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full px-8 py-3 font-semibold"
+                  >
+                    Browse Deals
+                  </Button>
+                </div>
               ) : (
                 <>
                   {/* Active Vouchers Section */}
@@ -469,9 +472,8 @@ export default function ResidentDashboard() {
                       </h3>
                       <div className="grid gap-4">
                         {activeVouchers.map((voucher) => (
-                          <Card key={voucher.id}>
-                            <CardBody className="p-6">
-                              <div className="flex justify-between items-start">
+                          <div key={voucher.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h3 className="font-semibold">{voucher.dealTitle}</h3>
@@ -547,9 +549,8 @@ export default function ResidentDashboard() {
                                     </div>
                                   )}
                                 </div>
-                              </div>
-                            </CardBody>
-                          </Card>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -564,9 +565,8 @@ export default function ResidentDashboard() {
                       </h3>
                       <div className="grid gap-4">
                         {usedVouchers.map((voucher) => (
-                          <Card key={voucher.id} className="opacity-60">
-                            <CardBody className="p-6">
-                              <div className="flex justify-between items-start">
+                          <div key={voucher.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 opacity-60">
+                            <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h3 className="font-semibold">{voucher.dealTitle}</h3>
@@ -591,9 +591,8 @@ export default function ResidentDashboard() {
                                 <div className="text-right">
                                   <Badge variant="secondary">Redeemed</Badge>
                                 </div>
-                              </div>
-                            </CardBody>
-                          </Card>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -607,9 +606,11 @@ export default function ResidentDashboard() {
           {activeTab === "verification" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Residency Verification</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Residency Verification</h2>
               </div>
-              <DocumentVerification />
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <DocumentVerification />
+              </div>
             </div>
           )}
 
@@ -617,27 +618,28 @@ export default function ResidentDashboard() {
           {activeTab === "subscription" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Subscription Management</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Subscription Management</h2>
                 {subscription?.isActive && (
-                  <Badge variant="default">
+                  <Badge className="bg-gradient-to-r from-indigo-100 to-violet-100 text-indigo-700 border-0 px-4 py-2 rounded-full">
                     {subscription.type} • {subscription.plan}
                   </Badge>
                 )}
               </div>
 
-              <SubscriptionManagement 
-                subscription={subscription}
-                plans={plans}
-                onSubscriptionChange={() => {
-                  queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
-                  queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-                }}
-              />
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <SubscriptionManagement 
+                  subscription={subscription}
+                  plans={plans}
+                  onSubscriptionChange={() => {
+                    queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+                  }}
+                />
+              </div>
 
               {/* Legacy subscription creation for non-active users */}
               {!subscription?.isActive && (
-                <Card>
-                  <CardBody className="p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
                     <p className="text-muted-foreground mb-6">
                       Subscribe to create vouchers from deals and build your savings wallet.
@@ -767,8 +769,7 @@ export default function ResidentDashboard() {
                         </div>
                       </div>
                     </div>
-                  </CardBody>
-                </Card>
+                </div>
               )}
             </div>
           )}

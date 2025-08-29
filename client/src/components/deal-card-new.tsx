@@ -54,7 +54,7 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300" style={{ border: '3px solid red' }}>
+    <div className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       {/* 16:9 Aspect Ratio Image */}
       <div className="relative aspect-video overflow-hidden">
         <img 
@@ -96,11 +96,11 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-6 space-y-4" style={{ backgroundColor: 'yellow' }}>
+      <div className="p-6 space-y-4">
         {/* Title Hierarchy */}
         <div className="space-y-2">
           <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
-            {deal.title} - NEW DESIGN TEST
+            {deal.title}
           </h3>
           
           {showMerchantInfo && (
