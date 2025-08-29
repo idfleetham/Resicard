@@ -11,12 +11,22 @@ export default function WalletAdd() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [passUrl, setPassUrl] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
     if (user) {
       const baseUrl = window.location.origin;
       const passDownloadUrl = `${baseUrl}/api/wallet/pass`;
       setPassUrl(passDownloadUrl);
+      
+      // Check for error parameters in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      if (error === 'not_configured') {
+        setErrorMessage('Apple Wallet integration is not yet configured. Please contact support.');
+      } else if (error === 'generation_failed') {
+        setErrorMessage('Failed to generate Apple Wallet pass. Please try again later.');
+      }
       
       // Generate QR code
       QRCodeLib.toDataURL(passDownloadUrl, {
@@ -85,6 +95,21 @@ export default function WalletAdd() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-12 relative z-10">
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-2xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-red-600 text-lg">⚠</span>
+              </div>
+              <div>
+                <h3 className="text-red-900 font-semibold">Configuration Issue</h3>
+                <p className="text-red-700">{errorMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Add to Wallet Section */}
           <motion.div

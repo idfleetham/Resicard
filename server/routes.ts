@@ -1873,10 +1873,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wallet/pass", async (req, res) => {
     try {
       if (!process.env.PASS_TYPE_IDENTIFIER || !process.env.TEAM_IDENTIFIER) {
-        return res.status(503).json({
-          error: "Apple Wallet pass generation not configured",
-          message: "Contact administrator to set up Apple Wallet integration"
-        });
+        // Instead of returning an error, redirect to the wallet add page with a message
+        return res.redirect('/wallet/add?error=not_configured');
       }
 
       // For now, redirect to the authenticated endpoint
@@ -1884,7 +1882,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.redirect('/wallet/resicard.pkpass');
     } catch (error) {
       console.error('Pass generation error:', error);
-      res.status(500).json({ error: "Failed to generate pass" });
+      // Redirect to wallet add page with error message instead of JSON error
+      res.redirect('/wallet/add?error=generation_failed');
     }
   });
 
