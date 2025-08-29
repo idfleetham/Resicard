@@ -71,6 +71,7 @@ const offerSchema = z.object({
   maxPerWeek: z.number().min(1).optional(),
   maxLifetime: z.number().min(1).optional(),
   globalUsageLimit: z.number().min(1).optional(),
+  voucherTimeoutHours: z.number().min(1).max(168).default(24), // 1 hour to 7 days
   staffPinRequired: z.boolean().default(false),
   proofType: z.enum(["qr_only", "code_pin", "app_checkin"]).default("qr_only"),
 
@@ -160,6 +161,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       maxPerWeek: editingOffer.maxPerWeek || undefined,
       maxLifetime: editingOffer.maxLifetime || undefined,
       globalUsageLimit: editingOffer.globalUsageLimit || undefined,
+      voucherTimeoutHours: editingOffer.voucherTimeoutHours || 24,
       staffPinRequired: editingOffer.staffPinRequired || false,
       proofType: editingOffer.proofType || "qr_only",
       terms: editingOffer.terms || "",
@@ -189,6 +191,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       blackoutDates: [],
       leadTime: 0,
       maxPerTransaction: 1,
+      voucherTimeoutHours: 24,
       staffPinRequired: false,
       proofType: "qr_only",
       dineInOnly: false,
@@ -1062,6 +1065,31 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                               />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="voucherTimeoutHours"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Voucher Claim Timeout (Hours)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                max="168"
+                                className="input-dark"
+                                placeholder="24"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormDescription className="text-slate-400 text-sm">
+                              How long customers have to use their voucher after claiming (1-168 hours)
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

@@ -878,6 +878,9 @@ export class DatabaseStorage implements IStorage {
       timeSlots: typeof updates.timeSlots === 'object' ? JSON.stringify(updates.timeSlots) : updates.timeSlots,
       blackoutDates: Array.isArray(updates.blackoutDates) ? JSON.stringify(updates.blackoutDates) : updates.blackoutDates,
       locations: Array.isArray(updates.locations) ? JSON.stringify(updates.locations) : updates.locations,
+      // Convert date strings to Date objects
+      validFrom: updates.validFrom ? new Date(updates.validFrom) : updates.validFrom,
+      validTo: updates.validTo ? new Date(updates.validTo) : updates.validTo,
       updatedAt: new Date(),
     };
 

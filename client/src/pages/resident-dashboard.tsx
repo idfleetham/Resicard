@@ -568,14 +568,17 @@ export default function ResidentDashboard() {
                                     {voucher.merchantName}
                                   </p>
                                   <div className="flex items-center gap-6 text-sm mb-4">
-                                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl">
-                                      <span className="text-lg font-bold text-white">
-                                        {voucher.discountType === 'percentage' 
-                                          ? `${voucher.discountValue}% OFF`
-                                          : `£${voucher.discountValue} OFF`
-                                        }
-                                      </span>
-                                    </div>
+                                    {/* Only show discount badge for monetary discounts */}
+                                    {(voucher.discountType === 'percentage' || voucher.discountType === 'fixed') && (
+                                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl">
+                                        <span className="text-lg font-bold text-white">
+                                          {voucher.discountType === 'percentage' 
+                                            ? `${voucher.discountValue}% OFF`
+                                            : `£${voucher.discountValue} OFF`
+                                          }
+                                        </span>
+                                      </div>
+                                    )}
                                     <span className="text-gray-600 font-medium">
                                       Expires: {formatDate(voucher.expiresAt)}
                                     </span>
@@ -684,7 +687,9 @@ export default function ResidentDashboard() {
                                       <span className="text-lg font-bold text-white">
                                         {voucher.discountType === 'percentage' 
                                           ? `${voucher.discountValue}% OFF`
-                                          : `£${voucher.discountValue} OFF`
+                                          : voucher.discountType === 'fixed'
+                                          ? `£${voucher.discountValue} OFF`
+                                          : 'Special Offer'
                                         }
                                       </span>
                                     </div>
