@@ -92,6 +92,22 @@ export default function Register() {
     },
   });
 
+  const studentForm = useForm<StudentFormData>({
+    resolver: zodResolver(studentSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      firstName: "",
+      surname: "",
+      role: "student",
+      studentId: "",
+      university: "",
+      courseYear: "",
+      profilePhoto: "",
+    },
+  });
+
   // Image resizing functions
   const resizeProfileImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
