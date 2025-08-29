@@ -168,15 +168,14 @@ export class ObjectStorageService {
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(objectName);
     
-    // Upload the file
+    // Upload the file without trying to make it public (due to access prevention policy)
     await file.save(fileBuffer, {
       metadata: {
         contentType: contentType,
       },
-      public: true, // Make the file publicly accessible
     });
     
-    // Return the public URL
+    // Return the public URL (files will be served through our endpoint)
     return `/public-objects/${fileName}`;
   }
 
