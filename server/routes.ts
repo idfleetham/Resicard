@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertDealSchema, insertEnhancedRedemptionSchema, insertOfferSchema } from "@shared/schema";
 import { eq, sql, and, gt, desc, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
+import { db } from "./db";
 import { Pool } from "@neondatabase/serverless";
 import multer from "multer";
 import express from "express";
@@ -373,7 +374,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         deals = await storage.getActiveDeals();
       }
       
-      res.json(deals);
+      // Also fetch comprehensive offers and combine them
+      const allOffers = await db.select().from(offers)
+        .where(eq(offers.active, true));
+      
+      // Filter only active offers (not expired)
+      const comprehensiveOffers = allOffers.filter(offer => {
+        if (!offer.validTo) return true;
+        return new Date(offer.validTo) > new Date();
+      });
+      
+      // Convert comprehensive offers to deal format for homepage compatibility
+      const convertedOffers = comprehensiveOffers.map(offer => ({
+        id: offer.id,
+        title: offer.title,
+        description: offer.description,
+        category: offer.category,
+        discountType: offer.type === 'percentage_discount' ? 'percentage' : 
+                     offer.type === 'fixed_amount_discount' ? 'fixed' :
+                     offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
+        discountValue: offer.percentOff || offer.fixedAmount || 0,
+        originalValue: null,
+        usageLimit: offer.maxPerTransaction || 100,
+        usageCount: 0,
+        isActive: offer.active ?? true,
+        expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        terms: offer.description,
+        imageUrl: null,
+        createdAt: offer.createdAt,
+        merchantId: offer.merchantId,
+        merchantName: offer.merchantName || 'Unknown',
+        merchantAddress: offer.merchantAddress || 'Address not provided'
+      }));
+      
+      // Combine simple deals and comprehensive offers
+      const allDeals = [...deals, ...convertedOffers];
+      
+      res.json(allDeals);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
