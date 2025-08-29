@@ -125,14 +125,19 @@ export default function OffersManager() {
       const processedData = {
         ...data,
         merchantId: user!.id,
+        discountValue: parseFloat(data.discountValue) || 0,
+        originalValue: data.originalValue ? parseFloat(data.originalValue) : null,
+        usageLimit: parseInt(data.usageLimit) || 100,
         expiryDate: new Date(data.expiryDate),
         usageCount: 0,
         isActive: true,
       };
+      console.log('Processed deal data:', processedData);
       return apiRequest("POST", "/api/deals", processedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
       setIsCreateOpen(false);
       form.reset();
       toast({ title: "Offer created successfully!" });
@@ -161,9 +166,9 @@ export default function OffersManager() {
       description: deal.description,
       category: deal.category as "food" | "entertainment" | "retail" | "services",
       discountType: deal.discountType as "percentage" | "fixed" | "bogo" | "free_item",
-      discountValue: deal.discountValue.toString(),
+      discountValue: deal.discountValue?.toString() || "",
       expiryDate: format(new Date(deal.expiryDate), "yyyy-MM-dd"),
-      usageLimit: deal.usageLimit.toString(),
+      usageLimit: deal.usageLimit?.toString() || "100",
       terms: deal.terms || "",
       imageUrl: deal.imageUrl || "",
     });
@@ -217,7 +222,7 @@ export default function OffersManager() {
       discountType: "percentage",
       discountValue: "",
       originalValue: "",
-      usageLimit: 100,
+      usageLimit: "100",
       expiryDate: "",
       terms: "",
       imageUrl: "",
@@ -366,12 +371,12 @@ export default function OffersManager() {
                                 <SelectValue placeholder="Select category" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-slate-800 border-slate-700">
-                              <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                              <SelectItem value="Retail">Retail</SelectItem>
-                              <SelectItem value="Services">Services</SelectItem>
-                              <SelectItem value="Entertainment">Entertainment</SelectItem>
-                              <SelectItem value="Health & Beauty">Health & Beauty</SelectItem>
+                            <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                              <SelectItem value="Food & Drink" className="text-white hover:bg-slate-700">Food & Drink</SelectItem>
+                              <SelectItem value="Retail" className="text-white hover:bg-slate-700">Retail</SelectItem>
+                              <SelectItem value="Services" className="text-white hover:bg-slate-700">Services</SelectItem>
+                              <SelectItem value="Entertainment" className="text-white hover:bg-slate-700">Entertainment</SelectItem>
+                              <SelectItem value="Health & Beauty" className="text-white hover:bg-slate-700">Health & Beauty</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -416,7 +421,7 @@ export default function OffersManager() {
                                   uploadOfferImageMutation.mutate({ offerId: editingDeal.id, file });
                                 }
                               }}
-                              className="input-dark"
+                              className="input-dark text-white file:text-white file:bg-slate-700 file:border-slate-600"
                               disabled={uploadOfferImageMutation.isPending}
                             />
                             {field.value && (
@@ -440,7 +445,7 @@ export default function OffersManager() {
                       type="button" 
                       variant="outline" 
                       onClick={() => setIsCreateOpen(false)}
-                      className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                      className="border-slate-700 hover:bg-slate-800 text-black bg-white hover:text-white"
                     >
                       Cancel
                     </Button>
