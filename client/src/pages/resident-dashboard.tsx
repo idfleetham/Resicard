@@ -218,7 +218,7 @@ export default function ResidentDashboard() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
         {/* Hero Section */}
         <div className="relative coastal-gradient text-white">
           <div 
@@ -269,106 +269,122 @@ export default function ResidentDashboard() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8 max-w-md">
-            <button
-              onClick={() => setActiveTab("deals")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "deals"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Browse Deals
-            </button>
-            <button
-              onClick={() => setActiveTab("wallet")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "wallet"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              My Wallet
-            </button>
-            <button
-              onClick={() => setActiveTab("verification")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "verification"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Verification
-            </button>
-            <button
-              onClick={() => setActiveTab("subscription")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "subscription"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Subscription
-            </button>
+          {/* Premium Tab Navigation */}
+          <div className="relative mb-12">
+            <div className="flex space-x-8 border-b border-gray-200 max-w-2xl">
+              <button
+                onClick={() => setActiveTab("deals")}
+                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "deals"
+                    ? "text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Browse Deals
+                {activeTab === "deals" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("wallet")}
+                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "wallet"
+                    ? "text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                My Wallet
+                {activeTab === "wallet" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("verification")}
+                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "verification"
+                    ? "text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Verification
+                {activeTab === "verification" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("subscription")}
+                className={`relative py-4 px-2 text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "subscription"
+                    ? "text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Subscription
+                {activeTab === "subscription" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Browse Deals Tab */}
           {activeTab === "deals" && (
             <>
-              {/* Filters */}
-              <Card className="mb-8">
-                <CardBody className="p-6">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center space-x-2">
-                      <Filter className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Filters:</span>
+              {/* Premium Filters */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <div className="flex flex-wrap items-center gap-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-indigo-50 rounded-lg">
+                      <Filter className="h-4 w-4 text-indigo-600" />
                     </div>
-                    
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="available" 
-                        checked={availableOnly}
-                        onCheckedChange={(checked) => setAvailableOnly(checked === true)}
-                      />
-                      <label htmlFor="available" className="text-sm text-muted-foreground">
-                        Available now only
-                      </label>
-                    </div>
+                    <span className="text-sm font-semibold text-gray-700">Filters</span>
                   </div>
-                </CardBody>
-              </Card>
+                  
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-48 border-gray-200 bg-gray-50 rounded-xl">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      id="available" 
+                      checked={availableOnly}
+                      onCheckedChange={(checked) => setAvailableOnly(checked === true)}
+                      className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                    />
+                    <label htmlFor="available" className="text-sm font-medium text-gray-600">
+                      Available now only
+                    </label>
+                  </div>
+                </div>
+              </div>
 
               {/* Deal Cards */}
               {dealsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[...Array(6)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <div className="h-48 bg-muted" />
-                      <CardBody className="p-6 space-y-3">
-                        <div className="h-4 bg-muted rounded w-1/4" />
-                        <div className="h-6 bg-muted rounded w-3/4" />
-                        <div className="h-4 bg-muted rounded w-full" />
-                        <div className="h-4 bg-muted rounded w-2/3" />
-                      </CardBody>
-                    </Card>
+                    <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+                      <div className="aspect-video bg-gray-200 rounded-t-2xl" />
+                      <div className="p-6 space-y-4">
+                        <div className="h-6 bg-gray-200 rounded w-3/4" />
+                        <div className="h-4 bg-gray-200 rounded w-1/2" />
+                        <div className="h-4 bg-gray-200 rounded w-full" />
+                        <div className="h-4 bg-gray-200 rounded w-2/3" />
+                        <div className="h-10 bg-gray-200 rounded-full w-full" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : filteredDeals.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredDeals.map((deal) => {
                     const hasExistingVoucher = vouchers.some(v => v.dealId === deal.id && !v.isUsed);
                     return (
@@ -385,27 +401,26 @@ export default function ResidentDashboard() {
                   })}
                 </div>
               ) : (
-                <Card>
-                  <CardBody className="p-12 text-center">
-                    <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
-                    <p className="text-muted-foreground">
-                      {selectedCategory 
-                        ? `No deals available in the ${selectedCategory} category.`
-                        : 'No deals are currently available.'
-                      }
-                    </p>
-                    {selectedCategory && (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setSelectedCategory("all")}
-                        className="mt-4"
-                      >
-                        View All Deals
-                      </Button>
-                    )}
-                  </CardBody>
-                </Card>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                  <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                    <Ticket className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No deals found</h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    {selectedCategory 
+                      ? `No deals are currently available in the ${selectedCategory} category. Try browsing other categories or check back later.`
+                      : 'No deals are currently available. Check back later for new offers from local merchants.'
+                    }
+                  </p>
+                  {selectedCategory && (
+                    <Button 
+                      onClick={() => setSelectedCategory("all")}
+                      className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full px-8 py-3 font-semibold"
+                    >
+                      View All Categories
+                    </Button>
+                  )}
+                </div>
               )}
             </>
           )}
@@ -414,17 +429,17 @@ export default function ResidentDashboard() {
           {activeTab === "wallet" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">My Voucher Wallet</h2>
+                <h2 className="text-3xl font-bold text-gray-900">My Voucher Wallet</h2>
                 <div className="flex items-center gap-4">
                   <Button 
                     variant="outline"
-                    className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/20"
+                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-full px-6"
                     onClick={() => window.location.href = '/wallet/add'}
                   >
                     <Smartphone className="w-4 h-4 mr-2" />
                     Add to Apple Wallet
                   </Button>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-500 bg-gray-100 rounded-full px-4 py-2">
                     {activeVouchers.length} active • {usedVouchers.length} used
                   </div>
                 </div>

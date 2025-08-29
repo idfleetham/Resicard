@@ -2,7 +2,7 @@ import { Card, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, Calendar, Ticket } from "lucide-react";
+import { Users, Calendar, Ticket, MapPin, Clock, Tag } from "lucide-react";
 import { formatRelativeTime, getDealCategoryColor, formatCurrency } from "@/lib/utils";
 import type { DealWithMerchant } from "@shared/schema";
 import dunveganImage from "@assets/Dunny_1749765361824.jpg";
@@ -69,97 +69,135 @@ export default function DealCard({
     return categoryImages[deal.category.toLowerCase()] || categoryImages.restaurant;
   };
 
+  const getExpiryBadgeColor = () => {
+    const now = new Date();
+    const expiry = new Date(deal.expiryDate);
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilExpiry <= 0) return "bg-red-100 text-red-700 border-red-200";
+    if (daysUntilExpiry <= 3) return "bg-amber-100 text-amber-700 border-amber-200";
+    return "bg-green-100 text-green-700 border-green-200";
+  };
+
   return (
-    <Card className="deal-card overflow-hidden">
-      <img 
-        src={getImageForDeal(deal)} 
-        alt={`${deal.merchantName} ${deal.category}`} 
-        className="w-full h-48 object-cover"
-      />
-      
-      <CardBody className="p-6">
-        <div className="flex items-center justify-between mb-2">
-          <Badge className={getDealCategoryColor(deal.category)}>
-            {deal.category}
+    <Card className="group overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+      {/* 16:9 Aspect Ratio Image */}
+      <div className="relative aspect-video overflow-hidden">
+        <img 
+          src={getImageForDeal(deal)} 
+          alt={deal.title} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {/* Category Badge on Image */}
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-white/90 text-gray-700 border-0 text-xs font-semibold shadow-sm">
+            <Tag className="w-3 h-3 mr-1" />
+            {deal.category.charAt(0).toUpperCase() + deal.category.slice(1)}
           </Badge>
-          <span className="text-sm text-muted-foreground">
-            {formatRelativeTime(deal.expiryDate)}
+        </div>
+        {/* Expiry Badge on Image */}
+        <div className="absolute top-3 right-3">
+          <Badge className={`${getExpiryBadgeColor()} text-xs font-medium border`}>
+            <Clock className="w-3 h-3 mr-1" />
+            {(() => {
+              const now = new Date();
+              const expiry = new Date(deal.expiryDate);
+              const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+              
+              if (daysUntilExpiry <= 0) return "Expired";
+              if (daysUntilExpiry === 1) return "1 day";
+              if (daysUntilExpiry <= 7) return `${daysUntilExpiry} days`;
+              return formatRelativeTime(deal.expiryDate);
+            })()}
+          </Badge>
+        </div>
+        
+        {/* Status Overlay */}
+        {!canRedeem && !isExpired && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <Badge variant="secondary" className="bg-white text-gray-700">
+              Fully Redeemed
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      <CardBody className="p-6 space-y-4">
+        {/* Title Hierarchy */}
+        <div className="space-y-2">
+          <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+            {deal.title}
+          </h3>
+          
+          {showMerchantInfo && (
+            <div className="flex items-center text-gray-600">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span className="font-medium text-sm">{deal.merchantName}</span>
+            </div>
+          )}
+          
+          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+            {deal.description}
+          </p>
+        </div>
+
+        {/* Discount Highlight */}
+        <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl">
+          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            {deal.discountType === 'percentage' 
+              ? `${deal.discountValue}% OFF`
+              : `${formatCurrency(Number(deal.discountValue))} OFF`
+            }
           </span>
         </div>
-        
-        {showMerchantInfo && (
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            {deal.merchantName}
-          </h3>
-        )}
-        
-        <p className="text-primary font-bold text-xl mb-2">
-          {deal.title}
-        </p>
-        
-        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-          {deal.description}
-        </p>
-        
-        {deal.originalValue && Number(deal.originalValue) > 0 && (
-          <div className="mb-4">
-            <span className="text-sm text-muted-foreground">Value: </span>
-            <span className="font-semibold">{formatCurrency(Number(deal.originalValue))}</span>
-          </div>
-        )}
-        
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-muted-foreground flex items-center">
-            <Users className="h-4 w-4 mr-1" />
-            {deal.usageCount}/{deal.usageLimit} used
-          </div>
-          
-          {canRedeem && onRedeem && (
-            <Button 
-              size="sm" 
-              onClick={() => onRedeem(deal.id)}
-              disabled={hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
-              className="coastal-gradient hover:opacity-90"
-            >
-              <Ticket className="h-4 w-4 mr-2" />
-              {hasExistingVoucher ? 'Already Have Voucher' : 
-               (isLoading && loadingDealId === deal.id) ? 'Redeeming...' : 'Use Deal'}
-            </Button>
-          )}
-        </div>
-        
-        <div className="space-y-2">
+
+        {/* Usage Progress with Gradient */}
+        <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Usage Progress</span>
-            <span className="text-sm font-medium text-foreground">
-              {Math.round(usagePercentage)}%
+            <span className="text-sm font-medium text-gray-700">Availability</span>
+            <span className="text-sm text-gray-500">
+              {deal.usageLimit - (deal.usageCount || 0)} left
             </span>
           </div>
-          <Progress 
-            value={usagePercentage} 
-            className="h-2" 
-          />
+          <div className="relative">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="h-2 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+              />
+            </div>
+          </div>
         </div>
-        
-        {!canRedeem && (
-          <div className="mt-3 text-center">
-            {isExpired && (
-              <Badge variant="destructive">Expired</Badge>
-            )}
-            {isFullyUsed && !isExpired && (
-              <Badge variant="secondary">Fully Redeemed</Badge>
-            )}
-            {!deal.isActive && !isExpired && !isFullyUsed && (
-              <Badge variant="secondary">Paused</Badge>
-            )}
-          </div>
-        )}
-        
-        {showMerchantInfo && deal.merchantAddress && (
-          <div className="mt-3 text-xs text-muted-foreground">
-            📍 {deal.merchantAddress}
-          </div>
-        )}
+
+        {/* Pill Button with Icon */}
+        <Button
+          onClick={() => onRedeem && onRedeem(deal.id)}
+          disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
+          className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
+            hasExistingVoucher 
+              ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
+              : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg hover:shadow-xl"
+          }`}
+        >
+          {(isLoading && loadingDealId === deal.id) ? (
+            <>
+              <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Creating...
+            </>
+          ) : hasExistingVoucher ? (
+            <>
+              <Ticket className="w-4 h-4 mr-2" />
+              Already in Wallet
+            </>
+          ) : !canRedeem ? (
+            isExpired ? "Deal Expired" : "Fully Redeemed"
+          ) : (
+            <>
+              <Ticket className="w-4 h-4 mr-2" />
+              Add to Wallet
+            </>
+          )}
+        </Button>
       </CardBody>
     </Card>
   );
