@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { motion } from "framer-motion";
 import { Download, QrCode, Smartphone, Shield, CheckCircle, ArrowLeft, Home } from "lucide-react";
 import QRCodeLib from "qrcode";
+import cardBackgroundImage from "@assets/DF611683-0C55-429D-9633-95A8FD10F9CE_1_105_c_1749807319428.jpeg";
 
 export default function WalletAdd() {
   const [user, setUser] = useState<any>(null);
@@ -243,28 +244,40 @@ export default function WalletAdd() {
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                   <div className="text-center space-y-4">
                     {/* Pass Preview */}
-                    <div className="bg-gray-900 text-white p-4 rounded-xl shadow-lg max-w-sm mx-auto">
-                      {/* Header strip */}
-                      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-t-lg mb-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium opacity-90">RESICARD</span>
-                          <span className="text-xs opacity-75">St Andrews</span>
-                        </div>
-                      </div>
+                    <div className="relative bg-gray-900 text-white p-4 rounded-xl shadow-lg max-w-sm mx-auto overflow-hidden">
+                      {/* Background Image */}
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url("${cardBackgroundImage}")`,
+                          filter: 'grayscale(100%) contrast(1.1) brightness(0.3)',
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/50" />
                       
-                      {/* Content */}
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-xs text-gray-400">Member</span>
-                          <span className="text-sm font-medium">{user?.username || 'Your Name'}</span>
+                      <div className="relative z-10">
+                        {/* Header strip */}
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-t-lg mb-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium opacity-90">RESICARD</span>
+                            <span className="text-xs opacity-75">St Andrews</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-xs text-gray-400">Tier</span>
-                          <span className="text-sm">Standard</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-xs text-gray-400">Current Offer</span>
-                          <span className="text-sm">20% Off First Order</span>
+                        
+                        {/* Content */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-300">Member</span>
+                            <span className="text-sm font-medium text-white">{user?.username || 'Your Name'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-300">Tier</span>
+                            <span className="text-sm text-white">Standard</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-300">Current Offer</span>
+                            <span className="text-sm text-white">20% Off First Order</span>
+                          </div>
                         </div>
                       </div>
                     </div>
