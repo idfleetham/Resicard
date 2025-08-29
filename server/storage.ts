@@ -1,6 +1,6 @@
 import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant } from "@shared/schema";
 import { db } from "./db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -691,31 +691,86 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVouchersByUser(userId: number): Promise<VoucherWithDeal[]> {
-    const result = await db
-      .select({
-        id: vouchers.id,
-        dealId: vouchers.dealId,
-        userId: vouchers.userId,
-        voucherNumber: vouchers.voucherNumber,
-        isUsed: vouchers.isUsed,
-        usedAt: vouchers.usedAt,
-        expiresAt: vouchers.expiresAt,
-        createdAt: vouchers.createdAt,
-        dealTitle: deals.title,
-        merchantName: users.businessName,
-        discountValue: deals.discountValue,
-        discountType: deals.discountType,
-      })
+    // Get all vouchers for the user
+    const allVouchers = await db
+      .select()
       .from(vouchers)
-      .innerJoin(deals, eq(vouchers.dealId, deals.id))
-      .innerJoin(users, eq(deals.merchantId, users.id))
       .where(eq(vouchers.userId, userId));
 
-    return result.map(row => ({
-      ...row,
-      merchantName: row.merchantName || '',
-      discountValue: row.discountValue || '0',
-    }));
+    const result: VoucherWithDeal[] = [];
+
+    for (const voucher of allVouchers) {
+      if (voucher.dealId === -1) {
+        // This is a UUID offer voucher - extract deal info from voucherNumber
+        const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F-]+)-/i);
+        if (uuidMatch) {
+          const offerId = uuidMatch[1];
+          // Fetch offer details from the offers table
+          const [offer] = await db
+            .select({
+              id: offers.id,
+              title: offers.title,
+              merchantId: offers.merchantId,
+              discountValue: offers.discountValue,
+              discountType: offers.discountType,
+            })
+            .from(offers)
+            .where(eq(offers.id, offerId));
+
+          if (offer) {
+            // Get merchant info
+            const [merchant] = await db
+              .select({ businessName: users.businessName })
+              .from(users)
+              .where(eq(users.id, offer.merchantId));
+
+            result.push({
+              ...voucher,
+              dealTitle: offer.title,
+              merchantName: merchant?.businessName || 'Unknown Merchant',
+              discountValue: offer.discountValue || '0',
+              discountType: offer.discountType || 'percentage',
+            });
+          }
+        }
+      } else {
+        // This is a regular deal voucher - use the existing join logic
+        const [dealVoucher] = await db
+          .select({
+            id: vouchers.id,
+            dealId: vouchers.dealId,
+            userId: vouchers.userId,
+            voucherNumber: vouchers.voucherNumber,
+            isUsed: vouchers.isUsed,
+            usedAt: vouchers.usedAt,
+            expiresAt: vouchers.expiresAt,
+            createdAt: vouchers.createdAt,
+            dealTitle: deals.title,
+            merchantName: users.businessName,
+            discountValue: deals.discountValue,
+            discountType: deals.discountType,
+          })
+          .from(vouchers)
+          .innerJoin(deals, eq(vouchers.dealId, deals.id))
+          .innerJoin(users, eq(deals.merchantId, users.id))
+          .where(
+            and(
+              eq(vouchers.userId, userId),
+              eq(vouchers.id, voucher.id)
+            )
+          );
+
+        if (dealVoucher) {
+          result.push({
+            ...dealVoucher,
+            merchantName: dealVoucher.merchantName || '',
+            discountValue: dealVoucher.discountValue || '0',
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   async getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined> {
