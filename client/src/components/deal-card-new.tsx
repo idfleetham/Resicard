@@ -55,26 +55,36 @@ export default function DealCard({
 
   return (
     <div className="group overflow-hidden bg-white rounded-3xl shadow-xl border-0 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 transform ring-1 ring-gray-100">
-      {/* 16:9 Aspect Ratio Gradient Background */}
-      <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${getCategoryGradient(deal.category)}`}>
-        {/* Animated Background Patterns */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent animate-pulse"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.15),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.1),transparent_50%)]"></div>
-        
-        {/* Geometric Patterns */}
-        <div className="absolute inset-0">
-          <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white/20 rounded-full"></div>
-          <div className="absolute bottom-4 left-4 w-12 h-12 border-2 border-white/20 rounded-lg rotate-45"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/10 rounded-full"></div>
-        </div>
-        
-        {/* Category Icon */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-            <Tag className="w-10 h-10 text-white drop-shadow-lg" />
+      {/* 16:9 Aspect Ratio Image or Gradient Background */}
+      <div className="relative aspect-video overflow-hidden">
+        {deal.imageUrl ? (
+          <img 
+            src={deal.imageUrl} 
+            alt={deal.title} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${getCategoryGradient(deal.category)}`}>
+            {/* Animated Background Patterns */}
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent animate-pulse"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.15),transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+            
+            {/* Geometric Patterns */}
+            <div className="absolute inset-0">
+              <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white/20 rounded-full"></div>
+              <div className="absolute bottom-4 left-4 w-12 h-12 border-2 border-white/20 rounded-lg rotate-45"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/10 rounded-full"></div>
+            </div>
+            
+            {/* Category Icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                <Tag className="w-10 h-10 text-white drop-shadow-lg" />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
         {/* Category Badge on Image */}
         <div className="absolute top-4 left-4">
           <Badge className="bg-black/20 backdrop-blur-sm text-white border-0 text-xs font-bold shadow-lg px-3 py-1 rounded-full">
