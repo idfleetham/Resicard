@@ -14,30 +14,28 @@ export default function WalletAdd() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
-    if (user) {
-      const baseUrl = window.location.origin;
-      const passDownloadUrl = `${baseUrl}/api/wallet/pass`;
-      setPassUrl(passDownloadUrl);
-      
-      // Check for error parameters in URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const error = urlParams.get('error');
-      if (error === 'not_configured') {
-        setErrorMessage('Apple Wallet integration is not yet configured. Please contact support.');
-      } else if (error === 'generation_failed') {
-        setErrorMessage('Failed to generate Apple Wallet pass. Please try again later.');
-      }
-      
-      // Generate QR code
-      QRCodeLib.toDataURL(passDownloadUrl, {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#1f2937',
-          light: '#FFFFFF'
-        }
-      }).then(setQrCodeUrl).catch(console.error);
+    const baseUrl = window.location.origin;
+    const passDownloadUrl = `${baseUrl}/api/wallet/pass`;
+    setPassUrl(passDownloadUrl);
+    
+    // Check for error parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error === 'not_configured') {
+      setErrorMessage('Apple Wallet integration is not yet configured. Please contact support.');
+    } else if (error === 'generation_failed') {
+      setErrorMessage('Failed to generate Apple Wallet pass. Please try again later.');
     }
+    
+    // Generate QR code even if user is not logged in (for error display)
+    QRCodeLib.toDataURL(passDownloadUrl, {
+      width: 200,
+      margin: 2,
+      color: {
+        dark: '#1f2937',
+        light: '#FFFFFF'
+      }
+    }).then(setQrCodeUrl).catch(console.error);
   }, [user]);
 
   const handleAddToWallet = async () => {
@@ -54,13 +52,17 @@ export default function WalletAdd() {
     }
   };
 
-  if (!user) {
+  // Check if user came from QR code with error
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasError = urlParams.get('error');
+
+  if (!user && !hasError) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md bg-white rounded-3xl shadow-2xl border-0 ring-1 ring-gray-100">
+          <CardHeader className="p-8">
+            <CardTitle className="text-gray-900">Sign In Required</CardTitle>
+            <CardDescription className="text-gray-600">
               Please sign in to add your Resicard to Apple Wallet
             </CardDescription>
           </CardHeader>
@@ -85,10 +87,14 @@ export default function WalletAdd() {
                 <Smartphone className="w-12 h-12" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold mb-4">Add Resicard to Apple Wallet</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              {errorMessage ? 'Apple Wallet Setup Issue' : 'Add Resicard to Apple Wallet'}
+            </h1>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Keep your community deals and loyalty points right in your pocket. 
-              No app download required.
+              {errorMessage 
+                ? 'We found an issue with the Apple Wallet integration configuration.'
+                : 'Keep your community deals and loyalty points right in your pocket. No app download required.'
+              }
             </p>
           </motion.div>
         </div>
@@ -144,7 +150,7 @@ export default function WalletAdd() {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-xs text-gray-400">Member</span>
-                          <span className="text-sm font-medium">{user.username || `User ${user.id}`}</span>
+                          <span className="text-sm font-medium">{user?.username || 'Your Name'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-xs text-gray-400">Tier</span>
@@ -165,8 +171,8 @@ export default function WalletAdd() {
 
                 <Button 
                   onClick={handleAddToWallet}
-                  disabled={isGenerating}
-                  className="w-full bg-black hover:bg-gray-800 text-white border-2 border-black rounded-lg py-4 text-lg font-medium transition-all"
+                  disabled={isGenerating || !user || !!errorMessage}
+                  className="w-full bg-black hover:bg-gray-800 text-white border-2 border-black rounded-lg py-4 text-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: 'linear-gradient(135deg, #000 0%, #333 100%)',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
