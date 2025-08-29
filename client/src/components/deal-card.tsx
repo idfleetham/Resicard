@@ -132,7 +132,12 @@ export default function DealCard({
           {showMerchantInfo && (
             <div className="space-y-1">
               <div className="font-semibold text-sm text-slate-800">
-                {deal.merchantName && deal.merchantName.trim() !== '' ? deal.merchantName : 'Business Name Not Set'}
+                {deal.merchantName && deal.merchantName.trim() !== '' && deal.merchantName !== 'luke' && deal.merchantName !== 'kingdomchiro' 
+                  ? deal.merchantName 
+                  : (deal.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 
+                     deal.merchantName === 'luke' ? 'Luke\'s Business' : 
+                     'Business Name Not Set')
+                }
               </div>
               <div className="flex items-center text-slate-600">
                 <MapPin className="w-4 h-4 mr-1 text-red-500" />
@@ -163,8 +168,11 @@ export default function DealCard({
           </div>
         )}
 
-        {/* Usage Progress with Gradient */}
-        <div className="space-y-3 flex-1">
+        {/* Spacer to push availability and button to bottom */}
+        <div className="flex-1"></div>
+
+        {/* Usage Progress with Gradient - Right above button */}
+        <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Availability</span>
             <span className="text-sm text-gray-500">
@@ -182,7 +190,7 @@ export default function DealCard({
         </div>
 
         {/* Pill Button with Purple-to-Red Gradient - Always at Bottom */}
-        <div className="mt-auto">
+        <div className="mt-4">
           <Button
             onClick={() => onRedeem && onRedeem(deal.id)}
             disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}

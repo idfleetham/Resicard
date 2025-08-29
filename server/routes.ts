@@ -370,60 +370,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (category) {
         deals = await storage.getDealsByCategory(category as string);
+        console.log(`Legacy deals by category "${category}":`, deals.length);
       } else {
         deals = await storage.getActiveDeals();
+        console.log(`Legacy active deals:`, deals.length);
       }
       
       // Also fetch comprehensive offers and combine them
-      const allOffers = await db.select().from(offers)
-        .where(eq(offers.active, true));
+      let allOffers = [];
+      let comprehensiveOffers = [];
+      let convertedOffers = [];
       
-      // Filter only active offers (not expired)
-      const comprehensiveOffers = allOffers.filter(offer => {
-        if (!offer.validTo) return true;
-        return new Date(offer.validTo) > new Date();
-      });
+      try {
+        console.log('Fetching comprehensive offers...');
+        allOffers = await db.select().from(offers)
+          .where(eq(offers.active, true));
+        console.log(`Found ${allOffers.length} active offers:`, allOffers.map(o => o.title));
+        
+        // Filter only active offers (not expired) - keep all offers for now to debug
+        comprehensiveOffers = allOffers; // Temporarily disable date filtering to debug
+        console.log(`All active offers (no date filter): ${comprehensiveOffers.length}`);
+        comprehensiveOffers.forEach(offer => {
+          console.log(`- "${offer.title}" (validTo: ${offer.validTo})`);
+        });
+      console.log(`After filtering expired: ${comprehensiveOffers.length} offers`);
       
       // Convert comprehensive offers to deal format for homepage compatibility
-      const convertedOffers = await Promise.all(comprehensiveOffers.map(async offer => {
-        // Get merchant info to use logo as default image
-        // For comprehensive offers, merchantId is a UUID string, get merchant record first
-        const [merchantRecord] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
-        // Use merchant logo_url first, fallback to user profile photo by merchant name
-        let merchantLogo = merchantRecord?.logoUrl;
-        if (!merchantLogo && merchantRecord?.name) {
-          const [user] = await db.select().from(users).where(eq(users.username, merchantRecord.name));
-          merchantLogo = user?.profilePhoto;
+      const convertedOffers = [];
+      
+      for (const offer of comprehensiveOffers) {
+        try {
+          console.log(`Processing offer: ${offer.title} with merchantId: ${offer.merchantId}`);
+          
+          // Get merchant info to use logo as default image
+          const [merchantRecord] = await db.select().from(merchants).where(eq(merchants.id, offer.merchantId));
+          console.log(`Found merchant record:`, merchantRecord);
+          
+          // Use merchant logo_url first, fallback to user profile photo by merchant name
+          let merchantLogo = merchantRecord?.logoUrl;
+          if (!merchantLogo && merchantRecord?.name) {
+            const [user] = await db.select().from(users).where(eq(users.username, merchantRecord.name));
+            merchantLogo = user?.profilePhoto;
+          }
+          
+          const convertedOffer = {
+            id: offer.id,
+            title: offer.title,
+            description: offer.description || '',
+            category: offer.category || 'General',
+            discountType: offer.type === 'percentage_discount' ? 'percentage' : 
+                         offer.type === 'fixed_amount_discount' ? 'fixed' :
+                         offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
+            discountValue: offer.percentOff || 0,
+            originalValue: null,
+            usageLimit: offer.maxPerTransaction || 100,
+            usageCount: 0,
+            isActive: offer.active ?? true,
+            expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            terms: offer.description || offer.title,
+            imageUrl: merchantLogo || null,
+            createdAt: offer.createdAt,
+            merchantId: offer.merchantId,
+            merchantName: merchantRecord?.name || 'Unknown',
+            merchantAddress: merchantRecord?.address || 'Address not provided'
+          };
+          
+          console.log(`Successfully converted offer: ${convertedOffer.title}`);
+          convertedOffers.push(convertedOffer);
+        } catch (error) {
+          console.error(`Error converting offer ${offer.title}:`, error);
         }
+      }
+      
+        console.log(`Total converted offers: ${convertedOffers.length}`);
         
-        return {
-          id: offer.id,
-          title: offer.title,
-          description: offer.description,
-          category: offer.category,
-          discountType: offer.type === 'percentage_discount' ? 'percentage' : 
-                       offer.type === 'fixed_amount_discount' ? 'fixed' :
-                       offer.type === 'free_item_with_purchase' ? 'free_item' : 'bogo',
-          discountValue: offer.percentOff || offer.fixedPrice || 0,
-          originalValue: null,
-          usageLimit: offer.maxPerTransaction || 100,
-          usageCount: 0,
-          isActive: offer.active ?? true,
-          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          terms: offer.description,
-          imageUrl: merchantLogo || null, // Use merchant logo as default
-          createdAt: offer.createdAt,
-          merchantId: offer.merchantId,
-          merchantName: merchantRecord?.name || 'Unknown',
-          merchantAddress: merchantRecord?.address || 'Address not provided'
-        };
-      }));
+        
+        console.log(`Before combination - Legacy deals: ${deals.length}, Converted offers: ${convertedOffers.length}`);
+        
+        // Combine simple deals and comprehensive offers
+        const allDeals = [...deals, ...convertedOffers];
+        console.log(`After combination - Total deals: ${allDeals.length}`);
+        console.log(`Sample deal titles:`, allDeals.slice(0,3).map(d => d.title));
+        
+      } catch (error) {
+        console.error('Error processing comprehensive offers:', error);
+        convertedOffers = []; // fallback to empty array
+      }
       
-      // Combine simple deals and comprehensive offers
-      const allDeals = [...deals, ...convertedOffers];
+      // Final combination and response outside the try-catch
+      const finalDeals = [...deals, ...convertedOffers];
+      console.log(`FINAL RESPONSE: ${finalDeals.length} deals total`);
       
-      res.json(allDeals);
+      res.json(finalDeals);
     } catch (error: any) {
+      console.error('Error in /api/deals endpoint:', error);
       res.status(400).json({ message: error.message });
     }
   });
