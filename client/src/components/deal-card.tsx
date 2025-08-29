@@ -80,7 +80,7 @@ export default function DealCard({
   };
 
   return (
-    <div className="group overflow-hidden bg-white rounded-xl shadow-md border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <div className="group overflow-hidden bg-white rounded-xl shadow-md border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
       {/* 16:9 Aspect Ratio Image - NEW DESIGN TEST */}
       <div className="relative aspect-video overflow-hidden">
         <img 
@@ -122,7 +122,7 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
+      <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 flex-1 flex flex-col">
         {/* Title Hierarchy */}
         <div className="space-y-2">
           <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
@@ -164,7 +164,7 @@ export default function DealCard({
         )}
 
         {/* Usage Progress with Gradient */}
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Availability</span>
             <span className="text-sm text-gray-500">
@@ -181,11 +181,12 @@ export default function DealCard({
           </div>
         </div>
 
-        {/* Pill Button with Purple-to-Red Gradient */}
-        <Button
-          onClick={() => onRedeem && onRedeem(deal.id)}
-          disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
-          className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
+        {/* Pill Button with Purple-to-Red Gradient - Always at Bottom */}
+        <div className="mt-auto">
+          <Button
+            onClick={() => onRedeem && onRedeem(deal.id)}
+            disabled={!canRedeem || hasExistingVoucher || (isLoading && loadingDealId === deal.id)}
+            className={`w-full rounded-full py-3 font-semibold transition-all duration-200 ${
             hasExistingVoucher 
               ? "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200" 
               : "bg-gradient-to-r from-purple-600 to-red-500 hover:from-purple-700 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
@@ -209,7 +210,8 @@ export default function DealCard({
               Add to Wallet
             </>
           )}
-        </Button>
+          </Button>
+        </div>
       </div>
     </div>
   );
