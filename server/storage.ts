@@ -702,9 +702,10 @@ export class DatabaseStorage implements IStorage {
     for (const voucher of allVouchers) {
       if (voucher.dealId === -1) {
         // This is a UUID offer voucher - extract deal info from voucherNumber
-        const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F-]+)-/i);
+        // UUID pattern: 8-4-4-4-12 characters (e.g., 208783e2-cc55-42ce-9efc-a47d7eff7f1c)
+        const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})-/i);
         if (uuidMatch) {
-          const offerId = uuidMatch[1];
+          const offerId = uuidMatch[1].toLowerCase(); // Convert to lowercase to match database
           // Fetch offer details from the offers table
           const [offer] = await db
             .select({
