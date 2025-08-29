@@ -232,7 +232,7 @@ export default function ResidentDashboard() {
           />
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">Welcome back, {user.username}!</h1>
+              <h1 className="text-4xl font-bold mb-4">Welcome back, {user.username}! 🎉</h1>
               <p className="text-xl opacity-90 mb-6">
                 Discover exclusive local deals and build your savings with Resicard
               </p>
@@ -269,7 +269,7 @@ export default function ResidentDashboard() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Premium Tab Navigation */}
+          {/* Premium Tab Navigation - Redesigned UI */}
           <div className="relative mb-12">
             <div className="flex space-x-8 border-b border-gray-200 max-w-2xl">
               <button
