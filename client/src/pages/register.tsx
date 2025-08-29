@@ -17,6 +17,7 @@ import { MapPin, Eye, EyeOff, Home, Store, Upload, FileText, User, CheckCircle, 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { validatePostcode } from "@/lib/utils";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 const baseSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -192,40 +193,65 @@ export default function Register() {
   };
 
   return (
-    <div data-theme="dim" className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center space-x-2 text-brand1 hover:opacity-80">
-            <MapPin className="h-8 w-8" />
-            <span className="text-2xl font-bold text-fg">Resicard</span>
-          </Link>
-          <p className="text-soft mt-2">Join the St Andrews Community</p>
-        </div>
+    <div className="min-h-screen relative">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'grayscale(100%) contrast(1.1) brightness(0.3)',
+          mixBlendMode: 'multiply',
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
+      
+      {/* Content */}
+      <div className="relative min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl space-y-6">
+          {/* Header */}
+          <div className="text-center">
+            <Link href="/" className="inline-flex items-center space-x-2 hover:opacity-80">
+              <MapPin className="h-8 w-8 text-white" />
+              <span className="text-3xl font-bold text-white">Resicard</span>
+            </Link>
+            <p className="text-white/90 text-lg mt-2">Join the St Andrews Community</p>
+          </div>
 
-        {/* Registration Form */}
-        <Card variant="elevated">
-          <CardHeader>
-            <CardTitle className="text-center text-fg">Create Your Account</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="resident" className="flex items-center space-x-2">
-                  <Home className="h-4 w-4" />
-                  <span>Resident</span>
-                </TabsTrigger>
-                <TabsTrigger value="merchant" className="flex items-center space-x-2">
-                  <Store className="h-4 w-4" />
-                  <span>Business</span>
-                </TabsTrigger>
-              </TabsList>
+          {/* Registration Form */}
+          <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="text-center text-slate-900 text-2xl">Create Your Account</CardTitle>
+            </CardHeader>
+            <CardBody>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 bg-slate-100 border border-slate-200 rounded-lg">
+                  <TabsTrigger value="resident" className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-md">
+                    <Home className="h-4 w-4" />
+                    <span>Resident</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="merchant" className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-md">
+                    <Store className="h-4 w-4" />
+                    <span>Business</span>
+                  </TabsTrigger>
+                </TabsList>
 
               {/* Resident Registration */}
               <TabsContent value="resident" className="space-y-4 mt-6">
-                <div className="bg-coastal-bg p-4 rounded-lg border coastal-border">
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Resident Membership:</strong> Verify your local status with a valid postcode 
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <p className="text-sm text-slate-700">
+                    <strong className="text-slate-900">Resident Membership:</strong> Verify your local status with a valid postcode 
                     within 10 miles of St Andrews. Annual membership fee applies.
                   </p>
                 </div>
@@ -630,21 +656,25 @@ export default function Register() {
               </TabsContent>
             </Tabs>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <Link href="/login" className="text-primary hover:underline font-medium">
-                  Sign in here
-                </Link>
-              </p>
-            </div>
-          </CardBody>
-        </Card>
 
-        <div className="text-center">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-primary">
-            ← Back to Home
-          </Link>
+          </CardBody>
+          </Card>
+
+          {/* Sign In Link */}
+          <div className="text-center">
+            <p className="text-white/90">
+              Already have an account?{' '}
+              <Link href="/login" className="text-white hover:underline font-semibold">
+                Sign in here
+              </Link>
+            </p>
+          </div>
+
+          <div className="text-center">
+            <Link href="/" className="text-sm text-white/70 hover:text-white">
+              ← Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     </div>
