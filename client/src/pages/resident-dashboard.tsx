@@ -783,18 +783,21 @@ export default function ResidentDashboard() {
               <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 ring-1 ring-gray-100">
                 {(() => {
                   // Get unique merchants from redeemed vouchers
-                  const redeemedMerchants = Array.from(
-                    new Set(
-                      vouchers
-                        .filter(voucher => voucher.status === 'used')
-                        .map(voucher => ({
-                          id: voucher.merchantId,
-                          name: voucher.merchantName && voucher.merchantName.trim() !== '' && voucher.merchantName !== 'luke' && voucher.merchantName !== 'kingdomchiro' 
-                            ? voucher.merchantName 
-                            : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 'Business Name Not Set')
-                        }))
-                    ).map(merchant => JSON.stringify(merchant))
-                  ).map(merchantStr => JSON.parse(merchantStr));
+                  const usedVouchers = vouchers.filter(voucher => voucher.status === 'used');
+                  const merchantsMap = new Map();
+                  
+                  usedVouchers.forEach(voucher => {
+                    const merchantName = voucher.merchantName && voucher.merchantName.trim() !== '' && voucher.merchantName !== 'luke' && voucher.merchantName !== 'kingdomchiro' 
+                      ? voucher.merchantName 
+                      : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 'Business Name Not Set');
+                    
+                    merchantsMap.set(voucher.merchantId, {
+                      id: voucher.merchantId,
+                      name: merchantName
+                    });
+                  });
+                  
+                  const redeemedMerchants = Array.from(merchantsMap.values());
 
                   if (redeemedMerchants.length === 0) {
                     return (
