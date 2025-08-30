@@ -563,9 +563,12 @@ export default function ResidentDashboard() {
                                     <h3 className="font-bold text-xl text-gray-900">{voucher.dealTitle}</h3>
                                     <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-3 py-1 rounded-full">Active</Badge>
                                   </div>
-                                  <p className="text-gray-600 mb-4 flex items-center">
-                                    <MapPin className="w-4 h-4 mr-2" />
-                                    {voucher.merchantName}
+                                  <p className="text-gray-600 mb-4 font-medium">
+                                    {voucher.merchantName && voucher.merchantName.trim() !== '' && voucher.merchantName !== 'luke' && voucher.merchantName !== 'kingdomchiro' 
+                                      ? voucher.merchantName 
+                                      : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 
+                                         'Business Name Not Set')
+                                    }
                                   </p>
                                   <div className="flex items-center gap-6 text-sm mb-4">
                                     {/* Only show discount badge for monetary discounts */}
