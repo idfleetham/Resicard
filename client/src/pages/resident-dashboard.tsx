@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown, Trash2 } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown, Trash2, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -338,6 +338,29 @@ export default function ResidentDashboard() {
                   <span>My Wallet</span>
                   {activeTab === "wallet" && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 animate-pulse" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("loyalty")}
+                  className={`group relative flex items-center space-x-3 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex-1 ${
+                    activeTab === "loyalty"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-xl transform scale-[1.02]"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.01]"
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    activeTab === "loyalty" 
+                      ? "bg-white/20" 
+                      : "bg-blue-50 group-hover:bg-blue-100"
+                  }`}>
+                    <CreditCard className={`h-5 w-5 ${
+                      activeTab === "loyalty" ? "text-white" : "text-blue-600"
+                    }`} />
+                  </div>
+                  <span>Loyalty Cards</span>
+                  {activeTab === "loyalty" && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse" />
                   )}
                 </button>
                 
@@ -727,6 +750,94 @@ export default function ResidentDashboard() {
                   )}
                 </>
               )}
+            </div>
+          )}
+
+          {/* Loyalty Cards Tab */}
+          {activeTab === "loyalty" && (
+            <div className="space-y-10">
+              <div className="relative bg-gradient-to-br from-slate-800 to-indigo-900 rounded-3xl shadow-2xl border-0 p-10 overflow-hidden">
+                {/* Subtle Decorative Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-4xl font-bold text-white mb-3">Loyalty Cards</h2>
+                      <p className="text-white/70 text-lg">Track your loyalty status with merchants you've visited</p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+                        <CreditCard className="w-5 h-5 text-white" />
+                        <span className="text-white font-semibold">
+                          {Array.from(new Set(vouchers.filter(v => v.status === 'used').map(v => v.merchantId))).length} merchants
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loyalty Cards Content */}
+              <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 ring-1 ring-gray-100">
+                {(() => {
+                  // Get unique merchants from redeemed vouchers
+                  const redeemedMerchants = Array.from(
+                    new Set(
+                      vouchers
+                        .filter(voucher => voucher.status === 'used')
+                        .map(voucher => ({
+                          id: voucher.merchantId,
+                          name: voucher.merchantName && voucher.merchantName.trim() !== '' && voucher.merchantName !== 'luke' && voucher.merchantName !== 'kingdomchiro' 
+                            ? voucher.merchantName 
+                            : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 'Business Name Not Set')
+                        }))
+                    ).map(merchant => JSON.stringify(merchant))
+                  ).map(merchantStr => JSON.parse(merchantStr));
+
+                  if (redeemedMerchants.length === 0) {
+                    return (
+                      <div className="text-center py-16">
+                        <div className="p-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                          <CreditCard className="h-12 w-12 text-blue-600" />
+                        </div>
+                        <h3 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">No loyalty cards yet</h3>
+                        <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
+                          Start redeeming vouchers to earn loyalty points and track your status with local merchants.
+                        </p>
+                        <Button 
+                          onClick={() => setActiveTab("wallet")}
+                          className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 text-white rounded-2xl px-10 py-4 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                        >
+                          View My Vouchers
+                        </Button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-8">
+                      <div className="text-center">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Your Loyalty Status</h3>
+                        <p className="text-gray-600">
+                          Track your points, rewards, and tier status with merchants you've visited
+                        </p>
+                      </div>
+                      
+                      <div className="grid gap-6">
+                        {redeemedMerchants.map((merchant) => (
+                          <CustomerLoyaltyCard
+                            key={merchant.id}
+                            merchantId={merchant.id.toString()}
+                            merchantName={merchant.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
 
