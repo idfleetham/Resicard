@@ -423,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discountType: offer.type === 'percentage_discount' ? 'percentage' : 'fixed',
           discountValue: offer.percentOff || 0,
           originalValue: null,
-          usageLimit: offer.globalUsageLimit || offer.usageLimit || Infinity,
+          usageLimit: offer.globalUsageLimit || offer.usageLimit || 999999,
           usageCount: offer.usageCount || 0,
           isActive: true,
           expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),

@@ -30,9 +30,9 @@ export default function DealCard({
   hasExistingVoucher = false
 }: DealCardProps) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const usagePercentage = ((deal.usageCount || 0) / deal.usageLimit) * 100;
+  const usagePercentage = deal.usageLimit >= 999999 ? 0 : ((deal.usageCount || 0) / deal.usageLimit) * 100;
   const isExpired = new Date(deal.expiryDate) < new Date();
-  const isFullyUsed = (deal.usageCount || 0) >= deal.usageLimit;
+  const isFullyUsed = deal.usageLimit >= 999999 ? false : (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
   const getImageForDeal = (deal: DealWithMerchant) => {
@@ -195,7 +195,7 @@ export default function DealCard({
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Availability</span>
             <span className="text-sm text-gray-500">
-              {deal.usageLimit - (deal.usageCount || 0)} left
+              {deal.usageLimit >= 999999 ? 'Unlimited' : `${deal.usageLimit - (deal.usageCount || 0)} left`}
             </span>
           </div>
           
