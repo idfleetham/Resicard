@@ -180,15 +180,17 @@ export default function DealCard({
           </p>
         </div>
 
-        {/* Discount Highlight */}
-        <div className="inline-flex items-center px-4 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl shadow-lg">
-          <span className="text-2xl font-bold text-white drop-shadow-sm">
-            {deal.discountType === 'percentage' 
-              ? `${deal.discountValue}% OFF`
-              : `${formatCurrency(Number(deal.discountValue))} OFF`
-            }
-          </span>
-        </div>
+        {/* Discount Highlight - Only show for monetary discounts */}
+        {(deal.discountType === 'percentage' || deal.discountType === 'fixed') && Number(deal.discountValue) > 0 && (
+          <div className="inline-flex items-center px-4 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-2xl shadow-lg">
+            <span className="text-2xl font-bold text-white drop-shadow-sm">
+              {deal.discountType === 'percentage' 
+                ? `${deal.discountValue}% OFF`
+                : `${formatCurrency(Number(deal.discountValue))} OFF`
+              }
+            </span>
+          </div>
+        )}
 
         {/* Usage Progress with Gradient */}
         <div className="space-y-3">
