@@ -31,7 +31,7 @@ export default function DealCard({
 }: DealCardProps) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const usagePercentage = deal.usageLimit >= 999999 ? 0 : ((deal.usageCount || 0) / deal.usageLimit) * 100;
-  const isExpired = new Date(deal.expiryDate) < new Date();
+  const isExpired = new Date(deal.expiryDate || deal.validTo) < new Date();
   const isFullyUsed = deal.usageLimit >= 999999 ? false : (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
@@ -80,7 +80,7 @@ export default function DealCard({
 
   const getExpiryBadgeColor = () => {
     const now = new Date();
-    const expiry = new Date(deal.expiryDate);
+    const expiry = new Date(deal.expiryDate || deal.validTo);
     const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysUntilExpiry <= 0) return "bg-red-100 text-red-700 border-red-200";
@@ -90,7 +90,7 @@ export default function DealCard({
 
   return (
     <>
-      <div className="group overflow-hidden bg-white rounded-3xl shadow-2xl border-2 border-gray-200 hover:shadow-3xl hover:border-gray-300 hover:-translate-y-3 transition-all duration-500 transform">
+      <div className="group overflow-hidden bg-white rounded-3xl shadow-2xl border-2 border-gray-200 hover:shadow-3xl hover:border-gray-300 hover:-translate-y-3 transition-all duration-500 transform flex flex-col h-full">
       {/* 16:9 Aspect Ratio Image or Gradient Background */}
       <div className="relative aspect-video overflow-hidden">
         {getImageForDeal(deal) ? (
@@ -134,13 +134,13 @@ export default function DealCard({
             <Clock className="w-3 h-3 mr-1" />
             {(() => {
               const now = new Date();
-              const expiry = new Date(deal.expiryDate);
+              const expiry = new Date(deal.expiryDate || deal.validTo);
               const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
               
               if (daysUntilExpiry <= 0) return "Expired";
               if (daysUntilExpiry === 1) return "1 day";
               if (daysUntilExpiry <= 7) return `${daysUntilExpiry} days`;
-              return formatRelativeTime(deal.expiryDate);
+              return formatRelativeTime(deal.expiryDate || deal.validTo);
             })()}
           </Badge>
         </div>
@@ -155,7 +155,7 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="p-8 space-y-6">
+      <div className="p-8 space-y-6 flex flex-col flex-1">
         {/* Title Hierarchy */}
         <div className="space-y-2">
           <h3 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
@@ -192,7 +192,10 @@ export default function DealCard({
           </div>
         )}
 
-        {/* Usage Progress with Gradient */}
+        {/* Spacer to push availability and buttons to bottom */}
+        <div className="flex-1"></div>
+
+        {/* Usage Progress with Gradient - Right above buttons */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Availability</span>
@@ -207,7 +210,7 @@ export default function DealCard({
           />
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Always at Bottom */}
         <div className="space-y-3">
           <Button
             onClick={() => onRedeem?.(deal.id)}
