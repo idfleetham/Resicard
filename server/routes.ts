@@ -477,7 +477,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const processedData = {
         ...req.body,
         validFrom: req.body.validFrom ? new Date(req.body.validFrom) : new Date(),
-        validTo: req.body.validTo ? new Date(req.body.validTo) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days from now
+        validTo: req.body.validTo ? new Date(req.body.validTo) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year from now
+        daysOfWeek: req.body.daysOfWeek && req.body.daysOfWeek.length > 0 ? req.body.daysOfWeek : ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], // Default all days
+        timeSlots: req.body.timeSlots && Object.keys(req.body.timeSlots).length > 0 ? req.body.timeSlots : {}, // Default no time restrictions (all day)
         merchantId: merchant.id, // Use the merchant UUID, not user ID
       };
       
