@@ -5,9 +5,7 @@ import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { insertUserSchema, insertDealSchema, insertEnhancedRedemptionSchema, insertOfferSchema } from "@shared/schema";
 import { eq, sql, and, gt, desc, count } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
 import { db } from "./db";
-import { Pool } from "@neondatabase/serverless";
 import multer from "multer";
 import express from "express";
 import fs from "fs";
@@ -77,13 +75,7 @@ function validatePostcode(postcode: string): boolean {
   return stAndrewsPostcodes.some(prefix => postcodePrefix.startsWith(prefix));
 }
 
-// Initialize database connection
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
-}
-const pool = new Pool({ connectionString });
-const db = drizzle(pool);
+// Database connection is initialized in ./db.ts and imported
 
 // Setup multer for file uploads
 const upload = multer({ dest: "uploads/" });
