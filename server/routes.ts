@@ -1689,7 +1689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'System' as staffName
         FROM vouchers v
         LEFT JOIN deals d ON v.deal_id = d.id AND v.deal_id != -1
-        LEFT JOIN offers o ON v.deal_id = -1 AND SUBSTRING(v.voucher_number, 1, 36)::uuid = o.id
+        LEFT JOIN offers o ON v.deal_id = -1 AND SUBSTRING(v.voucher_number FROM '^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})')::uuid = o.id
         LEFT JOIN users u ON v.user_id = u.id
         WHERE v.is_used = true 
           AND (
