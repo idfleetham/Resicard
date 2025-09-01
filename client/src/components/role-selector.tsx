@@ -28,7 +28,7 @@ export default function RoleSelector({ onSelect, isVisible, onClose }: RoleSelec
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
       <Card className="max-w-md w-full shadow-2xl">
         <CardBody className="p-6">
           <div className="flex justify-between items-start mb-6">
