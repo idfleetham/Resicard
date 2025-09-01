@@ -104,8 +104,8 @@ export default function DigitalMembershipCard({
             <div className="text-center">
               <h3 className="text-xl font-bold text-primary mb-2">Voucher for Redemption</h3>
               <div className="bg-primary/5 rounded-lg p-4 mb-4">
-                <h4 className="text-lg font-semibold">{voucher.dealTitle}</h4>
-                <p className="text-sm text-muted-foreground">{voucher.merchantName}</p>
+                <h4 className="text-lg font-semibold text-gray-900">{voucher.dealTitle}</h4>
+                <p className="text-sm text-gray-700">{voucher.merchantName}</p>
                 <div className="mt-2">
                   <Badge variant="outline" className="text-lg px-3 py-1">
                     {voucher.discountType === 'percentage' 
