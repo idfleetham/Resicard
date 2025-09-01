@@ -425,6 +425,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           merchantUser = user;
         }
         
+        const finalImageUrl = offer.imageUrl || merchantUser?.profilePhoto || merchant?.logoUrl || null;
+        
         const convertedOffer = {
           id: offer.id,
           title: offer.title,
@@ -438,7 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isActive: true,
           expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           terms: offer.terms || offer.description || offer.title,
-          imageUrl: merchantUser?.profilePhoto || merchant?.logoUrl || null,
+          imageUrl: finalImageUrl,
           createdAt: offer.createdAt,
           merchantId: offer.merchantId,
           merchantName: merchant?.name || 'Unknown Business',
