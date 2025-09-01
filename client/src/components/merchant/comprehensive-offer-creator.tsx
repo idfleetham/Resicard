@@ -347,7 +347,13 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     
     const processedData = {
       ...data,
-      timeSlots: convertedTimeSlots
+      timeSlots: convertedTimeSlots,
+      // Ensure mealPeriods is always an array
+      mealPeriods: Array.isArray(data.mealPeriods) ? data.mealPeriods : [],
+      // Ensure other array fields are properly formatted
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : [],
+      blackoutDates: Array.isArray(data.blackoutDates) ? data.blackoutDates : []
     };
     
     console.log('Processed data:', processedData);
