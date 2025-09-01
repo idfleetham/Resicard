@@ -353,6 +353,21 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     createOfferMutation.mutate(processedData);
   };
 
+  const onError = (errors: any) => {
+    console.log('Form validation errors:', errors);
+    
+    // Show toast for validation errors
+    const errorFields = Object.keys(errors);
+    if (errorFields.length > 0) {
+      const firstError = errors[errorFields[0]];
+      toast({
+        title: "Form validation failed",
+        description: firstError?.message || `Please check the ${errorFields[0]} field`,
+        variant: "destructive",
+      });
+    }
+  };
+
   const sections = [
     { id: "core", label: "Core & Pricing", icon: DollarSign },
     { id: "eligibility", label: "Eligibility", icon: Users },
@@ -410,7 +425,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
         {/* Content Area */}
         <div className="lg:col-span-3">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
               
               {/* A) Core & Pricing Section */}
               {activeSection === "core" && (
@@ -457,10 +472,10 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-200 text-base">Offer Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
-                                  <SelectValue />
+                                  <SelectValue placeholder="Select offer type" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
