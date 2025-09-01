@@ -336,22 +336,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
-      const objectStorageService = new ObjectStorageService();
-      const fileName = `merchant-logos/${merchantId}-${Date.now()}-${req.file.originalname}`;
+      let logoUrl: string;
       
-      // Upload to cloud storage
-      const logoUrl = await objectStorageService.uploadToPublicStorage(
-        req.file.buffer || fs.readFileSync(req.file.path),
-        fileName,
-        req.file.mimetype
-      );
+      try {
+        // Try object storage first
+        const objectStorageService = new ObjectStorageService();
+        const fileName = `merchant-logos/${merchantId}-${Date.now()}-${req.file.originalname}`;
+        
+        logoUrl = await objectStorageService.uploadToPublicStorage(
+          req.file.buffer || fs.readFileSync(req.file.path),
+          fileName,
+          req.file.mimetype
+        );
+      } catch (storageError) {
+        // Fallback to base64 encoding if object storage fails
+        console.log('Object storage failed, falling back to base64 encoding');
+        const fileBuffer = req.file.buffer || fs.readFileSync(req.file.path);
+        const base64Data = fileBuffer.toString('base64');
+        logoUrl = `data:${req.file.mimetype};base64,${base64Data}`;
+      }
       
       // Clean up temp file
       if (req.file.path) {
         fs.unlinkSync(req.file.path);
       }
       
-      // Update user profile photo field to store logo URL
+      // Update user profile photo field to store logo URL or base64
       const updatedUser = await storage.updateUserProfile(merchantId, {
         profilePhoto: logoUrl
       });
