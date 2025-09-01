@@ -96,9 +96,6 @@ const offerSchema = z.object({
   // H) Fraud & safety
   singleUse: z.boolean().default(true),
   deviceFingerprinting: z.boolean().default(true),
-  
-  // I) Meal periods for Food & Drink
-  mealPeriods: z.union([z.array(z.string()), z.object({})]).optional().transform(val => Array.isArray(val) ? val : []),
 });
 
 type OfferFormData = z.infer<typeof offerSchema>;
@@ -189,7 +186,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       autoPauseOnAbuse: editingOffer.autoPauseOnAbuse !== false,
       singleUse: editingOffer.singleUse !== false,
       deviceFingerprinting: editingOffer.deviceFingerprinting !== false,
-      mealPeriods: Array.isArray(editingOffer.mealPeriods) ? editingOffer.mealPeriods : (editingOffer.mealPeriods ? JSON.parse(editingOffer.mealPeriods) : []),
     } : {
       title: "",
       description: "",
@@ -217,7 +213,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       tags: [],
       validFrom: "",
       validTo: "",
-      mealPeriods: [],
     },
   });
 
@@ -350,8 +345,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     const processedData = {
       ...data,
       timeSlots: convertedTimeSlots,
-      // Ensure mealPeriods is always an array (fallback to empty array if undefined or object)
-      mealPeriods: Array.isArray(data.mealPeriods) ? data.mealPeriods : [],
       // Ensure other array fields are properly formatted
       tags: Array.isArray(data.tags) ? data.tags : [],
       daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : [],
@@ -527,50 +520,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    {/* Meal Period Selection for Food & Drink */}
-                    {form.watch("category") === "Food & Drink" && (
-                      <FormField
-                        control={form.control}
-                        name="mealPeriods"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200">Meal Periods</FormLabel>
-                            <FormDescription className="text-slate-400">
-                              Select which meal periods this offer applies to
-                            </FormDescription>
-                            <div className="grid grid-cols-2 gap-2">
-                              {[
-                                { id: "breakfast", label: "Breakfast (6:00-11:30)" },
-                                { id: "lunch", label: "Lunch (11:30-17:00)" },
-                                { id: "dinner", label: "Dinner (17:00-22:00)" },
-                                { id: "late_night", label: "Late Night (22:00-6:00)" }
-                              ].map((period) => (
-                                <div key={period.id} className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    id={period.id}
-                                    checked={field.value?.includes(period.id)}
-                                    onChange={(e) => {
-                                      const currentPeriods = field.value || [];
-                                      if (e.target.checked) {
-                                        field.onChange([...currentPeriods, period.id]);
-                                      } else {
-                                        field.onChange(currentPeriods.filter((p: string) => p !== period.id));
-                                      }
-                                    }}
-                                    className="rounded border-slate-600 bg-slate-800"
-                                  />
-                                  <label htmlFor={period.id} className="text-sm text-slate-300">
-                                    {period.label}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
 
                     {/* Dynamic fields based on offer type */}
                     {form.watch("type") === "percentage_discount" && (

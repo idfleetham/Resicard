@@ -849,7 +849,6 @@ export class DatabaseStorage implements IStorage {
       timeSlots: typeof offerData.timeSlots === 'object' ? JSON.stringify(offerData.timeSlots) : offerData.timeSlots,
       blackoutDates: Array.isArray(offerData.blackoutDates) ? JSON.stringify(offerData.blackoutDates) : offerData.blackoutDates,
       locations: Array.isArray(offerData.locations) ? JSON.stringify(offerData.locations) : offerData.locations,
-      mealPeriods: Array.isArray(offerData.mealPeriods) ? JSON.stringify(offerData.mealPeriods) : offerData.mealPeriods,
     };
     
     console.log('Storage: Processed data with merchantId:', processedData.merchantId);
@@ -880,7 +879,6 @@ export class DatabaseStorage implements IStorage {
       timeSlots: typeof updates.timeSlots === 'object' ? JSON.stringify(updates.timeSlots) : updates.timeSlots,
       blackoutDates: Array.isArray(updates.blackoutDates) ? JSON.stringify(updates.blackoutDates) : updates.blackoutDates,
       locations: Array.isArray(updates.locations) ? JSON.stringify(updates.locations) : updates.locations,
-      mealPeriods: Array.isArray(updates.mealPeriods) ? JSON.stringify(updates.mealPeriods) : updates.mealPeriods,
       // Convert date strings to Date objects
       validFrom: updates.validFrom ? new Date(updates.validFrom) : updates.validFrom,
       validTo: updates.validTo ? new Date(updates.validTo) : updates.validTo,
