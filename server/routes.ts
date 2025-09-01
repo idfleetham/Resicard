@@ -1640,10 +1640,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Fetching redemptions for merchant:', merchantId);
       
-      // For now, return empty array since the redemptions table schema needs to be synced
-      // Once the database migration is complete, this will show real redemptions
-      console.log('Redemptions table not ready - returning empty for now');
-      res.json([]);
+      // Use raw SQL since the actual table structure doesn't match schema yet
+      const redemptionResults = await db.execute(sql`
+        SELECT 
+          r.id,
+          r.deal_id,
+          r.user_id,
+          r.redeemed_at,
+          r.value,
+          d.title as deal_title,
+          u.username as customer_name
+        FROM redemptions r
+        LEFT JOIN deals d ON r.deal_id = d.id
+        LEFT JOIN users u ON r.user_id = u.id
+        WHERE d.merchant_id = ${merchantId}
+        ORDER BY r.redeemed_at DESC
+      `);
+
+      console.log('Found legacy redemptions:', redemptionResults.rows.length);
+
+      // Transform data to match frontend expectations
+      const formattedRedemptions = redemptionResults.rows.map((redemption: any) => ({
+        id: redemption.id,
+        offer_id: redemption.deal_id,
+        user_id: redemption.user_id,
+        redeemedAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
+        createdAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
+        value: redemption.value ? parseFloat(redemption.value).toFixed(2) : '0.00',
+        calculatedDiscount: redemption.value ? parseFloat(redemption.value).toFixed(2) : '0.00',
+        basketSubtotal: 'N/A', // Not available in legacy structure
+        voucher_code: `LEGACY-${redemption.id}`,
+        dealTitle: redemption.deal_title || 'Unknown Deal',
+        offerTitle: redemption.deal_title || 'Unknown Deal',
+        customerName: redemption.customer_name || 'Guest',
+        staffName: 'System'
+      }));
+
+      res.json(formattedRedemptions);
       
     } catch (error: any) {
       console.error('Error fetching merchant redemptions:', error);
