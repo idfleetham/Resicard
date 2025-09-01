@@ -128,16 +128,16 @@ export default function QRRedemption() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">QR & Code Redemption</h1>
-            <p className="text-slate-300">Redeem customer vouchers and generate QR codes for your offers</p>
+            <p className="text-slate-300 text-lg">Redeem customer vouchers and generate QR codes for your offers</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-6">
         {/* Main Voucher Redemption Card */}
-        <div className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl transition p-5">
           <h2 className="text-2xl font-semibold mb-1 text-fg">Redeem Voucher</h2>
-          <p className="text-slate-300 mb-4">Enter voucher code or scan QR to process customer redemption</p>
+          <p className="text-slate-300 text-lg mb-4">Enter voucher code or scan QR to process customer redemption</p>
 
           {/* Custom Tab Buttons */}
           <div className="mb-4 inline-flex rounded-xl border border-white/40 shadow-xl shadow-white/20 bg-surface overflow-hidden">
@@ -260,13 +260,13 @@ export default function QRRedemption() {
         </div>
 
         {/* QR Code Generation Card */}
-        <div className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 rounded-2xl shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl transition p-5">
           <div className="border-b border-white/40 shadow-xl shadow-white/20 pb-4 mb-4">
             <h2 className="text-lg font-semibold text-fg flex items-center space-x-2">
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
             </h2>
-            <p className="text-slate-300 text-base mt-1">Create QR codes for your offers to display in-store</p>
+            <p className="text-slate-300 text-lg mt-1">Create QR codes for your offers to display in-store</p>
           </div>
 
           <div className="space-y-4">
@@ -319,7 +319,7 @@ export default function QRRedemption() {
       </div>
 
       {/* Recent Redemptions */}
-      <Card variant="elevated">
+      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle>Recent Redemptions</CardTitle>
           <CardDescription>
