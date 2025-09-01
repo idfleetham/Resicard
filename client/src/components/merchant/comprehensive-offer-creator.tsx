@@ -149,7 +149,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     defaultValues: editingOffer ? {
       title: editingOffer.title || "",
       description: editingOffer.description || "",
-      type: editingOffer.type || "percentage_discount",
+      type: editingOffer.type === "comprehensive" ? "percentage_discount" : (editingOffer.type || "percentage_discount"),
       percentOff: editingOffer.percentOff || undefined,
       fixedPrice: editingOffer.fixedPrice || undefined,
       originalValue: editingOffer.originalValue || undefined,
