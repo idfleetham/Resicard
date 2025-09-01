@@ -234,7 +234,7 @@ export default function TeamManagement() {
 
       {/* Staff Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
@@ -245,7 +245,7 @@ export default function TeamManagement() {
             </div>
           </CardBody>
         </Card>
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
@@ -256,7 +256,7 @@ export default function TeamManagement() {
             </div>
           </CardBody>
         </Card>
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
@@ -270,7 +270,7 @@ export default function TeamManagement() {
       </div>
 
       {/* Staff Table */}
-      <Card variant="elevated">
+      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -335,7 +335,7 @@ export default function TeamManagement() {
       </Card>
 
       {/* Staff PIN Management */}
-      <Card variant="elevated">
+      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle>Staff PIN Security</CardTitle>
           <CardDescription className="text-lg">
