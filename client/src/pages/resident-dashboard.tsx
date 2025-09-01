@@ -146,6 +146,30 @@ export default function ResidentDashboard() {
     },
   });
 
+  // Refresh expired voucher mutation
+  const refreshVoucherMutation = useMutation({
+    mutationFn: async (voucherId: number) => {
+      const response = await apiRequestWithAuth('POST', '/api/vouchers/refresh', {
+        voucherId
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Offer Refreshed!",
+        description: "Your voucher has been refreshed with a new expiration date.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/vouchers/user'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Refresh Offer",
+        description: error.message || "Unable to refresh voucher. The offer may no longer be available.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Create subscription mutation
   const createSubscriptionMutation = useMutation({
     mutationFn: async ({ subscriptionType, subscriptionPlan }: { subscriptionType: string; subscriptionPlan: string }) => {
@@ -194,8 +218,9 @@ export default function ResidentDashboard() {
     createVoucherMutation.mutate({ dealId });
   };
 
-  // Separate active and used vouchers
+  // Separate active, expired, and used vouchers
   const activeVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) > new Date());
+  const expiredVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) <= new Date());
   const usedVouchers = vouchers.filter(v => v.isUsed);
 
   // Filter deals based on category and availability
@@ -535,11 +560,17 @@ export default function ResidentDashboard() {
                       </Button>
                     </div>
                   </div>
-                  <div className="mt-8 flex items-center space-x-8">
+                  <div className="mt-8 flex items-center space-x-6 flex-wrap">
                     <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
                       <div className="w-4 h-4 bg-emerald-400 rounded-full"></div>
-                      <span className="text-white font-semibold">{activeVouchers.length} active vouchers</span>
+                      <span className="text-white font-semibold">{activeVouchers.length} active</span>
                     </div>
+                    {expiredVouchers.length > 0 && (
+                      <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+                        <div className="w-4 h-4 bg-amber-400 rounded-full"></div>
+                        <span className="text-white font-semibold">{expiredVouchers.length} expired</span>
+                      </div>
+                    )}
                     <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
                       <div className="w-4 h-4 bg-white/60 rounded-full"></div>
                       <span className="text-white font-semibold">{usedVouchers.length} redeemed</span>
@@ -614,9 +645,7 @@ export default function ResidentDashboard() {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  {new Date(voucher.expiresAt) < new Date() ? (
-                                    <Badge variant="destructive">Expired</Badge>
-                                  ) : !user?.profilePhoto ? (
+                                  {!user?.profilePhoto ? (
                                     <div className="space-y-2">
                                       <Badge variant="secondary" className="bg-red-100 text-red-800">
                                         Photo Required
@@ -676,6 +705,86 @@ export default function ResidentDashboard() {
                                       </div>
                                     </div>
                                   )}
+                                </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expired Vouchers Section */}
+                  {expiredVouchers.length > 0 && (
+                    <div className="space-y-6">
+                      <h3 className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-amber-100 rounded-xl">
+                          <AlertTriangle className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                          Expired Vouchers ({expiredVouchers.length})
+                        </span>
+                      </h3>
+                      <div className="grid gap-6">
+                        {expiredVouchers.map((voucher) => (
+                          <div key={voucher.id} className="bg-white rounded-3xl shadow-xl border-0 p-8 ring-1 ring-amber-100 hover:shadow-2xl transition-all duration-300">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <h3 className="font-bold text-xl text-gray-900">{voucher.dealTitle}</h3>
+                                    <Badge variant="destructive">Expired</Badge>
+                                  </div>
+                                  <p className="text-gray-600 mb-4 font-medium">
+                                    {voucher.merchantName && voucher.merchantName.trim() !== '' && voucher.merchantName !== 'luke' && voucher.merchantName !== 'kingdomchiro' 
+                                      ? voucher.merchantName 
+                                      : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 
+                                         'Business Name Not Set')
+                                    }
+                                  </p>
+                                  <div className="flex items-center gap-6 text-sm mb-4">
+                                    {/* Only show discount badge for monetary discounts */}
+                                    {(voucher.discountType === 'percentage' || voucher.discountType === 'fixed') && (
+                                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-300 to-gray-400 rounded-2xl">
+                                        <span className="text-lg font-bold text-white">
+                                          {voucher.discountType === 'percentage' 
+                                            ? `${voucher.discountValue}% OFF`
+                                            : `£${voucher.discountValue} OFF`
+                                          }
+                                        </span>
+                                      </div>
+                                    )}
+                                    <span className="text-gray-600 font-medium">
+                                      Expired: {formatDate(voucher.expiresAt)}
+                                    </span>
+                                  </div>
+                                  <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
+                                    <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="space-y-3">
+                                    <Badge variant="destructive">Expired</Badge>
+                                    <Button
+                                      onClick={() => refreshVoucherMutation.mutate(voucher.id)}
+                                      disabled={refreshVoucherMutation.isPending}
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full bg-gradient-to-r from-indigo-50 to-violet-50 hover:from-indigo-100 hover:to-violet-100 text-indigo-700 border-indigo-200 rounded-2xl px-4 py-2 font-semibold"
+                                    >
+                                      {refreshVoucherMutation.isPending ? (
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                          Refreshing...
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-2">
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                          </svg>
+                                          Refresh Offer
+                                        </div>
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
                             </div>
                           </div>

@@ -51,6 +51,7 @@ export interface IStorage {
   createVoucher(voucher: InsertVoucher): Promise<Voucher>;
   getVouchersByUser(userId: number): Promise<VoucherWithDeal[]>;
   getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined>;
+  getVoucherById(voucherId: number): Promise<Voucher | undefined>;
   useVoucher(voucherNumber: string): Promise<Voucher | undefined>;
   deleteVoucher(voucherId: number, userId: number): Promise<boolean>;
   getActiveVouchersCount(dealId: number): Promise<number>;
@@ -415,8 +416,16 @@ export class MemStorage implements IStorage {
     return undefined;
   }
 
+  async getVoucherById(voucherId: number): Promise<Voucher | undefined> {
+    return undefined;
+  }
+
   async useVoucher(voucherNumber: string): Promise<Voucher | undefined> {
     return undefined;
+  }
+
+  async deleteVoucher(voucherId: number, userId: number): Promise<boolean> {
+    return false;
   }
 
   async getActiveVouchersCount(dealId: number): Promise<number> {
@@ -786,6 +795,11 @@ export class DatabaseStorage implements IStorage {
 
   async getVoucherByNumber(voucherNumber: string): Promise<Voucher | undefined> {
     const [voucher] = await db.select().from(vouchers).where(eq(vouchers.voucherNumber, voucherNumber));
+    return voucher || undefined;
+  }
+
+  async getVoucherById(voucherId: number): Promise<Voucher | undefined> {
+    const [voucher] = await db.select().from(vouchers).where(eq(vouchers.id, voucherId));
     return voucher || undefined;
   }
 

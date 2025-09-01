@@ -906,6 +906,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Refresh expired voucher endpoint
+  app.post("/api/vouchers/refresh", authenticateToken, requireRole('resident'), async (req, res) => {
+    try {
+      const { voucherId } = req.body;
+      const userId = req.user.id;
+      
+      // Get the existing voucher
+      const existingVoucher = await storage.getVoucherById(voucherId);
+      if (!existingVoucher) {
+        return res.status(404).json({ message: "Voucher not found" });
+      }
+      
+      // Verify the voucher belongs to the user
+      if (existingVoucher.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to refresh this voucher" });
+      }
+      
+      // Only allow refreshing expired, unused vouchers
+      if (existingVoucher.isUsed) {
+        return res.status(400).json({ message: "Cannot refresh used voucher" });
+      }
+      
+      if (new Date(existingVoucher.expiresAt) >= new Date()) {
+        return res.status(400).json({ message: "Voucher is not expired" });
+      }
+      
+      // Get the original deal/offer to check availability
+      const originalDealId = existingVoucher.dealId;
+      const isUUID = existingVoucher.voucherNumber.includes('-') && originalDealId === -1;
+      let deal;
+      
+      if (isUUID) {
+        // Extract UUID from voucher number for comprehensive offers
+        // Voucher number format: UUID-timestamp-random, so extract first 5 parts to get UUID
+        const voucherParts = existingVoucher.voucherNumber.split('-');
+        const dealId = voucherParts.slice(0, 5).join('-');
+        const [offer] = await db.select().from(offers).where(eq(offers.id, dealId));
+        if (!offer) {
+          return res.status(404).json({ message: "Original offer not found" });
+        }
+        
+        if (!offer.active || (offer.validTo && new Date(offer.validTo) < new Date())) {
+          return res.status(400).json({ message: "Original offer is no longer available" });
+        }
+        
+        deal = {
+          id: dealId,
+          title: offer.title,
+          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        };
+      } else {
+        // Handle simple deals
+        deal = await storage.getDeal(originalDealId);
+        if (!deal) {
+          return res.status(404).json({ message: "Original deal not found" });
+        }
+        
+        if (!deal.isActive || new Date(deal.expiryDate) < new Date()) {
+          return res.status(400).json({ message: "Original deal is no longer available" });
+        }
+        
+        // Check usage limits for simple deals
+        const activeVouchersCount = await storage.getActiveVouchersCount(originalDealId);
+        if (activeVouchersCount >= deal.usageLimit) {
+          return res.status(400).json({ message: "Deal voucher limit reached" });
+        }
+      }
+      
+      // Delete the old expired voucher
+      await storage.deleteVoucher(voucherId, userId);
+      
+      // Generate new voucher number
+      const voucherNumber = `${deal.id}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
+      
+      // Create new voucher with fresh expiration
+      const newVoucher = await storage.createVoucher({
+        dealId: isUUID ? -1 : originalDealId,
+        userId,
+        voucherNumber,
+        expiresAt: new Date(deal.expiryDate),
+      });
+      
+      res.json({ 
+        voucher: newVoucher, 
+        message: "Voucher refreshed successfully" 
+      });
+    } catch (error: any) {
+      console.error('Voucher refresh error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.delete("/api/vouchers/:id", authenticateToken, async (req, res) => {
     try {
       const voucherId = parseInt(req.params.id);
