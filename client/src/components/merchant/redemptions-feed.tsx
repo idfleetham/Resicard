@@ -49,7 +49,7 @@ export default function RedemptionsFeed() {
 
     const csvContent = "data:text/csv;charset=utf-8," + 
       Object.keys(csvData[0] || {}).join(",") + "\n" +
-      csvData.map(row => Object.values(row).join(",")).join("\n");
+      csvData.map((row: any) => Object.values(row).join(",")).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

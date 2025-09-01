@@ -612,7 +612,7 @@ export default function MerchantDashboard() {
                     let totalMerchantRevenue = 0;
                     
                     offers.forEach(offer => {
-                      const offerRedemptions = redemptions.filter(r => r.offerId === offer.id);
+                      const offerRedemptions = redemptions.filter(r => String(r.offer_id) === String(offer.id));
                       const vouchersRedeemed = offerRedemptions.length;
                       
                       let offerValue = 0;
@@ -677,7 +677,7 @@ export default function MerchantDashboard() {
                 <CardBody>
                   <div className="space-y-4">
                     {offers.map((offer) => {
-                      const offerRedemptions = redemptions.filter(r => r.offerId === offer.id);
+                      const offerRedemptions = redemptions.filter(r => String(r.offer_id) === String(offer.id));
                       const vouchersCreated = offer.usageCount || 0;
                       const vouchersRedeemed = offerRedemptions.length;
                       
