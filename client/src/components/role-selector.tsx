@@ -33,7 +33,7 @@ export default function RoleSelector({ onSelect, isVisible, onClose }: RoleSelec
             <div className="flex-1">
               <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-foreground mb-2 text-center">
-                Welcome to Resicard© St Andrews
+                Welcome to Resicard©
               </h2>
               <p className="text-muted-foreground text-center">
                 Exclusive deals for local residents and businesses
