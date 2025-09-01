@@ -150,7 +150,7 @@ export default function OffersManager() {
       case "fixed":
         return `£${deal.discountValue} off`;
       case "bogo":
-        return "Buy One Get One";
+        return "BOGOF";
       case "free_item":
         return "Free Item";
       default:
@@ -310,7 +310,7 @@ export default function OffersManager() {
                               <SelectContent className="bg-slate-800 border-slate-700">
                                 <SelectItem value="percentage">Percentage</SelectItem>
                                 <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                <SelectItem value="bogo">Buy One Get One</SelectItem>
+                                <SelectItem value="bogo">BOGOF</SelectItem>
                                 <SelectItem value="free_item">Free Item</SelectItem>
                               </SelectContent>
                             </Select>
@@ -527,7 +527,7 @@ export default function OffersManager() {
                           <SelectContent>
                             <SelectItem value="percentage">Percentage Off</SelectItem>
                             <SelectItem value="fixed">Fixed Amount Off</SelectItem>
-                            <SelectItem value="bogo">Buy One Get One</SelectItem>
+                            <SelectItem value="bogo">BOGOF</SelectItem>
                             <SelectItem value="free_item">Free Item</SelectItem>
                           </SelectContent>
                         </Select>
@@ -885,7 +885,7 @@ export default function OffersManager() {
                         <SelectContent>
                           <SelectItem value="percentage">Percentage Off</SelectItem>
                           <SelectItem value="fixed">Fixed Amount Off</SelectItem>
-                          <SelectItem value="bogo">Buy One Get One</SelectItem>
+                          <SelectItem value="bogo">BOGOF</SelectItem>
                           <SelectItem value="free_item">Free Item</SelectItem>
                         </SelectContent>
                       </Select>

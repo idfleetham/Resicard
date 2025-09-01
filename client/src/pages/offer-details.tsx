@@ -46,7 +46,7 @@ export default function OfferDetails() {
       case "fixed":
         return `£${offer.discountValue} off`;
       case "bogo":
-        return "Buy One Get One";
+        return "BOGOF";
       case "free_item":
         return "Free Item";
       default:

@@ -63,7 +63,7 @@ export default function OffersManager() {
         description: deal.description,
         discountText: deal.discountType === 'percentage' ? `${deal.discountValue}% off` :
                      deal.discountType === 'fixed' ? `£${deal.discountValue} off` :
-                     deal.discountType === 'bogo' ? 'Buy One Get One' :
+                     deal.discountType === 'bogo' ? 'BOGOF' :
                      deal.discountType === 'free_item' ? 'Free Item' : 
                      String(deal.discountValue),
         usageCount: deal.usageCount || 0,
@@ -252,7 +252,7 @@ export default function OffersManager() {
       case "fixed":
         return `£${deal.discountValue} off`;
       case "bogo":
-        return "Buy One Get One";
+        return "BOGOF";
       case "free_item":
         return "Free Item";
       default:

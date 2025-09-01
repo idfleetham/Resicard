@@ -650,7 +650,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           <FormItem>
                             <FormLabel className="text-slate-200">
                               {form.watch("type") === "free_item_with_purchase" && "Free Item Details"}
-                              {form.watch("type") === "bogo" && "BOGO Details"}
+                              {form.watch("type") === "bogo" && "BOGOF Details"}
                               {form.watch("type") === "loyalty_reward" && "Loyalty Program Details"}
                             </FormLabel>
                             <FormControl>

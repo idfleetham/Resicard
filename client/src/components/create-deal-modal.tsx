@@ -115,7 +115,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
         baseValues.originalPrice = existingDeal.originalValue;
         break;
       case "buy_one_get_one":
-        baseValues.bogoItem = existingDeal.description; // Use description for BOGO item
+        baseValues.bogoItem = existingDeal.description; // Use description for BOGOF item
         break;
       case "fixed_amount":
         baseValues.fixedAmount = existingDeal.discountValue;
@@ -345,7 +345,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                         <SelectItem value="fixed_percentage">Fixed % Off</SelectItem>
                         <SelectItem value="free_item">Free Item</SelectItem>
                         <SelectItem value="fixed_price">Fixed Price</SelectItem>
-                        <SelectItem value="buy_one_get_one">Buy One Get One Free</SelectItem>
+                        <SelectItem value="buy_one_get_one">Buy One Get One Free (BOGOF)</SelectItem>
                         <SelectItem value="fixed_amount">Fixed Amount Off</SelectItem>
                       </SelectContent>
                     </Select>
@@ -443,7 +443,7 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                 name="bogoItem"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Buy One Get One Free Item</FormLabel>
+                    <FormLabel>BOGOF Item</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="e.g., Main courses, Cocktails" 
