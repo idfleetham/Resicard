@@ -138,6 +138,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [showCropper, setShowCropper] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(editingOffer?.imageUrl || null);
+  const [scale, setScale] = useState(1);
+  const [rotation, setRotation] = useState(0);
 
   const form = useForm<OfferFormData>({
     resolver: zodResolver(offerSchema),
@@ -228,6 +230,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setImgSrc(reader.result?.toString() || '');
+        setScale(1); // Reset scale
+        setRotation(0); // Reset rotation
         setShowCropper(true);
       });
       reader.readAsDataURL(e.target.files[0]);
@@ -249,6 +253,15 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       canvas.width = completedCrop.width;
       canvas.height = completedCrop.height;
 
+      // Save the context state
+      ctx.save();
+      
+      // Apply transformations to match the preview
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(scale, scale);
+      ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
       ctx.drawImage(
         image,
         completedCrop.x * scaleX,
@@ -260,6 +273,9 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
         completedCrop.width,
         completedCrop.height
       );
+      
+      // Restore the context state
+      ctx.restore();
 
       canvas.toBlob(async (blob) => {
         if (blob) {
@@ -1801,28 +1817,91 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                   <div className="bg-slate-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
                     <h3 className="text-lg font-semibold mb-4 text-slate-200">Crop Offer Image</h3>
                     <div className="space-y-4">
-                      <ReactCrop
-                        crop={crop}
-                        onChange={(_, percentCrop) => setCrop(percentCrop)}
-                        onComplete={(c) => setCompletedCrop(c)}
-                        aspect={16 / 9}
-                        className="max-w-full"
-                      >
-                        <img
-                          src={imgSrc}
-                          style={{ transform: 'scale(1)', maxWidth: '100%' }}
-                          onLoad={(e) => {
-                            const { width, height } = e.currentTarget;
-                            setCrop({
-                              unit: '%',
-                              width: 90,
-                              height: 90 * (9 / 16),
-                              x: 5,
-                              y: 5,
-                            });
-                          }}
-                        />
-                      </ReactCrop>
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                          <label className="text-slate-200 text-sm font-medium">Zoom:</label>
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="3"
+                            step="0.1"
+                            value={scale}
+                            onChange={(e) => setScale(parseFloat(e.target.value))}
+                            className="flex-1"
+                          />
+                          <span className="text-slate-300 text-sm w-12">{scale.toFixed(1)}x</span>
+                        </div>
+                        
+                        <ReactCrop
+                          crop={crop}
+                          onChange={(_, percentCrop) => setCrop(percentCrop)}
+                          onComplete={(c) => setCompletedCrop(c)}
+                          aspect={16 / 9}
+                          className="max-w-full"
+                        >
+                          <img
+                            src={imgSrc}
+                            style={{ 
+                              transform: `scale(${scale}) rotate(${rotation}deg)`,
+                              maxWidth: '100%',
+                              transformOrigin: 'center'
+                            }}
+                            onLoad={(e) => {
+                              const { width, height } = e.currentTarget;
+                              setCrop({
+                                unit: '%',
+                                width: 90,
+                                height: 90 * (9 / 16),
+                                x: 5,
+                                y: 5,
+                              });
+                            }}
+                          />
+                        </ReactCrop>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setScale(Math.max(0.1, scale - 0.1))}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                            >
+                              Zoom Out
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setScale(Math.min(3, scale + 0.1))}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                            >
+                              Zoom In
+                            </Button>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setRotation(rotation - 90)}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                            >
+                              Rotate Left
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setRotation(rotation + 90)}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                            >
+                              Rotate Right
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex justify-end space-x-4">
                         <Button
                           type="button"
