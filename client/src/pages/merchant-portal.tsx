@@ -115,7 +115,7 @@ export default function MerchantPortal() {
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-border-border-dim">
-            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
             </TabsTrigger>
