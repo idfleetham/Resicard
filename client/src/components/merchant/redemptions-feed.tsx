@@ -21,8 +21,11 @@ export default function RedemptionsFeed() {
   const { data: redemptionsResponse, isLoading, refetch } = useQuery<any>({
     queryKey: ["/api/redemptions/merchant", user?.id, filter, dateRange],
     queryFn: async () => {
+      console.log('RedemptionsFeed: Fetching redemptions for merchant:', user?.id);
       const response = await apiRequest('GET', `/api/redemptions/merchant/${user?.id}`);
-      return response.json();
+      const data = await response.json();
+      console.log('RedemptionsFeed: API Response:', data);
+      return data;
     },
     enabled: !!user?.id,
   });
@@ -31,6 +34,12 @@ export default function RedemptionsFeed() {
   const redemptions = Array.isArray(redemptionsResponse) 
     ? redemptionsResponse 
     : redemptionsResponse?.rows || [];
+
+  // Debug logging
+  console.log('RedemptionsFeed: redemptions array length:', redemptions.length);
+  if (redemptions.length > 0) {
+    console.log('RedemptionsFeed: First redemption:', redemptions[0]);
+  }
 
   const filteredRedemptions = redemptions.filter((redemption: any) =>
     redemption.dealTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
