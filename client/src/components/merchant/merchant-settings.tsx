@@ -68,6 +68,13 @@ export default function MerchantSettings() {
   const [activeTab, setActiveTab] = useState("business");
   const [apiKey] = useState("sk_live_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  // Initialize logo preview with user's existing profile photo
+  useEffect(() => {
+    if (user?.profilePhoto) {
+      setLogoPreview(user.profilePhoto);
+    }
+  }, [user?.profilePhoto]);
   const [imgSrc, setImgSrc] = useState<string>('');
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();

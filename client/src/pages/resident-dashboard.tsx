@@ -771,7 +771,7 @@ export default function ResidentDashboard() {
                       <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
                         <CreditCard className="w-5 h-5 text-white" />
                         <span className="text-white font-semibold">
-                          {Array.from(new Set(vouchers.filter(v => v.status === 'used').map(v => v.merchantId))).length} merchants
+                          {Array.from(new Set(vouchers.filter(v => v.isUsed).map(v => v.merchantName))).length} merchants
                         </span>
                       </div>
                     </div>
@@ -783,7 +783,7 @@ export default function ResidentDashboard() {
               <div className="bg-white rounded-3xl shadow-2xl border-0 p-10 ring-1 ring-gray-100">
                 {(() => {
                   // Get unique merchants from redeemed vouchers
-                  const usedVouchers = vouchers.filter(voucher => voucher.status === 'used');
+                  const usedVouchers = vouchers.filter(voucher => voucher.isUsed);
                   const merchantsMap = new Map();
                   
                   usedVouchers.forEach(voucher => {
@@ -791,8 +791,8 @@ export default function ResidentDashboard() {
                       ? voucher.merchantName 
                       : (voucher.merchantName === 'kingdomchiro' ? 'Kingdom Chiropractic Clinics' : 'Business Name Not Set');
                     
-                    merchantsMap.set(voucher.merchantId, {
-                      id: voucher.merchantId,
+                    merchantsMap.set(voucher.merchantName, {
+                      id: voucher.merchantName,
                       name: merchantName
                     });
                   });
