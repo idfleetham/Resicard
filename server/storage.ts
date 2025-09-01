@@ -655,6 +655,16 @@ export class DatabaseStorage implements IStorage {
     return newRedemption;
   }
 
+  // Legacy redemption creation for the existing database structure
+  async createLegacyRedemption(redemption: { dealId: number; userId: number; value: number }): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO redemptions (deal_id, user_id, value, redeemed_at)
+      VALUES (${redemption.dealId}, ${redemption.userId}, ${redemption.value}, NOW())
+      RETURNING id, deal_id, user_id, value, redeemed_at
+    `);
+    return result.rows[0];
+  }
+
   async getRedemptionsByUser(userId: number): Promise<Redemption[]> {
     return await db.select().from(redemptions).where(eq(redemptions.userId, userId));
   }

@@ -1787,11 +1787,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Mark voucher as used
       await storage.useVoucher(voucherCode);
       
-      // Create redemption record
-      await storage.createRedemption({
-        offerId: voucher.dealId === -1 ? offer.id : `deal_${voucher.dealId}`,
+      // Create redemption record in legacy format
+      await storage.createLegacyRedemption({
+        dealId: voucher.dealId === -1 ? parseInt(offer.id) || 0 : voucher.dealId,
         userId: voucher.userId,
-        discountValue: discountValue,
+        value: discountValue,
       });
       
       res.json({
