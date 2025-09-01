@@ -1714,10 +1714,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Voucher has already been redeemed" });
       }
 
-      // Get deal information
-      const deal = await storage.getDeal(voucher.dealId);
-      if (!deal) {
-        return res.status(404).json({ error: "Deal not found" });
+      // Handle both regular deals and UUID-based offers
+      let deal = null;
+      let isUuidOffer = false;
+      
+      if (voucher.dealId === -1) {
+        // This is a UUID offer voucher - extract offer ID from voucherNumber
+        const uuidMatch = voucher.voucherNumber.match(/^([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})-/i);
+        
+        if (uuidMatch) {
+          const offerId = uuidMatch[1].toLowerCase();
+          
+          // Get offer from offers table
+          const offer = await storage.getOffer(offerId);
+          if (!offer) {
+            return res.status(404).json({ error: "Offer not found" });
+          }
+          
+          // Convert offer to deal-like structure for compatibility
+          deal = {
+            id: offer.id,
+            merchantId: offer.merchantId,
+            title: offer.title,
+            discountType: offer.type === 'percentage_discount' ? 'percentage' : 'fixed',
+            discountValue: offer.percentOff?.toString() || offer.fixedPrice?.toString() || '0'
+          };
+          isUuidOffer = true;
+        } else {
+          return res.status(400).json({ error: "Invalid voucher format" });
+        }
+      } else {
+        // Regular deal voucher
+        deal = await storage.getDeal(voucher.dealId);
+        if (!deal) {
+          return res.status(404).json({ error: "Deal not found" });
+        }
       }
 
       // Get merchant information to verify authorization
@@ -1727,8 +1758,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify merchant owns this deal
-      if (deal.merchantId !== req.user.id) {
-        return res.status(403).json({ error: "Not authorized to redeem this voucher" });
+      if (isUuidOffer) {
+        // For UUID offers, compare with merchant UUID
+        if (deal.merchantId !== merchant.id) {
+          return res.status(403).json({ error: "Not authorized to redeem this voucher" });
+        }
+      } else {
+        // For regular deals, compare with user ID
+        if (deal.merchantId !== req.user.id) {
+          return res.status(403).json({ error: "Not authorized to redeem this voucher" });
+        }
       }
 
       // Calculate discount
