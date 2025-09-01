@@ -141,6 +141,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
 
+  console.log('ComprehensiveOfferCreator: editingOffer type:', editingOffer?.type);
+  
   const form = useForm<OfferFormData>({
     resolver: zodResolver(offerSchema),
     mode: "onSubmit",
