@@ -1666,12 +1666,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Merchant not found" });
       }
 
-      // Try a simpler approach using storage instead of raw SQL
       console.log('Getting redemptions for merchant user:', req.user.id, 'merchant UUID:', merchant.id);
       
-      // For now, return empty array until we can debug the SQL issue
-      // The issue is that we have no redeemed vouchers for legacy deals for this merchant
-      res.json([]);
+      // Query both legacy deals and UUID-based offers
+      // First get legacy deal redemptions
+      const legacyQuery = await db.select({
+        id: vouchers.id,
+        offer_id: vouchers.dealId,
+        user_id: vouchers.userId,
+        redeemed_at: vouchers.usedAt,
+        value: deals.discountValue,
+        voucher_code: vouchers.voucherNumber,
+        offerTitle: deals.title,
+        customerName: users.username,
+        staffName: sql<string>`'System'`
+      })
+      .from(vouchers)
+      .leftJoin(deals, eq(vouchers.dealId, deals.id))
+      .leftJoin(users, eq(vouchers.userId, users.id))
+      .where(and(
+        eq(vouchers.isUsed, true),
+        eq(deals.merchantId, req.user.id)
+      ))
+      .orderBy(desc(vouchers.usedAt));
+
+      // Then get UUID-based offer redemptions
+      const uuidQuery = await db.select({
+        id: vouchers.id,
+        offer_id: sql<string>`SUBSTRING(${vouchers.voucherNumber}, 1, 36)`,
+        user_id: vouchers.userId,
+        redeemed_at: vouchers.usedAt,
+        value: sql<string>`COALESCE(${offers.percentOff}::text, '0')`,
+        voucher_code: vouchers.voucherNumber,
+        offerTitle: offers.title,
+        customerName: users.username,
+        staffName: sql<string>`'System'`
+      })
+      .from(vouchers)
+      .leftJoin(offers, sql`SUBSTRING(${vouchers.voucherNumber}, 1, 36)::uuid = ${offers.id}`)
+      .leftJoin(users, eq(vouchers.userId, users.id))
+      .where(and(
+        eq(vouchers.isUsed, true),
+        eq(vouchers.dealId, -1),
+        eq(offers.merchantId, merchant.id)
+      ))
+      .orderBy(desc(vouchers.usedAt));
+
+      // Combine results
+      const allRedemptions = [...legacyQuery, ...uuidQuery];
+      console.log(`Found ${legacyQuery.length} legacy redemptions and ${uuidQuery.length} UUID redemptions`);
+      
+      res.json(allRedemptions);
     } catch (error) {
       console.error("Error fetching redemptions:", error);
       res.status(500).json({ error: "Failed to fetch redemptions" });
