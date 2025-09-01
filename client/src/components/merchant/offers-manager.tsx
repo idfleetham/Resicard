@@ -77,9 +77,7 @@ export default function OffersManager() {
       type: 'comprehensive',
       offerType: offer.type,
       isActive: offer.active ?? true,
-      discountText: offer.percentOff ? `${offer.percentOff}% off` : 
-                   offer.fixedAmount ? `$${offer.fixedAmount} off` : 
-                   offer.fixedPrice ? `$${offer.fixedPrice}` : 'Special offer',
+      discountText: offer.type ? offer.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Offer',
       usageCount: 0, // TODO: implement usage tracking for comprehensive offers
       usageLimit: offer.usageLimit || '∞',
       expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
@@ -557,7 +555,7 @@ export default function OffersManager() {
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
                     <TableHead className="text-slate-300 font-medium text-base">Type</TableHead>
                     <TableHead className="text-slate-300 font-medium text-base">Title</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Discount</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-base">Offer Type</TableHead>
                     <TableHead className="text-slate-300 font-medium text-base">Category</TableHead>
                     <TableHead className="text-slate-300 font-medium text-base">Usage</TableHead>
                     <TableHead className="text-slate-300 font-medium text-base">Expiry</TableHead>
