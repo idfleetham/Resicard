@@ -443,28 +443,28 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <MetricTile label="Active Members" value="247" delta="12%" icon={<Users className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Active Members" value="0" delta="0%" icon={<Users className="h-4 w-4 text-white/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value="12,450" delta="8%" icon={<Star className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Points Earned" value="0" delta="0%" icon={<Star className="h-4 w-4 text-white/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <MetricTile label="Rewards Claimed" value="89" delta="15%" icon={<Gift className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Rewards Claimed" value="0" delta="0%" icon={<Gift className="h-4 w-4 text-white/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <MetricTile label="Revenue Impact" value="£2,340" delta="22%" icon={<TrendingUp className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Revenue Impact" value="£0" delta="0%" icon={<TrendingUp className="h-4 w-4 text-white/80" />} />
             </motion.div>
           </motion.div>
 
@@ -536,7 +536,7 @@ export default function LoyaltyDashboard() {
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-white">{Math.floor(Math.random() * 100) + 20}</p>
+                        <p className="font-semibold text-white">0</p>
                         <p className="text-xs text-white/70">customers</p>
                       </div>
                     </div>
@@ -559,7 +559,7 @@ export default function LoyaltyDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-white">{Math.floor(Math.random() * 50) + 10}</p>
+                      <p className="font-semibold text-white">0</p>
                       <p className="text-xs text-white/70">redeemed</p>
                     </div>
                   </div>
@@ -749,8 +749,8 @@ export default function LoyaltyDashboard() {
           >
             <div className="space-y-6">
               {loyaltyProgram?.tiers.map((tier, index) => {
-                const customerCount = Math.floor(Math.random() * 100) + 20;
-                const avgSpend = (Math.random() * 50 + 20).toFixed(2);
+                const customerCount = 0;
+                const avgSpend = "0.00";
                 const progressPercentage = Math.min(100, (customerCount / 120) * 100);
 
                 return (
@@ -779,11 +779,11 @@ export default function LoyaltyDashboard() {
                         <p className="text-xs text-white/70">Avg. monthly spend</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-white">{Math.floor(Math.random() * 5) + 2}</p>
+                        <p className="text-2xl font-bold text-white">0</p>
                         <p className="text-xs text-white/70">Visits per month</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-white">{Math.floor(Math.random() * 20) + 5}</p>
+                        <p className="text-2xl font-bold text-white">0</p>
                         <p className="text-xs text-white/70">Rewards redeemed</p>
                       </div>
                     </div>
@@ -978,12 +978,7 @@ export default function LoyaltyDashboard() {
               subtitle="Latest loyalty transactions and awards"
             >
               <div className="space-y-3">
-                {[
-                  { id: 201, username: "john_d", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 minutes ago", type: "earn" },
-                  { id: 202, username: "sarah_m", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 minutes ago", type: "redeem" },
-                  { id: 203, username: null, action: "Earned 1 stamp", amount: "Visit reward", time: "1 hour ago", type: "stamp" },
-                  { id: 204, username: "emma_d", action: "Earned 30 points", amount: "£3.00 purchase", time: "2 hours ago", type: "earn" }
-                ].map((activity, index) => {
+                {[].map((activity, index) => {
                   const customerAlias = generateCustomerAlias({ id: activity.id, username: activity.username });
                   return (
                     <div key={index} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/30 border border-border-dim divide-y divide-white/5">
@@ -1026,12 +1021,8 @@ export default function LoyaltyDashboard() {
               </div>
             </div>
             <div className="space-y-4">
-              {/* Mock customer data with privacy aliases */}
-              {[
-                { id: 101, username: "sarah_j", tier: "Gold", points: 450, visits: 12 },
-                { id: 102, username: null, tier: "Silver", points: 180, visits: 8 },
-                { id: 103, username: "emily_d", tier: "Bronze", points: 75, visits: 5 },
-              ].map((customer, index) => {
+              {/* No customer data yet - will populate when real loyalty members join */}
+              {[].map((customer, index) => {
                 const customerAlias = generateCustomerAlias({ id: customer.id, username: customer.username });
                 return (
                   <motion.div 
