@@ -346,7 +346,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     
     const processedData = {
       ...data,
-      timeSlots: convertedTimeSlots
+      timeSlots: JSON.stringify(convertedTimeSlots)
     };
     
     console.log('Processed data:', processedData);
