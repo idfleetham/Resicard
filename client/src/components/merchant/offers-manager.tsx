@@ -300,7 +300,7 @@ export default function OffersManager() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
-            <p className="text-slate-300 text-xl">Manage all your business offers</p>
+            <p className="text-slate-300 text-lg">Manage all your business offers</p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -523,7 +523,7 @@ export default function OffersManager() {
       <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
           <CardTitle className="text-fg text-3xl">Your Offers</CardTitle>
-          <CardDescription className="text-slate-300 text-xl">
+          <CardDescription className="text-slate-300 text-lg">
             Manage all your business offers and track their performance
           </CardDescription>
         </CardHeader>
