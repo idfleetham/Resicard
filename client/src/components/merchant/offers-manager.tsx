@@ -30,7 +30,11 @@ const createDealSchema = insertDealSchema.extend({
 
 type CreateDealData = z.infer<typeof createDealSchema>;
 
-export default function OffersManager() {
+interface OffersManagerProps {
+  totalRedemptions?: number;
+}
+
+export default function OffersManager({ totalRedemptions = 0 }: OffersManagerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -485,7 +489,7 @@ export default function OffersManager() {
           },
           {
             title: "Total Redemptions",
-            value: allOffers.reduce((sum: number, offer: any) => sum + (offer.usageCount || 0), 0),
+            value: totalRedemptions,
             icon: "👥",
             gradient: "from-purple-500/70 to-purple-600/70"
           },

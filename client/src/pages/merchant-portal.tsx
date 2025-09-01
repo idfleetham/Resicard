@@ -1,6 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -40,6 +42,26 @@ export default function MerchantPortal() {
   const { user, isLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("offers");
+
+  // Fetch merchant's redemptions for stats
+  const { data: redemptionsResponse } = useQuery<any>({
+    queryKey: ["/api/redemptions/merchant", user?.id],
+    queryFn: async () => {
+      console.log('MerchantPortal: Fetching redemptions for merchant:', user?.id);
+      const response = await apiRequest('GET', `/api/redemptions/merchant/${user?.id}`);
+      const data = await response.json();
+      console.log('MerchantPortal: API Response:', data);
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Handle the response structure - it could be an array or an object with rows
+  const redemptions = Array.isArray(redemptionsResponse) 
+    ? redemptionsResponse 
+    : redemptionsResponse?.rows || [];
+
+  console.log('MerchantPortal: Total redemptions count:', redemptions.length);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "merchant")) {
@@ -146,7 +168,7 @@ export default function MerchantPortal() {
           </TabsList>
 
           <TabsContent value="offers" className="mt-6">
-            <OffersManager />
+            <OffersManager totalRedemptions={redemptions.length} />
           </TabsContent>
 
           <TabsContent value="redemptions" className="mt-6">
