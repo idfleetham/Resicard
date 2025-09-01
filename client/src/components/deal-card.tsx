@@ -29,7 +29,7 @@ export default function DealCard({
   hasExistingVoucher = false
 }: DealCardProps) {
   const usagePercentage = deal.usageLimit >= 999999 ? 0 : ((deal.usageCount || 0) / deal.usageLimit) * 100;
-  const isExpired = new Date(deal.expiryDate) < new Date();
+  const isExpired = new Date(deal.expiryDate || deal.validTo) < new Date();
   const isFullyUsed = deal.usageLimit >= 999999 ? false : (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
@@ -47,8 +47,6 @@ export default function DealCard({
       "Tailend": tailendImage,
       "St Andrews Links": standrewsLinksImage,
       "Golf City Taxis": golfCityTaxisImage,
-      "kingdomchiro": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format", // Professional healthcare/wellness image
-      "Kingdom Chiropractic Clinics": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=300&fit=crop&auto=format",
     };
     
     // Use business-specific image if available
@@ -74,7 +72,7 @@ export default function DealCard({
 
   const getExpiryBadgeColor = () => {
     const now = new Date();
-    const expiry = new Date(deal.expiryDate);
+    const expiry = new Date(deal.expiryDate || deal.validTo);
     const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysUntilExpiry <= 0) return "bg-red-100 text-red-700 border-red-200";
@@ -104,13 +102,13 @@ export default function DealCard({
             <Clock className="w-3 h-3 mr-1" />
             {(() => {
               const now = new Date();
-              const expiry = new Date(deal.expiryDate);
+              const expiry = new Date(deal.expiryDate || deal.validTo);
               const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
               
               if (daysUntilExpiry <= 0) return "Expired";
               if (daysUntilExpiry === 1) return "1 day";
               if (daysUntilExpiry <= 7) return `${daysUntilExpiry} days`;
-              return formatRelativeTime(deal.expiryDate);
+              return formatRelativeTime(deal.expiryDate || deal.validTo);
             })()}
           </Badge>
         </div>
