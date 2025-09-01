@@ -1037,7 +1037,7 @@ export default function MerchantSettings() {
                         setShowCropper(false);
                         setImgSrc('');
                       }}
-                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                      className="bg-red-100 text-black border-red-300 hover:bg-red-200"
                     >
                       Cancel
                     </Button>

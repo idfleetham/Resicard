@@ -26,8 +26,11 @@ import {
   Shield,
   BarChart3,
   Image as ImageIcon,
-  Tag
+  Tag,
+  Upload
 } from "lucide-react";
+import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 // Comprehensive offer schema based on requirements
 const offerSchema = z.object({
@@ -128,6 +131,13 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState("core");
+  
+  // Image cropper state
+  const [imgSrc, setImgSrc] = useState('');
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [showCropper, setShowCropper] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(editingOffer?.imageUrl || null);
 
   const form = useForm<OfferFormData>({
     resolver: zodResolver(offerSchema),
@@ -211,6 +221,90 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     control: form.control,
     name: "blackoutDates",
   });
+
+  // Image upload and cropping functions
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImgSrc(reader.result?.toString() || '');
+        setShowCropper(true);
+      });
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const cropImage = async () => {
+    if (!completedCrop || !imgSrc) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const image = new Image();
+    image.onload = async () => {
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+
+      canvas.width = completedCrop.width;
+      canvas.height = completedCrop.height;
+
+      ctx.drawImage(
+        image,
+        completedCrop.x * scaleX,
+        completedCrop.y * scaleY,
+        completedCrop.width * scaleX,
+        completedCrop.height * scaleY,
+        0,
+        0,
+        completedCrop.width,
+        completedCrop.height
+      );
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            // For new offers, convert to base64 and store temporarily
+            if (!editingOffer?.id) {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = reader.result as string;
+                form.setValue('imageUrl', base64);
+                setImagePreview(base64);
+                setShowCropper(false);
+                setImgSrc('');
+                toast({ title: "Success", description: "Image ready for upload" });
+              };
+              reader.readAsDataURL(blob);
+            } else {
+              // For editing offers, upload immediately
+              const formData = new FormData();
+              formData.append('file', blob, 'offer-image.jpg');
+
+              const response = await fetch(`/api/merchant/offers/${editingOffer.id}/upload`, {
+                method: 'POST',
+                body: formData,
+              });
+
+              if (response.ok) {
+                const result = await response.json();
+                form.setValue('imageUrl', result.imageUrl);
+                setImagePreview(result.imageUrl);
+                setShowCropper(false);
+                setImgSrc('');
+                toast({ title: "Success", description: "Image uploaded successfully" });
+              } else {
+                toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
+              }
+            }
+          } catch (error) {
+            toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
+          }
+        }
+      }, 'image/jpeg', 0.8);
+    };
+    image.src = imgSrc;
+  };
 
   const createOfferMutation = useMutation({
     mutationFn: (data: OfferFormData) => {
@@ -1462,22 +1556,53 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-200">Offer Image</FormLabel>
-                          <FormControl>
-                            <Input {...field} className="input-dark" placeholder="https://..." />
-                          </FormControl>
-                          <FormDescription className="text-slate-400">
-                            URL to an image that represents this offer
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <FormLabel className="text-slate-200 text-base">Offer Image</FormLabel>
+                      <div className="mt-2">
+                        {imagePreview ? (
+                          <div className="space-y-4">
+                            <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-lg border border-slate-700">
+                              <img
+                                src={imagePreview}
+                                alt="Offer preview"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setImagePreview(null);
+                                form.setValue('imageUrl', '');
+                              }}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                            >
+                              Remove Image
+                            </Button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center w-full max-w-md h-32 border-2 border-slate-700 border-dashed rounded-lg cursor-pointer bg-slate-800/50 hover:bg-slate-800 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload className="w-8 h-8 mb-2 text-slate-400" />
+                              <p className="text-sm text-slate-400">
+                                <span className="font-semibold">Click to upload</span> an offer image
+                              </p>
+                              <p className="text-xs text-slate-500">16:9 aspect ratio recommended</p>
+                            </div>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </label>
+                        )}
+                      </div>
+                      <p className="text-slate-400 text-sm mt-2">
+                        Upload an image to represent this offer (will be cropped to 16:9 ratio)
+                      </p>
+                    </div>
 
                     <FormField
                       control={form.control}
@@ -1678,7 +1803,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     type="button"
                     variant="outline"
                     onClick={onClose}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    className="bg-red-100 text-black border-red-300 hover:bg-red-200"
                   >
                     Cancel
                   </Button>
@@ -1691,6 +1816,59 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                   {createOfferMutation.isPending ? (editingOffer ? "Updating..." : "Creating...") : (editingOffer ? "Update Offer" : "Create Offer")}
                 </Button>
               </div>
+
+              {/* Image Cropper Modal */}
+              {showCropper && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-slate-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
+                    <h3 className="text-lg font-semibold mb-4 text-slate-200">Crop Offer Image</h3>
+                    <div className="space-y-4">
+                      <ReactCrop
+                        crop={crop}
+                        onChange={(_, percentCrop) => setCrop(percentCrop)}
+                        onComplete={(c) => setCompletedCrop(c)}
+                        aspect={16 / 9}
+                        className="max-w-full"
+                      >
+                        <img
+                          src={imgSrc}
+                          style={{ transform: 'scale(1)', maxWidth: '100%' }}
+                          onLoad={(e) => {
+                            const { width, height } = e.currentTarget;
+                            setCrop({
+                              unit: '%',
+                              width: 90,
+                              height: 90 * (9 / 16),
+                              x: 5,
+                              y: 5,
+                            });
+                          }}
+                        />
+                      </ReactCrop>
+                      <div className="flex justify-end space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowCropper(false);
+                            setImgSrc('');
+                          }}
+                          className="bg-red-100 text-black border-red-300 hover:bg-red-200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={cropImage}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                        >
+                          Crop & Upload
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </Form>
         </div>
