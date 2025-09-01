@@ -120,7 +120,7 @@ export default function DigitalMembershipCard({
               
               <div className="bg-gray-100 rounded-lg p-4 mb-4">
                 <p className="text-xs text-muted-foreground mb-2">Voucher Number</p>
-                <p className="text-sm font-mono font-bold tracking-wide break-all leading-relaxed">
+                <p className="text-sm font-mono font-bold tracking-wide break-all leading-relaxed text-gray-900">
                   {voucher.voucherNumber}
                 </p>
               </div>
