@@ -1486,6 +1486,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const offerId = req.params.id;
       const updates = req.body;
       
+      console.log('PUT /api/offers/:id - Raw updates received:', JSON.stringify(updates, null, 2));
+      
+      // Validate using insertOfferSchema (partial)
+      const validation = insertOfferSchema.partial().safeParse(updates);
+      if (!validation.success) {
+        console.error('Validation errors:', validation.error.errors);
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: validation.error.errors 
+        });
+      }
+      
       // Check if offer exists and merchant owns it
       const offer = await storage.getOffer(offerId);
       if (!offer) {
@@ -1497,7 +1509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Not authorized to update this offer" });
       }
       
-      const updatedOffer = await storage.updateOffer(offerId, updates);
+      const updatedOffer = await storage.updateOffer(offerId, validation.data);
       res.json(updatedOffer);
     } catch (error) {
       console.error('Error updating offer:', error);
