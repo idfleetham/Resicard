@@ -299,7 +299,7 @@ export default function OffersManager() {
       <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-semibold text-fg">Your Offers</h1>
+            <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
             <p className="text-slate-300">Manage all your business offers</p>
           </div>
           <div className="flex gap-3">
@@ -522,7 +522,7 @@ export default function OffersManager() {
       {/* Offers Table */}
       <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
-          <CardTitle className="text-fg text-4xl">Your Offers</CardTitle>
+          <CardTitle className="text-fg">Your Offers</CardTitle>
           <CardDescription className="text-slate-300">
             Manage all your business offers and track their performance
           </CardDescription>
@@ -553,14 +553,14 @@ export default function OffersManager() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-slate-300 font-medium text-base">Type</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Title</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Offer Type</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Category</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Usage</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Expiry</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Status</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-base">Actions</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Type</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Title</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Offer Type</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Category</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Usage</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Expiry</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Status</TableHead>
+                    <TableHead className="text-slate-300 font-medium text-xl">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
