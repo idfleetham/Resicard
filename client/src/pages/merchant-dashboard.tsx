@@ -78,6 +78,7 @@ export default function MerchantDashboard() {
       return response.json() as Promise<Redemption[]>;
     },
     enabled: !!user,
+    staleTime: 0, // Always refetch to ensure fresh data
   });
 
   // Update offer mutation
@@ -222,6 +223,7 @@ export default function MerchantDashboard() {
   // Calculate stats
   const activeOffers = offers.filter(d => d.isActive && new Date(d.expiryDate) > new Date());
   const totalRedemptions = redemptions.length;
+  console.log('Debug - Redemptions data:', redemptions, 'Length:', totalRedemptions);
   const thisWeekRedemptions = redemptions.filter(r => {
     if (!r.redeemedAt) return false;
     const redemptionDate = new Date(r.redeemedAt);
