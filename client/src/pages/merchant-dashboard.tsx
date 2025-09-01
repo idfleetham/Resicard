@@ -70,12 +70,14 @@ export default function MerchantDashboard() {
   });
 
   // Fetch merchant's redemptions
-  const { data: redemptions = [] } = useQuery({
+  const { data: redemptions = [], isLoading: redemptionsLoading } = useQuery({
     queryKey: ['/api/redemptions/merchant', user?.id],
     queryFn: async () => {
       if (!user) return [];
       const response = await apiRequestWithAuth('GET', `/api/redemptions/merchant/${user.id}`);
-      return response.json() as Promise<Redemption[]>;
+      const data = await response.json();
+      console.log('Redemptions API Response:', data);
+      return data as Redemption[];
     },
     enabled: !!user
   });
@@ -224,11 +226,12 @@ export default function MerchantDashboard() {
   const totalRedemptions = redemptions.length;
   
   // Debug: Log redemptions data to check structure
+  console.log('Redemptions loading:', redemptionsLoading);
+  console.log('Redemptions array:', redemptions);
+  console.log('Redemptions length:', redemptions.length);
+  
   if (redemptions.length > 0) {
-    console.log('Redemptions found:', redemptions.length);
-    console.log('First redemption:', redemptions[0]);
-  } else {
-    console.log('No redemptions found in frontend data');
+    console.log('First redemption structure:', redemptions[0]);
   }
   const thisWeekRedemptions = redemptions.filter(r => {
     if (!r.redeemedAt) return false;
