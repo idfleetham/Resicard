@@ -222,6 +222,14 @@ export default function MerchantDashboard() {
   // Calculate stats
   const activeOffers = offers.filter(d => d.isActive && new Date(d.expiryDate) > new Date());
   const totalRedemptions = redemptions.length;
+  
+  // Debug: Log redemptions data to check structure
+  if (redemptions.length > 0) {
+    console.log('Redemptions found:', redemptions.length);
+    console.log('First redemption:', redemptions[0]);
+  } else {
+    console.log('No redemptions found in frontend data');
+  }
   const thisWeekRedemptions = redemptions.filter(r => {
     if (!r.redeemedAt) return false;
     const redemptionDate = new Date(r.redeemedAt);
@@ -612,7 +620,7 @@ export default function MerchantDashboard() {
                     let totalMerchantRevenue = 0;
                     
                     offers.forEach(offer => {
-                      const offerRedemptions = redemptions.filter(r => String(r.offer_id) === String(offer.id));
+                      const offerRedemptions = redemptions.filter(r => String(r.offerId || r.offer_id) === String(offer.id));
                       const vouchersRedeemed = offerRedemptions.length;
                       
                       let offerValue = 0;
@@ -677,7 +685,7 @@ export default function MerchantDashboard() {
                 <CardBody>
                   <div className="space-y-4">
                     {offers.map((offer) => {
-                      const offerRedemptions = redemptions.filter(r => String(r.offer_id) === String(offer.id));
+                      const offerRedemptions = redemptions.filter(r => String(r.offerId || r.offer_id) === String(offer.id));
                       const vouchersCreated = offer.usageCount || 0;
                       const vouchersRedeemed = offerRedemptions.length;
                       
