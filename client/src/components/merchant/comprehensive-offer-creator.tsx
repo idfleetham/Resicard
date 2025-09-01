@@ -434,7 +434,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center">
-                      <DollarSign className="w-5 h-5 mr-2 text-blue-400" />
+                      <PoundSterling className="w-5 h-5 mr-2 text-blue-400" />
                       Core & Pricing
                     </CardTitle>
                   </CardHeader>
