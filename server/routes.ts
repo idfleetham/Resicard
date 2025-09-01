@@ -1668,55 +1668,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Getting redemptions for merchant user:', req.user.id, 'merchant UUID:', merchant.id);
       
-      // Query both legacy deals and UUID-based offers
-      // First get legacy deal redemptions
-      const legacyQuery = await db.select({
-        id: vouchers.id,
-        offer_id: vouchers.dealId,
-        user_id: vouchers.userId,
-        redeemed_at: vouchers.usedAt,
-        value: deals.discountValue,
-        voucher_code: vouchers.voucherNumber,
-        offerTitle: deals.title,
-        customerName: users.username,
-        staffName: sql<string>`'System'`
-      })
-      .from(vouchers)
-      .leftJoin(deals, eq(vouchers.dealId, deals.id))
-      .leftJoin(users, eq(vouchers.userId, users.id))
-      .where(and(
-        eq(vouchers.isUsed, true),
-        eq(deals.merchantId, req.user.id)
-      ))
-      .orderBy(desc(vouchers.usedAt));
-
-      // Then get UUID-based offer redemptions
-      const uuidQuery = await db.select({
-        id: vouchers.id,
-        offer_id: sql<string>`SUBSTRING(${vouchers.voucherNumber}, 1, 36)`,
-        user_id: vouchers.userId,
-        redeemed_at: vouchers.usedAt,
-        value: sql<string>`COALESCE(${offers.percentOff}::text, '0')`,
-        voucher_code: vouchers.voucherNumber,
-        offerTitle: offers.title,
-        customerName: users.username,
-        staffName: sql<string>`'System'`
-      })
-      .from(vouchers)
-      .leftJoin(offers, sql`SUBSTRING(${vouchers.voucherNumber}, 1, 36)::uuid = ${offers.id}`)
-      .leftJoin(users, eq(vouchers.userId, users.id))
-      .where(and(
-        eq(vouchers.isUsed, true),
-        eq(vouchers.dealId, -1),
-        eq(offers.merchantId, merchant.id)
-      ))
-      .orderBy(desc(vouchers.usedAt));
-
-      // Combine results
-      const allRedemptions = [...legacyQuery, ...uuidQuery];
-      console.log(`Found ${legacyQuery.length} legacy redemptions and ${uuidQuery.length} UUID redemptions`);
+      // Start simple - just get the vouchers that exist and see what we have
+      const allVouchers = await db.select().from(vouchers).where(eq(vouchers.isUsed, true));
+      console.log('All redeemed vouchers:', allVouchers.length);
       
-      res.json(allRedemptions);
+      // Filter to just the ones that could belong to this merchant
+      const relevantVouchers = allVouchers.filter(v => 
+        v.dealId === -1 || v.dealId > 0 // Include both UUID and legacy vouchers
+      );
+      
+      console.log('Relevant vouchers:', relevantVouchers.length);
+      
+      // For now, let's just check which voucher types we have
+      const uuidVouchers = relevantVouchers.filter(v => v.dealId === -1);
+      const legacyVouchers = relevantVouchers.filter(v => v.dealId !== -1);
+      
+      console.log(`Found ${legacyVouchers.length} legacy vouchers and ${uuidVouchers.length} UUID vouchers`);
+      
+      // Return empty for now until we can see the logs
+      res.json([]);
     } catch (error) {
       console.error("Error fetching redemptions:", error);
       res.status(500).json({ error: "Failed to fetch redemptions" });
