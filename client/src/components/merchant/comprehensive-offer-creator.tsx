@@ -281,8 +281,12 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               const formData = new FormData();
               formData.append('file', blob, 'offer-image.jpg');
 
+              const token = localStorage.getItem('token');
               const response = await fetch(`/api/merchant/offers/${editingOffer.id}/upload`, {
                 method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
                 body: formData,
               });
 
