@@ -933,7 +933,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               form.setValue("timeSlots", JSON.stringify(newTimeSlots));
                               form.setValue("daysOfWeek", DAYS_OF_WEEK.map(d => d.value));
                             }}
-                            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                            className="border-slate-600 text-black hover:bg-slate-700"
                           >
                             Every Day (All Day)
                           </Button>
@@ -1117,7 +1117,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           variant="outline"
                           size="sm"
                           onClick={() => addBlackout({ name: "", startDate: "", endDate: "", recurring: false })}
-                          className="border-slate-600 text-slate-300"
+                          className="border-slate-600 text-black"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Add Blackout
