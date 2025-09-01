@@ -86,7 +86,7 @@ export default function RedemptionsFeed() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Redemptions</h1>
-            <p className="text-white">Track and manage customer voucher redemptions</p>
+            <p className="text-white text-lg">Track and manage customer voucher redemptions</p>
           </div>
           <Button 
             onClick={handleExportCSV}
@@ -100,7 +100,7 @@ export default function RedemptionsFeed() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <span className="text-white">Total Redemptions</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-green-500/70 to-green-600/70 text-white shadow-elev-1">
@@ -110,7 +110,7 @@ export default function RedemptionsFeed() {
           <div className="mt-3 text-3xl font-semibold text-fg">{getTotalRedemptions()}</div>
         </div>
         
-        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <span className="text-white">Total Value</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500/70 to-blue-600/70 text-white shadow-elev-1">
@@ -120,7 +120,7 @@ export default function RedemptionsFeed() {
           <div className="mt-3 text-3xl font-semibold text-fg">£{getTotalValue()}</div>
         </div>
         
-        <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <span className="text-white">This Period</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-purple-500/70 to-purple-600/70 text-white shadow-elev-1">
@@ -134,9 +134,9 @@ export default function RedemptionsFeed() {
 
 
       {/* Filters */}
-      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1">
-        <CardHeader className="border-b border-white/40 shadow-xl shadow-white/20">
-          <CardTitle className="text-lg text-fg">Filters</CardTitle>
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+        <CardHeader>
+          <CardTitle className="text-xl text-fg">Filters</CardTitle>
         </CardHeader>
         <CardBody className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -189,10 +189,10 @@ export default function RedemptionsFeed() {
       </Card>
 
       {/* Redemptions Table */}
-      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 hover:shadow-elev-2 hover:border-white/40 shadow-xl shadow-white/20Strong transition">
-        <CardHeader className="border-b border-white/40 shadow-xl shadow-white/20">
-          <CardTitle className="text-fg">Recent Redemptions</CardTitle>
-          <CardDescription className="text-white">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+        <CardHeader>
+          <CardTitle className="text-xl text-fg">Recent Redemptions</CardTitle>
+          <CardDescription className="text-white text-lg">
             Live feed of customer redemptions for your offers
           </CardDescription>
         </CardHeader>
