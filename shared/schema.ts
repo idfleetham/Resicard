@@ -100,8 +100,8 @@ export const offers = pgTable("offers", {
   geofenceRadius: integer("geofence_radius"), // Meters from venue
   
   // C) Scheduling
-  validFrom: timestamp("valid_from"),
-  validTo: timestamp("valid_to"),
+  validFrom: date("valid_from"),
+  validTo: date("valid_to"),
   daysOfWeek: text("days_of_week"), // JSON array: ["mon","tue","wed"]
   timeSlots: text("time_slots"), // JSON: {mon: [{start:"12:00",end:"14:30"}]}
   blackoutDates: text("blackout_dates"), // JSON array of date ranges
