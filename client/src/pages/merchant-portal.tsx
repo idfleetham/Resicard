@@ -119,27 +119,27 @@ export default function MerchantPortal() {
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
             </TabsTrigger>
-            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">Redemptions</span>
             </TabsTrigger>
-            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <QrCode className="w-4 h-4" />
               <span className="hidden sm:inline">QR Scan</span>
             </TabsTrigger>
-            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Star className="w-4 h-4" />
               <span className="hidden sm:inline">Loyalty</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <CreditCard className="w-4 h-4" />
               <span className="hidden sm:inline">Billing</span>
             </TabsTrigger>
-            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Team</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
+            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
