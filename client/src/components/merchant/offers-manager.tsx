@@ -18,7 +18,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useOffers, useToggleOffer, useUpdateOffer, useToggleComprehensiveOffer, useUpdateComprehensiveOffer } from "@/hooks/use-merchant-offers";
-import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings, Clock } from "lucide-react";
+import { Plus, Edit, Archive, Play, Pause, Eye, Calendar, DollarSign, Users, Package, Upload, Settings, Clock, X } from "lucide-react";
 import ComprehensiveOfferCreator from "./comprehensive-offer-creator";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
@@ -39,6 +39,8 @@ export default function OffersManager() {
   const [uploadingImageForOffer, setUploadingImageForOffer] = useState<number | null>(null);
   const [isComprehensiveEditOpen, setIsComprehensiveEditOpen] = useState(false);
   const [editingComprehensiveOffer, setEditingComprehensiveOffer] = useState<any>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingOffer, setViewingOffer] = useState<any>(null);
 
   const { data: deals = [], isLoading } = useOffers();
   
@@ -647,12 +649,8 @@ export default function OffersManager() {
                             variant="outline" 
                             size="sm"
                             onClick={() => {
-                              // Route to different endpoints based on offer type
-                              if (offer.type === 'comprehensive') {
-                                window.location.href = `/merchant/offers/${offer.id}`;
-                              } else {
-                                window.location.href = `/merchant/offers/${offer.id}`;
-                              }
+                              setViewingOffer(offer);
+                              setIsViewOpen(true);
                             }}
                             className="border-dim bg-surface hover:border-dimStrong"
                           >
@@ -682,6 +680,78 @@ export default function OffersManager() {
               }}
               editingOffer={editingComprehensiveOffer} // Pass the offer to edit
             />
+          </div>
+        </div>
+      )}
+
+      {/* View Offer Modal */}
+      {isViewOpen && viewingOffer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto border border-slate-700">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-slate-100">View Offer Details</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsViewOpen(false);
+                    setViewingOffer(null);
+                  }}
+                  className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Title</label>
+                      <div className="text-slate-100 text-lg">{viewingOffer.title}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Type</label>
+                      <div className="text-slate-100">{viewingOffer.type === 'simple' ? 'Simple Offer' : 'Advanced Offer'}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Offer Type</label>
+                      <div className="text-slate-100">{viewingOffer.discountText}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Category</label>
+                      <div className="text-slate-100">{viewingOffer.category}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                      <div className="text-slate-100">
+                        {viewingOffer.isExpired ? "Expired" : (viewingOffer.isActive ? "Active" : "Paused")}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Usage</label>
+                      <div className="text-slate-100">{viewingOffer.usageCount || 0} / {viewingOffer.usageLimit}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Expiry Date</label>
+                      <div className="text-slate-100">
+                        {viewingOffer.expiryDate ? format(new Date(viewingOffer.expiryDate), "MMM d, yyyy") : 'No expiry'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {viewingOffer.description && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
+                    <div className="text-slate-100 p-3 bg-slate-800/50 rounded-lg">{viewingOffer.description}</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
