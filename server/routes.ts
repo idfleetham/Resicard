@@ -1660,23 +1660,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // Direct SQL query to get redemptions for the merchant
+      // Get merchant by user ID to get merchant ID
+      const merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        return res.status(404).json({ error: "Merchant not found" });
+      }
+
+      // Query redeemed vouchers from the existing deals/vouchers system
       const result = await db.execute(sql`
         SELECT 
-          r.id,
-          r.deal_id,
-          r.user_id,
-          r.redeemed_at,
-          r.value,
+          v.id,
+          v.deal_id,
+          v.user_id,
+          v.used_at as redeemed_at,
+          d.discount_value as value,
+          v.voucher_number as voucher_code,
           d.title as dealTitle,
           d.title as offerTitle,
           u.username as customerName,
           'System' as staffName
-        FROM redemptions r
-        LEFT JOIN deals d ON r.deal_id = d.id
-        LEFT JOIN users u ON r.user_id = u.id
-        WHERE d.merchant_id = ${merchantId}
-        ORDER BY r.redeemed_at DESC
+        FROM vouchers v
+        LEFT JOIN deals d ON v.deal_id = d.id
+        LEFT JOIN users u ON v.user_id = u.id
+        WHERE d.merchant_id = ${req.user.id} AND v.is_used = true
+        ORDER BY v.used_at DESC
       `);
       
       // Return the rows array directly
@@ -1696,13 +1703,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // Mock redemption logic
-      const mockDiscount = basketAmount ? parseFloat(basketAmount) * 0.2 : 10.00;
+      // Find the voucher to get deal details
+      const voucher = await storage.getVoucherByNumber(voucherCode);
+      if (!voucher) {
+        return res.status(404).json({ error: "Voucher not found" });
+      }
+
+      // Check if voucher is already used
+      if (voucher.isUsed) {
+        return res.status(400).json({ error: "Voucher has already been redeemed" });
+      }
+
+      // Get deal information
+      const deal = await storage.getDeal(voucher.dealId);
+      if (!deal) {
+        return res.status(404).json({ error: "Deal not found" });
+      }
+
+      // Get merchant information to verify authorization
+      const merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        return res.status(403).json({ error: "Merchant not found" });
+      }
+
+      // Verify merchant owns this deal
+      if (deal.merchantId !== req.user.id) {
+        return res.status(403).json({ error: "Not authorized to redeem this voucher" });
+      }
+
+      // Calculate discount
+      const basketValue = basketAmount ? parseFloat(basketAmount) : 0;
+      let discountValue = 0;
+      
+      if (deal.discountType === 'percentage') {
+        discountValue = basketValue * (parseFloat(deal.discountValue || '0') / 100);
+      } else {
+        discountValue = parseFloat(deal.discountValue || '0');
+      }
+
+      const finalValue = Math.max(0, basketValue - discountValue);
+
+      // Since the current system uses deals table, let's create a simple redemption record
+      // For now, we'll store this in the existing vouchers table by marking it as used
+      // In the future, this can be moved to the redemptions table when the system is migrated
+
+      // Mark voucher as used
+      await storage.useVoucher(voucherCode);
       
       res.json({
         success: true,
-        discount: mockDiscount.toFixed(2),
-        message: "Voucher redeemed successfully"
+        discount: discountValue.toFixed(2),
+        finalValue: finalValue.toFixed(2),
+        message: "Voucher redeemed successfully",
+        redemptionId: redemption.id
       });
     } catch (error) {
       console.error("Error redeeming voucher:", error);
