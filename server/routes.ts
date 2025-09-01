@@ -1635,12 +1635,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       id: 1,
       offer_id: 'test',
       user_id: 30,
-      redeemed_at: new Date().toISOString(),
-      value: '10',
+      redeemedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      value: '10.00',
+      calculatedDiscount: '10.00',
+      basketSubtotal: '50.00',
       voucher_code: 'TEST-123',
-      offerTitle: 'Test Offer',
-      customerName: 'user',
-      staffName: 'System'
+      dealTitle: 'Test Offer - 20% Off',
+      offerTitle: 'Test Offer - 20% Off',
+      customerName: 'Test Customer',
+      staffName: 'Test Staff'
     }]);
   });
 
