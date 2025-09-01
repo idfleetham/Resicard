@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import RoleSelector from "@/components/role-selector";
 import DealCard from "@/components/deal-card";
@@ -16,6 +16,18 @@ import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 export default function Home() {
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const { user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Handle Add to Wallet button clicks
+  const handleAddToWallet = (dealId: number) => {
+    if (isAuthenticated) {
+      // Redirect to user wallet page
+      setLocation('/wallet/add');
+    } else {
+      // Redirect to signup page
+      setLocation('/register');
+    }
+  };
 
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['/api/deals'],
@@ -180,6 +192,7 @@ export default function Home() {
                     key={deal.id} 
                     deal={deal} 
                     showMerchantInfo={true}
+                    onRedeem={handleAddToWallet}
                   />
                 ))}
               </div>
