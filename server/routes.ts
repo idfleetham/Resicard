@@ -1628,24 +1628,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get redemptions for a merchant - completely minimal version
-  app.get("/api/redemptions/merchant/:merchantId?", async (req, res) => {
-    console.log('Redemptions endpoint called - minimal version');
-    res.status(200).json([{
-      id: 1,
-      offer_id: 'test',
-      user_id: 30,
-      redeemedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      value: '10.00',
-      calculatedDiscount: '10.00',
-      basketSubtotal: '50.00',
-      voucher_code: 'TEST-123',
-      dealTitle: 'Test Offer - 20% Off',
-      offerTitle: 'Test Offer - 20% Off',
-      customerName: 'Test Customer',
-      staffName: 'Test Staff'
-    }]);
+  // Get redemptions for a merchant
+  app.get("/api/redemptions/merchant/:merchantId?", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = parseInt(req.params.merchantId);
+      
+      // Only allow merchants to view their own redemptions or admins to view any
+      if (req.user.role !== 'admin' && req.user.id !== merchantId) {
+        return res.sendStatus(403);
+      }
+
+      console.log('Fetching redemptions for merchant:', merchantId);
+      
+      // Get merchant UUID from user ID
+      const merchant = await storage.getMerchantByUserId(merchantId);
+      if (!merchant) {
+        console.log('No merchant found for user ID:', merchantId);
+        return res.json([]);
+      }
+
+      console.log('Found merchant:', merchant.id);
+
+      // Query redemptions for this merchant's offers (UUID-based)
+      const offerRedemptions = await db
+        .select({
+          id: redemptions.id,
+          offerId: redemptions.offerId,
+          userId: redemptions.userId,
+          redeemedAt: redemptions.redeemedAt,
+          createdAt: redemptions.createdAt,
+          basketValue: redemptions.basketValue,
+          discountValue: redemptions.discountValue,
+          finalValue: redemptions.finalValue,
+          voucherCode: redemptions.voucherCode,
+          status: redemptions.status,
+          staffUserId: redemptions.staffUserId,
+          offerTitle: offers.title,
+          customerName: users.username
+        })
+        .from(redemptions)
+        .innerJoin(offers, eq(redemptions.offerId, offers.id))
+        .leftJoin(users, eq(redemptions.userId, users.id))
+        .where(eq(offers.merchantId, merchant.id));
+
+      console.log('Found offer redemptions:', offerRedemptions.length);
+
+      // Transform data to match frontend expectations
+      const formattedRedemptions = offerRedemptions.map(redemption => ({
+        id: redemption.id,
+        offer_id: redemption.offerId,
+        user_id: redemption.userId,
+        redeemedAt: redemption.redeemedAt?.toISOString(),
+        createdAt: redemption.createdAt?.toISOString(),
+        value: redemption.discountValue ? parseFloat(redemption.discountValue).toFixed(2) : '0.00',
+        calculatedDiscount: redemption.discountValue ? parseFloat(redemption.discountValue).toFixed(2) : '0.00',
+        basketSubtotal: redemption.basketValue ? parseFloat(redemption.basketValue).toFixed(2) : '0.00',
+        voucher_code: redemption.voucherCode,
+        dealTitle: redemption.offerTitle,
+        offerTitle: redemption.offerTitle,
+        customerName: redemption.customerName || 'Guest',
+        staffName: 'System' // TODO: Get actual staff name if staffUserId is set
+      }));
+
+      res.json(formattedRedemptions);
+    } catch (error: any) {
+      console.error('Error fetching merchant redemptions:', error);
+      res.status(500).json({ message: "Failed to fetch redemptions", error: error.message });
+    }
   });
 
   // Process voucher redemption
