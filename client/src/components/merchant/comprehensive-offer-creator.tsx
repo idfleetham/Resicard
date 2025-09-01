@@ -162,7 +162,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       validFrom: editingOffer.validFrom ? editingOffer.validFrom.split('T')[0] : new Date().toISOString().split('T')[0],
       validTo: editingOffer.validTo ? editingOffer.validTo.split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       daysOfWeek: Array.isArray(editingOffer.daysOfWeek) ? editingOffer.daysOfWeek : (editingOffer.daysOfWeek ? JSON.parse(editingOffer.daysOfWeek) : []),
-      timeSlots: editingOffer.timeSlots || "{}",
+      timeSlots: typeof editingOffer.timeSlots === 'string' ? editingOffer.timeSlots : JSON.stringify(editingOffer.timeSlots || {}),
       blackoutDates: Array.isArray(editingOffer.blackoutDates) ? editingOffer.blackoutDates : (editingOffer.blackoutDates ? JSON.parse(editingOffer.blackoutDates) : []),
       leadTime: editingOffer.leadTime || 0,
       maxPerTransaction: editingOffer.maxPerTransaction || 1,

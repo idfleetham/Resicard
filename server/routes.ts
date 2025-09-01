@@ -1488,10 +1488,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('PUT /api/offers/:id - Raw updates received:', JSON.stringify(updates, null, 2));
       
+      // Check each field type that could cause issues
+      if (updates.tags) console.log('Tags type:', typeof updates.tags, Array.isArray(updates.tags), updates.tags);
+      if (updates.daysOfWeek) console.log('DaysOfWeek type:', typeof updates.daysOfWeek, Array.isArray(updates.daysOfWeek), updates.daysOfWeek);
+      if (updates.mealPeriods) console.log('MealPeriods type:', typeof updates.mealPeriods, Array.isArray(updates.mealPeriods), updates.mealPeriods);
+      if (updates.timeSlots) console.log('TimeSlots type:', typeof updates.timeSlots, updates.timeSlots);
+      
       // Validate using insertOfferSchema (partial)
       const validation = insertOfferSchema.partial().safeParse(updates);
       if (!validation.success) {
-        console.error('Validation errors:', validation.error.errors);
+        console.error('Full validation error details:');
+        validation.error.errors.forEach(error => {
+          console.error(`  Field: ${error.path.join('.')} - ${error.message} - Received: ${typeof updates[error.path[0]]} ${JSON.stringify(updates[error.path[0]])}`);
+        });
         return res.status(400).json({ 
           error: "Validation failed", 
           details: validation.error.errors 
