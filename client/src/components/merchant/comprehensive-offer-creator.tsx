@@ -21,7 +21,7 @@ import {
   MapPin, 
   Users, 
   Percent, 
-  DollarSign,
+  PoundSterling,
   Settings,
   Shield,
   BarChart3,
@@ -371,7 +371,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   };
 
   const sections = [
-    { id: "core", label: "Core & Pricing", icon: DollarSign },
+    { id: "core", label: "Core & Pricing", icon: PoundSterling },
     { id: "eligibility", label: "Eligibility", icon: Users },
     { id: "scheduling", label: "Scheduling", icon: Calendar },
     { id: "limits", label: "Limits & Rules", icon: Shield },
