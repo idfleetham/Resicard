@@ -69,17 +69,27 @@ export default function MerchantDashboard() {
     enabled: !!user,
   });
 
-  // Fetch merchant's redemptions
-  const { data: redemptions = [], isLoading: redemptionsLoading } = useQuery({
+  // Fetch merchant's redemptions  
+  const { data: redemptions = [], isLoading: redemptionsLoading, error: redemptionsError } = useQuery({
     queryKey: ['/api/redemptions/merchant', user?.id],
     queryFn: async () => {
-      if (!user) return [];
-      const response = await apiRequestWithAuth('GET', `/api/redemptions/merchant/${user.id}`);
-      const data = await response.json();
-      console.log('Redemptions API Response:', data);
-      return data as Redemption[];
+      console.log('Redemptions query executing for user:', user?.id);
+      if (!user) {
+        console.log('No user found, returning empty array');
+        return [];
+      }
+      try {
+        const response = await apiRequestWithAuth('GET', `/api/redemptions/merchant/${user.id}`);
+        const data = await response.json();
+        console.log('Redemptions API Response:', data);
+        return data as Redemption[];
+      } catch (error) {
+        console.error('Redemptions API Error:', error);
+        throw error;
+      }
     },
-    enabled: !!user
+    enabled: !!user,
+    retry: 1
   });
 
   // Update offer mutation
@@ -226,13 +236,17 @@ export default function MerchantDashboard() {
   const totalRedemptions = redemptions.length;
   
   // Debug: Log redemptions data to check structure
+  console.log('=== REDEMPTIONS DEBUG ===');
+  console.log('User:', user?.id);
   console.log('Redemptions loading:', redemptionsLoading);
+  console.log('Redemptions error:', redemptionsError);
   console.log('Redemptions array:', redemptions);
   console.log('Redemptions length:', redemptions.length);
   
   if (redemptions.length > 0) {
     console.log('First redemption structure:', redemptions[0]);
   }
+  console.log('=== END REDEMPTIONS DEBUG ===');
   const thisWeekRedemptions = redemptions.filter(r => {
     if (!r.redeemedAt) return false;
     const redemptionDate = new Date(r.redeemedAt);
