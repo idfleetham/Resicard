@@ -808,9 +808,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // For comprehensive offers, we'll create vouchers differently
         // Convert offer to deal-like format for voucher creation
-        const expiryDate = offer.validTo 
-          ? (offer.validTo instanceof Date ? offer.validTo : new Date(offer.validTo))
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        console.log('Offer validTo value:', offer.validTo, 'Type:', typeof offer.validTo);
+        
+        let expiryDate;
+        if (offer.validTo) {
+          if (offer.validTo instanceof Date) {
+            expiryDate = offer.validTo;
+          } else {
+            console.log('Converting validTo string to Date:', offer.validTo);
+            expiryDate = new Date(offer.validTo);
+            console.log('Converted Date:', expiryDate, 'Valid:', !isNaN(expiryDate.getTime()));
+          }
+        } else {
+          expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        }
+        
+        // Validate the date before proceeding
+        if (isNaN(expiryDate.getTime())) {
+          console.error('Invalid expiry date created:', expiryDate, 'from validTo:', offer.validTo);
+          return res.status(400).json({ message: "Invalid offer expiry date" });
+        }
           
         deal = {
           id: dealId,
@@ -819,6 +836,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           usageLimit: offer.maxPerTransaction || 100,
           isActive: offer.active ?? true
         };
+        
+        console.log('Final deal object:', deal);
         
         // Count existing vouchers for this offer (use a different storage method or mock for now)
         activeVouchersCount = 0; // For now, allow unlimited comprehensive offer redemptions
@@ -846,11 +865,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create voucher that expires with the deal
       // For UUID deals (comprehensive offers), we need to store the UUID in the voucherNumber for tracking
       // but use a placeholder dealId for the database
+      console.log('About to create voucher with expiresAt:', deal.expiryDate, 'Type:', typeof deal.expiryDate);
+      console.log('Creating new Date from deal.expiryDate:', new Date(deal.expiryDate));
+      
+      const expiresAt = deal.expiryDate instanceof Date ? deal.expiryDate : new Date(deal.expiryDate);
+      console.log('Final expiresAt:', expiresAt, 'Valid:', !isNaN(expiresAt.getTime()));
+      
+      if (isNaN(expiresAt.getTime())) {
+        console.error('Invalid expiresAt date for voucher creation:', expiresAt);
+        return res.status(400).json({ message: "Invalid voucher expiry date" });
+      }
+      
       const voucher = await storage.createVoucher({
         dealId: isUUID ? -1 : parseInt(dealId), // Use -1 as placeholder for UUID offers
         userId,
         voucherNumber,
-        expiresAt: new Date(deal.expiryDate),
+        expiresAt: expiresAt,
       });
 
       // Store the original dealId (UUID or integer) in the voucher response for frontend use
