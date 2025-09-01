@@ -34,12 +34,21 @@ export default function ResidentDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch deals
+  // Fetch deals (legacy)
   const { data: deals = [], isLoading: dealsLoading } = useQuery({
     queryKey: ['/api/deals', selectedCategory],
     queryFn: async () => {
       const url = selectedCategory && selectedCategory !== "all" ? `/api/deals?category=${selectedCategory}` : '/api/deals';
       const response = await fetch(url);
+      return response.json() as Promise<DealWithMerchant[]>;
+    },
+  });
+
+  // Fetch modern offers
+  const { data: offers = [], isLoading: offersLoading } = useQuery({
+    queryKey: ['/api/offers'],
+    queryFn: async () => {
+      const response = await fetch('/api/offers');
       return response.json() as Promise<DealWithMerchant[]>;
     },
   });
@@ -223,13 +232,17 @@ export default function ResidentDashboard() {
   const expiredVouchers = vouchers.filter(v => !v.isUsed && new Date(v.expiresAt) <= new Date());
   const usedVouchers = vouchers.filter(v => v.isUsed);
 
-  // Filter deals based on category and availability
-  const filteredDeals = deals.filter(deal => {
+  // Combine loading states
+  const isLoadingOffers = dealsLoading || offersLoading;
+
+  // Combine deals and offers, then filter based on category and availability
+  const allOffers = [...deals, ...offers];
+  const filteredDeals = allOffers.filter(deal => {
     const matchesCategory = selectedCategory === "all" || deal.category === selectedCategory;
     const isAvailable = !availableOnly || (
-      deal.isActive && 
-      new Date(deal.expiryDate) > new Date() && 
-      (deal.usageCount || 0) < deal.usageLimit
+      (deal.isActive || deal.active) && 
+      new Date(deal.expiryDate || deal.validUntil) > new Date() && 
+      (deal.usageCount || 0) < (deal.usageLimit || deal.redeemLimit || Infinity)
     );
     return matchesCategory && isAvailable;
   });
@@ -479,7 +492,7 @@ export default function ResidentDashboard() {
               </div>
 
               {/* Deal Cards */}
-              {dealsLoading ? (
+              {isLoadingOffers ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="bg-white rounded-3xl shadow-xl border-0 animate-pulse">

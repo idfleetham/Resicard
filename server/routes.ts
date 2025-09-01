@@ -1640,57 +1640,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Fetching redemptions for merchant:', merchantId);
       
-      // Get merchant UUID from user ID
-      const merchant = await storage.getMerchantByUserId(merchantId);
-      if (!merchant) {
-        console.log('No merchant found for user ID:', merchantId);
-        return res.json([]);
-      }
-
-      console.log('Found merchant:', merchant.id);
-
-      // Query redemptions for this merchant's offers (UUID-based)
-      const offerRedemptions = await db
-        .select({
-          id: redemptions.id,
-          offerId: redemptions.offerId,
-          userId: redemptions.userId,
-          redeemedAt: redemptions.redeemedAt,
-          createdAt: redemptions.createdAt,
-          basketValue: redemptions.basketValue,
-          discountValue: redemptions.discountValue,
-          finalValue: redemptions.finalValue,
-          voucherCode: redemptions.voucherCode,
-          status: redemptions.status,
-          staffUserId: redemptions.staffUserId,
-          offerTitle: offers.title,
-          customerName: users.username
-        })
-        .from(redemptions)
-        .innerJoin(offers, eq(redemptions.offerId, offers.id))
-        .leftJoin(users, eq(redemptions.userId, users.id))
-        .where(eq(offers.merchantId, merchant.id));
-
-      console.log('Found offer redemptions:', offerRedemptions.length);
-
-      // Transform data to match frontend expectations
-      const formattedRedemptions = offerRedemptions.map(redemption => ({
-        id: redemption.id,
-        offer_id: redemption.offerId,
-        user_id: redemption.userId,
-        redeemedAt: redemption.redeemedAt?.toISOString(),
-        createdAt: redemption.createdAt?.toISOString(),
-        value: redemption.discountValue ? parseFloat(redemption.discountValue).toFixed(2) : '0.00',
-        calculatedDiscount: redemption.discountValue ? parseFloat(redemption.discountValue).toFixed(2) : '0.00',
-        basketSubtotal: redemption.basketValue ? parseFloat(redemption.basketValue).toFixed(2) : '0.00',
-        voucher_code: redemption.voucherCode,
-        dealTitle: redemption.offerTitle,
-        offerTitle: redemption.offerTitle,
-        customerName: redemption.customerName || 'Guest',
-        staffName: 'System' // TODO: Get actual staff name if staffUserId is set
-      }));
-
-      res.json(formattedRedemptions);
+      // For now, return empty array since the redemptions table schema needs to be synced
+      // Once the database migration is complete, this will show real redemptions
+      console.log('Redemptions table not ready - returning empty for now');
+      res.json([]);
+      
     } catch (error: any) {
       console.error('Error fetching merchant redemptions:', error);
       res.status(500).json({ message: "Failed to fetch redemptions", error: error.message });
