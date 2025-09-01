@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { MetricTile } from "@/ui/MetricTile";
 import { EmptyState } from "@/ui/EmptyState";
@@ -26,6 +26,30 @@ export default function QRRedemption() {
   const [selectedOffer, setSelectedOffer] = useState("");
   const [activeTab, setActiveTab] = useState<'manual' | 'qr-scan'>('manual');
   const qrRef = useRef<HTMLDivElement>(null);
+
+  // Fetch merchant's redemptions for stats
+  const { data: redemptionsResponse } = useQuery<any>({
+    queryKey: ["/api/redemptions/merchant", user?.id],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/redemptions/merchant/${user?.id}`);
+      const data = await response.json();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Handle the response structure - it could be an array or an object with rows
+  const redemptions = Array.isArray(redemptionsResponse) 
+    ? redemptionsResponse 
+    : redemptionsResponse?.rows || [];
+
+  // Calculate today's redemptions
+  const todaysRedemptions = redemptions.filter((redemption: any) => {
+    if (!redemption.redeemedAt) return false;
+    const today = new Date();
+    const redemptionDate = new Date(redemption.redeemedAt);
+    return redemptionDate.toDateString() === today.toDateString();
+  });
 
   const redeemVoucherMutation = useMutation({
     mutationFn: (data: { voucherCode: string; staffPin: string; basketAmount?: string }) =>
@@ -333,11 +357,36 @@ export default function QRRedemption() {
           </CardDescription>
         </CardHeader>
         <CardBody>
-          <EmptyState 
-            title="No recent redemptions"
-            subtitle="Processed redemptions will appear here in real-time"
-            icon={<CreditCard className="h-6 w-6" />}
-          />
+          {redemptions.length === 0 ? (
+            <EmptyState 
+              title="No recent redemptions"
+              subtitle="Processed redemptions will appear here in real-time"
+              icon={<CreditCard className="h-6 w-6" />}
+            />
+          ) : (
+            <div className="space-y-3">
+              {redemptions.slice(0, 5).map((redemption: any) => (
+                <div key={redemption.id} className="bg-surface/50 rounded-lg p-3 border border-white/20">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-fg">{redemption.dealTitle || redemption.offerTitle}</p>
+                      <p className="text-sm text-slate-300">
+                        {redemption.customerName} • £{redemption.calculatedDiscount || redemption.value}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-slate-400">
+                        {new Date(redemption.redeemedAt).toLocaleDateString()}
+                      </p>
+                      <Badge className="bg-green-500/20 text-green-400 text-xs">
+                        Redeemed
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardBody>
       </Card>
 
@@ -345,7 +394,7 @@ export default function QRRedemption() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MetricTile 
           label="Today's Redemptions" 
-          value="0" 
+          value={todaysRedemptions.length.toString()} 
           icon={<CheckCircle className="h-4 w-4" />}
         />
         <MetricTile 
