@@ -142,7 +142,7 @@ export default function QRRedemption() {
           {/* Custom Tab Buttons */}
           <div className="mb-4 inline-flex rounded-xl border border-white/40 shadow-xl shadow-white/20 bg-surface overflow-hidden">
             <button
-              className={`px-4 py-2 text-sm transition-colors ${
+              className={`px-4 py-2 text-base transition-colors ${
                 activeTab === 'manual'
                   ? 'bg-surface2 text-fg'
                   : 'text-slate-300 hover:bg-white/[0.03]'
@@ -152,7 +152,7 @@ export default function QRRedemption() {
               Manual Entry
             </button>
             <button
-              className={`px-4 py-2 text-sm transition-colors ${
+              className={`px-4 py-2 text-base transition-colors ${
                 activeTab === 'qr-scan'
                   ? 'bg-surface2 text-fg'
                   : 'text-slate-300 hover:bg-white/[0.03]'
@@ -166,7 +166,7 @@ export default function QRRedemption() {
           {activeTab === 'manual' ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Voucher Code</label>
+                <label className="block text-base font-medium tracking-wide text-fg mb-1">Voucher Code</label>
                 <Input
                   placeholder="Enter voucher code"
                   value={voucherCode}
@@ -176,7 +176,7 @@ export default function QRRedemption() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                <label className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</label>
                 <Input
                   type="password"
                   placeholder="Enter your staff PIN"
@@ -187,7 +187,7 @@ export default function QRRedemption() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium tracking-wide text-fg mb-1">
+                <label className="block text-base font-medium tracking-wide text-fg mb-1">
                   Basket Amount <span className="text-slate-300">(Optional)</span>
                 </label>
                 <Input
@@ -246,7 +246,7 @@ export default function QRRedemption() {
               </div>
               
               <div className="mt-4 pt-4 border-t border-white/40 shadow-xl shadow-white/20">
-                <label className="block text-sm font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                <label className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</label>
                 <Input
                   type="password"
                   placeholder="Enter your staff PIN"
@@ -266,12 +266,12 @@ export default function QRRedemption() {
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
             </h2>
-            <p className="text-slate-300 text-sm mt-1">Create QR codes for your offers to display in-store</p>
+            <p className="text-slate-300 text-base mt-1">Create QR codes for your offers to display in-store</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium tracking-wide text-fg mb-1">Select Offer</label>
+              <label className="block text-base font-medium tracking-wide text-fg mb-1">Select Offer</label>
               <Input
                 placeholder="Enter offer ID or select from list"
                 value={selectedOffer}
@@ -305,7 +305,7 @@ export default function QRRedemption() {
             
             {qrCodeUrl && (
               <div className="text-center pt-4 border-t border-white/40 shadow-xl shadow-white/20">
-                <p className="text-sm font-medium mb-2 text-fg">Generated QR Code</p>
+                <p className="text-base font-medium mb-2 text-fg">Generated QR Code</p>
                 <div className="inline-block p-4 bg-surface border border-white/40 shadow-xl shadow-white/20 rounded-lg">
                   <img src={qrCodeUrl} alt="Offer QR Code" className="w-32 h-32" />
                 </div>

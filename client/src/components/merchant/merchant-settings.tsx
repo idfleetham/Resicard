@@ -462,7 +462,7 @@ export default function MerchantSettings() {
                 onClick={() => handleSelect(suggestion.description)}
               >
                 <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
-                <div className="text-sm text-slate-300">{suggestion.structured_formatting.secondary_text}</div>
+                <div className="text-base text-slate-300">{suggestion.structured_formatting.secondary_text}</div>
               </button>
             ))}
           </div>
@@ -798,7 +798,7 @@ export default function MerchantSettings() {
                   <h4 className="font-medium">API Documentation</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h5 className="font-medium mb-2">Available Endpoints</h5>
-                    <ul className="space-y-1 text-sm text-gray-600">
+                    <ul className="space-y-1 text-base text-gray-600">
                       <li><code className="bg-white px-2 py-1 rounded">GET /api/offers</code> - List your offers</li>
                       <li><code className="bg-white px-2 py-1 rounded">POST /api/offers</code> - Create new offer</li>
                       <li><code className="bg-white px-2 py-1 rounded">GET /api/redemptions</code> - List redemptions</li>
@@ -812,7 +812,7 @@ export default function MerchantSettings() {
                   <div className="flex items-center space-x-2">
                     <Badge variant="secondary">No Active Integrations</Badge>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-base text-gray-600">
                     Connect third-party applications using your API key to automate offer management and redemption processing.
                   </p>
                 </div>
@@ -849,9 +849,9 @@ export default function MerchantSettings() {
                             render={({ field }) => (
                               <FormItem>
                                 <div className="flex items-center justify-between mb-3">
-                                  <FormLabel className="capitalize text-slate-200 text-base font-medium">{day}</FormLabel>
+                                  <FormLabel className="capitalize text-slate-200 text-lg font-medium">{day}</FormLabel>
                                   <div className="flex items-center space-x-3">
-                                    <span className="text-sm text-slate-300">Closed</span>
+                                    <span className="text-base text-slate-300">Closed</span>
                                     <Switch
                                       checked={!isClosed}
                                       onCheckedChange={(checked) => {
@@ -859,7 +859,7 @@ export default function MerchantSettings() {
                                       }}
                                       className="data-[state=checked]:bg-green-600"
                                     />
-                                    <span className="text-sm text-slate-300">Open</span>
+                                    <span className="text-base text-slate-300">Open</span>
                                   </div>
                                 </div>
                                 {!isClosed && (
@@ -992,14 +992,14 @@ export default function MerchantSettings() {
                         >
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Camera className="w-12 h-12 mb-4 text-slate-400" />
-                            <p className="mb-2 text-sm text-slate-300">
+                            <p className="mb-2 text-base text-slate-300">
                               <span className="font-semibold">Click to upload</span> your business logo
                             </p>
                             <p className="text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
                           </div>
                         </label>
                         {uploadLogoMutation.isPending && (
-                          <div className="flex items-center justify-center text-sm text-blue-400">
+                          <div className="flex items-center justify-center text-base text-blue-400">
                             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                             Uploading logo...
                           </div>
@@ -1020,7 +1020,7 @@ export default function MerchantSettings() {
                 
                 {/* Aspect Ratio Selector */}
                 <div className="mb-4">
-                  <label className="text-sm font-medium text-slate-200 mb-2 block">Logo Format</label>
+                  <label className="text-base font-medium text-slate-200 mb-2 block">Logo Format</label>
                   <div className="flex gap-2">
                     {Object.entries(aspectRatios).map(([key, config]) => (
                       <Button
@@ -1044,7 +1044,7 @@ export default function MerchantSettings() {
                 {/* Zoom and Rotation Controls */}
                 <div className="mb-4 space-y-3">
                   <div>
-                    <label className="text-sm font-medium text-slate-200 mb-2 block">
+                    <label className="text-base font-medium text-slate-200 mb-2 block">
                       Zoom: {scale.toFixed(1)}x
                     </label>
                     <input
@@ -1233,7 +1233,7 @@ export default function MerchantSettings() {
                                 />
                               </FormControl>
                               <FormMessage />
-                              <p className="text-sm text-slate-300">
+                              <p className="text-base text-slate-300">
                                 This link will be shown to customers as a "Book a Table" button
                               </p>
                             </FormItem>
@@ -1278,7 +1278,7 @@ export default function MerchantSettings() {
                   {reservationForm.watch("provider") !== "none" && (
                     <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
                       <h4 className="font-medium text-slate-200 mb-2">How it works</h4>
-                      <ul className="text-sm text-slate-300 space-y-1">
+                      <ul className="text-base text-slate-300 space-y-1">
                         <li>• A "Book a Table" button will appear on your business profile</li>
                         <li>• Customers can click to visit your reservation system</li>
                         <li>• Works with all major reservation platforms</li>
@@ -1314,7 +1314,7 @@ export default function MerchantSettings() {
                       <Input
                         value={apiKey}
                         readOnly
-                        className="font-mono text-sm bg-slate-800 border-slate-700 text-slate-300"
+                        className="font-mono text-base bg-slate-800 border-slate-700 text-slate-300"
                       />
                       <Button
                         variant="outline"
@@ -1334,7 +1334,7 @@ export default function MerchantSettings() {
                         <RefreshCw className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-sm text-slate-300">
                       Keep your API key secret. It provides full access to your merchant account.
                     </p>
                   </div>
@@ -1343,7 +1343,7 @@ export default function MerchantSettings() {
                     <h4 className="font-medium text-slate-200">API Documentation</h4>
                     <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                       <h5 className="font-medium mb-2 text-slate-200">Available Endpoints</h5>
-                      <ul className="space-y-1 text-sm text-slate-300">
+                      <ul className="space-y-1 text-base text-slate-300">
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">GET /api/offers</code> - List your offers</li>
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">POST /api/offers</code> - Create new offer</li>
                         <li><code className="bg-slate-700 px-2 py-1 rounded text-slate-300">GET /api/redemptions</code> - List redemptions</li>
@@ -1357,7 +1357,7 @@ export default function MerchantSettings() {
                     <div className="flex items-center space-x-2">
                       <Badge className="bg-slate-700 text-slate-300 border-slate-600">No Active Integrations</Badge>
                     </div>
-                    <p className="text-sm text-slate-300">
+                    <p className="text-base text-slate-300">
                       Connect third-party applications using your API key to automate offer management and redemption processing.
                     </p>
                   </div>

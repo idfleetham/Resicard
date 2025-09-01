@@ -238,7 +238,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-300 text-sm">Total Staff</p>
+                <p className="text-slate-300 text-base">Total Staff</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.length}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
@@ -249,7 +249,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-300 text-sm">Active</p>
+                <p className="text-slate-300 text-base">Active</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "active").length}</p>
               </div>
               <UserCheck className="h-8 w-8 text-green-500" />
@@ -260,7 +260,7 @@ export default function TeamManagement() {
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-300 text-sm">Pending</p>
+                <p className="text-slate-300 text-base">Pending</p>
                 <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "pending").length}</p>
               </div>
               <UserX className="h-8 w-8 text-orange-500" />
@@ -347,7 +347,7 @@ export default function TeamManagement() {
             <div className="flex items-start space-x-3">
               <Key className="h-5 w-5 text-blue-500 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-fg">PIN Requirements</h4>
+                <h4 className="text-base font-medium text-fg">PIN Requirements</h4>
                 <p className="text-xs text-slate-300 mt-1">
                   All staff members are assigned a unique 4-digit PIN for voucher redemption.
                   PINs can be rotated for security purposes.
@@ -357,7 +357,7 @@ export default function TeamManagement() {
             <div className="flex items-start space-x-3">
               <Shield className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-fg">Security Best Practices</h4>
+                <h4 className="text-base font-medium text-fg">Security Best Practices</h4>
                 <p className="text-xs text-slate-300 mt-1">
                   Regularly rotate PINs and ensure staff don't share their access codes.
                   Monitor redemption activity for suspicious patterns.

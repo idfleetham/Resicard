@@ -171,15 +171,15 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-base">Active Members</span>
+                        <span className="text-white/80 text-lg">Active Members</span>
                         <span className="font-semibold text-white">247</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-base">Points Earned</span>
+                        <span className="text-white/80 text-lg">Points Earned</span>
                         <span className="font-semibold text-white">12,450</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-base">Rewards Claimed</span>
+                        <span className="text-white/80 text-lg">Rewards Claimed</span>
                         <span className="font-semibold text-white">89</span>
                       </div>
                     </div>
@@ -226,8 +226,8 @@ export default function MerchantPortal() {
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                         Active
                       </Badge>
-                      <p className="text-base text-soft">Points Model</p>
-                      <p className="text-sm text-soft">10 points per £1 spent</p>
+                      <p className="text-lg text-soft">Points Model</p>
+                      <p className="text-base text-soft">10 points per £1 spent</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -270,17 +270,17 @@ export default function MerchantPortal() {
                     ].map((activity, index) => (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-base font-semibold">
                             {activity.customer.charAt(0)}
                           </div>
                           <div>
                             <p className="font-medium text-fg">{activity.customer}</p>
-                            <p className="text-base text-soft">{activity.action}</p>
+                            <p className="text-lg text-soft">{activity.action}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="text-base font-medium text-fg">{activity.amount}</p>
-                          <p className="text-sm text-soft">{activity.time}</p>
+                          <p className="text-base text-soft">{activity.time}</p>
                         </div>
                       </div>
                     ))}

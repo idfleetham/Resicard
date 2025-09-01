@@ -57,7 +57,7 @@ export default function RedemptionsFeed() {
 
   const getStatusBadge = (redemption: any) => {
     return (
-      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-sm text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
+      <Badge className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-base text-emerald-300 shadow-[inset_0_-1px_0_rgba(255,255,255,.08)]">
         Completed
       </Badge>
     );
@@ -141,7 +141,7 @@ export default function RedemptionsFeed() {
         <CardBody className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-base font-medium mb-2 block">Search</label>
+              <label className="text-lg font-medium mb-2 block">Search</label>
               <Input
                 placeholder="Search deals or customers..."
                 value={searchTerm}
@@ -149,28 +149,28 @@ export default function RedemptionsFeed() {
               />
             </div>
             <div>
-              <label className="text-base font-medium mb-2 block">Status</label>
+              <label className="text-lg font-medium mb-2 block">Status</label>
               <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="text-black text-base">
+                <SelectTrigger className="text-black text-lg">
                   <SelectValue className="text-black" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
-                  <SelectItem value="all" className="text-black text-base">All Redemptions</SelectItem>
-                  <SelectItem value="completed" className="text-black text-base">Completed</SelectItem>
-                  <SelectItem value="pending" className="text-black text-base">Pending</SelectItem>
+                  <SelectItem value="all" className="text-black text-lg">All Redemptions</SelectItem>
+                  <SelectItem value="completed" className="text-black text-lg">Completed</SelectItem>
+                  <SelectItem value="pending" className="text-black text-lg">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-base font-medium mb-2 block">Date Range</label>
+              <label className="text-lg font-medium mb-2 block">Date Range</label>
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="text-black text-base">
+                <SelectTrigger className="text-black text-lg">
                   <SelectValue className="text-black" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
-                  <SelectItem value="7days" className="text-black text-base">Last 7 days</SelectItem>
-                  <SelectItem value="30days" className="text-black text-base">Last 30 days</SelectItem>
-                  <SelectItem value="90days" className="text-black text-base">Last 90 days</SelectItem>
+                  <SelectItem value="7days" className="text-black text-lg">Last 7 days</SelectItem>
+                  <SelectItem value="30days" className="text-black text-lg">Last 30 days</SelectItem>
+                  <SelectItem value="90days" className="text-black text-lg">Last 90 days</SelectItem>
                 </SelectContent>
               </Select>
             </div>

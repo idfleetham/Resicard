@@ -207,7 +207,7 @@ export default function BillingPreview() {
               <div className="flex items-start space-x-3">
                 <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-medium text-fg">Draft Invoice</h4>
+                  <h4 className="text-base font-medium text-fg">Draft Invoice</h4>
                   <p className="text-xs text-slate-300 mt-1">
                     This is a draft invoice. The final amount will be calculated at the end of the billing period 
                     and collected via direct debit on {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}.
@@ -232,20 +232,20 @@ export default function BillingPreview() {
             </div>
             <div>
               <p className="font-medium text-fg">Direct Debit</p>
-              <p className="text-sm text-slate-300">Fees are automatically collected monthly</p>
+              <p className="text-base text-slate-300">Fees are automatically collected monthly</p>
             </div>
           </div>
           
           <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-base">
               <span className="text-slate-300">Collection Date:</span>
               <span className="text-fg">End of each month</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-base">
               <span className="text-slate-300">Processing Fee:</span>
               <span className="text-fg">£0.50 per redemption</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-base">
               <span className="text-slate-300">VAT:</span>
               <span className="text-fg">Included</span>
             </div>
