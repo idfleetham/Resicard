@@ -1031,21 +1031,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/redemptions/merchant/:merchantId", authenticateToken, async (req, res) => {
-    try {
-      const merchantId = parseInt(req.params.merchantId);
-      
-      // Only allow merchants to view their own redemptions or admins to view any
-      if (req.user.role !== 'admin' && req.user.id !== merchantId) {
-        return res.sendStatus(403);
-      }
-      
-      const redemptions = await storage.getRedemptionsByMerchant(merchantId);
-      res.json(redemptions);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  });
+  // Removed duplicate endpoint - using minimal version below
 
   // Subscription management routes
   app.get("/api/subscription/plans", async (req, res) => {
