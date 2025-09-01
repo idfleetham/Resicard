@@ -918,18 +918,22 @@ export default function Register() {
 
           {/* Sign In Link */}
           <div className="text-center">
-            <p className="text-white/90">
-              Already have an account?{' '}
-              <Link href="/login" className="text-white hover:underline font-semibold">
-                Sign in here
-              </Link>
-            </p>
+            <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 inline-block">
+              <p className="text-white">
+                Already have an account?{' '}
+                <Link href="/login" className="text-white hover:underline font-semibold">
+                  Sign in here
+                </Link>
+              </p>
+            </div>
           </div>
 
           <div className="text-center">
-            <Link href="/" className="text-sm text-white/70 hover:text-white">
-              ← Back to Home
-            </Link>
+            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 inline-block">
+              <Link href="/" className="text-sm text-white hover:text-white/80">
+                ← Back to Home
+              </Link>
+            </div>
           </div>
         </div>
       </div>
