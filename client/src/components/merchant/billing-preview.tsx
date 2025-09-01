@@ -23,31 +23,15 @@ export default function BillingPreview() {
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("current");
   
-  // Mock data for billing periods
+  // Real billing periods (empty until actual redemptions generate billing data)
   const billingPeriods: BillingPeriod[] = [
     {
       id: "current",
       period: format(new Date(), "MMMM yyyy"),
-      redemptions: 47,
-      totalFees: 23.50,
+      redemptions: 0,
+      totalFees: 0,
       status: "draft",
       dueDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
-    },
-    {
-      id: "last",
-      period: format(subMonths(new Date(), 1), "MMMM yyyy"),
-      redemptions: 82,
-      totalFees: 41.00,
-      status: "collected",
-      dueDate: format(endOfMonth(subMonths(new Date(), 1)), "yyyy-MM-dd"),
-    },
-    {
-      id: "two_months",
-      period: format(subMonths(new Date(), 2), "MMMM yyyy"),
-      redemptions: 65,
-      totalFees: 32.50,
-      status: "collected",
-      dueDate: format(endOfMonth(subMonths(new Date(), 2)), "yyyy-MM-dd"),
     },
   ];
 

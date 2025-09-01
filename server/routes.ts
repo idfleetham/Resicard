@@ -1908,12 +1908,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // LOYALTY PROGRAM ENDPOINTS (Mock implementation for now)
   
-  // Mock data store for tiers (in a real app, this would be in the database)
-  let mockTiers = [
-    { id: "bronze", name: "Bronze", thresholdPoints: 0, perks: [{ type: "percentOff", value: 5 }] },
-    { id: "silver", name: "Silver", thresholdPoints: 100, perks: [{ type: "percentOff", value: 10 }] },
-    { id: "gold", name: "Gold", thresholdPoints: 500, perks: [{ type: "percentOff", value: 15 }] }
-  ];
+  // Loyalty tiers storage (empty initially)
+  let loyaltyTiers: any[] = [];
 
   // Get merchant's loyalty program
   app.get("/api/loyalty/program", authenticateToken, async (req, res) => {
@@ -1928,11 +1924,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         earnCooldownMinutes: 30,
         dailyEarnCap: 3,
         active: true,
-        tiers: mockTiers,
-        rewards: [
-          { id: "reward-1", name: "Free Coffee", costPoints: 50, active: true },
-          { id: "reward-2", name: "20% Off Meal", costPoints: 100, active: true }
-        ]
+        tiers: loyaltyTiers,
+        rewards: []
       });
     } catch (error) {
       console.error('Get loyalty program error:', error);
@@ -1968,8 +1961,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         perks: perks || [{ type: "percentOff", value: 5 }]
       };
 
-      // Add to mock tiers array
-      mockTiers.push(newTier);
+      // Add to loyalty tiers array
+      loyaltyTiers.push(newTier);
 
       res.json({ success: true, tier: newTier });
     } catch (error) {
@@ -1988,10 +1981,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { tierId } = req.params;
       const { name, thresholdPoints, perks } = req.body;
       
-      // Find and update tier in mock data
-      const tierIndex = mockTiers.findIndex(tier => tier.id === tierId);
+      // Find and update tier in loyalty data
+      const tierIndex = loyaltyTiers.findIndex(tier => tier.id === tierId);
       if (tierIndex !== -1) {
-        mockTiers[tierIndex] = {
+        loyaltyTiers[tierIndex] = {
           id: tierId,
           name,
           thresholdPoints,
@@ -1999,7 +1992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
 
-      res.json({ success: true, tier: mockTiers[tierIndex] });
+      res.json({ success: true, tier: loyaltyTiers[tierIndex] });
     } catch (error) {
       console.error("Error updating tier:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -2015,10 +2008,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { tierId } = req.params;
       
-      // Remove tier from mock data
-      const tierIndex = mockTiers.findIndex(tier => tier.id === tierId);
+      // Remove tier from loyalty data
+      const tierIndex = loyaltyTiers.findIndex(tier => tier.id === tierId);
       if (tierIndex !== -1) {
-        mockTiers.splice(tierIndex, 1);
+        loyaltyTiers.splice(tierIndex, 1);
       }
       
       res.json({ success: true, deletedTierId: tierId });
@@ -2031,11 +2024,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get customer loyalty balance
   app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
     try {
-      // Mock customer balance
+      // Customer loyalty balance (real data would be fetched from database)
       res.json({
-        points: 75,
-        stamps: 3,
-        tier: { name: "Silver", perks: [{ type: "percentOff", value: 10 }] }
+        points: 0,
+        stamps: 0,
+        tier: { name: "None", perks: [] }
       });
     } catch (error) {
       console.error('Get loyalty balance error:', error);
@@ -2048,9 +2041,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { amount, type } = req.body;
       
-      // Mock earning logic
-      const pointsAdded = type === 'purchase' ? Math.floor(amount * 10) : 0;
-      const stampsAdded = type === 'visit' ? 1 : 0;
+      // Loyalty earning logic (real implementation would update database)
+      const pointsAdded = 0;
+      const stampsAdded = 0;
       
       res.json({ 
         success: true, 
@@ -2069,7 +2062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { rewardId } = req.body;
       
-      // Mock redemption
+      // Loyalty redemption (real implementation would update database)
       res.json({ 
         success: true, 
         message: "Reward redeemed successfully!",
@@ -2084,23 +2077,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get loyalty events/history  
   app.get("/api/loyalty/events/:merchantId", authenticateToken, async (req, res) => {
     try {
-      // Mock events
-      res.json([
-        {
-          id: "event-1",
-          type: "earn_points",
-          amount: 25,
-          createdAt: new Date(Date.now() - 86400000), // 1 day ago
-          metadata: { purchase: 2.50 }
-        },
-        {
-          id: "event-2", 
-          type: "redeem_reward",
-          amount: -50,
-          createdAt: new Date(Date.now() - 172800000), // 2 days ago
-          metadata: { rewardName: "Free Coffee" }
-        }
-      ]);
+      // Loyalty events (real implementation would fetch from database)
+      res.json([]);
     } catch (error) {
       console.error('Get loyalty events error:', error);
       res.status(500).json({ error: "Failed to fetch loyalty events" });

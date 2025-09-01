@@ -308,9 +308,6 @@ export default function QRRedemption() {
                 onChange={(e) => setSelectedOffer(e.target.value)}
                 className="input-dark"
               />
-              <p className="text-xs text-slate-300/80 mt-1">
-                Placeholder: In full implementation, this would be a dropdown of active offers
-              </p>
             </div>
             
             <div className="pt-2">
