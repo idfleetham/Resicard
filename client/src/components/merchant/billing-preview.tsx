@@ -171,7 +171,7 @@ export default function BillingPreview() {
       </div>
 
       {/* Billing Details */}
-      <Card variant="elevated">
+      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl">Billing Breakdown - {currentPeriod.period}</CardTitle>
           <CardDescription className="text-lg">
@@ -220,7 +220,7 @@ export default function BillingPreview() {
       </Card>
 
       {/* Payment Method */}
-      <Card variant="elevated">
+      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl">Payment Method</CardTitle>
           <CardDescription className="text-lg">How fees are collected</CardDescription>
