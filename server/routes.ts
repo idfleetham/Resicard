@@ -403,8 +403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Offer routes (renamed from deals)  
-  app.get("/api/deals", async (req, res) => {
+  // Offer routes
+  app.get("/api/offers", async (req, res) => {
     try {
       // Get comprehensive offers directly
       const activeOffers = await db.select().from(offers).where(eq(offers.active, true));
@@ -454,7 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
       
     } catch (error: any) {
-      console.error('Error in /api/deals endpoint:', error);
+      console.error('Error in /api/offers endpoint:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -1666,16 +1666,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Merchant not found" });
       }
 
-      // Query redeemed vouchers from the existing deals/vouchers system
+      // Query redeemed vouchers from the existing offers/vouchers system
       const result = await db.execute(sql`
         SELECT 
           v.id,
-          v.deal_id,
+          v.deal_id as offer_id,
           v.user_id,
           v.used_at as redeemed_at,
           d.discount_value as value,
           v.voucher_number as voucher_code,
-          d.title as dealTitle,
+          d.title as offerTitle,
           d.title as offerTitle,
           u.username as customerName,
           'System' as staffName
@@ -1714,8 +1714,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Voucher has already been redeemed" });
       }
 
-      // Handle both regular deals and UUID-based offers
-      let deal = null;
+      // Handle both legacy offers and UUID-based offers
+      let offer = null;
       let isUuidOffer = false;
       
       if (voucher.dealId === -1) {
@@ -1726,29 +1726,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const offerId = uuidMatch[1].toLowerCase();
           
           // Get offer from offers table
-          const offer = await storage.getOffer(offerId);
-          if (!offer) {
+          const offerData = await storage.getOffer(offerId);
+          if (!offerData) {
             return res.status(404).json({ error: "Offer not found" });
           }
           
-          // Convert offer to deal-like structure for compatibility
-          deal = {
-            id: offer.id,
-            merchantId: offer.merchantId,
-            title: offer.title,
-            discountType: offer.type === 'percentage_discount' ? 'percentage' : 'fixed',
-            discountValue: offer.percentOff?.toString() || offer.fixedPrice?.toString() || '0'
+          // Use offer structure directly
+          offer = {
+            id: offerData.id,
+            merchantId: offerData.merchantId,
+            title: offerData.title,
+            discountType: offerData.type === 'percentage_discount' ? 'percentage' : 'fixed',
+            discountValue: offerData.percentOff?.toString() || offerData.fixedPrice?.toString() || '0'
           };
           isUuidOffer = true;
         } else {
           return res.status(400).json({ error: "Invalid voucher format" });
         }
       } else {
-        // Regular deal voucher
-        deal = await storage.getDeal(voucher.dealId);
-        if (!deal) {
-          return res.status(404).json({ error: "Deal not found" });
+        // Legacy offer voucher (stored in deals table)
+        const legacyOffer = await storage.getDeal(voucher.dealId);
+        if (!legacyOffer) {
+          return res.status(404).json({ error: "Offer not found" });
         }
+        
+        // Convert legacy deal to offer structure
+        offer = {
+          id: legacyOffer.id,
+          merchantId: legacyOffer.merchantId,
+          title: legacyOffer.title,
+          discountType: legacyOffer.discountType,
+          discountValue: legacyOffer.discountValue
+        };
       }
 
       // Get merchant information to verify authorization
@@ -1757,15 +1766,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Merchant not found" });
       }
 
-      // Verify merchant owns this deal
+      // Verify merchant owns this offer
       if (isUuidOffer) {
         // For UUID offers, compare with merchant UUID
-        if (deal.merchantId !== merchant.id) {
+        if (offer.merchantId !== merchant.id) {
           return res.status(403).json({ error: "Not authorized to redeem this voucher" });
         }
       } else {
-        // For regular deals, compare with user ID
-        if (deal.merchantId !== req.user.id) {
+        // For legacy offers, compare with user ID
+        if (offer.merchantId !== req.user.id) {
           return res.status(403).json({ error: "Not authorized to redeem this voucher" });
         }
       }
@@ -1774,17 +1783,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const basketValue = basketAmount ? parseFloat(basketAmount) : 0;
       let discountValue = 0;
       
-      if (deal.discountType === 'percentage') {
-        discountValue = basketValue * (parseFloat(deal.discountValue || '0') / 100);
+      if (offer.discountType === 'percentage') {
+        discountValue = basketValue * (parseFloat(offer.discountValue || '0') / 100);
       } else {
-        discountValue = parseFloat(deal.discountValue || '0');
+        discountValue = parseFloat(offer.discountValue || '0');
       }
 
       const finalValue = Math.max(0, basketValue - discountValue);
 
-      // Since the current system uses deals table, let's create a simple redemption record
-      // For now, we'll store this in the existing vouchers table by marking it as used
-      // In the future, this can be moved to the redemptions table when the system is migrated
+      // Since the current system uses legacy offers table, let's mark the voucher as used
+      // This tracks the redemption in the existing vouchers table
 
       // Mark voucher as used
       await storage.useVoucher(voucherCode);
