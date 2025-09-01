@@ -302,6 +302,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
   const createOfferMutation = useMutation({
     mutationFn: (data: OfferFormData) => {
+      console.log('Mutation: About to send offer data:', JSON.stringify(data, null, 2));
       if (editingOffer) {
         return apiRequest("PUT", `/api/offers/${editingOffer.id}`, data);
       } else {
