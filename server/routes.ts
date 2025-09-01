@@ -1787,6 +1787,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Mark voucher as used
       await storage.useVoucher(voucherCode);
       
+      // Create redemption record
+      await storage.createRedemption({
+        offerId: voucher.dealId === -1 ? offer.id : `deal_${voucher.dealId}`,
+        userId: voucher.userId,
+        discountValue: discountValue,
+      });
+      
       res.json({
         success: true,
         discount: discountValue.toFixed(2),
