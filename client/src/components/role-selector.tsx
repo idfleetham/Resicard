@@ -28,25 +28,26 @@ export default function RoleSelector({ onSelect, isVisible, onClose }: RoleSelec
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
-      <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 ring-1 ring-gray-100 max-w-md w-full">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex-1">
-              <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2 text-center">
-                Welcome to Resicard©
-              </h2>
-              <p className="text-muted-foreground text-center">
-                Exclusive deals for local residents and businesses
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="ml-2 h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+      <div className="bg-white rounded-3xl shadow-2xl border-0 p-8 ring-1 ring-gray-100 max-w-md w-full relative">
+          {/* Close button positioned absolutely */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="absolute top-4 right-4 h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
+          {/* Centered header content */}
+          <div className="text-center mb-6">
+            <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Welcome to Resicard©
+            </h2>
+            <p className="text-muted-foreground">
+              Exclusive deals for local residents and businesses
+            </p>
           </div>
           
           <div className="space-y-3">
