@@ -115,31 +115,31 @@ export default function MerchantPortal() {
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-border-border-dim">
-            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
             </TabsTrigger>
-            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="redemptions" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">Redemptions</span>
             </TabsTrigger>
-            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="qr-redemption" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <QrCode className="w-4 h-4" />
               <span className="hidden sm:inline">QR Scan</span>
             </TabsTrigger>
-            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="loyalty" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <Star className="w-4 h-4" />
               <span className="hidden sm:inline">Loyalty</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="billing" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <CreditCard className="w-4 h-4" />
               <span className="hidden sm:inline">Billing</span>
             </TabsTrigger>
-            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Team</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-base">
+            <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-surface2 data-[state=active]:text-brand1 text-xl">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
@@ -171,16 +171,16 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-soft text-base">Active Members</span>
-                        <span className="font-semibold">247</span>
+                        <span className="text-white/80 text-base">Active Members</span>
+                        <span className="font-semibold text-white">247</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-base">Points Earned</span>
-                        <span className="font-semibold">12,450</span>
+                        <span className="text-white/80 text-base">Points Earned</span>
+                        <span className="font-semibold text-white">12,450</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-base">Rewards Claimed</span>
-                        <span className="font-semibold">89</span>
+                        <span className="text-white/80 text-base">Rewards Claimed</span>
+                        <span className="font-semibold text-white">89</span>
                       </div>
                     </div>
                   </CardContent>
@@ -258,8 +258,8 @@ export default function MerchantPortal() {
               {/* Recent Activity */}
               <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
-                  <CardTitle>Recent Loyalty Activity</CardTitle>
-                  <CardDescription>Latest customer loyalty interactions</CardDescription>
+                  <CardTitle className="text-white">Recent Loyalty Activity</CardTitle>
+                  <CardDescription className="text-white/80">Latest customer loyalty interactions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
