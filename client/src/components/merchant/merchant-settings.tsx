@@ -997,7 +997,7 @@ export default function MerchantSettings() {
                         className={`
                           ${selectedAspectRatio === key 
                             ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0' 
-                            : 'border-slate-600 text-slate-300 hover:bg-slate-800'
+                            : 'border-slate-600 text-black bg-white hover:bg-gray-100'
                           }
                         `}
                       >
@@ -1037,7 +1037,7 @@ export default function MerchantSettings() {
                         setShowCropper(false);
                         setImgSrc('');
                       }}
-                      className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
                     >
                       Cancel
                     </Button>
