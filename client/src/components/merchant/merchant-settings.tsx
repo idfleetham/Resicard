@@ -545,7 +545,7 @@ export default function MerchantSettings() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Business Settings</h1>
-            <p className="text-slate-300">Manage your business profile and account details</p>
+            <p className="text-slate-300 text-lg">Manage your business profile and account details</p>
           </div>
         </div>
       </div>
@@ -558,7 +558,7 @@ export default function MerchantSettings() {
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-fg">Settings</CardTitle>
-              <CardDescription className="text-slate-300">
+              <CardDescription className="text-slate-300 text-lg">
                 Manage your merchant account settings and preferences
               </CardDescription>
             </div>
@@ -582,7 +582,7 @@ export default function MerchantSettings() {
                   onClick={() => setActiveTab("business")}
                 >
                   <Building2 className="w-4 h-4 mr-2" />
-                  Business Details
+                  <span className="text-lg">Business Details</span>
                 </Button>
                 <Button
                   variant={activeTab === "hours" ? "default" : "ghost"}
@@ -594,7 +594,7 @@ export default function MerchantSettings() {
                   onClick={() => setActiveTab("hours")}
                 >
                   <Clock className="w-4 h-4 mr-2" />
-                  Business Hours
+                  <span className="text-lg">Business Hours</span>
                 </Button>
                 <Button
                   variant={activeTab === "logo" ? "default" : "ghost"}
@@ -606,7 +606,7 @@ export default function MerchantSettings() {
                   onClick={() => setActiveTab("logo")}
                 >
                   <Camera className="w-4 h-4 mr-2" />
-                  Logo & Branding
+                  <span className="text-lg">Logo & Branding</span>
                 </Button>
                 <Button
                   variant={activeTab === "reservations" ? "default" : "ghost"}
@@ -618,7 +618,7 @@ export default function MerchantSettings() {
                   onClick={() => setActiveTab("reservations")}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  Reservations
+                  <span className="text-lg">Reservations</span>
                 </Button>
                 <Button
                   variant={activeTab === "api" ? "default" : "ghost"}
@@ -630,7 +630,7 @@ export default function MerchantSettings() {
                   onClick={() => setActiveTab("api")}
                 >
                   <Key className="w-4 h-4 mr-2" />
-                  API Access
+                  <span className="text-lg">API Access</span>
                 </Button>
               </nav>
             </CardBody>
@@ -651,7 +651,7 @@ export default function MerchantSettings() {
                     <Building2 className="w-5 h-5 text-blue-400" />
                     <span>Business Details</span>
                   </CardTitle>
-                  <CardDescription className="text-slate-300">
+                  <CardDescription className="text-slate-300 text-lg">
                     Update your business information and contact details
                   </CardDescription>
                 </CardHeader>
@@ -663,7 +663,7 @@ export default function MerchantSettings() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Business Name</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Business Name</FormLabel>
                           <FormControl>
                             <Input placeholder="Your Business Name" {...field} className="input-dark" />
                           </FormControl>
@@ -677,7 +677,7 @@ export default function MerchantSettings() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Email Address</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Email Address</FormLabel>
                             <FormControl>
                               <Input className="input-dark" type="email" placeholder="business@example.com" {...field} />
                             </FormControl>
@@ -690,7 +690,7 @@ export default function MerchantSettings() {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Phone Number</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Phone Number</FormLabel>
                             <FormControl>
                               <Input className="input-dark" type="tel" placeholder="+44 1334 123456" {...field} />
                             </FormControl>
@@ -704,7 +704,7 @@ export default function MerchantSettings() {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Business Address</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Business Address</FormLabel>
                           <FormControl>
                             <AddressAutocomplete field={field} />
                           </FormControl>
@@ -717,7 +717,7 @@ export default function MerchantSettings() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Business Description (Optional)</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Business Description (Optional)</FormLabel>
                           <FormControl>
                             <Textarea 
                               className="input-dark min-h-[80px] resize-none"
@@ -1195,7 +1195,7 @@ export default function MerchantSettings() {
                         name="provider"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Reservation Provider</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Reservation Provider</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -1223,7 +1223,7 @@ export default function MerchantSettings() {
                           name="url"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Reservation URL</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Reservation URL</FormLabel>
                               <FormControl>
                                 <Input 
                                   className="input-dark" 
