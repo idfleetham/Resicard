@@ -277,8 +277,8 @@ export default function Register() {
 
           {/* Registration Form */}
           <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-center text-slate-900 text-2xl">Create Your Account</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-t-lg -m-6 mb-0 p-6">
+              <CardTitle className="text-center text-white text-2xl font-bold">Create Your Account</CardTitle>
             </CardHeader>
             <CardBody>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
