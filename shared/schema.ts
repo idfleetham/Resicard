@@ -333,6 +333,9 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   locations: z.array(z.string()).optional(),
   minBasket: z.number().optional(),
   maxDiscount: z.number().optional(),
+  // Override date fields to accept strings from frontend
+  validFrom: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
+  validTo: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
   // Override type field to use new enum values
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
 });
