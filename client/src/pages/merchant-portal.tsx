@@ -194,15 +194,15 @@ export default function MerchantPortal() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-white/80 text-lg">Active Members</span>
-                        <span className="font-semibold text-white">247</span>
+                        <span className="font-semibold text-white">0</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/80 text-lg">Points Earned</span>
-                        <span className="font-semibold text-white">12,450</span>
+                        <span className="font-semibold text-white">0</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/80 text-lg">Rewards Claimed</span>
-                        <span className="font-semibold text-white">89</span>
+                        <span className="font-semibold text-white">0</span>
                       </div>
                     </div>
                   </CardContent>
@@ -262,15 +262,15 @@ export default function MerchantPortal() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-soft text-base">New Members</span>
-                        <span className="font-semibold text-green-400">+24</span>
+                        <span className="font-semibold text-green-400">0</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Repeat Visits</span>
-                        <span className="font-semibold text-blue-400">156</span>
+                        <span className="font-semibold text-blue-400">0</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Revenue Impact</span>
-                        <span className="font-semibold text-purple-400">£2,340</span>
+                        <span className="font-semibold text-purple-400">£0</span>
                       </div>
                     </div>
                   </CardContent>
@@ -285,11 +285,7 @@ export default function MerchantPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { customer: "Sarah J.", action: "Earned 25 points", amount: "£2.50 purchase", time: "2 min ago" },
-                      { customer: "Mike C.", action: "Redeemed Free Coffee", amount: "-50 points", time: "15 min ago" },
-                      { customer: "Emily D.", action: "Earned 40 points", amount: "£4.00 purchase", time: "1 hour ago" },
-                    ].map((activity, index) => (
+                    {[].map((activity, index) => (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-base font-semibold">
