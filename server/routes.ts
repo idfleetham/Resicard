@@ -1640,7 +1640,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Fetching redemptions for merchant:', merchantId);
       
-      // Use raw SQL since the actual table structure doesn't match schema yet
+      // Get merchant's UUID for offers table lookup
+      const merchant = await storage.getMerchantByUserId(merchantId);
+      const merchantUuid = merchant?.id;
+
+      // Use raw SQL to get ALL redemptions and filter by merchant later
       const redemptionResults = await db.execute(sql`
         SELECT 
           r.id,
@@ -1648,19 +1652,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
           r.user_id,
           r.redeemed_at,
           r.value,
-          d.title as deal_title,
+          d.title as legacy_title,
+          d.merchant_id as legacy_merchant_id,
           u.username as customer_name
         FROM redemptions r
         LEFT JOIN deals d ON r.deal_id = d.id
         LEFT JOIN users u ON r.user_id = u.id
-        WHERE d.merchant_id = ${merchantId}
         ORDER BY r.redeemed_at DESC
       `);
 
-      console.log('Found legacy redemptions:', redemptionResults.rows.length);
+      // Filter to include only this merchant's redemptions
+      const merchantRedemptions = [];
+      
+      for (const redemption of redemptionResults.rows) {
+        let belongsToMerchant = false;
+        let offerTitle = 'Unknown Offer';
+        
+        // Check if it's a legacy deal redemption
+        if (redemption.legacy_merchant_id === merchantId) {
+          belongsToMerchant = true;
+          offerTitle = redemption.legacy_title || 'Legacy Deal';
+        } else {
+          // Check if it's a UUID offer redemption by looking up the hashed deal_id
+          const offers = await storage.getOffersByMerchant(merchantUuid);
+          for (const offer of offers) {
+            // Calculate the same hash we used when creating the redemption
+            const offerHash = Math.abs(offer.id.split('-')[0].split('').reduce((a, b) => {
+              a = ((a << 5) - a) + b.charCodeAt(0);
+              return a & a;
+            }, 0)) % 1000000;
+            
+            if (offerHash === parseInt(redemption.deal_id)) {
+              belongsToMerchant = true;
+              offerTitle = offer.title;
+              break;
+            }
+          }
+        }
+        
+        if (belongsToMerchant) {
+          merchantRedemptions.push({
+            ...redemption,
+            deal_title: offerTitle
+          });
+        }
+      }
+
+      console.log('Found total redemptions:', redemptionResults.rows.length, 'merchant redemptions:', merchantRedemptions.length);
 
       // Transform data to match frontend expectations
-      const formattedRedemptions = redemptionResults.rows.map((redemption: any) => ({
+      const formattedRedemptions = merchantRedemptions.map((redemption: any) => ({
         id: redemption.id,
         offer_id: redemption.deal_id,
         user_id: redemption.user_id,
@@ -1788,10 +1829,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.useVoucher(voucherCode);
       
       // Create redemption record in legacy format
+      // For UUID offers, we need to use a fake deal ID since the legacy table expects integers
+      // We'll use a hash of the UUID to create a consistent integer ID
+      let legacyDealId = voucher.dealId;
+      if (voucher.dealId === -1) {
+        // Create a consistent integer from UUID for legacy compatibility
+        legacyDealId = Math.abs(offer.id.split('-')[0].split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0)) % 1000000; // Keep it reasonable size
+      }
+      
       await storage.createLegacyRedemption({
-        dealId: voucher.dealId === -1 ? parseInt(offer.id) || 0 : voucher.dealId,
+        dealId: legacyDealId,
         userId: voucher.userId,
-        value: discountValue,
+        value: Math.max(discountValue, parseFloat(offer.discountValue || '0')), // Use offer value if no basket amount
       });
       
       res.json({
