@@ -264,45 +264,19 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       canvas.toBlob(async (blob) => {
         if (blob) {
           try {
-            // For new offers, convert to base64 and store temporarily
-            if (!editingOffer?.id) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const base64 = reader.result as string;
-                form.setValue('imageUrl', base64);
-                setImagePreview(base64);
-                setShowCropper(false);
-                setImgSrc('');
-                toast({ title: "Success", description: "Image ready for upload" });
-              };
-              reader.readAsDataURL(blob);
-            } else {
-              // For editing offers, upload immediately
-              const formData = new FormData();
-              formData.append('file', blob, 'offer-image.jpg');
-
-              const token = localStorage.getItem('token');
-              const response = await fetch(`/api/merchant/offers/${editingOffer.id}/upload`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                },
-                body: formData,
-              });
-
-              if (response.ok) {
-                const result = await response.json();
-                form.setValue('imageUrl', result.imageUrl);
-                setImagePreview(result.imageUrl);
-                setShowCropper(false);
-                setImgSrc('');
-                toast({ title: "Success", description: "Image uploaded successfully" });
-              } else {
-                toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
-              }
-            }
+            // Convert to base64 for both new and editing offers (simpler and more reliable)
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = reader.result as string;
+              form.setValue('imageUrl', base64);
+              setImagePreview(base64);
+              setShowCropper(false);
+              setImgSrc('');
+              toast({ title: "Success", description: "Image processed successfully" });
+            };
+            reader.readAsDataURL(blob);
           } catch (error) {
-            toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
+            toast({ title: "Error", description: "Failed to process image", variant: "destructive" });
           }
         }
       }, 'image/jpeg', 0.8);
