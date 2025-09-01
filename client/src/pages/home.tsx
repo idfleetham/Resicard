@@ -29,13 +29,26 @@ export default function Home() {
     }
   };
 
-  const { data: deals = [], isLoading } = useQuery({
+  // Fetch both legacy deals and modern offers
+  const { data: deals = [], isLoading: isLoadingDeals } = useQuery({
     queryKey: ['/api/deals'],
     queryFn: async () => {
       const response = await fetch('/api/deals');
       return response.json() as Promise<DealWithMerchant[]>;
     },
   });
+
+  const { data: offers = [], isLoading: isLoadingOffers } = useQuery({
+    queryKey: ['/api/offers'],
+    queryFn: async () => {
+      const response = await fetch('/api/offers');
+      return response.json() as Promise<DealWithMerchant[]>;
+    },
+  });
+
+  // Combine deals and offers for display
+  const allOffers = [...deals, ...offers];
+  const isLoading = isLoadingDeals || isLoadingOffers;
 
   // Fetch platform statistics
   const { data: platformStats } = useQuery({
@@ -121,7 +134,7 @@ export default function Home() {
                     <Ticket className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {deals.filter(deal => deal.isActive).length}
+                    {allOffers.filter(deal => deal.isActive).length}
                   </div>
                   <div className="text-slate-600 text-base font-medium">Active Offers</div>
                 </div>
@@ -187,7 +200,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {deals.map((deal) => (
+                {allOffers.map((deal) => (
                   <DealCard 
                     key={deal.id} 
                     deal={deal} 

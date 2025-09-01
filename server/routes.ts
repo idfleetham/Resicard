@@ -1666,34 +1666,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Merchant not found" });
       }
 
-      // Query redeemed vouchers - handle both legacy deals and UUID offers
+      // Start with just legacy deals to ensure basic functionality works
       const result = await db.execute(sql`
         SELECT 
           v.id,
           v.deal_id as offer_id,
           v.user_id,
           v.used_at as redeemed_at,
-          CASE 
-            WHEN v.deal_id = -1 THEN COALESCE(o.percent_off::text, '0')
-            ELSE COALESCE(d.discount_value, '0')
-          END as value,
+          COALESCE(d.discount_value, '0') as value,
           v.voucher_number as voucher_code,
-          CASE 
-            WHEN v.deal_id = -1 THEN COALESCE(o.title, 'Unknown Offer')
-            ELSE COALESCE(d.title, 'Unknown Deal')
-          END as offerTitle,
+          COALESCE(d.title, 'Unknown Deal') as offerTitle,
           COALESCE(u.username, 'Guest') as customerName,
           'System' as staffName
         FROM vouchers v
-        LEFT JOIN deals d ON v.deal_id = d.id AND v.deal_id != -1
-        LEFT JOIN offers o ON v.deal_id = -1 AND SUBSTRING(v.voucher_number, 1, 36) = o.id::text
+        LEFT JOIN deals d ON v.deal_id = d.id
         LEFT JOIN users u ON v.user_id = u.id
-        WHERE v.is_used = true 
-          AND (
-            (v.deal_id != -1 AND d.merchant_id = ${req.user.id}) 
-            OR 
-            (v.deal_id = -1 AND o.merchant_id = ${merchant.id})
-          )
+        WHERE v.is_used = true AND d.merchant_id = ${req.user.id}
         ORDER BY v.used_at DESC
       `);
       
