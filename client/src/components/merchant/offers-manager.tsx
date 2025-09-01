@@ -299,7 +299,7 @@ export default function OffersManager() {
       <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-fg">Your Offers</h1>
+            <h1 className="text-4xl font-semibold text-fg">Your Offers</h1>
             <p className="text-slate-300">Manage all your business offers</p>
           </div>
           <div className="flex gap-3">
@@ -522,7 +522,7 @@ export default function OffersManager() {
       {/* Offers Table */}
       <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
-          <CardTitle className="text-fg text-3xl">Your Offers</CardTitle>
+          <CardTitle className="text-fg text-4xl">Your Offers</CardTitle>
           <CardDescription className="text-slate-300">
             Manage all your business offers and track their performance
           </CardDescription>
@@ -572,14 +572,7 @@ export default function OffersManager() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium text-fg">
-                        <div>
-                          <div>{offer.title}</div>
-                          {offer.type === 'comprehensive' && offer.offerType && (
-                            <div className="text-sm text-slate-300 capitalize">
-                              {offer.offerType === 'bogo' ? 'BOGOF' : offer.offerType.replace('_', ' ')}
-                            </div>
-                          )}
-                        </div>
+                        <div>{offer.title}</div>
                       </TableCell>
                       <TableCell className="text-slate-200 text-base">{offer.discountText}</TableCell>
                       <TableCell className="text-slate-200 text-base">{offer.category}</TableCell>
