@@ -1801,8 +1801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         discount: discountValue.toFixed(2),
         finalValue: finalValue.toFixed(2),
-        message: "Voucher redeemed successfully",
-        redemptionId: redemption.id
+        message: "Voucher redeemed successfully"
       });
     } catch (error) {
       console.error("Error redeeming voucher:", error);
