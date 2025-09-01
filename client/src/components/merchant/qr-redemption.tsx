@@ -166,8 +166,10 @@ export default function QRRedemption() {
           {activeTab === 'manual' ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-base font-medium tracking-wide text-fg mb-1">Voucher Code</label>
+                <Label htmlFor="voucher-code" className="block text-base font-medium tracking-wide text-fg mb-1">Voucher Code</Label>
                 <Input
+                  id="voucher-code"
+                  name="voucherCode"
                   placeholder="Enter voucher code"
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value)}
@@ -176,8 +178,10 @@ export default function QRRedemption() {
               </div>
 
               <div>
-                <label className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                <Label htmlFor="staff-pin" className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</Label>
                 <Input
+                  id="staff-pin"
+                  name="staffPin"
                   type="password"
                   placeholder="Enter your staff PIN"
                   value={staffPin}
@@ -187,10 +191,12 @@ export default function QRRedemption() {
               </div>
 
               <div>
-                <label className="block text-base font-medium tracking-wide text-fg mb-1">
+                <Label htmlFor="basket-amount" className="block text-base font-medium tracking-wide text-fg mb-1">
                   Basket Amount <span className="text-slate-300">(Optional)</span>
-                </label>
+                </Label>
                 <Input
+                  id="basket-amount"
+                  name="basketAmount"
                   type="number"
                   step="0.01"
                   placeholder="£0.00"
