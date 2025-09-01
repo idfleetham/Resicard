@@ -234,7 +234,7 @@ export default function TeamManagement() {
 
       {/* Staff Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="surface">
+        <Card variant="elevated">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
@@ -245,7 +245,7 @@ export default function TeamManagement() {
             </div>
           </CardBody>
         </Card>
-        <Card variant="surface">
+        <Card variant="elevated">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
@@ -256,7 +256,7 @@ export default function TeamManagement() {
             </div>
           </CardBody>
         </Card>
-        <Card variant="surface">
+        <Card variant="elevated">
           <CardBody>
             <div className="flex items-center justify-between">
               <div>
