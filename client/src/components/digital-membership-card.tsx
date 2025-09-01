@@ -118,9 +118,9 @@ export default function DigitalMembershipCard({
                 </div>
               </div>
               
-              <div className="bg-gray-100 rounded-lg p-3 mb-4">
-                <p className="text-xs text-muted-foreground mb-1">Voucher Number</p>
-                <p className="text-2xl font-mono font-bold tracking-wider">
+              <div className="bg-gray-100 rounded-lg p-4 mb-4">
+                <p className="text-xs text-muted-foreground mb-2">Voucher Number</p>
+                <p className="text-sm font-mono font-bold tracking-wide break-all leading-relaxed">
                   {voucher.voucherNumber}
                 </p>
               </div>

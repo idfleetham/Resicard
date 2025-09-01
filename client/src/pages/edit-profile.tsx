@@ -83,7 +83,7 @@ export default function EditProfile() {
       
       const updateData = {
         ...data,
-        profilePhoto: profileImageUrl || user?.profilePhoto,
+        profilePhoto: profileImageUrl === "" ? null : profileImageUrl || user?.profilePhoto,
       };
 
       await apiRequestWithAuth("PUT", "/api/profile", updateData);
