@@ -98,7 +98,7 @@ const offerSchema = z.object({
   deviceFingerprinting: z.boolean().default(true),
   
   // I) Meal periods for Food & Drink
-  mealPeriods: z.array(z.string()).optional(),
+  mealPeriods: z.union([z.array(z.string()), z.object({})]).optional().transform(val => Array.isArray(val) ? val : []),
 });
 
 type OfferFormData = z.infer<typeof offerSchema>;
@@ -350,7 +350,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     const processedData = {
       ...data,
       timeSlots: convertedTimeSlots,
-      // Ensure mealPeriods is always an array
+      // Ensure mealPeriods is always an array (fallback to empty array if undefined or object)
       mealPeriods: Array.isArray(data.mealPeriods) ? data.mealPeriods : [],
       // Ensure other array fields are properly formatted
       tags: Array.isArray(data.tags) ? data.tags : [],
