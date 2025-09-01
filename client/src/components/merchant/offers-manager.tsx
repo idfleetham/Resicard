@@ -522,7 +522,7 @@ export default function OffersManager() {
       {/* Offers Table */}
       <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
-          <CardTitle className="text-fg">Your Offers</CardTitle>
+          <CardTitle className="text-fg text-3xl">Your Offers</CardTitle>
           <CardDescription className="text-slate-300">
             Manage all your business offers and track their performance
           </CardDescription>
@@ -567,26 +567,26 @@ export default function OffersManager() {
                   {allOffers.map((offer: any) => (
                     <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
                       <TableCell>
-                        <Badge className={offer.type === 'simple' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-purple-500/20 text-purple-400 border-purple-500/30"}>
+                        <Badge className={offer.type === 'simple' ? "bg-blue-500/20 text-blue-400 border-blue-500/30 text-lg" : "bg-purple-500/20 text-purple-400 border-purple-500/30 text-lg"}>
                           {offer.type === 'simple' ? 'Simple' : 'Advanced'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium text-fg">
+                      <TableCell className="font-medium text-fg text-xl">
                         <div>{offer.title}</div>
                       </TableCell>
-                      <TableCell className="text-slate-200 text-base">{offer.discountText}</TableCell>
-                      <TableCell className="text-slate-200 text-base">{offer.category}</TableCell>
-                      <TableCell className="text-slate-200 text-base">
+                      <TableCell className="text-slate-200 text-xl">{offer.discountText}</TableCell>
+                      <TableCell className="text-slate-200 text-xl">{offer.category}</TableCell>
+                      <TableCell className="text-slate-200 text-xl">
                         {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
-                      <TableCell className="text-slate-200 text-base">
+                      <TableCell className="text-slate-200 text-xl">
                         {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
                         <Badge className={
-                          offer.isExpired ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
-                          offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30" : 
-                          "bg-red-500/20 text-red-400 border-red-500/30"
+                          offer.isExpired ? "bg-orange-500/20 text-orange-400 border-orange-500/30 text-lg" :
+                          offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30 text-lg" : 
+                          "bg-red-500/20 text-red-400 border-red-500/30 text-lg"
                         }>
                           {offer.isExpired ? "Expired" : (offer.isActive ? "Active" : "Paused")}
                         </Badge>
