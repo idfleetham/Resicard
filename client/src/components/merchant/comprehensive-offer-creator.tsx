@@ -346,7 +346,11 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     
     const processedData = {
       ...data,
-      timeSlots: JSON.stringify(convertedTimeSlots)
+      timeSlots: JSON.stringify(convertedTimeSlots),
+      tags: JSON.stringify(data.tags || []),
+      daysOfWeek: JSON.stringify(data.daysOfWeek || []),
+      blackoutDates: JSON.stringify(data.blackoutDates || []),
+      mealPeriods: JSON.stringify(data.mealPeriods || [])
     };
     
     console.log('Processed data:', processedData);
