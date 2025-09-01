@@ -384,11 +384,11 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     <div className="max-w-6xl mx-auto p-2 sm:p-6 space-y-4 sm:space-y-6">
       <Card className="bg-slate-900/50 border-slate-700">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-slate-100">
+          <CardTitle className="flex items-center space-x-2 text-slate-100 text-xl">
             <Plus className="w-5 h-5 text-blue-400" />
             <span>{editingOffer ? "Edit Comprehensive Offer" : "Create Comprehensive Offer"}</span>
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-slate-400 text-lg">
             {editingOffer ? "Update your comprehensive offer with advanced targeting, scheduling, and controls" : "Build a complete offer with advanced targeting, scheduling, and controls"}
           </CardDescription>
         </CardHeader>
@@ -415,7 +415,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       }`}
                     >
                       <Icon className="w-4 h-4 mr-2" />
-                      {section.label}
+                      <span className="text-lg">{section.label}</span>
                     </Button>
                   );
                 })}
@@ -433,7 +433,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "core" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <PoundSterling className="w-5 h-5 mr-2 text-blue-400" />
                       Core & Pricing
                     </CardTitle>
@@ -444,7 +444,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200 text-base">Offer Title</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Offer Title</FormLabel>
                           <FormControl>
                             <Input {...field} className="input-dark" placeholder="e.g., 20% off all pizzas" />
                           </FormControl>
@@ -458,7 +458,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200 text-base">Description</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Description</FormLabel>
                           <FormControl>
                             <Textarea {...field} className="input-dark" placeholder="Detailed offer description..." />
                           </FormControl>
@@ -473,7 +473,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="type"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200 text-base">Offer Type</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Offer Type</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -501,7 +501,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="category"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200 text-base">Category</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Category</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -528,7 +528,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="percentOff"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Percentage Off (%)</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Percentage Off (%)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -553,7 +553,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="fixedPrice"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Discount Amount (£)</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Discount Amount (£)</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -574,7 +574,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="minBasket"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Minimum Spend (£)</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Minimum Spend (£)</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -600,7 +600,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="fixedPrice"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Bundle Price (£)</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Bundle Price (£)</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -621,7 +621,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="originalValue"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Original Value (£)</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Original Value (£)</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -648,7 +648,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">
+                            <FormLabel className="text-slate-200 text-lg">
                               {form.watch("type") === "free_item_with_purchase" && "Free Item Details"}
                               {form.watch("type") === "bogo" && "BOGOF Details"}
                               {form.watch("type") === "loyalty_reward" && "Loyalty Program Details"}
@@ -677,7 +677,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="globalUsageLimit"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Total Redemptions Limit</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Total Redemptions Limit</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -697,7 +697,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="maxPerDay"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">Per Person Daily Limit</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Per Person Daily Limit</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -722,7 +722,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "eligibility" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Users className="w-5 h-5 mr-2 text-blue-400" />
                       Eligibility & Targeting
                     </CardTitle>
@@ -734,7 +734,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="audience"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Target Audience</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Target Audience</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -757,7 +757,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="minBasket"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Minimum Basket (£)</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Minimum Basket (£)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -781,7 +781,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="maxDiscount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Maximum Discount (£)</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Maximum Discount (£)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -803,7 +803,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="geofenceRadius"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Geofence Radius (meters)</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Geofence Radius (meters)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -827,8 +827,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Stackable with other offers</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Stackable with other offers</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Allow this offer to be combined with others
                               </FormDescription>
                             </div>
@@ -848,8 +848,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">New customers only</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">New customers only</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Only for first-time customers
                               </FormDescription>
                             </div>
@@ -871,7 +871,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "scheduling" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Calendar className="w-5 h-5 mr-2 text-blue-400" />
                       Scheduling & Availability
                     </CardTitle>
@@ -883,7 +883,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="validFrom"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Valid From</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Valid From</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -901,7 +901,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="validTo"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Valid Until</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Valid Until</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1090,7 +1090,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="leadTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Advance Booking Required (hours)</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Advance Booking Required (hours)</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -1101,7 +1101,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               onChange={(e) => field.onChange(Number(e.target.value))}
                             />
                           </FormControl>
-                          <FormDescription className="text-slate-400">
+                          <FormDescription className="text-slate-400 text-lg">
                             How many hours in advance must this offer be booked?
                           </FormDescription>
                           <FormMessage />
@@ -1111,7 +1111,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-slate-200">Blackout Periods</FormLabel>
+                        <FormLabel className="text-slate-200 text-lg">Blackout Periods</FormLabel>
                         <Button
                           type="button"
                           variant="outline"
@@ -1183,7 +1183,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "limits" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Shield className="w-5 h-5 mr-2 text-blue-400" />
                       Limits & Rules
                     </CardTitle>
@@ -1195,7 +1195,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="maxPerTransaction"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Max per Transaction</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Max per Transaction</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1215,7 +1215,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="maxPerDay"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Max per Day</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Max per Day</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1238,7 +1238,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="maxPerWeek"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Max per Week</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Max per Week</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1259,7 +1259,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="globalUsageLimit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Total Usage Limit</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Total Usage Limit</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1280,7 +1280,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="voucherTimeoutHours"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Booking Required Within (Hours)</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Booking Required Within (Hours)</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1307,7 +1307,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="proofType"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Proof Required</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Proof Required</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -1331,8 +1331,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Staff PIN Required</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Staff PIN Required</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Require staff verification
                               </FormDescription>
                             </div>
@@ -1354,8 +1354,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Single Use Only</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Single Use Only</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Each voucher can only be used once
                               </FormDescription>
                             </div>
@@ -1375,8 +1375,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Device Fingerprinting</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Device Fingerprinting</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Prevent multi-device abuse
                               </FormDescription>
                             </div>
@@ -1398,7 +1398,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "terms" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Settings className="w-5 h-5 mr-2 text-blue-400" />
                       Terms & Conditions
                     </CardTitle>
@@ -1409,7 +1409,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="terms"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Terms & Conditions</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Terms & Conditions</FormLabel>
                           <FormControl>
                             <Textarea 
                               {...field}
@@ -1429,8 +1429,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Dine-in Only</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Dine-in Only</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Not valid for takeaway orders
                               </FormDescription>
                             </div>
@@ -1450,8 +1450,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Excludes Alcohol</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Excludes Alcohol</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Alcohol not included in offer
                               </FormDescription>
                             </div>
@@ -1473,8 +1473,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Service Charge Included</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Service Charge Included</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Service charge applies to final bill
                               </FormDescription>
                             </div>
@@ -1494,8 +1494,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200">Valid on Bank Holidays</FormLabel>
-                              <FormDescription className="text-slate-400 text-base">
+                              <FormLabel className="text-slate-200 text-lg">Valid on Bank Holidays</FormLabel>
+                              <FormDescription className="text-slate-400 text-lg">
                                 Offer available on bank holidays
                               </FormDescription>
                             </div>
@@ -1517,7 +1517,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "media" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <ImageIcon className="w-5 h-5 mr-2 text-blue-400" />
                       Media & Presentation
                     </CardTitle>
@@ -1576,7 +1576,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="shortPromo"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Short Promo Text (90 chars max)</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Short Promo Text (90 chars max)</FormLabel>
                           <FormControl>
                             <Input 
                               {...field} 
@@ -1585,7 +1585,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               maxLength={90}
                             />
                           </FormControl>
-                          <FormDescription className="text-slate-400">
+                          <FormDescription className="text-slate-400 text-lg">
                             {field.value?.length || 0}/90 characters
                           </FormDescription>
                           <FormMessage />
@@ -1598,7 +1598,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Display Priority</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Display Priority</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="input-dark">
@@ -1610,7 +1610,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <SelectItem value="featured">Featured (higher visibility)</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormDescription className="text-slate-400">
+                          <FormDescription className="text-slate-400 text-lg">
                             Featured offers appear more prominently in listings
                           </FormDescription>
                           <FormMessage />
@@ -1658,7 +1658,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               {activeSection === "controls" && (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
-                    <CardTitle className="text-slate-100 flex items-center">
+                    <CardTitle className="text-slate-100 flex items-center text-xl">
                       <BarChart3 className="w-5 h-5 mr-2 text-blue-400" />
                       Budget & Controls
                     </CardTitle>
@@ -1670,7 +1670,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         name="feeModel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200">Fee Model</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Fee Model</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger className="input-dark">
@@ -1694,7 +1694,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="customFee"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200">
+                              <FormLabel className="text-slate-200 text-lg">
                                 Custom Fee ({form.watch("feeModel") === "per_redemption" ? "£ per redemption" : "% of discount"})
                               </FormLabel>
                               <FormControl>
@@ -1719,7 +1719,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="budgetCap"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200">Budget Cap (£)</FormLabel>
+                          <FormLabel className="text-slate-200 text-lg">Budget Cap (£)</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -1731,7 +1731,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               onChange={(e) => field.onChange(Number(e.target.value))}
                             />
                           </FormControl>
-                          <FormDescription className="text-slate-400 text-base">
+                          <FormDescription className="text-slate-400 text-lg">
                             Automatically pause offer when budget is reached
                           </FormDescription>
                           <FormMessage />
@@ -1745,8 +1745,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-slate-200">Auto-pause on Abuse Detection</FormLabel>
-                            <FormDescription className="text-slate-400 text-base">
+                            <FormLabel className="text-slate-200 text-lg">Auto-pause on Abuse Detection</FormLabel>
+                            <FormDescription className="text-slate-400 text-lg">
                               Automatically pause if suspicious activity is detected
                             </FormDescription>
                           </div>
@@ -1772,7 +1772,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     onClick={onClose}
                     className="bg-red-100 text-black border-red-300 hover:bg-red-200"
                   >
-                    Cancel
+                    <span className="text-lg">Cancel</span>
                   </Button>
                 )}
                 <Button
@@ -1780,7 +1780,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                   disabled={createOfferMutation.isPending}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  {createOfferMutation.isPending ? (editingOffer ? "Updating..." : "Creating...") : (editingOffer ? "Update Offer" : "Create Offer")}
+                  <span className="text-lg">{createOfferMutation.isPending ? (editingOffer ? "Updating..." : "Creating...") : (editingOffer ? "Update Offer" : "Create Offer")}</span>
                 </Button>
               </div>
 
