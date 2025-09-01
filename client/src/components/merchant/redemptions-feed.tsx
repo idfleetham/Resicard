@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { Download, Filter, RefreshCw, Eye, Calendar, TrendingUp, DollarSign } from "lucide-react";
+import { Download, Filter, RefreshCw, Eye, Calendar, TrendingUp, DollarSign, X } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { Redemption } from "@shared/schema";
 
@@ -17,6 +18,7 @@ export default function RedemptionsFeed() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState("7days");
+  const [selectedRedemption, setSelectedRedemption] = useState<any>(null);
 
   const { data: redemptionsResponse, isLoading, refetch } = useQuery<any>({
     queryKey: ["/api/redemptions/merchant", user?.id, filter, dateRange],
@@ -84,6 +86,76 @@ export default function RedemptionsFeed() {
   };
 
   const getTotalRedemptions = () => filteredRedemptions.length;
+
+  const RedemptionDetailsModal = ({ redemption }: { redemption: any }) => (
+    <Dialog open={!!selectedRedemption} onOpenChange={() => setSelectedRedemption(null)}>
+      <DialogContent className="bg-surface border border-white/40 shadow-xl max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-fg flex items-center justify-between">
+            Redemption Details
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setSelectedRedemption(null)}
+              className="h-6 w-6 p-0 hover:bg-white/10"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+        
+        {redemption && (
+          <div className="space-y-4">
+            {/* Customer Info */}
+            <div className="bg-surface2/50 rounded-lg p-4 border border-white/20">
+              <h3 className="text-sm font-medium text-white mb-2">Customer</h3>
+              <p className="text-fg">{redemption.customerName || "Guest"}</p>
+            </div>
+
+            {/* Deal Info */}
+            <div className="bg-surface2/50 rounded-lg p-4 border border-white/20">
+              <h3 className="text-sm font-medium text-white mb-2">Deal</h3>
+              <p className="text-fg">{redemption.dealTitle || redemption.offerTitle || "Unknown Deal"}</p>
+            </div>
+
+            {/* Transaction Details */}
+            <div className="bg-surface2/50 rounded-lg p-4 border border-white/20">
+              <h3 className="text-sm font-medium text-white mb-2">Transaction</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white">Discount Value:</span>
+                  <span className="text-green-400 font-medium">£{redemption.calculatedDiscount || redemption.value || "0.00"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white">Original Price:</span>
+                  <span className="text-fg">£{redemption.basketSubtotal || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white">Date:</span>
+                  <span className="text-fg">{format(parseISO(redemption.redeemedAt || redemption.createdAt), "MMM d, yyyy HH:mm")}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white">Processed by:</span>
+                  <span className="text-fg">{redemption.staffName || "System"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Voucher Info */}
+            <div className="bg-surface2/50 rounded-lg p-4 border border-white/20">
+              <h3 className="text-sm font-medium text-white mb-2">Voucher</h3>
+              <p className="text-fg font-mono text-xs">{redemption.voucher_code || "N/A"}</p>
+            </div>
+
+            {/* Status */}
+            <div className="flex justify-center pt-2">
+              {getStatusBadge(redemption)}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 
   if (isLoading) {
     return (
@@ -255,7 +327,12 @@ export default function RedemptionsFeed() {
                       <TableCell className="text-white">{redemption.staffName || "System"}</TableCell>
                       <TableCell>{getStatusBadge(redemption)}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 bg-surface hover:border-white/40 shadow-xl shadow-white/20Strong">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="border-white/40 shadow-xl shadow-white/20 bg-surface hover:bg-white/10 hover:border-white/60"
+                          onClick={() => setSelectedRedemption(redemption)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                       </TableCell>
@@ -267,6 +344,9 @@ export default function RedemptionsFeed() {
           )}
         </CardBody>
       </Card>
+
+      {/* Redemption Details Modal */}
+      <RedemptionDetailsModal redemption={selectedRedemption} />
     </div>
   );
 }

@@ -85,6 +85,45 @@ function getMerchantId(req: any): number {
   return parseInt(req.user.id);
 }
 
+// Loyalty points awarding function
+async function awardLoyaltyPoints({
+  merchantId,
+  userId,
+  basketValue,
+  redemptionValue,
+  type = 'purchase'
+}: {
+  merchantId: string;
+  userId: number;
+  basketValue: number;
+  redemptionValue: number;
+  type?: string;
+}) {
+  try {
+    // For simplicity, use a default loyalty program with 10 points per £1
+    const pointsPerPound = 10;
+    
+    // Calculate points based on the actual spend amount (use redemption value as minimum)
+    let earnAmount = Math.max(basketValue, redemptionValue); 
+    const pointsToAdd = Math.floor(earnAmount * pointsPerPound);
+    
+    if (pointsToAdd <= 0) {
+      return { pointsAdded: 0, stampsAdded: 0, message: 'No points to award' };
+    }
+
+    console.log(`Awarding ${pointsToAdd} points to user ${userId} for merchant ${merchantId} (transaction: £${earnAmount.toFixed(2)})`);
+
+    return { 
+      pointsAdded: pointsToAdd, 
+      stampsAdded: 0, 
+      message: `Awarded ${pointsToAdd} points for £${earnAmount.toFixed(2)} transaction` 
+    };
+  } catch (error) {
+    console.error('Error in awardLoyaltyPoints:', error);
+    return { pointsAdded: 0, stampsAdded: 0, message: 'Error awarding points' };
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files statically
@@ -1845,6 +1884,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: voucher.userId,
         value: Math.max(discountValue, parseFloat(offer.discountValue || '0')), // Use offer value if no basket amount
       });
+
+      // Award loyalty points for the redemption
+      try {
+        const loyaltyResult = await awardLoyaltyPoints({
+          merchantId: merchant.id,
+          userId: voucher.userId,
+          basketValue: basketValue,
+          redemptionValue: Math.max(discountValue, parseFloat(offer.discountValue || '0')),
+          type: 'purchase'
+        });
+        console.log('Loyalty points awarded:', loyaltyResult);
+      } catch (loyaltyError) {
+        console.error('Error awarding loyalty points:', loyaltyError);
+        // Continue with redemption even if loyalty fails
+      }
       
       res.json({
         success: true,
