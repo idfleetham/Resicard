@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest } from "@/lib/queryClient";
 import { Download, Filter, RefreshCw, Eye, Calendar, TrendingUp, DollarSign } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { Redemption } from "@shared/schema";
@@ -20,8 +21,7 @@ export default function RedemptionsFeed() {
   const { data: redemptionsResponse, isLoading, refetch } = useQuery<any>({
     queryKey: ["/api/redemptions/merchant", user?.id, filter, dateRange],
     queryFn: async () => {
-      const response = await fetch(`/api/redemptions/merchant/${user?.id}`);
-      if (!response.ok) throw new Error('Failed to fetch redemptions');
+      const response = await apiRequest('GET', `/api/redemptions/merchant/${user?.id}`);
       return response.json();
     },
     enabled: !!user?.id,
