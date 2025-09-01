@@ -152,7 +152,7 @@ export default function TeamManagement() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Team Management</h1>
-            <p className="text-slate-300">Manage staff accounts, roles, and access permissions</p>
+            <p className="text-slate-300 text-lg">Manage staff accounts, roles, and access permissions</p>
           </div>
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
@@ -275,7 +275,7 @@ export default function TeamManagement() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Staff Members</CardTitle>
-              <CardDescription>Manage your team's access and permissions</CardDescription>
+              <CardDescription className="text-lg">Manage your team's access and permissions</CardDescription>
             </div>
             <Button
               variant="outline"
@@ -292,26 +292,26 @@ export default function TeamManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-fg">Name</TableHead>
-                <TableHead className="text-fg">Email</TableHead>
-                <TableHead className="text-fg">Role</TableHead>
-                <TableHead className="text-fg">Status</TableHead>
-                <TableHead className="text-fg">PIN</TableHead>
-                <TableHead className="text-fg">Last Active</TableHead>
-                <TableHead className="text-right text-fg">Actions</TableHead>
+                <TableHead className="text-fg text-lg">Name</TableHead>
+                <TableHead className="text-fg text-lg">Email</TableHead>
+                <TableHead className="text-fg text-lg">Role</TableHead>
+                <TableHead className="text-fg text-lg">Status</TableHead>
+                <TableHead className="text-fg text-lg">PIN</TableHead>
+                <TableHead className="text-fg text-lg">Last Active</TableHead>
+                <TableHead className="text-right text-fg text-lg">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {staffMembers.map((member) => (
                 <TableRow key={member.id}>
-                  <TableCell className="font-medium text-fg">{member.name}</TableCell>
-                  <TableCell className="text-slate-300">{member.email}</TableCell>
+                  <TableCell className="font-medium text-fg text-lg">{member.name}</TableCell>
+                  <TableCell className="text-slate-300 text-lg">{member.email}</TableCell>
                   <TableCell>{getRoleBadge(member.role)}</TableCell>
                   <TableCell>{getStatusBadge(member.status)}</TableCell>
-                  <TableCell className="text-slate-300 font-mono">
+                  <TableCell className="text-slate-300 font-mono text-lg">
                     {showPins ? member.staffPin : "••••"}
                   </TableCell>
-                  <TableCell className="text-slate-300">
+                  <TableCell className="text-slate-300 text-lg">
                     {member.lastActive 
                       ? new Date(member.lastActive).toLocaleDateString()
                       : "Never"
@@ -338,7 +338,7 @@ export default function TeamManagement() {
       <Card variant="elevated">
         <CardHeader>
           <CardTitle>Staff PIN Security</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-lg">
             Staff PINs are used for voucher redemption verification
           </CardDescription>
         </CardHeader>
@@ -348,7 +348,7 @@ export default function TeamManagement() {
               <Key className="h-5 w-5 text-blue-500 mt-0.5" />
               <div>
                 <h4 className="text-base font-medium text-fg">PIN Requirements</h4>
-                <p className="text-xs text-slate-300 mt-1">
+                <p className="text-base text-slate-300 mt-1">
                   All staff members are assigned a unique 4-digit PIN for voucher redemption.
                   PINs can be rotated for security purposes.
                 </p>
@@ -358,7 +358,7 @@ export default function TeamManagement() {
               <Shield className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
                 <h4 className="text-base font-medium text-fg">Security Best Practices</h4>
-                <p className="text-xs text-slate-300 mt-1">
+                <p className="text-base text-slate-300 mt-1">
                   Regularly rotate PINs and ensure staff don't share their access codes.
                   Monitor redemption activity for suspicious patterns.
                 </p>
