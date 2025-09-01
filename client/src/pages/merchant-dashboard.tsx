@@ -25,7 +25,9 @@ import {
   Copy,
   MapPin,
   QrCode,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  Receipt
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -353,7 +355,7 @@ export default function MerchantDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <MetricTile 
               label="Active Deals" 
-              value={activeDeals.length} 
+              value={activeOffers.length} 
               icon={<Ticket className="h-4 w-4" />}
             />
 
@@ -509,6 +511,32 @@ export default function MerchantDashboard() {
             </TabsContent>
 
             <TabsContent value="scanner" className="space-y-6">
+              {/* QR Scanner Statistics Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <MetricTile 
+                  label="Today's Redemptions" 
+                  value={redemptions.filter(r => {
+                    if (!r.redeemedAt) return false;
+                    const redemptionDate = new Date(r.redeemedAt);
+                    const today = new Date();
+                    return redemptionDate.toDateString() === today.toDateString();
+                  }).length} 
+                  icon={<Calendar className="h-4 w-4" />}
+                />
+
+                <MetricTile 
+                  label="Active Staff" 
+                  value="1" 
+                  icon={<Users className="h-4 w-4" />}
+                />
+
+                <MetricTile 
+                  label="QR Codes Generated" 
+                  value="0" 
+                  icon={<QrCode className="h-4 w-4" />}
+                />
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <QRScanner 
                   onScan={handleQRScan}
@@ -516,8 +544,43 @@ export default function MerchantDashboard() {
                   onToggleScanning={() => setIsScanning(!isScanning)}
                 />
                 
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-fg">Recent Redemptions</CardTitle>
+                    <p className="text-soft text-sm">Latest voucher redemptions processed by your staff</p>
+                  </CardHeader>
+                  <CardBody>
+                    {redemptions.length > 0 ? (
+                      <div className="space-y-3">
+                        {redemptions.slice(0, 5).map((redemption: any) => (
+                          <div key={redemption.id} className="flex justify-between items-center p-3 bg-surface rounded-lg border border-white/20">
+                            <div>
+                              <p className="font-medium text-fg">{redemption.dealTitle || redemption.offerTitle}</p>
+                              <p className="text-sm text-soft">{redemption.customerName || 'Guest'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium text-fg">£{redemption.calculatedDiscount || redemption.value || '0.00'}</p>
+                              <p className="text-xs text-soft">
+                                {redemption.redeemedAt ? new Date(redemption.redeemedAt).toLocaleTimeString() : 'Now'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="bg-muted/20 rounded-full p-4 mx-auto w-16 h-16 flex items-center justify-center mb-3">
+                          <Receipt className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-fg font-medium">No recent redemptions</p>
+                        <p className="text-soft text-sm">Processed redemptions will appear here in real-time</p>
+                      </div>
+                    )}
+                  </CardBody>
+                </Card>
+                
                 {lastScannedVoucher && (
-                  <Card>
+                  <Card className="lg:col-span-2 bg-card border border-white/40 shadow-xl shadow-white/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-green-600" />
