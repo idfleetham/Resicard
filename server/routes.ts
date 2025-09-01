@@ -808,10 +808,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // For comprehensive offers, we'll create vouchers differently
         // Convert offer to deal-like format for voucher creation
+        const expiryDate = offer.validTo 
+          ? (offer.validTo instanceof Date ? offer.validTo : new Date(offer.validTo))
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          
         deal = {
           id: dealId,
           title: offer.title,
-          expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          expiryDate: expiryDate,
           usageLimit: offer.maxPerTransaction || 100,
           isActive: offer.active ?? true
         };
