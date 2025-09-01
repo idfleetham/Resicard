@@ -19,6 +19,11 @@ export default function RedemptionsFeed() {
 
   const { data: redemptionsResponse, isLoading, refetch } = useQuery<any>({
     queryKey: ["/api/redemptions/merchant", user?.id, filter, dateRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/redemptions/merchant/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch redemptions');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
