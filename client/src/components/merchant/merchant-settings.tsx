@@ -550,8 +550,8 @@ export default function MerchantSettings() {
         </div>
       </div>
 
-      <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1 hover:shadow-elev-2 hover:border-white/40Strong transition">
-        <CardHeader className="border-b border-white/40">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+        <CardHeader>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
               <Building2 className="h-5 w-5 text-white" />
@@ -569,7 +569,7 @@ export default function MerchantSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Navigation */}
         <div className="lg:col-span-1">
-          <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 shadow-elev-1">
+          <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
             <CardBody className="p-4">
               <nav className="space-y-2">
                 <Button
@@ -645,7 +645,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Building2 className="w-5 h-5 text-blue-400" />
@@ -826,7 +826,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Clock className="w-5 h-5 text-green-400" />
@@ -938,7 +938,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Camera className="w-5 h-5 text-purple-400" />
@@ -1177,7 +1177,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Calendar className="w-5 h-5 text-green-400" />
@@ -1297,7 +1297,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Key className="w-5 h-5 text-yellow-400" />
