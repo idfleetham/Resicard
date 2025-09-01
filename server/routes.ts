@@ -476,8 +476,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process dates for comprehensive offers
       const processedData = {
         ...req.body,
-        validFrom: req.body.validFrom ? new Date(req.body.validFrom) : undefined,
-        validTo: req.body.validTo ? new Date(req.body.validTo) : undefined,
+        validFrom: req.body.validFrom ? new Date(req.body.validFrom) : new Date(),
+        validTo: req.body.validTo ? new Date(req.body.validTo) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days from now
         merchantId: merchant.id, // Use the merchant UUID, not user ID
       };
       
