@@ -1570,7 +1570,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 setImagePreview(null);
                                 form.setValue('imageUrl', '');
                               }}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                              className="bg-red-100 text-black border-red-300 hover:bg-red-200"
                             >
                               Remove Image
                             </Button>
@@ -1866,7 +1866,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               variant="outline"
                               size="sm"
                               onClick={() => setScale(Math.max(0.1, scale - 0.1))}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                              className="border-slate-600 text-black bg-white hover:bg-gray-100"
                             >
                               Zoom Out
                             </Button>
@@ -1875,7 +1875,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               variant="outline"
                               size="sm"
                               onClick={() => setScale(Math.min(3, scale + 0.1))}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                              className="border-slate-600 text-black bg-white hover:bg-gray-100"
                             >
                               Zoom In
                             </Button>
@@ -1886,7 +1886,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               variant="outline"
                               size="sm"
                               onClick={() => setRotation(rotation - 90)}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                              className="border-slate-600 text-black bg-white hover:bg-gray-100"
                             >
                               Rotate Left
                             </Button>
@@ -1895,7 +1895,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               variant="outline"
                               size="sm"
                               onClick={() => setRotation(rotation + 90)}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                              className="border-slate-600 text-black bg-white hover:bg-gray-100"
                             >
                               Rotate Right
                             </Button>

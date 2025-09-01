@@ -80,6 +80,8 @@ export default function MerchantSettings() {
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const [showCropper, setShowCropper] = useState(false);
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<'square' | 'landscape' | 'portrait'>('square');
+  const [scale, setScale] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -253,6 +255,8 @@ export default function MerchantSettings() {
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setImgSrc(reader.result?.toString() || '');
+        setScale(1); // Reset scale
+        setRotation(0); // Reset rotation
         setShowCropper(true);
         // Reset to square by default when new image is selected
         setSelectedAspectRatio('square');
@@ -308,11 +312,20 @@ export default function MerchantSettings() {
     if (!ctx) return;
 
     const pixelRatio = window.devicePixelRatio;
-    canvas.width = crop.width * pixelRatio * scaleX;
-    canvas.height = crop.height * pixelRatio * scaleY;
+    canvas.width = crop.width * pixelRatio;
+    canvas.height = crop.height * pixelRatio;
 
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.imageSmoothingQuality = 'high';
+
+    // Apply transformations to canvas
+    const centerX = crop.width / 2;
+    const centerY = crop.height / 2;
+    
+    ctx.translate(centerX, centerY);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.scale(scale, scale);
+    ctx.translate(-centerX, -centerY);
 
     ctx.drawImage(
       image,
@@ -322,8 +335,8 @@ export default function MerchantSettings() {
       crop.height * scaleY,
       0,
       0,
-      crop.width * scaleX,
-      crop.height * scaleY
+      crop.width,
+      crop.height
     );
 
     return new Promise<File>((resolve) => {
@@ -334,7 +347,7 @@ export default function MerchantSettings() {
         }
       }, 'image/png', 1);
     });
-  }, [completedCrop]);
+  }, [completedCrop, scale, rotation]);
 
   const handleCropComplete = async () => {
     try {
@@ -938,15 +951,34 @@ export default function MerchantSettings() {
                 <CardBody className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-medium text-slate-200">Business Logo</h4>
-                    <div className="flex items-start space-x-4">
-                      <div className="w-24 h-24 bg-slate-800 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center">
-                        {logoPreview ? (
-                          <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover rounded-lg" />
-                        ) : (
-                          <Camera className="w-8 h-8 text-slate-500" />
-                        )}
+                    {logoPreview ? (
+                      <div className="space-y-4">
+                        <div className="relative w-full max-w-md mx-auto">
+                          <img 
+                            src={logoPreview} 
+                            alt="Business logo" 
+                            className="w-full h-auto object-contain rounded-lg border border-slate-600"
+                          />
+                        </div>
+                        <div className="flex justify-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={selectFile}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md cursor-pointer transition-all duration-200"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Change Logo
+                          </label>
+                        </div>
                       </div>
-                      <div className="flex-1">
+                    ) : (
+                      <div className="space-y-4">
                         <input
                           type="file"
                           accept="image/*"
@@ -956,22 +988,24 @@ export default function MerchantSettings() {
                         />
                         <label
                           htmlFor="logo-upload"
-                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md cursor-pointer transition-all duration-200"
+                          className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
                         >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Logo
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Camera className="w-12 h-12 mb-4 text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-300">
+                              <span className="font-semibold">Click to upload</span> your business logo
+                            </p>
+                            <p className="text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
+                          </div>
                         </label>
-                        <p className="text-sm text-slate-300 mt-2">
-                          Upload any image - you'll be able to crop and resize it
-                        </p>
                         {uploadLogoMutation.isPending && (
-                          <div className="flex items-center text-sm text-blue-400 mt-2">
+                          <div className="flex items-center justify-center text-sm text-blue-400">
                             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                             Uploading logo...
                           </div>
                         )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 </CardBody>
               </Card>
@@ -1007,6 +1041,76 @@ export default function MerchantSettings() {
                   </div>
                 </div>
 
+                {/* Zoom and Rotation Controls */}
+                <div className="mb-4 space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-slate-200 mb-2 block">
+                      Zoom: {scale.toFixed(1)}x
+                    </label>
+                    <input
+                      type="range"
+                      min={0.1}
+                      max={3}
+                      step={0.1}
+                      value={scale}
+                      onChange={(e) => setScale(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setScale(Math.max(0.1, scale - 0.1))}
+                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                    >
+                      Zoom Out
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setScale(Math.min(3, scale + 0.1))}
+                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                    >
+                      Zoom In
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRotation(rotation - 90)}
+                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                    >
+                      Rotate Left
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRotation(rotation + 90)}
+                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                    >
+                      Rotate Right
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setLogoPreview(null);
+                        setImgSrc('');
+                        setShowCropper(false);
+                      }}
+                      className="bg-red-100 text-black border-red-300 hover:bg-red-200"
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <ReactCrop
                     crop={crop}
@@ -1021,6 +1125,9 @@ export default function MerchantSettings() {
                       src={imgSrc}
                       onLoad={onImageLoad}
                       className="max-w-full max-h-[60vh]"
+                      style={{
+                        transform: `scale(${scale}) rotate(${rotation}deg)`,
+                      }}
                     />
                   </ReactCrop>
                   
