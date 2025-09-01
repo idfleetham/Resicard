@@ -116,7 +116,7 @@ export default function BillingPreview() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Billing Preview</h1>
-            <p className="text-slate-300">View monthly fees and download invoices</p>
+            <p className="text-slate-300 text-lg">View monthly fees and download invoices</p>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -173,8 +173,8 @@ export default function BillingPreview() {
       {/* Billing Details */}
       <Card variant="elevated">
         <CardHeader>
-          <CardTitle>Billing Breakdown - {currentPeriod.period}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl">Billing Breakdown - {currentPeriod.period}</CardTitle>
+          <CardDescription className="text-lg">
             Detailed breakdown of fees for the selected billing period
           </CardDescription>
         </CardHeader>
@@ -182,22 +182,22 @@ export default function BillingPreview() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-fg">Description</TableHead>
-                <TableHead className="text-fg">Quantity</TableHead>
-                <TableHead className="text-fg">Rate</TableHead>
-                <TableHead className="text-right text-fg">Amount</TableHead>
+                <TableHead className="text-fg text-lg">Description</TableHead>
+                <TableHead className="text-fg text-lg">Quantity</TableHead>
+                <TableHead className="text-fg text-lg">Rate</TableHead>
+                <TableHead className="text-right text-fg text-lg">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="text-slate-300">Redemption Processing Fee</TableCell>
-                <TableCell className="text-slate-300">{currentPeriod.redemptions}</TableCell>
-                <TableCell className="text-slate-300">£{feePerRedemption}</TableCell>
-                <TableCell className="text-right text-slate-300">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+                <TableCell className="text-slate-300 text-lg">Redemption Processing Fee</TableCell>
+                <TableCell className="text-slate-300 text-lg">{currentPeriod.redemptions}</TableCell>
+                <TableCell className="text-slate-300 text-lg">£{feePerRedemption}</TableCell>
+                <TableCell className="text-right text-slate-300 text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow className="border-t-2 border-white/40 shadow-xl shadow-white/20Strong font-medium">
-                <TableCell className="text-fg font-semibold" colSpan={3}>Total Due</TableCell>
-                <TableCell className="text-right text-fg font-semibold">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+                <TableCell className="text-fg font-semibold text-lg" colSpan={3}>Total Due</TableCell>
+                <TableCell className="text-right text-fg font-semibold text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -207,8 +207,8 @@ export default function BillingPreview() {
               <div className="flex items-start space-x-3">
                 <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
-                  <h4 className="text-base font-medium text-fg">Draft Invoice</h4>
-                  <p className="text-xs text-slate-300 mt-1">
+                  <h4 className="text-lg font-medium text-fg">Draft Invoice</h4>
+                  <p className="text-base text-slate-300 mt-1">
                     This is a draft invoice. The final amount will be calculated at the end of the billing period 
                     and collected via direct debit on {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}.
                   </p>
@@ -222,8 +222,8 @@ export default function BillingPreview() {
       {/* Payment Method */}
       <Card variant="elevated">
         <CardHeader>
-          <CardTitle>Payment Method</CardTitle>
-          <CardDescription>How fees are collected</CardDescription>
+          <CardTitle className="text-xl">Payment Method</CardTitle>
+          <CardDescription className="text-lg">How fees are collected</CardDescription>
         </CardHeader>
         <CardBody>
           <div className="flex items-center space-x-4">
@@ -231,21 +231,21 @@ export default function BillingPreview() {
               <CreditCard className="h-6 w-6 text-fg" />
             </div>
             <div>
-              <p className="font-medium text-fg">Direct Debit</p>
-              <p className="text-base text-slate-300">Fees are automatically collected monthly</p>
+              <p className="font-medium text-fg text-lg">Direct Debit</p>
+              <p className="text-lg text-slate-300">Fees are automatically collected monthly</p>
             </div>
           </div>
           
           <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-base">
+            <div className="flex justify-between text-lg">
               <span className="text-slate-300">Collection Date:</span>
               <span className="text-fg">End of each month</span>
             </div>
-            <div className="flex justify-between text-base">
+            <div className="flex justify-between text-lg">
               <span className="text-slate-300">Processing Fee:</span>
               <span className="text-fg">£0.50 per redemption</span>
             </div>
-            <div className="flex justify-between text-base">
+            <div className="flex justify-between text-lg">
               <span className="text-slate-300">VAT:</span>
               <span className="text-fg">Included</span>
             </div>
