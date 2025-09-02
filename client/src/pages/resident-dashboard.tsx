@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
-import DealCard from "@/components/deal-card-new";
+import DealCard from "@/components/deal-card";
 import { Card, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -735,22 +735,21 @@ export default function ResidentDashboard() {
 
               {/* Deal Cards */}
               {isLoadingOffers ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-3xl shadow-xl border-0 animate-pulse">
-                      <div className="aspect-video bg-gradient-to-br from-purple-200 to-pink-200 rounded-t-3xl" />
-                      <div className="p-8 space-y-6">
-                        <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl w-3/4" />
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2" />
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-full" />
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-2/3" />
-                        <div className="h-12 bg-gradient-to-r from-purple-200 to-pink-200 rounded-2xl w-full" />
-                      </div>
-                    </div>
+                    <Card key={i} className="animate-pulse">
+                      <div className="h-48 bg-muted" />
+                      <CardBody className="p-6 space-y-3">
+                        <div className="h-4 bg-muted rounded w-1/4" />
+                        <div className="h-6 bg-muted rounded w-3/4" />
+                        <div className="h-4 bg-muted rounded w-full" />
+                        <div className="h-4 bg-muted rounded w-2/3" />
+                      </CardBody>
+                    </Card>
                   ))}
                 </div>
               ) : filteredDeals.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredDeals.map((deal) => {
                     const hasExistingVoucher = vouchers.some(v => v.dealId === deal.id && !v.isUsed);
                     return (
