@@ -494,6 +494,7 @@ export const vouchersRelations = relations(vouchers, ({ one }) => ({
 export type DealWithMerchant = Deal & {
   merchantName: string;
   merchantAddress: string;
+  eligibleTiers?: string[];
 };
 
 export type VoucherWithDeal = Voucher & {

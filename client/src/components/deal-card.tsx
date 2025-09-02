@@ -96,6 +96,16 @@ export default function DealCard({
             {deal.category.charAt(0).toUpperCase() + deal.category.slice(1)}
           </Badge>
         </div>
+        
+        {/* Tier Requirements Badge */}
+        {deal.eligibleTiers && deal.eligibleTiers.length > 0 && (
+          <div className="absolute top-3 left-3 mt-8">
+            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs font-semibold shadow-sm">
+              <Users className="w-3 h-3 mr-1" />
+              {deal.eligibleTiers.join(', ')} Members Only
+            </Badge>
+          </div>
+        )}
         {/* Expiry Badge on Image */}
         <div className="absolute top-3 right-3">
           <Badge className={`${getExpiryBadgeColor()} text-xs font-medium border`}>

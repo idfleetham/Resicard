@@ -458,6 +458,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const finalImageUrl = offer.imageUrl || merchantUser?.profilePhoto || merchant?.logoUrl || null;
         
+        // Parse eligibleTiers from JSON string
+        let eligibleTiers = [];
+        if (offer.eligibleTiers) {
+          try {
+            eligibleTiers = typeof offer.eligibleTiers === 'string' ? JSON.parse(offer.eligibleTiers) : offer.eligibleTiers;
+          } catch (e) {
+            console.warn('Failed to parse eligibleTiers for offer:', offer.id);
+          }
+        }
+
         const convertedOffer = {
           id: offer.id,
           title: offer.title,
@@ -475,7 +485,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: offer.createdAt,
           merchantId: offer.merchantId,
           merchantName: merchant?.name || 'Unknown Business',
-          merchantAddress: merchant?.address || 'Address not provided'
+          merchantAddress: merchant?.address || 'Address not provided',
+          eligibleTiers: eligibleTiers
         };
         
         result.push(convertedOffer);
