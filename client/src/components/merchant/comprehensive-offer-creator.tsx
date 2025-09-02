@@ -38,7 +38,7 @@ const offerSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
-  percentOff: z.number().min(1).max(100).optional(),
+  percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
   fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   category: z.string().optional(),
@@ -47,11 +47,11 @@ const offerSchema = z.object({
   // B) Visibility & eligibility
   audience: z.enum(["resident", "student", "both"]).default("both"),
   eligibleTiers: z.array(z.string()).default([]),
-  minBasket: z.number().min(0).optional(),
-  maxDiscount: z.number().min(0).optional(),
+  minBasket: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
+  maxDiscount: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
   stackable: z.boolean().default(false),
   newCustomerOnly: z.boolean().default(false),
-  geofenceRadius: z.number().min(0).optional(),
+  geofenceRadius: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
 
   // C) Scheduling
   validFrom: z.string(),
@@ -64,15 +64,15 @@ const offerSchema = z.object({
     endDate: z.string(),
     recurring: z.boolean().default(false)
   })).default([]),
-  leadTime: z.number().min(0).default(0),
+  leadTime: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || 0 : val).default(0),
 
   // D) Redemption rules & limits
-  maxPerTransaction: z.number().min(1).default(1),
-  maxPerDay: z.number().min(1).optional(),
-  maxPerWeek: z.number().min(1).optional(),
-  maxLifetime: z.number().min(1).optional(),
-  globalUsageLimit: z.number().min(1).optional(),
-  voucherTimeoutHours: z.number().min(1).max(168).default(24), // Hours to make booking after claiming
+  maxPerTransaction: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || 1 : val).default(1),
+  maxPerDay: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
+  maxPerWeek: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
+  maxLifetime: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
+  globalUsageLimit: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
+  voucherTimeoutHours: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || 24 : val).default(24), // Hours to make booking after claiming
   staffPinRequired: z.boolean().default(false),
   proofType: z.enum(["qr_only", "code_pin", "app_checkin"]).default("qr_only"),
 
@@ -90,8 +90,8 @@ const offerSchema = z.object({
 
   // G) Budget & billing controls
   feeModel: z.enum(["default", "per_redemption", "percent_discount"]).default("default"),
-  customFee: z.number().min(0).optional(),
-  budgetCap: z.number().min(0).optional(),
+  customFee: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
+  budgetCap: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
   autoPauseOnAbuse: z.boolean().default(true),
 
   // H) Fraud & safety
