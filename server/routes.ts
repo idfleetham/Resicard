@@ -2243,17 +2243,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Earn points/stamps (staff endpoint)
   app.post("/api/loyalty/earn", authenticateToken, async (req, res) => {
     try {
-      const { amount, type } = req.body;
+      const { customerId, basketAmount, earnType, notes } = req.body;
+      const merchantId = req.user.merchantId || req.user.id;
       
-      // Loyalty earning logic (real implementation would update database)
-      const pointsAdded = 0;
-      const stampsAdded = 0;
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID is required" });
+      }
+
+      // Calculate points to award
+      const basketValue = parseFloat(basketAmount) || 0;
+      const pointsPerPound = 10; // Default rate
+      const pointsToAdd = earnType === 'purchase' ? Math.floor(basketValue * pointsPerPound) : 5; // 5 points for visit
+      
+      if (pointsToAdd <= 0) {
+        return res.status(400).json({ error: "No points to award" });
+      }
+
+      // Award the points
+      const loyaltyResult = await awardLoyaltyPoints({
+        merchantId,
+        userId: parseInt(customerId),
+        basketValue,
+        redemptionValue: Math.max(basketValue, 0),
+        type: earnType
+      });
+
+      // For now, simulate tier change detection (would be improved with actual database logic)
+      const tierChanged = loyaltyResult.pointsAdded >= 50; // Simulate tier change
+      const newTier = tierChanged ? 'Bronze' : null;
       
       res.json({ 
         success: true, 
-        pointsAdded, 
-        stampsAdded,
-        newBalance: { points: 85, stamps: 4 }
+        pointsAdded: loyaltyResult.pointsAdded || pointsToAdd,
+        stampsAdded: loyaltyResult.stampsAdded || 0,
+        tierChanged,
+        newTier,
+        newBalance: { 
+          points: loyaltyResult.pointsAdded || pointsToAdd, 
+          stamps: loyaltyResult.stampsAdded || 0,
+          tier: newTier ? { name: newTier } : null
+        }
       });
     } catch (error) {
       console.error('Earn loyalty error:', error);

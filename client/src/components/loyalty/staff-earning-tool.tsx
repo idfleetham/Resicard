@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { generateCustomerAlias } from "@shared/schema";
+import { useRewardAnimationContext } from "./reward-animation-provider";
+import { PulsingBadge, ShimmerText } from "./reward-animations";
 import { 
   Zap, 
   User, 
@@ -39,6 +41,7 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { triggerPointsEarned, triggerTierUpgrade } = useRewardAnimationContext();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -56,6 +59,16 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
     onSuccess: (response) => {
       const result = response as any;
       queryClient.invalidateQueries({ queryKey: ["/api/loyalty/balance"] });
+      
+      // Trigger reward animations
+      if (result.pointsAdded > 0) {
+        triggerPointsEarned(result.pointsAdded);
+      }
+      
+      if (result.tierChanged && result.newTier) {
+        triggerTierUpgrade(result.newTier);
+      }
+      
       toast({ 
         title: "Points awarded successfully!",
         description: `Awarded ${result.pointsAdded || 0} points and ${result.stampsAdded || 0} stamps`
@@ -263,26 +276,42 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
 
               {/* Preview Earning */}
               {(earning.points > 0 || earning.stamps > 0) && (
-                <div className="p-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                  className="p-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
+                >
                   <div className="flex items-center gap-2 mb-2">
-                    <Gift className="w-4 h-4 text-green-400" />
-                    <span className="text-sm font-medium text-green-400">Will Award</span>
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Gift className="w-4 h-4 text-green-400" />
+                    </motion.div>
+                    <ShimmerText>
+                      <span className="text-sm font-medium text-green-400">Will Award</span>
+                    </ShimmerText>
                   </div>
                   <div className="flex gap-4 text-sm">
                     {earning.points > 0 && (
-                      <div>
-                        <span className="font-bold text-white">{earning.points}</span>
-                        <span className="text-slate-300"> points</span>
-                      </div>
+                      <PulsingBadge isActive={true}>
+                        <div>
+                          <span className="font-bold text-white">{earning.points}</span>
+                          <span className="text-slate-300"> points</span>
+                        </div>
+                      </PulsingBadge>
                     )}
                     {earning.stamps > 0 && (
-                      <div>
-                        <span className="font-bold text-white">{earning.stamps}</span>
-                        <span className="text-slate-300"> stamp{earning.stamps !== 1 ? 's' : ''}</span>
-                      </div>
+                      <PulsingBadge isActive={true}>
+                        <div>
+                          <span className="font-bold text-white">{earning.stamps}</span>
+                          <span className="text-slate-300"> stamp{earning.stamps !== 1 ? 's' : ''}</span>
+                        </div>
+                      </PulsingBadge>
                     )}
                   </div>
-                </div>
+                </motion.div>
               )}
 
               <div className="flex gap-2">

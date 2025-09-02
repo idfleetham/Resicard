@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { RewardAnimationProvider } from "@/components/loyalty/reward-animation-provider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
@@ -54,8 +55,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AuthProvider>
-            <Toaster />
-            <Router />
+            <RewardAnimationProvider>
+              <Toaster />
+              <Router />
+            </RewardAnimationProvider>
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
