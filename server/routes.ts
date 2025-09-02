@@ -151,7 +151,7 @@ async function awardLoyaltyPoints({
       const availableTiers = await db.execute(sql`
         SELECT lt.* FROM loyalty_tiers lt
         JOIN loyalty_programs lp ON lt."programId" = lp.id
-        WHERE lp."merchantId"::text = ${merchantId}::text
+        WHERE lp.merchant_id::text = ${merchantId}::text
         AND lt."thresholdPoints" <= ${newPoints}
         ORDER BY lt."thresholdPoints" DESC
         LIMIT 1
@@ -2358,7 +2358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           m.id as merchant_id
         FROM loyalty_balances lb
         JOIN merchants m ON lb."merchantId"::text = m.id::text
-        JOIN loyalty_programs lp ON m.id::text = lp."merchantId"::text
+        JOIN loyalty_programs lp ON m.id::text = lp.merchant_id::text
         LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
         WHERE lb."userId" = ${userId}
         AND (lb.points > 0 OR lb.stamps > 0)
