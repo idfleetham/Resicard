@@ -75,6 +75,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(tier.name);
   const [editPoints, setEditPoints] = useState(tier.thresholdPoints);
+  const [editColor, setEditColor] = useState(tier.color || getDefaultTierColor(index));
   const [editBenefits, setEditBenefits] = useState<Array<{ type: string; value: number; note?: string }>>(
     tier.perks || [{ type: 'discount', value: 5, note: '' }]
   );
@@ -84,6 +85,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
       ...tier,
       name: editName,
       thresholdPoints: parseInt(editPoints.toString()),
+      color: editColor,
       perks: editBenefits
     });
     setIsEditing(false);
@@ -92,6 +94,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
   const handleCancel = () => {
     setEditName(tier.name);
     setEditPoints(tier.thresholdPoints);
+    setEditColor(tier.color || getDefaultTierColor(index));
     setEditBenefits(tier.perks || [{ type: 'discount', value: 5, note: '' }]);
     setIsEditing(false);
   };
@@ -110,19 +113,26 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
     setEditBenefits(editBenefits.filter((_, i) => i !== index));
   };
 
-  const getTierColor = (index: number) => {
-    const colors = ['bg-orange-500', 'bg-gray-400', 'bg-yellow-500', 'bg-purple-500', 'bg-green-500'];
+  const getDefaultTierColor = (index: number) => {
+    const colors = ['#f97316', '#9ca3af', '#eab308', '#a855f7', '#22c55e']; // orange, gray, yellow, purple, green
     return colors[index % colors.length];
+  };
+
+  const getTierColor = (tier: any, index: number) => {
+    return tier.color || getDefaultTierColor(index);
   };
 
   return (
     <div className="p-4 rounded-lg border border-border-dim bg-surface/30 hover:bg-surface/40 transition-colors">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className={`w-4 h-4 rounded-full ${getTierColor(index)} flex-shrink-0`}></div>
+          <div 
+            className="w-4 h-4 rounded-full flex-shrink-0" 
+            style={{ backgroundColor: getTierColor(tier, index) }}
+          ></div>
           {isEditing ? (
             <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
@@ -136,6 +146,15 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
                   className="bg-bg border-border-dim text-fg"
                   placeholder="Points required"
                 />
+                <div className="flex items-center gap-2">
+                  <Label className="text-fg text-sm whitespace-nowrap">Color:</Label>
+                  <Input
+                    type="color"
+                    value={editColor}
+                    onChange={(e) => setEditColor(e.target.value)}
+                    className="bg-bg border-border-dim text-fg w-16 h-10 p-1 cursor-pointer"
+                  />
+                </div>
               </div>
               
               {/* Benefits Editor */}
@@ -353,10 +372,13 @@ export default function LoyaltyDashboard() {
   // Add tier mutation
   const addTierMutation = useMutation({
     mutationFn: async () => {
+      const tierIndex = loyaltyProgramme?.tiers.length || 0;
+      const defaultColors = ['#f97316', '#9ca3af', '#eab308', '#a855f7', '#22c55e']; // orange, gray, yellow, purple, green
       const newTier = {
-        name: `Tier ${(loyaltyProgramme?.tiers.length || 0) + 1}`,
+        name: `Tier ${tierIndex + 1}`,
         thresholdPoints: (loyaltyProgramme?.tiers[loyaltyProgramme.tiers.length - 1]?.thresholdPoints || 0) + 100,
-        perks: [{ type: "discount", value: 5, note: "Discount on purchases" }]
+        perks: [{ type: "discount", value: 5, note: "Discount on purchases" }],
+        color: defaultColors[tierIndex % defaultColors.length]
       };
       const response = await apiRequest("POST", "/api/loyalty/tiers", newTier);
       return response.json();
@@ -841,10 +863,11 @@ export default function LoyaltyDashboard() {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {loyaltyProgramme?.tiers.map((tier, index) => {
-                const getTierColor = (index: number) => {
-                  const colors = ['from-orange-500 to-amber-500', 'from-gray-400 to-gray-500', 'from-yellow-400 to-yellow-500', 'from-purple-500 to-purple-600', 'from-green-500 to-green-600'];
+                const getDefaultTierColor = (index: number) => {
+                  const colors = ['#f97316', '#9ca3af', '#eab308', '#a855f7', '#22c55e']; // orange, gray, yellow, purple, green
                   return colors[index % colors.length];
                 };
+                const tierColor = tier.color || getDefaultTierColor(index);
 
                 return (
                   <motion.div
@@ -854,7 +877,10 @@ export default function LoyaltyDashboard() {
                     transition={{ delay: index * 0.1 }}
                     className="relative"
                   >
-                    <div className={`p-6 rounded-xl bg-gradient-to-br ${getTierColor(index)} text-white shadow-lg`}>
+                    <div 
+                      className="p-6 rounded-xl text-white shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${tierColor}, ${tierColor}dd)` }}
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <Crown className="w-8 h-8 opacity-80" />
                         <Badge variant="secondary" className="bg-white/20 text-white border-white/30">

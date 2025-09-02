@@ -2103,14 +2103,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
 
-      const { name, thresholdPoints, perks } = req.body;
+      const { name, thresholdPoints, perks, color } = req.body;
       
       // Create new tier and add to mock data
       const newTier = {
         id: `tier-${Date.now()}`,
         name: name || "New Tier",
         thresholdPoints: thresholdPoints || 0,
-        perks: perks || [{ type: "percentOff", value: 5 }]
+        perks: perks || [{ type: "percentOff", value: 5 }],
+        color: color
       };
 
       // Add to loyalty tiers array
@@ -2131,7 +2132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { tierId } = req.params;
-      const { name, thresholdPoints, perks } = req.body;
+      const { name, thresholdPoints, perks, color } = req.body;
       
       // Find and update tier in loyalty data
       const tierIndex = loyaltyTiers.findIndex(tier => tier.id === tierId);
@@ -2140,7 +2141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: tierId,
           name,
           thresholdPoints,
-          perks
+          perks,
+          color
         };
       }
 
