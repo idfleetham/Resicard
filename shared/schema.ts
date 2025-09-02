@@ -153,34 +153,11 @@ export const offers = pgTable("offers", {
 
 // Enhanced redemptions table with comprehensive tracking
 export const redemptions = pgTable("redemptions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
-  userId: integer("user_id").notNull().references(() => users.id),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
-  
-  // Redemption details
-  voucherCode: text("voucher_code"),
-  basketValue: numeric("basket_value", { precision: 10, scale: 2 }),
-  discountValue: numeric("discount_value", { precision: 10, scale: 2 }),
-  finalValue: numeric("final_value", { precision: 10, scale: 2 }),
-  
-  // Staff and device tracking
-  staffUserId: integer("staff_user_id"),
-  deviceId: text("device_id"),
-  stationId: text("station_id"),
-  
-  // Status and timing
-  status: text("status").$type<"pending"|"completed"|"voided"|"refunded">().default("completed"),
-  redeemedAt: timestamp("redeemed_at").defaultNow(),
-  voidedAt: timestamp("voided_at"),
-  refundedAt: timestamp("refunded_at"),
-  
-  // Location verification
-  redemptionLatitude: numeric("redemption_latitude", { precision: 10, scale: 8 }),
-  redemptionLongitude: numeric("redemption_longitude", { precision: 11, scale: 8 }),
-  withinGeofence: boolean("within_geofence").default(true),
-  
-  createdAt: timestamp("created_at").defaultNow(),
+  id: serial("id").primaryKey(), // Matches existing database
+  dealId: integer("deal_id").notNull(), // TODO: migrate to offer_id when ready
+  userId: integer("user_id").notNull(),
+  redeemedAt: timestamp("redeemed_at"),
+  value: numeric("value", { precision: 10, scale: 2 }),
 });
 
 // Analytics tracking for offers
@@ -215,7 +192,7 @@ export const offerBlackouts = pgTable("offer_blackouts", {
 
 export const vouchers = pgTable("vouchers", {
   id: serial("id").primaryKey(),
-  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  dealId: integer("deal_id").notNull(), // TODO: migrate to offer_id when ready
   userId: integer("user_id").notNull(),
   voucherNumber: text("voucher_number").notNull().unique(),
   isUsed: boolean("is_used").default(false),
