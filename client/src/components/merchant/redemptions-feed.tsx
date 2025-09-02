@@ -319,7 +319,7 @@ export default function RedemptionsFeed() {
                       </TableCell>
                       <TableCell className="text-white">{redemption.customerName || "Guest"}</TableCell>
                       <TableCell className="text-green-400 font-medium">
-                        £{redemption.value || "0.00"}
+                        £{redemption.calculatedDiscount || redemption.value || "0.00"}
                       </TableCell>
                       <TableCell className="text-white">
                         £{redemption.basketSubtotal || "N/A"}
