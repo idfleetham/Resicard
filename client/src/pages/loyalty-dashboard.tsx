@@ -1194,7 +1194,7 @@ export default function LoyaltyDashboard() {
             <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white">Tier Distribution</h3>
-                <p className="text-slate-600 text-sm">Customer distribution across tiers</p>
+                <p className="text-gray-300 text-sm">Customer distribution across tiers</p>
               </div>
               <div className="space-y-4">
                 {loyaltyProgramme?.tiers.map((tier, index) => {
@@ -1207,13 +1207,13 @@ export default function LoyaltyDashboard() {
                           index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
                         }`}></div>
                         <span className="font-medium text-white">{tier.name}</span>
-                        <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
+                        <Badge variant="outline" className="text-xs text-gray-300 border-gray-400">
                           {tier.thresholdPoints}+ pts
                         </Badge>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-white">{tierMemberCount}</p>
-                        <p className="text-xs text-slate-600">customers</p>
+                        <p className="text-xs text-gray-300">customers</p>
                       </div>
                     </div>
                   );
@@ -1224,7 +1224,7 @@ export default function LoyaltyDashboard() {
             <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white">Popular Rewards</h3>
-                <p className="text-slate-600 text-sm">Most redeemed rewards this month</p>
+                <p className="text-gray-300 text-sm">Most redeemed rewards this month</p>
               </div>
               <div className="space-y-4">
                 {loyaltyProgramme?.rewards.slice(0, 3).map((reward, index) => (
@@ -1233,12 +1233,12 @@ export default function LoyaltyDashboard() {
                       <Coffee className="w-5 h-5 text-amber-400" />
                       <div>
                         <p className="font-medium text-white">{reward.name}</p>
-                        <p className="text-xs text-slate-600">{reward.costPoints} points</p>
+                        <p className="text-xs text-gray-300">{reward.costPoints} points</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-white">0</p>
-                      <p className="text-xs text-slate-600">redeemed</p>
+                      <p className="text-xs text-gray-300">redeemed</p>
                     </div>
                   </div>
                 ))}
