@@ -1016,35 +1016,13 @@ export class DatabaseStorage implements IStorage {
   }> {
     const [usersCount] = await db.select({ count: sql`COUNT(*)` }).from(users).where(eq(users.role, 'resident'));
     const [businessesCount] = await db.select({ count: sql`COUNT(*)` }).from(users).where(eq(users.role, 'merchant'));
-    const [dealsCount] = await db.select({ count: sql`COUNT(*)` }).from(deals);
+    const [dealsCount] = await db.select({ count: sql`COUNT(*)` }).from(offers);
     const [vouchersUsedCount] = await db.select({ count: sql`COUNT(*)` }).from(vouchers).where(eq(vouchers.isUsed, true));
     
+    // TODO: Update revenue calculation to work with offers schema
     // Calculate total revenue from used vouchers with 5% commission
-    const usedVouchers = await db.select().from(vouchers).where(eq(vouchers.isUsed, true));
-    const dealsData = await db.select().from(deals);
-    const dealsMap = new Map(dealsData.map(deal => [deal.id, deal]));
-    
+    // Temporarily disabled during migration
     let totalRevenue = 0;
-    usedVouchers.forEach(voucher => {
-      const deal = dealsMap.get(voucher.dealId);
-      if (deal) {
-        const discountVal = parseFloat((deal.discountValue as string) || '0');
-        const originalVal = parseFloat((deal.originalValue as string) || '0');
-        
-        let dealValue = 0;
-        if (deal.discountType === 'percentage' && originalVal > 0) {
-          // For percentage deals, use the discount amount (what customer saves)
-          dealValue = originalVal * (discountVal / 100);
-        } else if (deal.discountType === 'fixed') {
-          // For fixed deals, use the discount value (what customer saves)
-          dealValue = discountVal;
-        } else {
-          dealValue = discountVal || originalVal;
-        }
-        
-        totalRevenue += dealValue * 0.05; // 5% commission
-      }
-    });
 
     return {
       totalUsers: Number(usersCount.count),
