@@ -168,8 +168,8 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
-            <p className="text-slate-300 text-lg">Manage all your business offers</p>
+            <h1 className="text-3xl font-semibold text-fg">Your Offers</h1>
+            <p className="text-slate-300 text-xl">Manage all your business offers</p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -239,8 +239,8 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       {/* Offers Table */}
       <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
-          <CardTitle className="text-fg text-3xl">Your Offers</CardTitle>
-          <CardDescription className="text-slate-300 text-lg">
+          <CardTitle className="text-fg text-5xl">Your Offers</CardTitle>
+          <CardDescription className="text-slate-300 text-xl">
             Manage all your business offers and track their performance
           </CardDescription>
         </CardHeader>
@@ -270,9 +270,8 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0 border-b-2 border-gradient-to-r from-purple-500/50 to-blue-500/50">
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Type</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Title</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Offer Type</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent w-48">Offer Type</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Category</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Usage</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Expiry</TableHead>
@@ -283,15 +282,10 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                 <TableBody className="divide-y divide-white/5">
                   {allOffers.map((offer: any) => (
                     <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
-                      <TableCell>
-                        <Badge className={offer.type === 'simple' ? "bg-blue-500/20 text-blue-400 border-blue-500/30 text-lg" : "bg-purple-500/20 text-purple-400 border-purple-500/30 text-lg"}>
-                          {offer.type === 'simple' ? 'Simple' : 'Advanced'}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="font-medium text-fg text-xl">
                         <div>{offer.title}</div>
                       </TableCell>
-                      <TableCell className="text-slate-200 text-xl">{offer.discountText}</TableCell>
+                      <TableCell className="text-slate-200 text-xl w-48">{offer.discountText}</TableCell>
                       <TableCell className="text-slate-200 text-xl">{offer.category}</TableCell>
                       <TableCell className="text-slate-200 text-xl">
                         {offer.usageCount || 0} / {offer.usageLimit}
