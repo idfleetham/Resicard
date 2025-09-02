@@ -279,6 +279,30 @@ export default function ResidentDashboard() {
       setActiveTab("subscription");
       return;
     }
+
+    // Check tier eligibility before creating voucher
+    const deal = [...deals, ...offers].find(d => d.id === dealId);
+    if (deal?.eligibleTiers && loyaltyMemberships?.success) {
+      const eligibleTiers = typeof deal.eligibleTiers === 'string' 
+        ? JSON.parse(deal.eligibleTiers) 
+        : deal.eligibleTiers;
+      
+      if (eligibleTiers && eligibleTiers.length > 0) {
+        const userMembership = loyaltyMemberships.memberships.find(
+          (membership: any) => membership.businessName === deal.merchantName
+        );
+        
+        if (!userMembership?.tier || !eligibleTiers.includes(userMembership.tier.name)) {
+          toast({
+            title: "Tier Requirement Not Met",
+            description: `This offer requires ${eligibleTiers.join(' or ')} tier membership with ${deal.merchantName}.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+
     createVoucherMutation.mutate({ dealId });
   };
 
@@ -290,7 +314,7 @@ export default function ResidentDashboard() {
   // Combine loading states
   const isLoadingOffers = dealsLoading || offersLoading;
 
-  // Combine deals and offers, then filter based on category, availability, and loyalty tier eligibility
+  // Combine deals and offers, then filter based on category and availability (show all deals with tier badges like homepage)
   const allOffers = [...deals, ...offers];
   const filteredDeals = allOffers.filter(deal => {
     const matchesCategory = selectedCategory === "all" || deal.category === selectedCategory;
@@ -300,31 +324,8 @@ export default function ResidentDashboard() {
       (deal.usageCount || 0) < (deal.usageLimit || deal.redeemLimit || Infinity)
     );
     
-    // Check tier eligibility if the deal has tier requirements
-    let meetsLoyaltyRequirement = true;
-    if (deal.eligibleTiers && loyaltyMemberships?.success) {
-      // Parse eligible tiers if it's a string
-      const eligibleTiers = typeof deal.eligibleTiers === 'string' 
-        ? JSON.parse(deal.eligibleTiers) 
-        : deal.eligibleTiers;
-      
-      if (eligibleTiers && eligibleTiers.length > 0) {
-        // Find user's membership with this merchant
-        const userMembership = loyaltyMemberships.memberships.find(
-          (membership: any) => membership.businessName === deal.merchantName
-        );
-        
-        if (userMembership?.tier) {
-          // Check if user's tier is in the eligible tiers list
-          meetsLoyaltyRequirement = eligibleTiers.includes(userMembership.tier.name);
-        } else {
-          // User has no tier with this merchant, can't access tier-restricted deals
-          meetsLoyaltyRequirement = false;
-        }
-      }
-    }
-    
-    return matchesCategory && isAvailable && meetsLoyaltyRequirement;
+    // Show all deals with tier eligibility badges (same as homepage)
+    return matchesCategory && isAvailable;
   });
 
   const categories = [
