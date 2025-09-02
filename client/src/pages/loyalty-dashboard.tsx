@@ -1086,60 +1086,6 @@ export default function LoyaltyDashboard() {
           <TabsContent value="overview" className="space-y-6">
           
           {/* Programme Status Cards */}
-          <motion.div 
-            className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Quick Actions</h3>
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm">
-                Award Points
-              </button>
-              <button className="mt-2 w-full bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
-                Full Dashboard
-              </button>
-            </div>
-            
-            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Programme Status</h3>
-                <div className={`px-2 py-1 rounded text-xs ${loyaltyProgramme?.active ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                  {loyaltyProgramme?.active ? 'Active' : 'Inactive'}
-                </div>
-              </div>
-              <div className="mt-3">
-                <h4 className="text-sm font-medium text-white">Points Model</h4>
-                <p className="text-xs text-gray-300 mt-1">
-                  {loyaltyProgramme?.pointsPerCurrency || 1} points per £1 spent
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">This Month</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-300">New Members</span>
-                  <span className="text-sm font-medium text-white">{membersData?.members?.length || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-300">Repeat Visits</span>
-                  <span className="text-sm font-medium text-white">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-300">Revenue Impact</span>
-                  <span className="text-sm font-medium text-white">£{revenueData?.revenueImpact?.monthToDate?.toFixed(0) || "0"}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
           
           {/* Key Metrics */}
           <motion.div 
