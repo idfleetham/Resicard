@@ -31,7 +31,9 @@ import {
   Mail,
   Calendar,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  ArrowUp,
+  ArrowRight
 } from "lucide-react";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -630,6 +632,18 @@ export default function MerchantSettings() {
                 >
                   <DollarSign className="w-4 h-4 mr-2" />
                   <span className="text-lg">Tier Pricing</span>
+                </Button>
+                <Button
+                  variant={activeTab === "tier-upgrades" ? "default" : "ghost"}
+                  className={`w-full justify-start transition-all duration-200 ${
+                    activeTab === "tier-upgrades" 
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" 
+                      : "text-slate-300 hover:text-slate-100 hover:bg-slate-800"
+                  }`}
+                  onClick={() => setActiveTab("tier-upgrades")}
+                >
+                  <ArrowUp className="w-4 h-4 mr-2" />
+                  <span className="text-lg">Tier Upgrades</span>
                 </Button>
                 <Button
                   variant={activeTab === "api" ? "default" : "ghost"}
@@ -1345,6 +1359,197 @@ export default function MerchantSettings() {
                     <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white">
                       <Save className="w-4 h-4 mr-2" />
                       Save Tier Pricing
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === "tier-upgrades" && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-slate-100">
+                    <ArrowUp className="w-5 h-5 text-green-400" />
+                    <span>Tier Upgrade Pricing</span>
+                  </CardTitle>
+                  <CardDescription className="text-slate-300 text-lg">
+                    Set prices for customers to upgrade directly from one tier to another
+                  </CardDescription>
+                </CardHeader>
+                <CardBody className="space-y-6">
+                  <div className="space-y-6">
+                    <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-600">
+                      <h3 className="text-lg font-semibold text-slate-100 mb-2">How Tier Upgrades Work</h3>
+                      <p className="text-slate-300 mb-4">
+                        Customers can pay to upgrade directly from their current tier to a higher tier, 
+                        bypassing the points requirement. This provides immediate access to better benefits.
+                      </p>
+                      <div className="flex items-center space-x-2 text-blue-400">
+                        <span>Example: Bronze → Gold = £25 upgrade</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold text-slate-100">Available Upgrade Paths</h3>
+                      
+                      {/* Bronze → Silver */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#cd7f32'}}></div>
+                              <span className="text-slate-200">Bronze</span>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400" />
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#c0c0c0'}}></div>
+                              <span className="text-slate-200">Silver</span>
+                            </div>
+                          </div>
+                          <Switch className="data-[state=checked]:bg-green-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Upgrade Price (£)</label>
+                            <Input placeholder="15.00" className="input-dark" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Duration Extension</label>
+                            <Select>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectValue placeholder="12 months" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="12">12 months</SelectItem>
+                                <SelectItem value="6">6 months</SelectItem>
+                                <SelectItem value="3">3 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bronze → Gold */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#cd7f32'}}></div>
+                              <span className="text-slate-200">Bronze</span>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400" />
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#ffd700'}}></div>
+                              <span className="text-slate-200">Gold</span>
+                            </div>
+                          </div>
+                          <Switch className="data-[state=checked]:bg-green-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Upgrade Price (£)</label>
+                            <Input placeholder="35.00" className="input-dark" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Duration Extension</label>
+                            <Select>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectValue placeholder="12 months" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="12">12 months</SelectItem>
+                                <SelectItem value="6">6 months</SelectItem>
+                                <SelectItem value="3">3 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Silver → Gold */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#c0c0c0'}}></div>
+                              <span className="text-slate-200">Silver</span>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400" />
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#ffd700'}}></div>
+                              <span className="text-slate-200">Gold</span>
+                            </div>
+                          </div>
+                          <Switch className="data-[state=checked]:bg-green-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Upgrade Price (£)</label>
+                            <Input placeholder="25.00" className="input-dark" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Duration Extension</label>
+                            <Select>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectValue placeholder="12 months" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="12">12 months</SelectItem>
+                                <SelectItem value="6">6 months</SelectItem>
+                                <SelectItem value="3">3 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Gold → Platinum */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#ffd700'}}></div>
+                              <span className="text-slate-200">Gold</span>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400" />
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#e5e4e2'}}></div>
+                              <span className="text-slate-200">Platinum</span>
+                            </div>
+                          </div>
+                          <Switch className="data-[state=checked]:bg-green-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Upgrade Price (£)</label>
+                            <Input placeholder="50.00" className="input-dark" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Duration Extension</label>
+                            <Select>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectValue placeholder="12 months" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="12">12 months</SelectItem>
+                                <SelectItem value="6">6 months</SelectItem>
+                                <SelectItem value="3">3 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Upgrade Pricing
                     </Button>
                   </div>
                 </CardBody>

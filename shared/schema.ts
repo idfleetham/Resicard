@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric, jsonb, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -541,11 +541,32 @@ export const merchantTierPricing = pgTable("merchant_tier_pricing", {
   tierId: uuid("tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
   isAvailableForPurchase: boolean("is_available_for_purchase").default(false),
   annualPrice: numeric("annual_price", { precision: 10, scale: 2 }), // Annual membership price
+  membershipDurationMonths: integer("membership_duration_months").default(12), // Rolling period in months
   currency: text("currency").default("GBP"),
   description: text("description"), // Benefits description
+  stripeProductId: text("stripe_product_id"), // Stripe subscription product ID
+  stripePriceId: text("stripe_price_id"), // Stripe subscription price ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Tier upgrade pricing - for direct tier-to-tier upgrades
+export const tierUpgradePricing = pgTable("tier_upgrade_pricing", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  fromTierId: uuid("from_tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
+  toTierId: uuid("to_tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
+  upgradePrice: numeric("upgrade_price", { precision: 10, scale: 2 }), // Price to upgrade from tier A to tier B
+  isAvailable: boolean("is_available").default(true),
+  currency: text("currency").default("GBP"),
+  stripeProductId: text("stripe_product_id"), // Stripe one-time payment product ID
+  stripePriceId: text("stripe_price_id"), // Stripe one-time payment price ID
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Ensure unique upgrade paths
+  uniqueUpgradePath: unique().on(table.merchantId, table.fromTierId, table.toTierId),
+}));
 
 // User tier purchases/memberships
 export const userTierMemberships = pgTable("user_tier_memberships", {
@@ -559,6 +580,7 @@ export const userTierMemberships = pgTable("user_tier_memberships", {
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }),
   currency: text("currency").default("GBP"),
+  upgradeFromTier: uuid("upgrade_from_tier"), // Track if this was an upgrade
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -666,6 +688,8 @@ export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
 export type InsertLoyaltyReward = typeof loyaltyRewards.$inferInsert;
 export type MerchantTierPricing = typeof merchantTierPricing.$inferSelect;
 export type InsertMerchantTierPricing = typeof merchantTierPricing.$inferInsert;
+export type TierUpgradePricing = typeof tierUpgradePricing.$inferSelect;
+export type InsertTierUpgradePricing = typeof tierUpgradePricing.$inferInsert;
 export type UserTierMembership = typeof userTierMemberships.$inferSelect;
 export type InsertUserTierMembership = typeof userTierMemberships.$inferInsert;
 
@@ -676,6 +700,7 @@ export const insertLoyaltyBalanceSchema = createInsertSchema(loyaltyBalances);
 export const insertLoyaltyEventSchema = createInsertSchema(loyaltyEvents);
 export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards);
 export const insertMerchantTierPricingSchema = createInsertSchema(merchantTierPricing);
+export const insertTierUpgradePricingSchema = createInsertSchema(tierUpgradePricing);
 export const insertUserTierMembershipSchema = createInsertSchema(userTierMemberships);
 export type SubscriptionPlan = 'monthly' | 'annual';
 export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';
