@@ -732,13 +732,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRedemptionsByMerchant(merchantId: number): Promise<Redemption[]> {
-    const result = await db
-      .select()
-      .from(redemptions)
-      .innerJoin(deals, eq(redemptions.dealId, deals.id))
-      .where(eq(deals.merchantId, merchantId));
-    
-    return result.map(row => row.redemptions);
+    // For now, return empty array since we need to restructure redemptions to work with offers
+    // TODO: Implement proper merchant redemption lookup with offers table
+    return [];
   }
 
   async getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }> {
@@ -759,13 +755,15 @@ export class DatabaseStorage implements IStorage {
       .values(voucher)
       .returning();
     
-    // Increment the deal's usage count
-    await db
-      .update(deals)
-      .set({ 
-        usageCount: sql`${deals.usageCount} + 1`
-      })
-      .where(eq(deals.id, voucher.dealId));
+    // Increment the offer's usage count if dealId is not -1 (legacy offers use -1)
+    if (voucher.dealId !== -1) {
+      await db
+        .update(offers)
+        .set({ 
+          usageCount: sql`${offers.usageCount} + 1`
+        })
+        .where(eq(offers.id, voucher.dealId.toString()));
+    }
     
     return newVoucher;
   }
@@ -818,33 +816,40 @@ export class DatabaseStorage implements IStorage {
             }
           }
         } else {
-        // This is a regular deal voucher - use the existing join logic
-        const [dealVoucher] = await db
+        // This is a regular deal voucher - treat as legacy offer
+        const [offer] = await db
           .select({
-            id: vouchers.id,
-            dealId: vouchers.dealId,
-            userId: vouchers.userId,
-            voucherNumber: vouchers.voucherNumber,
-            isUsed: vouchers.isUsed,
-            usedAt: vouchers.usedAt,
-            expiresAt: vouchers.expiresAt,
-            createdAt: vouchers.createdAt,
-            dealTitle: deals.title,
-            merchantName: users.businessName,
-            discountValue: deals.discountValue,
-            discountType: deals.discountType,
+            id: offers.id,
+            title: offers.title,
+            merchantId: offers.merchantId,
+            percentOff: offers.percentOff,
+            type: offers.type,
           })
-          .from(vouchers)
-          .innerJoin(deals, eq(vouchers.dealId, deals.id))
-          .innerJoin(users, eq(deals.merchantId, users.id))
-          .where(
-            and(
-              eq(vouchers.userId, userId),
-              eq(vouchers.id, voucher.id)
-            )
-          );
+          .from(offers)
+          .where(eq(offers.id, voucher.dealId.toString()));
 
-        if (dealVoucher) {
+        if (offer) {
+          // Get merchant info from merchants table using UUID
+          const [merchant] = await db
+            .select({ businessName: merchants.name })
+            .from(merchants)
+            .where(eq(merchants.id, offer.merchantId));
+
+          const dealVoucher = {
+            id: voucher.id,
+            dealId: voucher.dealId,
+            userId: voucher.userId,
+            voucherNumber: voucher.voucherNumber,
+            isUsed: voucher.isUsed,
+            usedAt: voucher.usedAt,
+            expiresAt: voucher.expiresAt,
+            createdAt: voucher.createdAt,
+            dealTitle: offer.title,
+            merchantName: merchant?.businessName || 'Unknown Merchant',
+            discountValue: offer.percentOff?.toString() || '0',
+            discountType: offer.type || 'percentage_discount',
+          };
+
           result.push({
             ...dealVoucher,
             merchantName: dealVoucher.merchantName || '',
