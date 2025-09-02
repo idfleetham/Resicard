@@ -2023,14 +2023,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Loyalty tiers storage (empty initially)
   let loyaltyTiers: any[] = [];
+  
+  // In-memory storage for loyalty programmes by merchant ID
+  const loyaltyPrograms = new Map();
 
   // Get merchant's loyalty program
   app.get("/api/loyalty/program", authenticateToken, async (req, res) => {
     try {
-      // Mock response until DB is set up
-      res.json({
+      const merchantId = req.user.merchantId || req.user.id;
+      const existingProgram = loyaltyPrograms.get(merchantId);
+      
+      // Return existing program or default
+      const program = existingProgram || {
         id: "mock-program-1",
-        merchantId: req.user.merchantId || req.user.id,
+        merchantId: merchantId,
         model: "points",
         pointsPerCurrency: 10,
         minBasketEarn: 5.00,
@@ -2039,7 +2045,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         active: true,
         tiers: loyaltyTiers,
         rewards: []
-      });
+      };
+      
+      res.json(program);
     } catch (error) {
       console.error('Get loyalty program error:', error);
       res.status(500).json({ error: "Failed to fetch loyalty program" });
@@ -2049,8 +2057,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create/Update loyalty program
   app.post("/api/loyalty/program", authenticateToken, async (req, res) => {
     try {
-      // Mock response
-      res.json({ success: true, program: req.body });
+      const merchantId = req.user.merchantId || req.user.id;
+      const updatedProgram = {
+        ...req.body,
+        merchantId: merchantId,
+        id: req.body.id || "mock-program-1"
+      };
+      
+      // Store the updated program in memory
+      loyaltyPrograms.set(merchantId, updatedProgram);
+      console.log('Updated loyalty program for merchant', merchantId, ':', updatedProgram);
+      
+      res.json({ success: true, program: updatedProgram });
     } catch (error) {
       console.error('Create loyalty program error:', error);
       res.status(500).json({ error: "Failed to save loyalty program" });
