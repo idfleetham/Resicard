@@ -113,6 +113,64 @@ async function awardLoyaltyPoints({
 
     console.log(`Awarding ${pointsToAdd} points to user ${userId} for merchant ${merchantId} (transaction: £${earnAmount.toFixed(2)})`);
 
+    // Find or create loyalty balance for this user and merchant
+    let loyaltyBalance = await db.execute(sql`
+      SELECT * FROM loyalty_balances 
+      WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+    `);
+    
+    if (loyaltyBalance.rows.length === 0) {
+      // Create new loyalty balance
+      await db.execute(sql`
+        INSERT INTO loyalty_balances ("userId", "merchantId", points, stamps, "createdAt", "updatedAt")
+        VALUES (${userId}, ${merchantId}::uuid, ${pointsToAdd}, 0, NOW(), NOW())
+      `);
+    } else {
+      // Update existing balance
+      const currentPoints = loyaltyBalance.rows[0].points;
+      await db.execute(sql`
+        UPDATE loyalty_balances 
+        SET points = ${currentPoints + pointsToAdd}, "updatedAt" = NOW()
+        WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+      `);
+    }
+
+    // Check for tier upgrades after awarding points
+    const updatedBalance = await db.execute(sql`
+      SELECT lb.points, lt.id as current_tier_id, lt."thresholdPoints" as current_threshold
+      FROM loyalty_balances lb
+      LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
+      WHERE lb."userId" = ${userId} AND lb."merchantId"::text = ${merchantId}::text
+    `);
+
+    if (updatedBalance.rows.length > 0) {
+      const balance = updatedBalance.rows[0];
+      const newPoints = balance.points;
+      
+      // Find highest tier this user qualifies for
+      const availableTiers = await db.execute(sql`
+        SELECT lt.* FROM loyalty_tiers lt
+        JOIN loyalty_programs lp ON lt."programId" = lp.id
+        WHERE lp."merchantId"::text = ${merchantId}::text
+        AND lt."thresholdPoints" <= ${newPoints}
+        ORDER BY lt."thresholdPoints" DESC
+        LIMIT 1
+      `);
+
+      if (availableTiers.rows.length > 0) {
+        const newTier = availableTiers.rows[0];
+        if (!balance.current_tier_id || newTier.id !== balance.current_tier_id) {
+          // User qualifies for a new tier!
+          await db.execute(sql`
+            UPDATE loyalty_balances 
+            SET "tierId" = ${newTier.id}, "updatedAt" = NOW()
+            WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+          `);
+          console.log(`User ${userId} upgraded to tier ${newTier.name} for merchant ${merchantId}`);
+        }
+      }
+    }
+
     return { 
       pointsAdded: pointsToAdd, 
       stampsAdded: 0, 
@@ -849,6 +907,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (!offer.active || (offer.validTo && new Date(offer.validTo) < new Date())) {
           return res.status(400).json({ message: "Offer is no longer active" });
+        }
+
+        // Check tier eligibility if offer has tier restrictions
+        if (offer.eligibleTiers) {
+          try {
+            const requiredTiers = JSON.parse(offer.eligibleTiers);
+            if (requiredTiers && requiredTiers.length > 0) {
+              // Get user's current tiers from all merchants
+              const userTiers = await db.execute(sql`
+                SELECT DISTINCT lt.id, lt.name 
+                FROM loyalty_balances lb
+                JOIN loyalty_tiers lt ON lb."tierId" = lt.id
+                WHERE lb."userId" = ${userId} AND lb.points >= lt."thresholdPoints"
+              `);
+              
+              const userTierIds = userTiers.rows.map((tier: any) => tier.id.toString());
+              const hasRequiredTier = requiredTiers.some((reqTier: string) => userTierIds.includes(reqTier));
+              
+              if (!hasRequiredTier) {
+                return res.status(403).json({ 
+                  message: "You don't have the required loyalty tier for this offer",
+                  requiredTiers,
+                  userTiers: userTierIds
+                });
+              }
+            }
+          } catch (e) {
+            console.warn("Error parsing eligibleTiers JSON:", e);
+            // Continue without tier check if JSON is invalid
+          }
         }
         
         // For comprehensive offers, we'll create vouchers differently
@@ -1939,7 +2027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           merchantId: merchant.id,
           userId: voucher.userId,
           basketValue: basketValue,
-          redemptionValue: Math.max(discountValue, parseFloat(offer.discountValue || '0')),
+          redemptionValue: offer.originalValue || Math.max(discountValue, parseFloat(offer.discountValue || '0')),
           type: 'purchase'
         });
         console.log('Loyalty points awarded:', loyaltyResult);
@@ -2269,7 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           m."businessCategory" as business_category,
           m.id as merchant_id
         FROM loyalty_balances lb
-        JOIN merchants m ON lb.merchant_id::text = m.id::text
+        JOIN merchants m ON lb."merchantId"::text = m.id::text
         JOIN loyalty_programs lp ON m.id::text = lp."merchantId"::text
         LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
         WHERE lb."userId" = ${userId}
