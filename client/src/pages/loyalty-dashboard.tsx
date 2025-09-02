@@ -734,7 +734,7 @@ export default function LoyaltyDashboard() {
                 ))}
                 <Button 
                   variant="outline" 
-                  className="w-full border-dashed border-border-dim hover:bg-surface/50"
+                  className="w-full border-dashed border-border-dim hover:bg-surface/50 text-fg bg-surface/20 hover:text-fg"
                   onClick={handleAddTier}
                   disabled={addTierMutation.isPending}
                 >
