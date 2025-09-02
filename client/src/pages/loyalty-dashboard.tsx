@@ -142,14 +142,14 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="bg-bg border-border-dim text-fg"
+                  className="bg-bg border-border-dim text-fg placeholder:text-gray-400"
                   placeholder="Tier name"
                 />
                 <Input
                   type="number"
                   value={editPoints}
                   onChange={(e) => setEditPoints(parseInt(e.target.value) || 0)}
-                  className="bg-bg border-border-dim text-fg"
+                  className="bg-bg border-border-dim text-fg placeholder:text-gray-400"
                   placeholder="Points required"
                 />
                 <div className="flex items-center gap-1">
@@ -647,7 +647,7 @@ function LoyaltyMembersManager() {
                 value={awardPoints}
                 onChange={(e) => setAwardPoints(e.target.value)}
                 placeholder="Enter number of points"
-                className="bg-bg border-border-dim text-fg"
+                className="bg-bg border-border-dim text-fg placeholder:text-gray-400"
               />
             </div>
             <div>
@@ -657,7 +657,7 @@ function LoyaltyMembersManager() {
                 value={awardReason}
                 onChange={(e) => setAwardReason(e.target.value)}
                 placeholder="e.g., Birthday bonus, Compensation, etc."
-                className="bg-bg border-border-dim text-fg"
+                className="bg-bg border-border-dim text-fg placeholder:text-gray-400"
               />
             </div>
           </div>
@@ -700,7 +700,7 @@ function LoyaltyMembersManager() {
                 value={basketAmount}
                 onChange={(e) => setBasketAmount(e.target.value)}
                 placeholder="Enter transaction amount"
-                className="bg-bg border-border-dim text-fg"
+                className="bg-bg border-border-dim text-fg placeholder:text-gray-400"
               />
             </div>
             <div className="text-sm text-gray-400">
@@ -1453,7 +1453,7 @@ export default function LoyaltyDashboard() {
                       <Label className="text-fg">Reward Name</Label>
                       <Input 
                         placeholder="e.g., Free Coffee, 20% Off Meal"
-                        className="bg-surface border-border-dim"
+                        className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1461,14 +1461,14 @@ export default function LoyaltyDashboard() {
                       <Input 
                         type="number"
                         placeholder="50"
-                        className="bg-surface border-border-dim"
+                        className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-fg">Description</Label>
                       <Input 
                         placeholder="Brief description of the reward"
-                        className="bg-surface border-border-dim"
+                        className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
                     <div className="flex items-center space-x-2">
@@ -1479,7 +1479,7 @@ export default function LoyaltyDashboard() {
                       <Button 
                         onClick={() => setShowAddReward(false)}
                         variant="outline" 
-                        className="flex-1"
+                        className="flex-1 border-border-dim text-fg hover:bg-surface"
                       >
                         Cancel
                       </Button>
@@ -1491,7 +1491,7 @@ export default function LoyaltyDashboard() {
                             description: "New reward has been added to your catalog.",
                           });
                         }}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                       >
                         Create Reward
                       </Button>
