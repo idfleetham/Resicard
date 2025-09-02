@@ -1,0 +1,238 @@
+chunk-RPCDYKBN.js?v=94be1ee4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+loyalty-dashboard:1 Access to XMLHttpRequest at 'https://api.iterable.com/api/inApp/web/getMessages?count=1&packageName=donation-reminder&platform=Web&SDKVersion=1.0.7&userId=2819505' from origin 'https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+retailer.js:2 Error fetching messages from Iterable z
+api.iterable.com/api/inApp/web/getMessages?count=1&packageName=donation-reminder&platform=Web&SDKVersion=1.0.7&userId=2819505:1  Failed to load resource: net::ERR_FAILED
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/loyalty/program:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 0
+merchant-portal.tsx:50 MerchantPortal: Fetching redemptions for merchant: 31
+merchant-portal.tsx:53 MerchantPortal: API Response: Array(4)
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 4
+queryClient.ts:26 Fetch finished loading: GET "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/auth/me".
+apiRequest @ queryClient.ts:26
+getProfile @ auth.ts:51
+queryFn @ use-auth.tsx:51
+fetchFn @ @tanstack_react-query.js?v=94be1ee4:840
+run @ @tanstack_react-query.js?v=94be1ee4:494
+start @ @tanstack_react-query.js?v=94be1ee4:536
+fetch @ @tanstack_react-query.js?v=94be1ee4:926
+executeFetch_fn @ @tanstack_react-query.js?v=94be1ee4:2211
+(anonymous) @ @tanstack_react-query.js?v=94be1ee4:2245
+Navigated to https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/merchant
+chunk-RPCDYKBN.js?v=94be1ee4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 0
+Fetch finished loading: GET "<URL>".
+Fetch finished loading: GET "<URL>".
+Fetch finished loading: GET "<URL>".
+Fetch finished loading: GET "<URL>".
+Fetch finished loading: GET "<URL>".
+Fetch finished loading: GET "<URL>".
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 0
+merchant-portal.tsx:50 MerchantPortal: Fetching redemptions for merchant: 31
+retailer.js:2 XHR finished loading: POST "https://api.iterable.com/api/users/update".
+(anonymous) @ retailer.js:2
+xhr @ retailer.js:2
+Le @ retailer.js:2
+Promise.then
+request @ retailer.js:2
+(anonymous) @ retailer.js:2
+e.baseIterableRequest @ retailer.js:2
+e.updateUser @ retailer.js:2
+t @ retailer.js:2
+(anonymous) @ retailer.js:2
+Promise.then
+setUserID @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Vg @ retailer.js:2
+retailer.js:2 XHR finished loading: GET "https://api.iterable.com/api/inApp/web/getMessages?count=1&packageName=donation-reminder&platform=Web&SDKVersion=1.0.7&userId=2819505".
+(anonymous) @ retailer.js:2
+xhr @ retailer.js:2
+Le @ retailer.js:2
+Promise.then
+request @ retailer.js:2
+(anonymous) @ retailer.js:2
+e.baseIterableRequest @ retailer.js:2
+u @ retailer.js:2
+e.requestMessages @ retailer.js:2
+e.getInAppMessages @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Promise.then
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Vg @ retailer.js:2
+retailer.js:2 No messages from Iterable
+retailer.js:2 Error fetching messages from Iterable No messages from Iterable
+merchant-portal.tsx:53 MerchantPortal: API Response: (4) [{…}, {…}, {…}, {…}]
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 4
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 4
+queryClient.ts:26  POST https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/program 500 (Internal Server Error)
+apiRequest @ queryClient.ts:26
+mutationFn @ loyalty-dashboard.tsx:195
+fn @ @tanstack_react-query.js?v=94be1ee4:1189
+run @ @tanstack_react-query.js?v=94be1ee4:494
+start @ @tanstack_react-query.js?v=94be1ee4:536
+execute @ @tanstack_react-query.js?v=94be1ee4:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=94be1ee4:2630
+(anonymous) @ @tanstack_react-query.js?v=94be1ee4:3295
+handlePointsPerCurrencyChange @ loyalty-dashboard.tsx:229
+onChange @ loyalty-dashboard.tsx:642
+callCallback2 @ chunk-RPCDYKBN.js?v=94be1ee4:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=94be1ee4:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=94be1ee4:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=94be1ee4:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=94be1ee4:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=94be1ee4:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=94be1ee4:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=94be1ee4:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=94be1ee4:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=94be1ee4:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=94be1ee4:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=94be1ee4:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=94be1ee4:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5449
+queryClient.ts:26 Fetch failed loading: POST "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/program".
+apiRequest @ queryClient.ts:26
+mutationFn @ loyalty-dashboard.tsx:195
+fn @ @tanstack_react-query.js?v=94be1ee4:1189
+run @ @tanstack_react-query.js?v=94be1ee4:494
+start @ @tanstack_react-query.js?v=94be1ee4:536
+execute @ @tanstack_react-query.js?v=94be1ee4:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=94be1ee4:2630
+(anonymous) @ @tanstack_react-query.js?v=94be1ee4:3295
+handlePointsPerCurrencyChange @ loyalty-dashboard.tsx:229
+onChange @ loyalty-dashboard.tsx:642
+callCallback2 @ chunk-RPCDYKBN.js?v=94be1ee4:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=94be1ee4:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=94be1ee4:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=94be1ee4:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=94be1ee4:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=94be1ee4:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=94be1ee4:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=94be1ee4:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=94be1ee4:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=94be1ee4:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=94be1ee4:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=94be1ee4:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=94be1ee4:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5449
+queryClient.ts:26  POST https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/program 500 (Internal Server Error)
+apiRequest @ queryClient.ts:26
+mutationFn @ loyalty-dashboard.tsx:195
+fn @ @tanstack_react-query.js?v=94be1ee4:1189
+run @ @tanstack_react-query.js?v=94be1ee4:494
+start @ @tanstack_react-query.js?v=94be1ee4:536
+execute @ @tanstack_react-query.js?v=94be1ee4:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=94be1ee4:2630
+(anonymous) @ @tanstack_react-query.js?v=94be1ee4:3295
+handlePointsPerCurrencyChange @ loyalty-dashboard.tsx:229
+onChange @ loyalty-dashboard.tsx:642
+callCallback2 @ chunk-RPCDYKBN.js?v=94be1ee4:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=94be1ee4:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=94be1ee4:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=94be1ee4:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=94be1ee4:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=94be1ee4:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=94be1ee4:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=94be1ee4:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=94be1ee4:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=94be1ee4:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=94be1ee4:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=94be1ee4:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=94be1ee4:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5449
+queryClient.ts:26 Fetch failed loading: POST "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/program".
+apiRequest @ queryClient.ts:26
+mutationFn @ loyalty-dashboard.tsx:195
+fn @ @tanstack_react-query.js?v=94be1ee4:1189
+run @ @tanstack_react-query.js?v=94be1ee4:494
+start @ @tanstack_react-query.js?v=94be1ee4:536
+execute @ @tanstack_react-query.js?v=94be1ee4:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=94be1ee4:2630
+(anonymous) @ @tanstack_react-query.js?v=94be1ee4:3295
+handlePointsPerCurrencyChange @ loyalty-dashboard.tsx:229
+onChange @ loyalty-dashboard.tsx:642
+callCallback2 @ chunk-RPCDYKBN.js?v=94be1ee4:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=94be1ee4:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=94be1ee4:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=94be1ee4:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=94be1ee4:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=94be1ee4:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=94be1ee4:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=94be1ee4:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=94be1ee4:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=94be1ee4:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=94be1ee4:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=94be1ee4:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=94be1ee4:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=94be1ee4:5449

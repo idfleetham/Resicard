@@ -2069,8 +2069,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const merchantId = req.user.merchantId || req.user.id;
       
+      // Filter out fields that shouldn't be updated (like timestamps, id, etc.)
+      const updateData = {
+        model: req.body.model,
+        pointsPerCurrency: req.body.pointsPerCurrency,
+        minBasketEarn: req.body.minBasketEarn,
+        earnCooldownMinutes: req.body.earnCooldownMinutes,
+        dailyEarnCap: req.body.dailyEarnCap,
+        stackingAllowed: req.body.stackingAllowed,
+        expiryDays: req.body.expiryDays,
+        active: req.body.active,
+      };
+      
       // Update the existing program
-      const updatedProgram = await storage.updateLoyaltyProgram(merchantId, req.body);
+      const updatedProgram = await storage.updateLoyaltyProgram(merchantId, updateData);
       
       if (updatedProgram) {
         console.log('Updated loyalty program for merchant', merchantId, ':', updatedProgram);
