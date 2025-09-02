@@ -997,8 +997,11 @@ export class DatabaseStorage implements IStorage {
     const [newMerchant] = await db
       .insert(merchants)
       .values({
-        name: user.username,
+        name: user.businessName || user.username || 'Unknown Business',
         email: user.email || undefined,
+        phone: user.businessPhone || undefined,
+        address: user.businessAddress || undefined,
+        logoUrl: user.profilePhoto || undefined,
       })
       .returning();
     return newMerchant;
