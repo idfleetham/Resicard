@@ -2079,10 +2079,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingProgram = await storage.getLoyaltyProgram(merchantId);
       
       if (existingProgram) {
-        // Add tiers (for now use mock data)
+        // Fetch real tiers from database
+        const tiersResult = await db.execute(sql`
+          SELECT id, name, threshold_points, discount_percent, color, sort_order, points_multiplier
+          FROM loyalty_tiers 
+          WHERE program_id = ${existingProgram.id}
+          ORDER BY sort_order
+        `);
+        
+        const tiers = tiersResult.rows.map((tier: any) => ({
+          id: tier.id,
+          name: tier.name,
+          thresholdPoints: tier.threshold_points,
+          discountPercent: tier.discount_percent,
+          color: tier.color,
+          sortOrder: tier.sort_order,
+          pointsMultiplier: parseFloat(tier.points_multiplier)
+        }));
+        
         const programWithTiers = {
           ...existingProgram,
-          tiers: loyaltyTiers,
+          tiers,
           rewards: []
         };
         res.json(programWithTiers);
@@ -2101,7 +2118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newProgram = await storage.createLoyaltyProgram(defaultProgram);
         const programWithTiers = {
           ...newProgram,
-          tiers: loyaltyTiers,
+          tiers: [],
           rewards: []
         };
         res.json(programWithTiers);
