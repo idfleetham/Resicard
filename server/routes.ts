@@ -2478,23 +2478,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Query redemptions for total, month-to-date, and year-to-date revenue impact
       const totalQuery = `
-        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as total_impact
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as total_impact
         FROM redemptions 
-        WHERE "merchantId" = $1 AND status = 'completed'
+        WHERE merchant_id = $1
       `;
       
       const monthQuery = `
-        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as month_impact
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as month_impact
         FROM redemptions 
-        WHERE "merchantId" = $1 AND status = 'completed' 
-        AND "redeemedAt" >= $2
+        WHERE merchant_id = $1
+        AND redeemed_at >= $2
       `;
       
       const yearQuery = `
-        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as year_impact
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as year_impact
         FROM redemptions 
-        WHERE "merchantId" = $1 AND status = 'completed' 
-        AND "redeemedAt" >= $2
+        WHERE merchant_id = $1
+        AND redeemed_at >= $2
       `;
       
       const { pool } = await import('./db');
@@ -2540,33 +2540,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pool.query(`
           SELECT COUNT(*) as member_count
           FROM loyalty_balances lb 
-          JOIN users u ON lb."userId" = u.id 
-          WHERE lb."merchantId" = $1 
-          AND lb."createdAt" >= $2
+          JOIN users u ON lb.user_id = u.id 
+          WHERE lb.merchant_id = $1 
+          AND lb.created_at >= $2
         `, [merchantId, startOfThisWeek.toISOString()]),
         
         pool.query(`
           SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0) as total_points
           FROM loyalty_events 
-          WHERE "merchantId" = $1 
+          WHERE merchant_id = $1 
           AND type = 'earn_points'
-          AND "createdAt" >= $2
+          AND created_at >= $2
         `, [merchantId, startOfThisWeek.toISOString()]),
         
         pool.query(`
           SELECT COUNT(*) as redemption_count
           FROM redemptions 
-          WHERE "merchantId" = $1 
+          WHERE merchant_id = $1 
           AND status = 'completed'
-          AND "redeemedAt" >= $2
+          AND redeemed_at >= $2
         `, [merchantId, startOfThisWeek.toISOString()]),
         
         pool.query(`
-          SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as revenue_impact
+          SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as revenue_impact
           FROM redemptions 
-          WHERE "merchantId" = $1 
-          AND status = 'completed'
-          AND "redeemedAt" >= $2
+          WHERE merchant_id = $1
+          AND redeemed_at >= $2
         `, [merchantId, startOfThisWeek.toISOString()])
       ]);
       
@@ -2575,37 +2574,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pool.query(`
           SELECT COUNT(*) as member_count
           FROM loyalty_balances lb 
-          JOIN users u ON lb."userId" = u.id 
-          WHERE lb."merchantId" = $1 
-          AND lb."createdAt" >= $2 
-          AND lb."createdAt" <= $3
+          JOIN users u ON lb.user_id = u.id 
+          WHERE lb.merchant_id = $1 
+          AND lb.created_at >= $2 
+          AND lb.created_at <= $3
         `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
         
         pool.query(`
           SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0) as total_points
           FROM loyalty_events 
-          WHERE "merchantId" = $1 
+          WHERE merchant_id = $1 
           AND type = 'earn_points'
-          AND "createdAt" >= $2 
-          AND "createdAt" <= $3
+          AND created_at >= $2 
+          AND created_at <= $3
         `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
         
         pool.query(`
           SELECT COUNT(*) as redemption_count
           FROM redemptions 
-          WHERE "merchantId" = $1 
+          WHERE merchant_id = $1 
           AND status = 'completed'
-          AND "redeemedAt" >= $2 
-          AND "redeemedAt" <= $3
+          AND redeemed_at >= $2 
+          AND redeemed_at <= $3
         `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
         
         pool.query(`
-          SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as revenue_impact
+          SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as revenue_impact
           FROM redemptions 
-          WHERE "merchantId" = $1 
-          AND status = 'completed'
-          AND "redeemedAt" >= $2 
-          AND "redeemedAt" <= $3
+          WHERE merchant_id = $1
+          AND redeemed_at >= $2 
+          AND redeemed_at <= $3
         `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()])
       ]);
       
