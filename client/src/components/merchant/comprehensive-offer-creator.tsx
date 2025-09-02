@@ -191,7 +191,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       customFee: editingOffer.customFee || undefined,
       budgetCap: editingOffer.budgetCap || undefined,
       autoPauseOnAbuse: editingOffer.autoPauseOnAbuse !== false,
-      singleUse: editingOffer.singleUse !== false,
       deviceFingerprinting: editingOffer.deviceFingerprinting !== false,
     } : {
       title: "",
@@ -216,7 +215,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       priority: "standard",
       feeModel: "default",
       autoPauseOnAbuse: true,
-      singleUse: true,
       deviceFingerprinting: true,
       tags: [],
       validFrom: "",
