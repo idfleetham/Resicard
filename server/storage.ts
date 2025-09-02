@@ -1,4 +1,10 @@
-import { users, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, loyaltyRewards, type User, type InsertUser, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent, type LoyaltyReward, type InsertLoyaltyReward } from "@shared/schema";
+import { users, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, loyaltyRewards, type User, type InsertUser, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type Offer, type InsertOffer, type Merchant, type InsertMerchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent, type LoyaltyReward, type InsertLoyaltyReward } from "@shared/schema";
+
+// Legacy Deal types mapped to Offer types
+type Deal = Offer;
+type InsertDeal = InsertOffer;
+type DealWithMerchant = Offer & { merchant: Merchant };
+type VoucherWithDeal = Voucher;
 import { db } from "./db";
 import { eq, sql, and } from "drizzle-orm";
 
@@ -25,21 +31,26 @@ export interface IStorage {
   approveDocument(userId: number, reviewerId: number): Promise<User | undefined>;
   rejectDocument(userId: number, reviewerId: number): Promise<User | undefined>;
   
-  // Deal operations
-  getDeal(id: number): Promise<Deal | undefined>;
-  createDeal(deal: InsertDeal & { merchantId: number }): Promise<Deal>;
-  updateDeal(id: number, updates: Partial<Deal>): Promise<Deal | undefined>;
-  deleteDeal(id: number): Promise<boolean>;
-  getDealsByMerchant(merchantId: number): Promise<Deal[]>;
+  // Deal operations (mapped to Offer operations)
+  getDeal(id: string): Promise<Deal | undefined>;
+  createDeal(deal: InsertDeal & { merchantId: string }): Promise<Deal>;
+  updateDeal(id: string, updates: Partial<Deal>): Promise<Deal | undefined>;
+  deleteDeal(id: string): Promise<boolean>;
+  getDealsByMerchant(merchantId: string): Promise<Deal[]>;
   getActiveDeals(): Promise<DealWithMerchant[]>;
   getDealsByCategory(category: string): Promise<DealWithMerchant[]>;
   
   // Comprehensive Offer operations
   createOffer(offer: InsertOffer): Promise<Offer>;
   getOffer(id: string): Promise<Offer | undefined>;
-  getOffersByMerchant(merchantId: number): Promise<Offer[]>;
+  getOffersByMerchant(merchantId: string): Promise<Offer[]>;
   updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined>;
   deleteOffer(id: string): Promise<boolean>;
+  
+  // Merchant operations
+  createMerchant(merchant: InsertMerchant): Promise<Merchant>;
+  getMerchant(id: string): Promise<Merchant | undefined>;
+  updateMerchant(id: string, updates: Partial<Merchant>): Promise<Merchant | undefined>;
   
   // Redemption operations
   createRedemption(redemption: InsertRedemption): Promise<Redemption>;
@@ -597,35 +608,35 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
-  async getDeal(id: number): Promise<Deal | undefined> {
-    const [deal] = await db.select().from(deals).where(eq(deals.id, id));
+  async getDeal(id: string): Promise<Deal | undefined> {
+    const [deal] = await db.select().from(offers).where(eq(offers.id, id));
     return deal || undefined;
   }
 
-  async createDeal(dealData: InsertDeal & { merchantId: number }): Promise<Deal> {
+  async createDeal(dealData: InsertDeal & { merchantId: string }): Promise<Deal> {
     const [deal] = await db
-      .insert(deals)
+      .insert(offers)
       .values(dealData)
       .returning();
     return deal;
   }
 
-  async updateDeal(id: number, updates: Partial<Deal>): Promise<Deal | undefined> {
+  async updateDeal(id: string, updates: Partial<Deal>): Promise<Deal | undefined> {
     const [deal] = await db
-      .update(deals)
+      .update(offers)
       .set(updates)
-      .where(eq(deals.id, id))
+      .where(eq(offers.id, id))
       .returning();
     return deal || undefined;
   }
 
-  async deleteDeal(id: number): Promise<boolean> {
-    const result = await db.delete(deals).where(eq(deals.id, id));
+  async deleteDeal(id: string): Promise<boolean> {
+    const result = await db.delete(offers).where(eq(offers.id, id));
     return (result.rowCount || 0) > 0;
   }
 
-  async getDealsByMerchant(merchantId: number): Promise<Deal[]> {
-    return await db.select().from(deals).where(eq(deals.merchantId, merchantId));
+  async getDealsByMerchant(merchantId: string): Promise<Deal[]> {
+    return await db.select().from(offers).where(eq(offers.merchantId, merchantId));
   }
 
   async getActiveDeals(): Promise<DealWithMerchant[]> {

@@ -303,17 +303,9 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
 });
 
 export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({
-  offerId: true,
+  dealId: true,
   userId: true,
-  voucherCode: true,
-  basketValue: true,
-  discountValue: true,
-  finalValue: true,
-  staffUserId: true,
-  deviceId: true,
-  stationId: true,
-  redemptionLatitude: true,
-  redemptionLongitude: true,
+  value: true,
 });
 
 export const insertBlackoutSchema = createInsertSchema(offerBlackouts).pick({
@@ -347,7 +339,7 @@ export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
 });
 
 export const insertVoucherSchema = createInsertSchema(vouchers).pick({
-  offerId: true,
+  dealId: true,
   userId: true,
   voucherNumber: true,
   expiresAt: true,
@@ -405,17 +397,9 @@ export const offersRelations = relations(offers, ({ one, many }) => ({
 }));
 
 export const redemptionsRelations = relations(redemptions, ({ one }) => ({
-  offer: one(offers, {
-    fields: [redemptions.offerId],
-    references: [offers.id],
-  }),
   user: one(users, {
     fields: [redemptions.userId],
     references: [users.id],
-  }),
-  merchant: one(merchants, {
-    fields: [redemptions.merchantId],
-    references: [merchants.id],
   }),
 }));
 
@@ -510,7 +494,7 @@ export const userTierMemberships = pgTable("user_tier_memberships", {
 
 export const loyaltyBalances = pgTable("loyalty_balances", {
   id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: integer("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   points: integer("points").default(0),
   stamps: integer("stamps").default(0),
@@ -520,7 +504,7 @@ export const loyaltyBalances = pgTable("loyalty_balances", {
 
 export const loyaltyEvents = pgTable("loyalty_events", {
   id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: integer("merchant_id").notNull().references(() => merchants.id),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
   userId: integer("user_id").notNull().references(() => users.id),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id),
   type: text("type").$type<"earn_points"|"earn_stamp"|"redeem_reward"|"adjust"|"tier_change">().notNull(),
