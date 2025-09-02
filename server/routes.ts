@@ -2254,9 +2254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const balances = await db.execute(sql`
         SELECT 
           lb.id,
-          lb.points_balance,
-          lb.stamps_balance,
-          lb.last_activity,
+          lb.points,
+          lb.stamps,
+          lb.updated_at as last_activity,
           lp.model,
           lp.name as program_name,
           lt.id as tier_id,
@@ -2267,37 +2267,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lt.points_multiplier,
           m.business_name,
           m.business_category,
-          u.username as merchant_username
+          m.id as merchant_id
         FROM loyalty_balances lb
-        JOIN loyalty_programs lp ON lb.program_id = lp.id
+        JOIN merchants m ON lb.merchant_id = m.id
+        JOIN loyalty_programs lp ON m.id = lp.merchant_id
         LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
-        JOIN users u ON lp.merchant_id = u.id
-        LEFT JOIN merchants m ON u.merchant_id = m.id
         WHERE lb.user_id = ${userId}
-        AND (lb.points_balance > 0 OR lb.stamps_balance > 0)
-        ORDER BY lb.last_activity DESC
+        AND (lb.points > 0 OR lb.stamps > 0)
+        ORDER BY lb.updated_at DESC
       `);
 
-      const memberships = balances.rows.map((row: any) => ({
-        id: row.id,
-        programName: row.program_name,
-        businessName: row.business_name || row.merchant_username,
-        businessCategory: row.business_category,
-        model: row.model,
-        pointsBalance: row.points_balance || 0,
-        stampsBalance: row.stamps_balance || 0,
-        lastActivity: row.last_activity,
-        tier: row.tier_id ? {
-          id: row.tier_id,
-          name: row.tier_name,
-          color: row.tier_color,
-          thresholdPoints: row.threshold_points,
-          discountPercent: row.discount_percent,
-          pointsMultiplier: parseFloat(row.points_multiplier)
-        } : null
+      // For each membership, we need to also get the next tier information
+      const membershipsWithNextTier = await Promise.all(balances.rows.map(async (row: any) => {
+        let nextTier = null;
+        if (row.tier_id && row.threshold_points !== undefined) {
+          // Get next tier in the same program
+          const nextTierResult = await db.execute(sql`
+            SELECT id, name, color, threshold_points, discount_percent, points_multiplier
+            FROM loyalty_tiers 
+            WHERE program_id = (SELECT program_id FROM loyalty_tiers WHERE id = ${row.tier_id})
+            AND threshold_points > ${row.threshold_points}
+            ORDER BY threshold_points ASC
+            LIMIT 1
+          `);
+          if (nextTierResult.rows.length > 0) {
+            const next = nextTierResult.rows[0];
+            nextTier = {
+              id: next.id,
+              name: next.name,
+              color: next.color,
+              thresholdPoints: next.threshold_points,
+              discountPercent: next.discount_percent,
+              pointsMultiplier: parseFloat(next.points_multiplier)
+            };
+          }
+        }
+
+        return {
+          id: row.id,
+          programName: row.program_name,
+          businessName: row.business_name,
+          businessCategory: row.business_category,
+          model: row.model,
+          pointsBalance: row.points || 0,
+          stampsBalance: row.stamps || 0,
+          lastActivity: row.last_activity,
+          merchantId: row.merchant_id,
+          tier: row.tier_id ? {
+            id: row.tier_id,
+            name: row.tier_name,
+            color: row.tier_color,
+            thresholdPoints: row.threshold_points,
+            discountPercent: row.discount_percent,
+            pointsMultiplier: parseFloat(row.points_multiplier || '1.0')
+          } : null,
+          nextTier,
+          // Add mock data for pricing - in real implementation this would come from database
+          pointPrice: 0.10, // £0.10 per point for upgrade
+          tierExpiresAt: row.tier_id ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null // 1 year from now
+        };
       }));
 
-      res.json({ success: true, memberships });
+      res.json({ success: true, memberships: membershipsWithNextTier });
     } catch (error) {
       console.error("Error fetching user loyalty memberships:", error);
       res.status(500).json({ error: "Failed to fetch loyalty memberships" });

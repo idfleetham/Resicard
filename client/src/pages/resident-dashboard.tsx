@@ -408,35 +408,120 @@ export default function ResidentDashboard() {
               {loyaltyMemberships?.success && loyaltyMemberships.memberships.length > 0 && (
                 <div className="mt-8 max-w-6xl mx-auto">
                   <h3 className="text-xl font-semibold text-white mb-4 text-center">Your Loyalty Memberships</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {loyaltyMemberships.memberships.map((membership: any) => (
-                      <div key={membership.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-white truncate">{membership.businessName}</h4>
-                          {membership.tier && (
-                            <div 
-                              className="px-2 py-1 rounded-full text-xs font-bold text-white"
-                              style={{ backgroundColor: membership.tier.color }}
-                            >
-                              {membership.tier.name}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {loyaltyMemberships.memberships.map((membership: any) => {
+                      // Calculate metrics for next tier
+                      const currentBalance = membership.model === 'points' ? membership.pointsBalance : membership.stampsBalance;
+                      const nextTier = membership.nextTier;
+                      const pointsToNextTier = nextTier ? (nextTier.thresholdPoints - currentBalance) : 0;
+                      const costToNextTier = pointsToNextTier > 0 && membership.pointPrice 
+                        ? (pointsToNextTier * membership.pointPrice).toFixed(2) 
+                        : null;
+                      
+                      // Calculate progress percentage
+                      const progressPercentage = nextTier 
+                        ? Math.min((currentBalance / nextTier.thresholdPoints) * 100, 100)
+                        : 100;
+
+                      return (
+                        <div key={membership.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                          {/* Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold text-white text-lg">{membership.businessName}</h4>
+                            {membership.tier && (
+                              <div 
+                                className="px-3 py-1 rounded-full text-xs font-bold text-white"
+                                style={{ backgroundColor: membership.tier.color }}
+                              >
+                                {membership.tier.name}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Current Status */}
+                          <div className="space-y-3 mb-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-white/90 text-sm">Current Balance:</span>
+                              <span className="text-white font-semibold">
+                                {currentBalance} {membership.model === 'points' ? 'points' : 'stamps'}
+                              </span>
+                            </div>
+                            
+                            {membership.tier && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-white/90 text-sm">Current Benefit:</span>
+                                <span className="text-white font-semibold">{membership.tier.discountPercent}% off</span>
+                              </div>
+                            )}
+
+                            {/* Tier Expiration */}
+                            {membership.tierExpiresAt && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-white/90 text-sm">Tier Expires:</span>
+                                <span className="text-white font-semibold text-xs">
+                                  {new Date(membership.tierExpiresAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Progress to Next Tier */}
+                          {nextTier && pointsToNextTier > 0 && (
+                            <div className="space-y-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-white/90 text-sm">Next Tier:</span>
+                                <div 
+                                  className="px-2 py-1 rounded text-xs font-bold text-white"
+                                  style={{ backgroundColor: nextTier.color }}
+                                >
+                                  {nextTier.name}
+                                </div>
+                              </div>
+                              
+                              <div className="flex justify-between items-center">
+                                <span className="text-white/90 text-sm">
+                                  {membership.model === 'points' ? 'Points' : 'Stamps'} needed:
+                                </span>
+                                <span className="text-white font-semibold">{pointsToNextTier}</span>
+                              </div>
+
+                              {costToNextTier && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-white/90 text-sm">Cost to upgrade:</span>
+                                  <span className="text-white font-semibold">£{costToNextTier}</span>
+                                </div>
+                              )}
+
+                              {/* Progress Bar */}
+                              <div className="mt-3">
+                                <div className="flex justify-between text-xs text-white/70 mb-1">
+                                  <span>{currentBalance}</span>
+                                  <span>{nextTier.thresholdPoints}</span>
+                                </div>
+                                <div className="w-full bg-white/20 rounded-full h-2">
+                                  <div 
+                                    className="bg-white rounded-full h-2 transition-all duration-300"
+                                    style={{ width: `${progressPercentage}%` }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Next Tier Benefits */}
+                              <div className="text-xs text-white/80 mt-2">
+                                Next tier benefit: {nextTier.discountPercent}% off
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Max Tier Reached */}
+                          {!nextTier && (
+                            <div className="text-center py-2">
+                              <span className="text-white/90 text-sm">🏆 Maximum tier reached!</span>
                             </div>
                           )}
                         </div>
-                        <div className="flex justify-between items-center text-sm text-white/90">
-                          <span>
-                            {membership.model === 'points' 
-                              ? `${membership.pointsBalance} points`
-                              : `${membership.stampsBalance} stamps`
-                            }
-                          </span>
-                          {membership.tier && (
-                            <span className="text-xs">
-                              {membership.tier.discountPercent}% off
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
