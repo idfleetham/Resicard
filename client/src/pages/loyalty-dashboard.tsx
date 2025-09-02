@@ -38,9 +38,12 @@ import {
   Trash2,
   Target,
   ArrowLeft,
-  Home
+  Home,
+  Search,
+  UserPlus,
+  CreditCard
 } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface LoyaltyProgramme {
   id: number;
@@ -283,6 +286,478 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loyalty Members Manager Component
+function LoyaltyMembersManager() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tierFilter, setTierFilter] = useState("all");
+  const [showAwardDialog, setShowAwardDialog] = useState(false);
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [awardPoints, setAwardPoints] = useState("");
+  const [awardReason, setAwardReason] = useState("");
+  const [basketAmount, setBasketAmount] = useState("");
+
+  // Fetch loyalty members
+  const { data: membersData, isLoading: membersLoading } = useQuery({
+    queryKey: ["/api/loyalty/members"],
+  });
+
+  // Fetch loyalty program for tiers
+  const { data: loyaltyProgramme } = useQuery({
+    queryKey: ["/api/loyalty/program"],
+  });
+
+  // Award points mutation
+  const awardPointsMutation = useMutation({
+    mutationFn: async ({ userId, points, reason }: { userId: number; points: number; reason: string }) => {
+      const response = await apiRequest("POST", "/api/loyalty/members/award-points", {
+        userId,
+        points,
+        reason
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/members"] });
+      toast({
+        title: "Points Awarded",
+        description: `Successfully awarded ${awardPoints} points`,
+      });
+      setShowAwardDialog(false);
+      setAwardPoints("");
+      setAwardReason("");
+      setSelectedMember(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to award points",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Collect points from transaction mutation
+  const collectPointsMutation = useMutation({
+    mutationFn: async ({ userId, basketAmount }: { userId: number; basketAmount: number }) => {
+      const response = await apiRequest("POST", "/api/loyalty/members/collect-points", {
+        userId,
+        basketAmount
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/members"] });
+      if (data.success) {
+        toast({
+          title: "Points Collected",
+          description: data.message || `Points earned from transaction`,
+        });
+      } else {
+        toast({
+          title: "Transaction Processed",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+      setShowTransactionDialog(false);
+      setBasketAmount("");
+      setSelectedMember(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to process transaction",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update tier mutation
+  const updateTierMutation = useMutation({
+    mutationFn: async ({ userId, tierId, reason }: { userId: number; tierId: string; reason: string }) => {
+      const response = await apiRequest("PUT", `/api/loyalty/members/${userId}/tier`, {
+        tierId,
+        reason
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/members"] });
+      toast({
+        title: "Tier Updated",
+        description: "Member tier has been updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update member tier",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const members = membersData?.members || [];
+  
+  // Filter members
+  const filteredMembers = members.filter((member: any) => {
+    const matchesSearch = searchTerm === "" || 
+      generateCustomerAlias(member).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesTier = tierFilter === "all" || 
+      (tierFilter === "none" && !member.tierName) ||
+      member.tierName?.toLowerCase() === tierFilter.toLowerCase();
+    
+    return matchesSearch && matchesTier;
+  });
+
+  const handleAwardPoints = () => {
+    if (!selectedMember || !awardPoints || parseInt(awardPoints) <= 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a valid number of points to award",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    awardPointsMutation.mutate({
+      userId: selectedMember.id,
+      points: parseInt(awardPoints),
+      reason: awardReason || "Manual points adjustment"
+    });
+  };
+
+  const handleCollectPoints = () => {
+    if (!selectedMember || !basketAmount || parseFloat(basketAmount) <= 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a valid basket amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    collectPointsMutation.mutate({
+      userId: selectedMember.id,
+      basketAmount: parseFloat(basketAmount)
+    });
+  };
+
+  const handleTierChange = (member: any, newTierId: string) => {
+    updateTierMutation.mutate({
+      userId: member.id,
+      tierId: newTierId,
+      reason: "Manual tier adjustment by merchant"
+    });
+  };
+
+  const getDefaultTierColor = (index: number) => {
+    const colors = ['#f97316', '#9ca3af', '#eab308', '#a855f7', '#22c55e'];
+    return colors[index % colors.length];
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Header and Controls */}
+      <StatCard
+        title="Loyalty Members"
+        subtitle="Manage loyalty programme members, award points, and track engagement"
+        className="p-6"
+      >
+        <div className="space-y-4">
+          {/* Search and Filter */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search members by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-bg border-border-dim text-fg"
+              />
+            </div>
+            <Select value={tierFilter} onValueChange={setTierFilter}>
+              <SelectTrigger className="w-full sm:w-48 bg-bg border-border-dim text-fg">
+                <SelectValue placeholder="Filter by tier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tiers</SelectItem>
+                <SelectItem value="none">No Tier</SelectItem>
+                {loyaltyProgramme?.tiers?.map((tier: any) => (
+                  <SelectItem key={tier.id} value={tier.name.toLowerCase()}>
+                    {tier.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="bg-surface border-border-dim text-fg hover:bg-surface/80"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Export Members
+            </Button>
+          </div>
+        </div>
+      </StatCard>
+
+      {/* Members List */}
+      <StatCard
+        title={`Members (${filteredMembers.length})`}
+        subtitle="Current loyalty programme members and their activity"
+        className="p-6"
+      >
+        {membersLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse flex items-center justify-between p-4 rounded-lg bg-surface/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-400 rounded-full"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-400 rounded w-32"></div>
+                    <div className="h-3 bg-gray-300 rounded w-24"></div>
+                  </div>
+                </div>
+                <div className="text-right space-y-2">
+                  <div className="h-6 bg-gray-400 rounded w-16"></div>
+                  <div className="h-4 bg-gray-300 rounded w-12"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredMembers.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-fg mb-2">
+              {members.length === 0 ? "No Loyalty Members Yet" : "No Members Match Filter"}
+            </h3>
+            <p className="text-gray-400 mb-6">
+              {members.length === 0 
+                ? "Loyalty members will appear here when customers start earning points"
+                : "Try adjusting your search or filter criteria"
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredMembers.map((member: any, index: number) => {
+              const customerAlias = generateCustomerAlias(member);
+              const tierColor = member.tierColor || getDefaultTierColor(index);
+              
+              return (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border-dim bg-surface/30 hover:bg-surface/40 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                      style={{ backgroundColor: tierColor }}
+                    >
+                      {customerAlias.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-lg">{customerAlias}</p>
+                      <div className="flex items-center gap-2">
+                        {member.tierName ? (
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs border-gray-400 bg-gray-700/50 text-white"
+                            style={{ borderColor: tierColor, backgroundColor: `${tierColor}20` }}
+                          >
+                            {member.tierName}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs border-gray-600 bg-gray-800/50 text-gray-300">
+                            No Tier
+                          </Badge>
+                        )}
+                        <span className="text-sm text-gray-400">
+                          {member.updatedAt ? new Date(member.updatedAt).toLocaleDateString() : 'Never'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-bold text-white text-xl">{member.points || 0}</p>
+                      <p className="text-xs text-gray-400">points</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {/* Tier Selection */}
+                      <Select 
+                        value={member.tierId || "none"} 
+                        onValueChange={(value) => value !== "none" && handleTierChange(member, value)}
+                      >
+                        <SelectTrigger className="w-32 bg-bg border-border-dim text-fg text-xs h-8">
+                          <SelectValue placeholder="Set Tier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No Tier</SelectItem>
+                          {loyaltyProgramme?.tiers?.map((tier: any) => (
+                            <SelectItem key={tier.id} value={tier.id}>
+                              {tier.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {/* Action Buttons */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedMember(member);
+                          setShowTransactionDialog(true);
+                        }}
+                        className="bg-surface border-border-dim text-fg hover:bg-surface/80 text-xs"
+                      >
+                        <CreditCard className="w-3 h-3 mr-1" />
+                        Transaction
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedMember(member);
+                          setShowAwardDialog(true);
+                        }}
+                        className="bg-surface border-border-dim text-fg hover:bg-surface/80 text-xs"
+                      >
+                        <Award className="w-3 h-3 mr-1" />
+                        Award
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </StatCard>
+
+      {/* Award Points Dialog */}
+      <Dialog open={showAwardDialog} onOpenChange={setShowAwardDialog}>
+        <DialogContent className="sm:max-w-md bg-bg border-border-dim">
+          <DialogHeader>
+            <DialogTitle className="text-fg">Award Loyalty Points</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Manually award points to {selectedMember ? generateCustomerAlias(selectedMember) : 'this member'} for special circumstances.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="points" className="text-fg">Points to Award</Label>
+              <Input
+                id="points"
+                type="number"
+                min="1"
+                value={awardPoints}
+                onChange={(e) => setAwardPoints(e.target.value)}
+                placeholder="Enter number of points"
+                className="bg-bg border-border-dim text-fg"
+              />
+            </div>
+            <div>
+              <Label htmlFor="reason" className="text-fg">Reason (Optional)</Label>
+              <Input
+                id="reason"
+                value={awardReason}
+                onChange={(e) => setAwardReason(e.target.value)}
+                placeholder="e.g., Birthday bonus, Compensation, etc."
+                className="bg-bg border-border-dim text-fg"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAwardDialog(false)}
+              className="bg-surface border-border-dim text-fg hover:bg-surface/80"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAwardPoints}
+              disabled={awardPointsMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {awardPointsMutation.isPending ? "Awarding..." : "Award Points"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction Points Dialog */}
+      <Dialog open={showTransactionDialog} onOpenChange={setShowTransactionDialog}>
+        <DialogContent className="sm:max-w-md bg-bg border-border-dim">
+          <DialogHeader>
+            <DialogTitle className="text-fg">Process Transaction</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Award points based on a transaction amount for {selectedMember ? generateCustomerAlias(selectedMember) : 'this member'}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="basket" className="text-fg">Transaction Amount (£)</Label>
+              <Input
+                id="basket"
+                type="number"
+                min="0"
+                step="0.01"
+                value={basketAmount}
+                onChange={(e) => setBasketAmount(e.target.value)}
+                placeholder="Enter transaction amount"
+                className="bg-bg border-border-dim text-fg"
+              />
+            </div>
+            <div className="text-sm text-gray-400">
+              Points will be calculated based on your loyalty programme settings.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowTransactionDialog(false)}
+              className="bg-surface border-border-dim text-fg hover:bg-surface/80"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCollectPoints}
+              disabled={collectPointsMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {collectPointsMutation.isPending ? "Processing..." : "Process Transaction"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
   );
 }
 
@@ -1181,58 +1656,7 @@ export default function LoyaltyDashboard() {
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="card card-hover p-8"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20">
-                <Users className="w-5 h-5 text-teal-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-white">Loyalty Members</h3>
-                <p className="text-white/80 text-sm">View and manage your loyalty programme members</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              {/* No customer data yet - will populate when real loyalty members join */}
-              {[].map((customer, index) => {
-                const customerAlias = generateCustomerAlias({ id: customer.id, username: customer.username });
-                return (
-                  <motion.div 
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-center justify-between py-4 px-6 rounded-xl bg-surface/40 border border-white/5 hover:bg-surface/60 transition-all"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
-                        {customerAlias.substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-white text-lg">{customerAlias}</p>
-                        <p className="text-sm text-white/80">{customer.tier} tier • {customer.visits} visits</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-white text-xl">{customer.points}</p>
-                      <p className="text-xs text-white/70 mb-2">points</p>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="btn btn-ghost text-xs px-3 py-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
-                      >
-                        Award Points
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
+          <LoyaltyMembersManager />
         </TabsContent>
         </Tabs>
       </div>

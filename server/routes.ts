@@ -2239,6 +2239,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Loyalty Members Management Routes
+  app.get("/api/loyalty/members", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const merchantId = req.user.id;
+      
+      // Get all loyalty members for this merchant with their balances, tiers, and user info
+      const members = await storage.getLoyaltyMembers(merchantId);
+      
+      res.json({ success: true, members });
+    } catch (error) {
+      console.error("Error fetching loyalty members:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/loyalty/members/award-points", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { userId, points, reason } = req.body;
+      const merchantId = req.user.id;
+      
+      if (!userId || !points || points <= 0) {
+        return res.status(400).json({ error: "Valid userId and positive points required" });
+      }
+
+      // Award points and create event
+      const result = await storage.awardLoyaltyPoints(merchantId, userId, points, reason || "Manual adjustment by merchant");
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/loyalty/members/collect-points", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { userId, basketAmount } = req.body;
+      const merchantId = req.user.id;
+      
+      if (!userId || !basketAmount || basketAmount <= 0) {
+        return res.status(400).json({ error: "Valid userId and basket amount required" });
+      }
+
+      // Calculate and award points based on programme settings
+      const result = await storage.collectPointsFromTransaction(merchantId, userId, basketAmount);
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Error collecting points from transaction:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/loyalty/members/:userId/tier", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { userId } = req.params;
+      const { tierId, reason } = req.body;
+      const merchantId = req.user.id;
+      
+      if (!tierId) {
+        return res.status(400).json({ error: "Tier ID required" });
+      }
+
+      // Update member's tier
+      const result = await storage.updateMemberTier(merchantId, parseInt(userId), tierId, reason || "Manual tier adjustment by merchant");
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Error updating member tier:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Apple Wallet Pass endpoints
   // Public Apple Wallet pass endpoint (no auth required for QR code access)
   app.get("/api/wallet/pass", async (req, res) => {

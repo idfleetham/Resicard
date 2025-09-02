@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and } from "drizzle-orm";
 
@@ -74,6 +74,12 @@ export interface IStorage {
   getLoyaltyProgram(merchantId: number): Promise<LoyaltyProgram | undefined>;
   createLoyaltyProgram(program: InsertLoyaltyProgram): Promise<LoyaltyProgram>;
   updateLoyaltyProgram(merchantId: number, updates: Partial<LoyaltyProgram>): Promise<LoyaltyProgram | undefined>;
+  
+  // Loyalty Members operations
+  getLoyaltyMembers(merchantId: number): Promise<any[]>;
+  awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any>;
+  collectPointsFromTransaction(merchantId: number, userId: number, basketAmount: number): Promise<any>;
+  updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any>;
 
   // Analytics
   getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }>;
@@ -469,6 +475,22 @@ export class MemStorage implements IStorage {
 
   async updateLoyaltyProgram(merchantId: number, updates: Partial<LoyaltyProgram>): Promise<LoyaltyProgram | undefined> {
     return undefined;
+  }
+
+  async getLoyaltyMembers(merchantId: number): Promise<any[]> {
+    return [];
+  }
+
+  async awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any> {
+    return { success: false, message: "Loyalty points not supported in memory storage" };
+  }
+
+  async collectPointsFromTransaction(merchantId: number, userId: number, basketAmount: number): Promise<any> {
+    return { success: false, message: "Transaction points not supported in memory storage" };
+  }
+
+  async updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any> {
+    return { success: false, message: "Member tier updates not supported in memory storage" };
   }
 
   // Merchant-related methods
@@ -1113,6 +1135,256 @@ export class DatabaseStorage implements IStorage {
       .where(eq(loyaltyPrograms.merchantId, merchantId))
       .returning();
     return program || undefined;
+  }
+
+  async getLoyaltyMembers(merchantId: number): Promise<any[]> {
+    const members = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        firstName: users.firstName,
+        surname: users.surname,
+        points: loyaltyBalances.points,
+        stamps: loyaltyBalances.stamps,
+        tierId: loyaltyBalances.tierId,
+        tierName: loyaltyTiers.name,
+        tierColor: loyaltyTiers.color,
+        updatedAt: loyaltyBalances.updatedAt,
+      })
+      .from(loyaltyBalances)
+      .innerJoin(users, eq(loyaltyBalances.userId, users.id))
+      .leftJoin(loyaltyTiers, eq(loyaltyBalances.tierId, loyaltyTiers.id))
+      .where(eq(loyaltyBalances.merchantId, merchantId));
+    
+    return members;
+  }
+
+  async awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any> {
+    return await db.transaction(async (tx) => {
+      // Get or create loyalty balance
+      let [balance] = await tx
+        .select()
+        .from(loyaltyBalances)
+        .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)));
+
+      if (!balance) {
+        [balance] = await tx
+          .insert(loyaltyBalances)
+          .values({
+            merchantId,
+            userId,
+            points: points,
+            stamps: 0,
+          })
+          .returning();
+      } else {
+        [balance] = await tx
+          .update(loyaltyBalances)
+          .set({
+            points: (balance.points || 0) + points,
+            updatedAt: new Date(),
+          })
+          .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)))
+          .returning();
+      }
+
+      // Get loyalty program for this merchant
+      const [program] = await tx
+        .select()
+        .from(loyaltyPrograms)
+        .where(eq(loyaltyPrograms.merchantId, merchantId));
+
+      // Create loyalty event
+      await tx.insert(loyaltyEvents).values({
+        merchantId,
+        userId,
+        programId: program?.id,
+        type: "adjust",
+        amount: points,
+        metadata: { reason, source: "manual" },
+      });
+
+      // Check for tier upgrades
+      await this.checkAndUpdateTier(tx, merchantId, userId, balance.points || 0);
+
+      return { success: true, balance, pointsAwarded: points };
+    });
+  }
+
+  async collectPointsFromTransaction(merchantId: number, userId: number, basketAmount: number): Promise<any> {
+    return await db.transaction(async (tx) => {
+      // Get loyalty program settings
+      const [program] = await tx
+        .select()
+        .from(loyaltyPrograms)
+        .where(eq(loyaltyPrograms.merchantId, merchantId));
+
+      if (!program) {
+        throw new Error("Loyalty program not found for merchant");
+      }
+
+      // Check minimum basket requirement
+      const minBasket = parseFloat(program.minBasketEarn || "0");
+      if (basketAmount < minBasket) {
+        return { 
+          success: false, 
+          message: `Minimum spend of £${minBasket.toFixed(2)} required to earn points`,
+          pointsEarned: 0
+        };
+      }
+
+      // Calculate points based on programme settings
+      const pointsPerCurrency = program.pointsPerCurrency || 10;
+      const pointsEarned = Math.floor(basketAmount * pointsPerCurrency);
+
+      // Get or create loyalty balance
+      let [balance] = await tx
+        .select()
+        .from(loyaltyBalances)
+        .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)));
+
+      if (!balance) {
+        [balance] = await tx
+          .insert(loyaltyBalances)
+          .values({
+            merchantId,
+            userId,
+            points: pointsEarned,
+            stamps: 0,
+          })
+          .returning();
+      } else {
+        [balance] = await tx
+          .update(loyaltyBalances)
+          .set({
+            points: (balance.points || 0) + pointsEarned,
+            updatedAt: new Date(),
+          })
+          .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)))
+          .returning();
+      }
+
+      // Create loyalty event
+      await tx.insert(loyaltyEvents).values({
+        merchantId,
+        userId,
+        programId: program.id,
+        type: "earn_points",
+        amount: pointsEarned,
+        metadata: { basketAmount, source: "transaction" },
+      });
+
+      // Check for tier upgrades
+      await this.checkAndUpdateTier(tx, merchantId, userId, balance.points || 0);
+
+      return { 
+        success: true, 
+        balance, 
+        pointsEarned,
+        basketAmount,
+        message: `Earned ${pointsEarned} points from £${basketAmount.toFixed(2)} transaction`
+      };
+    });
+  }
+
+  async updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any> {
+    return await db.transaction(async (tx) => {
+      // Get or create loyalty balance
+      let [balance] = await tx
+        .select()
+        .from(loyaltyBalances)
+        .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)));
+
+      if (!balance) {
+        [balance] = await tx
+          .insert(loyaltyBalances)
+          .values({
+            merchantId,
+            userId,
+            points: 0,
+            stamps: 0,
+            tierId,
+          })
+          .returning();
+      } else {
+        [balance] = await tx
+          .update(loyaltyBalances)
+          .set({
+            tierId,
+            updatedAt: new Date(),
+          })
+          .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)))
+          .returning();
+      }
+
+      // Get loyalty program for this merchant
+      const [program] = await tx
+        .select()
+        .from(loyaltyPrograms)
+        .where(eq(loyaltyPrograms.merchantId, merchantId));
+
+      // Create loyalty event
+      await tx.insert(loyaltyEvents).values({
+        merchantId,
+        userId,
+        programId: program?.id,
+        type: "tier_change",
+        amount: 0,
+        metadata: { tierId, reason, source: "manual" },
+      });
+
+      return { success: true, balance, newTierId: tierId };
+    });
+  }
+
+  private async checkAndUpdateTier(tx: any, merchantId: number, userId: number, currentPoints: number): Promise<void> {
+    // Get all tiers for this merchant's program
+    const [program] = await tx
+      .select()
+      .from(loyaltyPrograms)
+      .where(eq(loyaltyPrograms.merchantId, merchantId));
+
+    if (!program) return;
+
+    const tiers = await tx
+      .select()
+      .from(loyaltyTiers)
+      .where(eq(loyaltyTiers.programId, program.id))
+      .orderBy(loyaltyTiers.thresholdPoints);
+
+    // Find the highest tier the user qualifies for
+    let qualifyingTier = null;
+    for (const tier of tiers) {
+      if (currentPoints >= tier.thresholdPoints) {
+        qualifyingTier = tier;
+      }
+    }
+
+    if (qualifyingTier) {
+      // Update user's tier
+      await tx
+        .update(loyaltyBalances)
+        .set({
+          tierId: qualifyingTier.id,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)));
+
+      // Create tier change event
+      await tx.insert(loyaltyEvents).values({
+        merchantId,
+        userId,
+        programId: program.id,
+        type: "tier_change",
+        amount: 0,
+        metadata: { 
+          tierId: qualifyingTier.id, 
+          tierName: qualifyingTier.name, 
+          source: "automatic" 
+        },
+      });
+    }
   }
 }
 
