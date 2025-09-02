@@ -195,11 +195,11 @@ export default function LoyaltyDashboard() {
       apiRequest("POST", "/api/loyalty/program", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/loyalty/program"] });
-      toast({ title: "Loyalty program updated successfully!" });
+      toast({ title: "Loyalty programme updated successfully!" });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating program",
+        title: "Error updating programme",
         description: error.message,
         variant: "destructive",
       });
@@ -343,7 +343,7 @@ export default function LoyaltyDashboard() {
     if (loyaltyProgramme?.tiers.length && loyaltyProgramme.tiers.length <= 1) {
       toast({
         title: "Cannot Delete",
-        description: "At least one tier must remain in the program.",
+        description: "At least one tier must remain in the programme.",
         variant: "destructive",
       });
       return;
@@ -424,7 +424,7 @@ export default function LoyaltyDashboard() {
       <div className="mx-auto w-full max-w-7xl px-6 py-8">
         {/* Header */}
         <Hero 
-          title="Loyalty Program" 
+          title="Loyalty Programme" 
           subtitle="Build customer loyalty with points, stamps, and rewards" 
           right={
             <Switch 
@@ -1078,7 +1078,7 @@ export default function LoyaltyDashboard() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-white">Loyalty Members</h3>
-                <p className="text-white/80 text-sm">View and manage your loyalty program members</p>
+                <p className="text-white/80 text-sm">View and manage your loyalty programme members</p>
               </div>
             </div>
             <div className="space-y-4">
