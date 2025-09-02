@@ -3210,6 +3210,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all merchants with their logos
+  app.get("/api/merchants", async (req, res) => {
+    try {
+      // Get all merchants from database
+      const merchantsList = await db.select().from(merchants);
+      
+      // For each merchant, also try to get the user's profilePhoto as logo
+      const merchantsWithLogos = await Promise.all(
+        merchantsList.map(async (merchant) => {
+          let logoUrl = merchant.logoUrl;
+          
+          // If no logoUrl in merchant record, try to find user with matching email to get profilePhoto
+          if (!logoUrl && merchant.email) {
+            const [user] = await db.select({ profilePhoto: users.profilePhoto })
+              .from(users)
+              .where(eq(users.email, merchant.email));
+            
+            if (user?.profilePhoto) {
+              logoUrl = user.profilePhoto;
+            }
+          }
+          
+          return {
+            ...merchant,
+            logoUrl,
+            profilePhoto: logoUrl, // Also provide as profilePhoto for compatibility
+          };
+        })
+      );
+      
+      res.json(merchantsWithLogos);
+    } catch (error: any) {
+      console.error('Error fetching merchants:', error);
+      res.status(500).json({ message: "Failed to fetch merchants" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
