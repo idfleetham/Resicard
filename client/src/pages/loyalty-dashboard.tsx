@@ -1081,14 +1081,14 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <MetricTile label="Active Members" value={members?.length?.toString() || "0"} delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
+              <MetricTile label="Active Members" value={membersData?.length?.toString() || "0"} delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value={members?.reduce((total, member) => total + (member.points || 0), 0)?.toString() || "0"} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
+              <MetricTile label="Points Earned" value={membersData?.reduce((total, member) => total + (member.points || 0), 0)?.toString() || "0"} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1162,7 +1162,7 @@ export default function LoyaltyDashboard() {
             >
                 <div className="space-y-4">
                   {loyaltyProgramme?.tiers.map((tier, index) => {
-                    const tierMemberCount = members?.filter(member => member.tierName === tier.name || (tier.name === "Bronze" && member.tierId === "bronze")).length || 0;
+                    const tierMemberCount = membersData?.filter(member => member.tierName === tier.name || (tier.name === "Bronze" && member.tierId === "bronze")).length || 0;
                     return (
                       <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
                         <div className="flex items-center gap-3">

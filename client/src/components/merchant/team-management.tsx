@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,42 +50,28 @@ interface StaffMember {
 export default function TeamManagement() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [showPins, setShowPins] = useState(false);
 
-  // Mock data for staff members
-  const staffMembers: StaffMember[] = [
-    {
-      id: "1",
-      name: "John Smith",
-      email: "john@example.com",
-      role: "manager",
-      status: "active",
-      staffPin: "1234",
-      lastActive: "2024-01-15T10:30:00Z",
-      invitedAt: "2024-01-01T09:00:00Z",
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      role: "staff",
-      status: "active",
-      staffPin: "5678",
-      lastActive: "2024-01-14T16:45:00Z",
-      invitedAt: "2024-01-05T14:30:00Z",
-    },
-    {
-      id: "3",
-      name: "Mike Wilson",
-      email: "mike@example.com",
-      role: "staff",
-      status: "pending",
-      staffPin: "9012",
-      lastActive: "",
-      invitedAt: "2024-01-10T11:15:00Z",
-    },
-  ];
+  // Fetch real staff members from API
+  const { data: staffData } = useQuery({
+    queryKey: ["/api/staff"],
+  });
+  
+  // Convert API data to expected format and filter only actual staff members (not the merchant owner)
+  const staffMembers: StaffMember[] = (staffData || [])
+    .filter((member: any) => member.role === 'staff' && member.id !== user?.id)
+    .map((member: any) => ({
+      id: member.id.toString(),
+      name: `${member.first_name || ''} ${member.surname || ''}`.trim() || member.username,
+      email: member.email,
+      role: member.role,
+      status: member.is_verified ? "active" : "pending",
+      staffPin: member.staff_pin || "0000",
+      lastActive: member.updated_at || member.created_at,
+      invitedAt: member.created_at,
+    }));
 
   const form = useForm<InviteStaffData>({
     resolver: zodResolver(inviteStaffSchema),
