@@ -2478,31 +2478,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Query redemptions for total, month-to-date, and year-to-date revenue impact
       const totalQuery = `
-        SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total_impact
-        FROM redemptions 
-        WHERE value IS NOT NULL
+        SELECT COALESCE(SUM(CAST(r.value AS DECIMAL)), 0) as total_impact
+        FROM redemptions r
+        JOIN deals d ON r.deal_id = d.id 
+        WHERE r.value IS NOT NULL AND d.merchant_id = $1
       `;
       
       const monthQuery = `
-        SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as month_impact
-        FROM redemptions 
-        WHERE value IS NOT NULL
-        AND redeemed_at >= $1
+        SELECT COALESCE(SUM(CAST(r.value AS DECIMAL)), 0) as month_impact
+        FROM redemptions r
+        JOIN deals d ON r.deal_id = d.id
+        WHERE r.value IS NOT NULL AND d.merchant_id = $1
+        AND r.redeemed_at >= $2
       `;
       
       const yearQuery = `
-        SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as year_impact
-        FROM redemptions 
-        WHERE value IS NOT NULL
-        AND redeemed_at >= $1
+        SELECT COALESCE(SUM(CAST(r.value AS DECIMAL)), 0) as year_impact
+        FROM redemptions r
+        JOIN deals d ON r.deal_id = d.id
+        WHERE r.value IS NOT NULL AND d.merchant_id = $1
+        AND r.redeemed_at >= $2
       `;
       
       const { pool } = await import('./db');
       
       const [totalResult, monthResult, yearResult] = await Promise.all([
-        pool.query(totalQuery),
-        pool.query(monthQuery, [startOfMonth.toISOString()]),
-        pool.query(yearQuery, [startOfYear.toISOString()])
+        pool.query(totalQuery, [merchantId]),
+        pool.query(monthQuery, [merchantId, startOfMonth.toISOString()]),
+        pool.query(yearQuery, [merchantId, startOfYear.toISOString()])
       ]);
       
       const revenueImpact = {
