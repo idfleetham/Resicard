@@ -9,7 +9,7 @@ import { db } from "./db";
 import multer from "multer";
 import express from "express";
 import fs from "fs";
-import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, merchantTierPricing, userTierMemberships } from "@shared/schema";
+import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, loyaltyBalances, merchantTierPricing, userTierMemberships } from "@shared/schema";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { PassKitService } from "./passkit";
@@ -2228,11 +2228,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get customer loyalty balance
   app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
     try {
-      // Customer loyalty balance (real data would be fetched from database)
+      const merchantId = parseInt(req.params.merchantId);
+      const userId = req.user.id;
+      
+      // Get user's loyalty balance from database using raw query to match existing table structure
+      const balanceResult = await db.execute(sql`
+        SELECT balance, tier FROM loyalty_balances 
+        WHERE user_id = ${userId} AND merchant_id = ${merchantId}
+      `);
+      
+      if (!balanceResult.rows.length) {
+        // No balance found, return zero balance
+        res.json({
+          points: 0,
+          stamps: 0,
+          tier: null
+        });
+        return;
+      }
+      
+      const balance = balanceResult.rows[0] as { balance: string; tier: string | null };
+      
+      // Get tier information
+      let tierInfo = null;
+      if (balance.tier) {
+        const tierResult = await db.execute(sql`
+          SELECT name, discount_percent FROM loyalty_tiers 
+          WHERE LOWER(name) = LOWER(${balance.tier})
+        `);
+        
+        if (tierResult.rows.length) {
+          const tier = tierResult.rows[0] as { name: string; discount_percent: number };
+          tierInfo = {
+            name: tier.name,
+            perks: [
+              {
+                type: "discount",
+                value: tier.discount_percent,
+                note: "on all purchases"
+              }
+            ]
+          };
+        }
+      }
+      
       res.json({
-        points: 0,
-        stamps: 0,
-        tier: { name: "None", perks: [] }
+        points: parseInt(balance.balance) || 0,
+        stamps: 0, // Currently not using stamps
+        tier: tierInfo
       });
     } catch (error) {
       console.error('Get loyalty balance error:', error);
@@ -2310,8 +2353,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get loyalty events/history  
   app.get("/api/loyalty/events/:merchantId", authenticateToken, async (req, res) => {
     try {
-      // Loyalty events (real implementation would fetch from database)
-      res.json([]);
+      const merchantId = parseInt(req.params.merchantId);
+      const userId = req.user.id;
+      
+      // Get recent redemptions as loyalty events using raw query
+      const redemptionsResult = await db.execute(sql`
+        SELECT id, discount_value, created_at 
+        FROM redemptions 
+        WHERE user_id = ${userId} AND merchant_id = ${merchantId}
+        ORDER BY created_at DESC 
+        LIMIT 10
+      `);
+      
+      const events = redemptionsResult.rows.map((redemption: any) => ({
+        id: redemption.id.toString(),
+        type: "earn_points",
+        amount: Math.floor(parseFloat(redemption.discount_value) * 10), // 10 points per £1
+        createdAt: redemption.created_at,
+        metadata: { source: 'purchase' }
+      }));
+      
+      res.json(events);
     } catch (error) {
       console.error('Get loyalty events error:', error);
       res.status(500).json({ error: "Failed to fetch loyalty events" });
