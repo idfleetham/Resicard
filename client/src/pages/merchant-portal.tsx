@@ -302,15 +302,15 @@ export default function MerchantPortal() {
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-base font-semibold">
-                            {redemption.username?.charAt(0).toUpperCase() || 'U'}
+                            {redemption.customer_name?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div>
-                            <p className="font-medium text-fg">{redemption.username || 'Unknown User'}</p>
+                            <p className="font-medium text-fg">{redemption.customer_name || 'Unknown User'}</p>
                             <p className="text-lg text-soft">Redeemed voucher</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-base font-medium text-fg">£{redemption.discount_value || '0'}</p>
+                          <p className="text-base font-medium text-fg">£{redemption.value || '0'}</p>
                           <p className="text-base text-soft">{new Date(redemption.redeemed_at).toLocaleDateString()}</p>
                         </div>
                       </div>
