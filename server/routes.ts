@@ -116,7 +116,7 @@ async function awardLoyaltyPoints({
     // Find or create loyalty balance for this user and merchant
     let loyaltyBalance = await db.execute(sql`
       SELECT * FROM loyalty_balances 
-      WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+      WHERE "userId" = ${userId} AND merchant_id::text = ${merchantId}::text
     `);
     
     if (loyaltyBalance.rows.length === 0) {
@@ -131,7 +131,7 @@ async function awardLoyaltyPoints({
       await db.execute(sql`
         UPDATE loyalty_balances 
         SET points = ${currentPoints + pointsToAdd}, "updatedAt" = NOW()
-        WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+        WHERE "userId" = ${userId} AND merchant_id::text = ${merchantId}::text
       `);
     }
 
@@ -140,7 +140,7 @@ async function awardLoyaltyPoints({
       SELECT lb.points, lt.id as current_tier_id, lt."thresholdPoints" as current_threshold
       FROM loyalty_balances lb
       LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
-      WHERE lb."userId" = ${userId} AND lb."merchantId"::text = ${merchantId}::text
+      WHERE lb."userId" = ${userId} AND lb.merchant_id::text = ${merchantId}::text
     `);
 
     if (updatedBalance.rows.length > 0) {
@@ -164,7 +164,7 @@ async function awardLoyaltyPoints({
           await db.execute(sql`
             UPDATE loyalty_balances 
             SET "tierId" = ${newTier.id}, "updatedAt" = NOW()
-            WHERE "userId" = ${userId} AND "merchantId"::text = ${merchantId}::text
+            WHERE "userId" = ${userId} AND merchant_id::text = ${merchantId}::text
           `);
           console.log(`User ${userId} upgraded to tier ${newTier.name} for merchant ${merchantId}`);
         }
@@ -2357,7 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           m."businessCategory" as business_category,
           m.id as merchant_id
         FROM loyalty_balances lb
-        JOIN merchants m ON lb."merchantId"::text = m.id::text
+        JOIN merchants m ON lb.merchant_id::text = m.id::text
         JOIN loyalty_programs lp ON m.id::text = lp.merchant_id::text
         LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
         WHERE lb."userId" = ${userId}
