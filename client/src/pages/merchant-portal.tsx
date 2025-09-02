@@ -211,7 +211,7 @@ export default function MerchantPortal() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-fg/80 text-lg">Points Earned</span>
-                        <span className="font-semibold text-fg">{membersData?.members?.reduce((sum, member) => sum + (member.points || 0), 0) || 0}</span>
+                        <span className="font-semibold text-fg">{Math.floor(membersData?.members?.reduce((sum, member) => sum + (parseFloat(member.points) || 0), 0) || 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-fg/80 text-lg">Rewards Claimed</span>

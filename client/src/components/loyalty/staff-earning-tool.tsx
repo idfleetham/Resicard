@@ -156,7 +156,7 @@ export function StaffEarningTool({ merchantId, program }: StaffEarningToolProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-elev-1">
+        <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-elev-1">
           <Zap className="w-4 h-4 mr-2" />
           Award Points
         </Button>
