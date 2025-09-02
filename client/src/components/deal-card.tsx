@@ -166,18 +166,6 @@ export default function DealCard({
           </p>
         </div>
 
-        {/* Discount Highlight - Only show for monetary discounts */}
-        {deal.discountType === 'percentage' && Number(deal.discountValue) > 0 && (
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full shadow-sm">
-            <span className="text-lg font-bold text-white">
-              {deal.discountType === 'percentage' 
-                ? `${deal.discountValue}% OFF`
-                : `${formatCurrency(Number(deal.discountValue))} OFF`
-              }
-            </span>
-          </div>
-        )}
-
         {/* Spacer to push availability and button to bottom */}
         <div className="flex-1"></div>
 
