@@ -534,6 +534,35 @@ export const loyaltyTiers = pgTable("loyalty_tiers", {
   sortOrder: integer("sort_order").default(0),
 });
 
+// Merchant tier pricing settings
+export const merchantTierPricing = pgTable("merchant_tier_pricing", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  tierId: uuid("tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
+  isAvailableForPurchase: boolean("is_available_for_purchase").default(false),
+  annualPrice: numeric("annual_price", { precision: 10, scale: 2 }), // Annual membership price
+  currency: text("currency").default("GBP"),
+  description: text("description"), // Benefits description
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User tier purchases/memberships
+export const userTierMemberships = pgTable("user_tier_memberships", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  tierId: uuid("tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
+  status: text("status").$type<"active"|"expired"|"cancelled">().default("active"),
+  purchaseDate: timestamp("purchase_date").defaultNow(),
+  expiryDate: timestamp("expiry_date").notNull(), // One year from purchase
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }),
+  currency: text("currency").default("GBP"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const loyaltyBalances = pgTable("loyalty_balances", {
   id: uuid("id").primaryKey().defaultRandom(),
   merchantId: integer("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
@@ -635,6 +664,10 @@ export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
 export type InsertLoyaltyEvent = typeof loyaltyEvents.$inferInsert;
 export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
 export type InsertLoyaltyReward = typeof loyaltyRewards.$inferInsert;
+export type MerchantTierPricing = typeof merchantTierPricing.$inferSelect;
+export type InsertMerchantTierPricing = typeof merchantTierPricing.$inferInsert;
+export type UserTierMembership = typeof userTierMemberships.$inferSelect;
+export type InsertUserTierMembership = typeof userTierMemberships.$inferInsert;
 
 // Loyalty schemas
 export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms);
@@ -642,5 +675,7 @@ export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers);
 export const insertLoyaltyBalanceSchema = createInsertSchema(loyaltyBalances);
 export const insertLoyaltyEventSchema = createInsertSchema(loyaltyEvents);
 export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards);
+export const insertMerchantTierPricingSchema = createInsertSchema(merchantTierPricing);
+export const insertUserTierMembershipSchema = createInsertSchema(userTierMemberships);
 export type SubscriptionPlan = 'monthly' | 'annual';
 export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';

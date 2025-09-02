@@ -30,7 +30,8 @@ import {
   Phone,
   Mail,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  DollarSign
 } from "lucide-react";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -617,6 +618,18 @@ export default function MerchantSettings() {
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   <span className="text-lg">Reservations</span>
+                </Button>
+                <Button
+                  variant={activeTab === "tier-pricing" ? "default" : "ghost"}
+                  className={`w-full justify-start transition-all duration-200 ${
+                    activeTab === "tier-pricing" 
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" 
+                      : "text-slate-300 hover:text-slate-100 hover:bg-slate-800"
+                  }`}
+                  onClick={() => setActiveTab("tier-pricing")}
+                >
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  <span className="text-lg">Tier Pricing</span>
                 </Button>
                 <Button
                   variant={activeTab === "api" ? "default" : "ghost"}
@@ -1212,6 +1225,128 @@ export default function MerchantSettings() {
                       </ul>
                     </div>
                   )}
+                </CardBody>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === "tier-pricing" && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-slate-100">
+                    <DollarSign className="w-5 h-5 text-green-400" />
+                    <span>Tier Pricing & Memberships</span>
+                  </CardTitle>
+                  <CardDescription className="text-slate-300 text-lg">
+                    Set pricing for tier memberships and manage tier benefits for your customers
+                  </CardDescription>
+                </CardHeader>
+                <CardBody>
+                  <div className="space-y-6">
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                      <h3 className="text-lg font-semibold text-slate-100 mb-4">Available Loyalty Tiers</h3>
+                      
+                      {/* Bronze Tier */}
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#cd7f32'}}></div>
+                              <h4 className="text-lg font-semibold text-slate-100">Bronze Tier</h4>
+                              <Badge variant="secondary" className="text-xs">0+ points</Badge>
+                            </div>
+                            <Switch className="data-[state=checked]:bg-green-500" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Annual Price (£)</label>
+                              <Input placeholder="0.00" className="input-dark" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Benefits Description</label>
+                              <Input placeholder="Entry level benefits" className="input-dark" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Silver Tier */}
+                        <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#c0c0c0'}}></div>
+                              <h4 className="text-lg font-semibold text-slate-100">Silver Tier</h4>
+                              <Badge variant="secondary" className="text-xs">100+ points • 5% discount</Badge>
+                            </div>
+                            <Switch className="data-[state=checked]:bg-green-500" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Annual Price (£)</label>
+                              <Input placeholder="25.00" className="input-dark" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Benefits Description</label>
+                              <Input placeholder="5% discount + priority access" className="input-dark" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Gold Tier */}
+                        <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#ffd700'}}></div>
+                              <h4 className="text-lg font-semibold text-slate-100">Gold Tier</h4>
+                              <Badge variant="secondary" className="text-xs">250+ points • 10% discount</Badge>
+                            </div>
+                            <Switch className="data-[state=checked]:bg-green-500" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Annual Price (£)</label>
+                              <Input placeholder="50.00" className="input-dark" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Benefits Description</label>
+                              <Input placeholder="10% discount + exclusive offers" className="input-dark" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Platinum Tier */}
+                        <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#e5e4e2'}}></div>
+                              <h4 className="text-lg font-semibold text-slate-100">Platinum Tier</h4>
+                              <Badge variant="secondary" className="text-xs">500+ points • 15% discount</Badge>
+                            </div>
+                            <Switch className="data-[state=checked]:bg-green-500" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Annual Price (£)</label>
+                              <Input placeholder="100.00" className="input-dark" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-300 mb-2">Benefits Description</label>
+                              <Input placeholder="15% discount + VIP access" className="input-dark" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Tier Pricing
+                    </Button>
+                  </div>
                 </CardBody>
               </Card>
             </motion.div>

@@ -17,6 +17,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import EditProfile from "@/pages/edit-profile";
 import OfferDetails from "@/pages/offer-details";
 import LoyaltyDashboard from "@/pages/loyalty-dashboard";
+import TierMemberships from "@/pages/tier-memberships";
 import WalletAdd from "@/pages/wallet-add";
 import VerifyVoucher from "@/pages/verify-voucher";
 
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/merchant/offers/:id" component={OfferDetails} />
       <Route path="/merchant/loyalty" component={LoyaltyDashboard} />
       <Route path="/loyalty-dashboard" component={LoyaltyDashboard} />
+      <Route path="/tier-memberships" component={TierMemberships} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/wallet/add" component={WalletAdd} />
       <Route path="/edit-profile" component={EditProfile} />

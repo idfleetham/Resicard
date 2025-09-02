@@ -9,7 +9,7 @@ import { db } from "./db";
 import multer from "multer";
 import express from "express";
 import fs from "fs";
-import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards } from "@shared/schema";
+import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, merchantTierPricing, userTierMemberships } from "@shared/schema";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { PassKitService } from "./passkit";
@@ -2554,6 +2554,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Log messages from Wallet app
     console.log('Wallet app log:', req.body);
     res.status(200).send();
+  });
+
+  // Tier pricing routes for merchants
+  app.get("/api/merchant/tier-pricing", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        return res.status(404).json({ message: "Merchant not found" });
+      }
+
+      // Get tier pricing for this merchant
+      const tierPricing = await db.select().from(merchantTierPricing).where(eq(merchantTierPricing.merchantId, merchant.id));
+      res.json(tierPricing);
+    } catch (error: any) {
+      console.error('Error fetching tier pricing:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/merchant/tier-pricing", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        return res.status(404).json({ message: "Merchant not found" });
+      }
+
+      const { tierPricingData } = req.body;
+      
+      // Delete existing pricing and insert new ones
+      await db.delete(merchantTierPricing).where(eq(merchantTierPricing.merchantId, merchant.id));
+      
+      if (tierPricingData && tierPricingData.length > 0) {
+        await db.insert(merchantTierPricing).values(
+          tierPricingData.map((pricing: any) => ({
+            merchantId: merchant.id,
+            tierId: pricing.tierId,
+            isAvailableForPurchase: pricing.isAvailableForPurchase,
+            annualPrice: pricing.annualPrice,
+            description: pricing.description,
+            currency: pricing.currency || 'GBP',
+          }))
+        );
+      }
+
+      res.json({ message: "Tier pricing updated successfully" });
+    } catch (error: any) {
+      console.error('Error updating tier pricing:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // User tier purchase routes
+  app.get("/api/tiers/available/:merchantId", async (req, res) => {
+    try {
+      const { merchantId } = req.params;
+      
+      // Get available tier pricing for this merchant
+      const availableTiers = await db
+        .select({
+          id: loyaltyTiers.id,
+          name: loyaltyTiers.name,
+          color: loyaltyTiers.color,
+          thresholdPoints: loyaltyTiers.thresholdPoints,
+          discountPercent: loyaltyTiers.discountPercent,
+          pointsMultiplier: loyaltyTiers.pointsMultiplier,
+          annualPrice: merchantTierPricing.annualPrice,
+          description: merchantTierPricing.description,
+          currency: merchantTierPricing.currency,
+        })
+        .from(merchantTierPricing)
+        .innerJoin(loyaltyTiers, eq(merchantTierPricing.tierId, loyaltyTiers.id))
+        .where(
+          and(
+            eq(merchantTierPricing.merchantId, merchantId),
+            eq(merchantTierPricing.isAvailableForPurchase, true)
+          )
+        )
+        .orderBy(loyaltyTiers.sortOrder);
+
+      res.json(availableTiers);
+    } catch (error: any) {
+      console.error('Error fetching available tiers:', error);
+      res.status(500).json({ message: error.message });
+    }
   });
 
   const httpServer = createServer(app);
