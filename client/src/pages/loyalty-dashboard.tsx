@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-interface LoyaltyProgram {
+interface LoyaltyProgramme {
   id: string;
   merchantId: string;
   model: "points" | "stamps" | "hybrid";
@@ -185,7 +185,7 @@ export default function LoyaltyDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddReward, setShowAddReward] = useState(false);
 
-  const { data: loyaltyProgram, isLoading } = useQuery({
+  const { data: loyaltyProgramme, isLoading } = useQuery({
     queryKey: ["/api/loyalty/program"],
     queryFn: () => apiRequest("GET", "/api/loyalty/program").then(res => res.json()) as Promise<LoyaltyProgram>
   });
@@ -207,19 +207,55 @@ export default function LoyaltyDashboard() {
   });
 
   const handleToggleProgram = () => {
-    if (loyaltyProgram) {
+    if (loyaltyProgramme) {
       updateProgramMutation.mutate({
-        ...loyaltyProgram,
-        active: !loyaltyProgram.active
+        ...loyaltyProgramme,
+        active: !loyaltyProgramme.active
       });
     }
   };
 
   const handleModelChange = (model: "points" | "stamps" | "hybrid") => {
-    if (loyaltyProgram) {
+    if (loyaltyProgramme) {
       updateProgramMutation.mutate({
-        ...loyaltyProgram,
+        ...loyaltyProgramme,
         model
+      });
+    }
+  };
+
+  const handlePointsPerCurrencyChange = (value: string) => {
+    if (loyaltyProgramme) {
+      updateProgramMutation.mutate({
+        ...loyaltyProgramme,
+        pointsPerCurrency: parseInt(value) || 10
+      });
+    }
+  };
+
+  const handleMinBasketChange = (value: string) => {
+    if (loyaltyProgramme) {
+      updateProgramMutation.mutate({
+        ...loyaltyProgramme,
+        minBasketEarn: parseFloat(value) || 0
+      });
+    }
+  };
+
+  const handleCooldownChange = (value: string) => {
+    if (loyaltyProgramme) {
+      updateProgramMutation.mutate({
+        ...loyaltyProgramme,
+        earnCooldownMinutes: parseInt(value) || 30
+      });
+    }
+  };
+
+  const handleDailyCapChange = (value: string) => {
+    if (loyaltyProgramme) {
+      updateProgramMutation.mutate({
+        ...loyaltyProgramme,
+        dailyEarnCap: parseInt(value) || 3
       });
     }
   };
@@ -228,8 +264,8 @@ export default function LoyaltyDashboard() {
   const addTierMutation = useMutation({
     mutationFn: async () => {
       const newTier = {
-        name: `Tier ${(loyaltyProgram?.tiers.length || 0) + 1}`,
-        thresholdPoints: (loyaltyProgram?.tiers[loyaltyProgram.tiers.length - 1]?.thresholdPoints || 0) + 100,
+        name: `Tier ${(loyaltyProgramme?.tiers.length || 0) + 1}`,
+        thresholdPoints: (loyaltyProgramme?.tiers[loyaltyProgramme.tiers.length - 1]?.thresholdPoints || 0) + 100,
         perks: [{ type: "discount", value: 5, note: "Discount on purchases" }]
       };
       const response = await apiRequest("POST", "/api/loyalty/tiers", newTier);
@@ -304,7 +340,7 @@ export default function LoyaltyDashboard() {
   };
 
   const handleDeleteTier = (tierId: string) => {
-    if (loyaltyProgram?.tiers.length && loyaltyProgram.tiers.length <= 1) {
+    if (loyaltyProgramme?.tiers.length && loyaltyProgramme.tiers.length <= 1) {
       toast({
         title: "Cannot Delete",
         description: "At least one tier must remain in the program.",
@@ -368,14 +404,14 @@ export default function LoyaltyDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${loyaltyProgram?.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                {loyaltyProgram?.active ? 'Active' : 'Inactive'}
+              <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${loyaltyProgramme?.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                {loyaltyProgramme?.active ? 'Active' : 'Inactive'}
               </div>
               <Switch
-                checked={loyaltyProgram?.active || false}
+                checked={loyaltyProgramme?.active || false}
                 onCheckedChange={(checked) => {
-                  if (loyaltyProgram) {
-                    updateProgramMutation.mutate({ ...loyaltyProgram, active: checked });
+                  if (loyaltyProgramme) {
+                    updateProgramMutation.mutate({ ...loyaltyProgramme, active: checked });
                   }
                 }}
                 disabled={updateProgramMutation.isPending}
@@ -392,7 +428,7 @@ export default function LoyaltyDashboard() {
           subtitle="Build customer loyalty with points, stamps, and rewards" 
           right={
             <Switch 
-              checked={loyaltyProgram?.active} 
+              checked={loyaltyProgramme?.active} 
               className="data-[state=checked]:bg-emerald-500"
             />
           } 
@@ -523,7 +559,7 @@ export default function LoyaltyDashboard() {
               subtitle="Customer distribution across tiers"
             >
                 <div className="space-y-4">
-                  {loyaltyProgram?.tiers.map((tier, index) => (
+                  {loyaltyProgramme?.tiers.map((tier, index) => (
                     <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${
@@ -549,7 +585,7 @@ export default function LoyaltyDashboard() {
               subtitle="Most redeemed rewards this month"
             >
               <div className="space-y-4">
-                {loyaltyProgram?.rewards.slice(0, 3).map((reward, index) => (
+                {loyaltyProgramme?.rewards.slice(0, 3).map((reward, index) => (
                   <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
                     <div className="flex items-center gap-3">
                       <Coffee className="w-5 h-5 text-amber-400" />
@@ -571,19 +607,19 @@ export default function LoyaltyDashboard() {
 
         <TabsContent value="setup" className="space-y-6">
           <StatCard 
-            title="Program Configuration"
-            subtitle="Configure your loyalty program rules and earning mechanics"
+            title="Programme Configuration"
+            subtitle="Configure your loyalty programme rules and earning mechanics"
           >
             <div className="space-y-6">
               {/* Program Model */}
               <div className="space-y-3">
-                <Label className="text-fg font-medium">Program Model</Label>
+                <Label className="text-fg font-medium">Programme Model</Label>
                 <Select 
-                  value={loyaltyProgram?.model} 
+                  value={loyaltyProgramme?.model} 
                   onValueChange={handleModelChange}
                 >
                   <SelectTrigger className="bg-surface border-dim">
-                    <SelectValue placeholder="Select program type" />
+                    <SelectValue placeholder="Select programme type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="points">Points (£1 = X points)</SelectItem>
@@ -598,21 +634,42 @@ export default function LoyaltyDashboard() {
 
               {/* Earning Rules */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {loyaltyProgramme?.model !== 'stamps' && (
+                  <div className="space-y-3">
+                    <Label className="text-fg font-medium">Points per £1</Label>
+                    <Input 
+                      type="number" 
+                      value={loyaltyProgramme?.pointsPerCurrency || 10}
+                      onChange={(e) => handlePointsPerCurrencyChange(e.target.value)}
+                      className="bg-surface border-dim"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                )}
+                
+                {loyaltyProgramme?.model === 'stamps' && (
+                  <div className="space-y-3">
+                    <Label className="text-fg font-medium">£ Spending per Stamp</Label>
+                    <Input 
+                      type="number" 
+                      value={loyaltyProgramme?.minBasketEarn || 5}
+                      onChange={(e) => handleMinBasketChange(e.target.value)}
+                      className="bg-surface border-dim"
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-3">
-                  <Label className="text-fg font-medium">Points per £1</Label>
+                  <Label className="text-fg font-medium">
+                    {loyaltyProgramme?.model === 'stamps' ? 'Minimum Visit Spend (£)' : 'Minimum Basket (£)'}
+                  </Label>
                   <Input 
                     type="number" 
-                    value={loyaltyProgram?.pointsPerCurrency || 10}
+                    value={loyaltyProgramme?.minBasketEarn || 0}
+                    onChange={(e) => handleMinBasketChange(e.target.value)}
                     className="bg-surface border-dim"
-                    disabled={loyaltyProgram?.model === 'stamps'}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-fg font-medium">Minimum Basket (£)</Label>
-                  <Input 
-                    type="number" 
-                    value={loyaltyProgram?.minBasketEarn || 0}
-                    className="bg-surface border-dim"
+                    placeholder="e.g. 0"
                   />
                 </div>
               </div>
@@ -628,8 +685,10 @@ export default function LoyaltyDashboard() {
                     <Label className="text-fg font-medium">Earn Cooldown (minutes)</Label>
                     <Input 
                       type="number" 
-                      value={loyaltyProgram?.earnCooldownMinutes || 30}
+                      value={loyaltyProgramme?.earnCooldownMinutes || 30}
+                      onChange={(e) => handleCooldownChange(e.target.value)}
                       className="bg-surface border-dim"
+                      placeholder="e.g. 30"
                     />
                     <p className="text-xs text-soft">Prevent rapid successive earning</p>
                   </div>
@@ -637,8 +696,10 @@ export default function LoyaltyDashboard() {
                     <Label className="text-fg font-medium">Daily Earn Cap</Label>
                     <Input 
                       type="number" 
-                      value={loyaltyProgram?.dailyEarnCap || 3}
+                      value={loyaltyProgramme?.dailyEarnCap || 3}
+                      onChange={(e) => handleDailyCapChange(e.target.value)}
                       className="bg-surface border-dim"
+                      placeholder="e.g. 3"
                     />
                     <p className="text-xs text-soft">Max times per customer per day</p>
                   </div>
@@ -646,7 +707,7 @@ export default function LoyaltyDashboard() {
               </div>
 
               <Button 
-                onClick={() => updateProgramMutation.mutate(loyaltyProgram!)}
+                onClick={() => updateProgramMutation.mutate(loyaltyProgramme!)}
                 disabled={updateProgramMutation.isPending}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
               >
@@ -663,7 +724,7 @@ export default function LoyaltyDashboard() {
             subtitle="Set up tiers with point thresholds and exclusive perks"
           >
               <div className="space-y-4">
-                {loyaltyProgram?.tiers.map((tier, index) => (
+                {loyaltyProgramme?.tiers.map((tier, index) => (
                   <TierEditor 
                     key={tier.id} 
                     tier={tier} 
@@ -690,7 +751,7 @@ export default function LoyaltyDashboard() {
             subtitle="Preview what customers see for each tier"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {loyaltyProgram?.tiers.map((tier, index) => {
+              {loyaltyProgramme?.tiers.map((tier, index) => {
                 const getTierColor = (index: number) => {
                   const colors = ['from-orange-500 to-amber-500', 'from-gray-400 to-gray-500', 'from-yellow-400 to-yellow-500', 'from-purple-500 to-purple-600', 'from-green-500 to-green-600'];
                   return colors[index % colors.length];
@@ -748,7 +809,7 @@ export default function LoyaltyDashboard() {
             subtitle="Customer distribution and engagement by tier"
           >
             <div className="space-y-6">
-              {loyaltyProgram?.tiers.map((tier, index) => {
+              {loyaltyProgramme?.tiers.map((tier, index) => {
                 const customerCount = 0;
                 const avgSpend = "0.00";
                 const progressPercentage = Math.min(100, (customerCount / 120) * 100);
@@ -879,7 +940,7 @@ export default function LoyaltyDashboard() {
               </Dialog>
             </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {loyaltyProgram?.rewards.map((reward) => (
+                {loyaltyProgramme?.rewards.map((reward) => (
                   <div key={reward.id} className="p-4 rounded-lg border-border-dim bg-surface/30">
                     <div className="flex items-start justify-between mb-3">
                       <Coffee className="w-8 h-8 text-brown-500" />
