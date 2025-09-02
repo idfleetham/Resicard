@@ -92,6 +92,7 @@ export const offers = pgTable("offers", {
   
   // B) Visibility & eligibility
   audience: text("audience").$type<"resident"|"student"|"both">().default("both"),
+  eligibleTiers: text("eligible_tiers"), // JSON array of tier IDs that can access this offer
   minBasket: numeric("min_basket", { precision: 10, scale: 2 }), // Min spend requirement
   maxDiscount: numeric("max_discount", { precision: 10, scale: 2 }), // Cap on discount value
   stackable: boolean("stackable").default(false), // Can stack with other promos
@@ -286,6 +287,7 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   originalValue: true,
   category: true,
   audience: true,
+  eligibleTiers: true,
   stackable: true,
   newCustomerOnly: true,
   geofenceRadius: true,
@@ -317,6 +319,7 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
 }).extend({
   // Override fields that need special handling for arrays/objects from frontend
   tags: z.array(z.string()).optional(),
+  eligibleTiers: z.array(z.string()).optional(),
   daysOfWeek: z.array(z.string()).optional(),
   timeSlots: z.record(z.array(z.object({
     start: z.string(),
@@ -510,17 +513,17 @@ export const loyaltyPrograms = pgTable("loyalty_programs", {
 
 export const loyaltyTiers = pgTable("loyalty_tiers", {
   id: uuid("id").primaryKey().defaultRandom(),
-  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
+  programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
   name: text("name").notNull(), // Bronze, Silver, Gold
   thresholdPoints: integer("threshold_points").notNull(), // or stamps
-  rollingDays: integer("rolling_days").default(90), // 90-day rolling window
-  perks: jsonb("perks"), // [{type:"percentOff", value:10, note:"Mon–Thu"}]
+  discountPercent: integer("discount_percent").default(0), // Simple % discount
+  color: text("color").default("#f97316"), // Tier color
   sortOrder: integer("sort_order").default(0),
 });
 
 export const loyaltyBalances = pgTable("loyalty_balances", {
   id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  merchantId: integer("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   points: integer("points").default(0),
   stamps: integer("stamps").default(0),
@@ -530,9 +533,9 @@ export const loyaltyBalances = pgTable("loyalty_balances", {
 
 export const loyaltyEvents = pgTable("loyalty_events", {
   id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  merchantId: integer("merchant_id").notNull().references(() => merchants.id),
   userId: integer("user_id").notNull().references(() => users.id),
-  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id),
+  programId: integer("program_id").notNull().references(() => loyaltyPrograms.id),
   type: text("type").$type<"earn_points"|"earn_stamp"|"redeem_reward"|"adjust"|"tier_change">().notNull(),
   amount: integer("amount"), // points or stamps change (+/-)
   metadata: jsonb("metadata"), // {basket, staffUserId, deviceId, source:"qr|pin"}
@@ -541,7 +544,7 @@ export const loyaltyEvents = pgTable("loyalty_events", {
 
 export const loyaltyRewards = pgTable("loyalty_rewards", {
   id: uuid("id").primaryKey().defaultRandom(),
-  programId: uuid("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
+  programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
   name: text("name").notNull(), // e.g., Free Coffee
   costPoints: integer("cost_points"), // for points model
   costStamps: integer("cost_stamps"), // for stamps model

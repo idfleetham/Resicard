@@ -160,73 +160,24 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
                 </div>
               </div>
               
-              {/* Benefits Editor */}
+              {/* Simple Discount Percentage */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-fg font-medium text-sm">Tier Benefits</Label>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={addBenefit}
-                    className="text-xs bg-surface border-border-dim text-fg hover:bg-surface/80"
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Add Benefit
-                  </Button>
-                </div>
-                
-                {editBenefits.map((benefit, benefitIndex) => (
-                  <div key={benefitIndex} className="grid grid-cols-12 gap-2 items-center p-2 bg-bg/50 rounded border border-border-dim">
-                    <div className="col-span-4">
-                      <Select 
-                        value={benefit.type} 
-                        onValueChange={(value) => updateBenefit(benefitIndex, 'type', value)}
-                      >
-                        <SelectTrigger className="bg-bg border-border-dim text-fg text-xs h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="discount">% Discount</SelectItem>
-                          <SelectItem value="free_item">Free Item</SelectItem>
-                          <SelectItem value="early_access">Early Access</SelectItem>
-                          <SelectItem value="bonus_points">Bonus Points</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="col-span-3">
-                      <Input
-                        type="number"
-                        value={benefit.value}
-                        onChange={(e) => updateBenefit(benefitIndex, 'value', parseInt(e.target.value) || 0)}
-                        className="bg-bg border-border-dim text-fg text-xs h-8"
-                        placeholder="Value"
-                      />
-                    </div>
-                    
-                    <div className="col-span-4">
-                      <Input
-                        value={benefit.note || ''}
-                        onChange={(e) => updateBenefit(benefitIndex, 'note', e.target.value)}
-                        className="bg-bg border-border-dim text-fg text-xs h-8"
-                        placeholder="Description (optional)"
-                      />
-                    </div>
-                    
-                    <div className="col-span-1">
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeBenefit(benefitIndex)}
-                        className="hover:bg-red-500/20 text-red-400 hover:text-red-300 h-8 w-8 p-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
+                <div>
+                  <Label className="text-fg font-medium text-sm">Discount Percentage</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={editBenefits[0]?.value || 0}
+                      onChange={(e) => setEditBenefits([{ type: 'discount', value: parseInt(e.target.value) || 0, note: '' }])}
+                      className="bg-bg border-border-dim text-fg w-20"
+                      placeholder="0"
+                    />
+                    <span className="text-fg">% off on eligible offers</span>
                   </div>
-                ))}
+                  <p className="text-xs text-gray-400 mt-1">Members of this tier get this percentage off on targeted offers</p>
+                </div>
               </div>
             </div>
           ) : (
@@ -1307,7 +1258,7 @@ export default function LoyaltyDashboard() {
         <TabsContent value="tiers" className="space-y-6">
           <StatCard 
             title="Customer Tiers"
-            subtitle="Set up tiers with point thresholds and exclusive perks"
+            subtitle="Simple tiers with percentage discounts for targeted offers"
           >
               <div className="space-y-4">
                 {loyaltyProgramme?.tiers.map((tier, index) => (
@@ -1367,24 +1318,16 @@ export default function LoyaltyDashboard() {
                         Unlock at {tier.thresholdPoints} points
                       </p>
                       
-                      {/* Perks List */}
+                      {/* Simple Discount */}
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-white/80 uppercase tracking-wide">Benefits</p>
-                        {tier.perks && tier.perks.length > 0 ? (
-                          <ul className="space-y-1">
-                            {tier.perks.slice(0, 3).map((perk, perkIndex) => (
-                              <li key={perkIndex} className="text-sm text-white/90 flex items-center gap-2">
-                                <Percent className="w-3 h-3" />
-                                {perk.type === 'discount' ? `${perk.value}% off all orders` : 
-                                 perk.type === 'free_item' ? `Free ${perk.note || 'item'}` :
-                                 perk.type === 'early_access' ? 'Early access to offers' :
-                                 `${perk.value} bonus points`}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-sm text-white/70 italic">No benefits configured</p>
-                        )}
+                        <p className="text-xs font-medium text-white/80 uppercase tracking-wide">Benefit</p>
+                        <div className="flex items-center gap-2">
+                          <Percent className="w-4 h-4" />
+                          <span className="text-lg font-bold text-white">
+                            {tier.perks && tier.perks[0] ? `${tier.perks[0].value}%` : '0%'}
+                          </span>
+                          <span className="text-sm text-white/90">off eligible offers</span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

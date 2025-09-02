@@ -909,6 +909,7 @@ export class DatabaseStorage implements IStorage {
       ...offerData,
       merchantId: offerData.merchantId ? String(offerData.merchantId) : undefined,
       tags: Array.isArray(offerData.tags) ? JSON.stringify(offerData.tags) : offerData.tags,
+      eligibleTiers: Array.isArray(offerData.eligibleTiers) ? JSON.stringify(offerData.eligibleTiers) : offerData.eligibleTiers,
       daysOfWeek: Array.isArray(offerData.daysOfWeek) ? JSON.stringify(offerData.daysOfWeek) : offerData.daysOfWeek,
       timeSlots: typeof offerData.timeSlots === 'object' ? JSON.stringify(offerData.timeSlots) : offerData.timeSlots,
       blackoutDates: Array.isArray(offerData.blackoutDates) ? JSON.stringify(offerData.blackoutDates) : offerData.blackoutDates,
@@ -939,6 +940,7 @@ export class DatabaseStorage implements IStorage {
     const processedUpdates = {
       ...updates,
       tags: Array.isArray(updates.tags) ? JSON.stringify(updates.tags) : updates.tags,
+      eligibleTiers: Array.isArray(updates.eligibleTiers) ? JSON.stringify(updates.eligibleTiers) : updates.eligibleTiers,
       daysOfWeek: Array.isArray(updates.daysOfWeek) ? JSON.stringify(updates.daysOfWeek) : updates.daysOfWeek,
       timeSlots: typeof updates.timeSlots === 'object' ? JSON.stringify(updates.timeSlots) : updates.timeSlots,
       blackoutDates: Array.isArray(updates.blackoutDates) ? JSON.stringify(updates.blackoutDates) : updates.blackoutDates,

@@ -46,6 +46,7 @@ const offerSchema = z.object({
 
   // B) Visibility & eligibility
   audience: z.enum(["resident", "student", "both"]).default("both"),
+  eligibleTiers: z.array(z.string()).default([]),
   minBasket: z.number().min(0).optional(),
   maxDiscount: z.number().min(0).optional(),
   stackable: z.boolean().default(false),
@@ -153,6 +154,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       category: editingOffer.category || "",
       tags: Array.isArray(editingOffer.tags) ? editingOffer.tags : (editingOffer.tags ? JSON.parse(editingOffer.tags) : []),
       audience: editingOffer.audience || "both",
+      eligibleTiers: Array.isArray(editingOffer.eligibleTiers) ? editingOffer.eligibleTiers : (editingOffer.eligibleTiers ? JSON.parse(editingOffer.eligibleTiers) : []),
       minBasket: editingOffer.minBasket || undefined,
       maxDiscount: editingOffer.maxDiscount || undefined,
       stackable: editingOffer.stackable || false,
@@ -191,6 +193,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       description: "",
       type: "percentage_discount",
       audience: "both",
+      eligibleTiers: [],
       stackable: false,
       newCustomerOnly: false,
       daysOfWeek: [],
@@ -774,6 +777,47 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         )}
                       />
                     </div>
+
+                    {/* Loyalty Tier Targeting */}
+                    <FormField
+                      control={form.control}
+                      name="eligibleTiers"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200 text-lg">Target Loyalty Tiers (Optional)</FormLabel>
+                          <FormDescription className="text-slate-400">
+                            Select which loyalty tiers can access this offer. Leave empty to make available to all customers.
+                          </FormDescription>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {["Bronze", "Silver", "Gold", "Platinum"].map((tier) => (
+                              <Badge
+                                key={tier}
+                                variant={field.value.includes(tier) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  field.value.includes(tier) 
+                                    ? "bg-blue-600 text-white hover:bg-blue-700" 
+                                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                                }`}
+                                onClick={() => {
+                                  const newTiers = field.value.includes(tier)
+                                    ? field.value.filter(t => t !== tier)
+                                    : [...field.value, tier];
+                                  field.onChange(newTiers);
+                                }}
+                              >
+                                {tier} Tier
+                              </Badge>
+                            ))}
+                          </div>
+                          {field.value.length > 0 && (
+                            <p className="text-sm text-slate-400 mt-2">
+                              Only {field.value.join(", ")} tier members can access this offer
+                            </p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
