@@ -1458,8 +1458,13 @@ export default function LoyaltyDashboard() {
           >
             <div className="space-y-6">
               {loyaltyProgramme?.tiers.map((tier, index) => {
-                const customerCount = 0;
-                const avgSpend = "0.00";
+                // Calculate actual customer count for this tier
+                const tierMembers = membersData?.members?.filter(member => member.tier === tier.name.toLowerCase()) || [];
+                const customerCount = tierMembers.length;
+                
+                // Calculate average monthly spend for this tier (using total redemption value)
+                const totalSpend = revenueData?.revenueImpact?.total || 0;
+                const avgSpend = customerCount > 0 ? (totalSpend / customerCount).toFixed(2) : "0.00";
                 const progressPercentage = Math.min(100, (customerCount / 120) * 100);
 
                 return (
