@@ -279,7 +279,7 @@ export default function MerchantPortal() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Repeat Visits</span>
-                        <span className="font-semibold text-blue-400">0</span>
+                        <span className="font-semibold text-blue-400">{redemptions.length || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Revenue Impact</span>
@@ -315,7 +315,7 @@ export default function MerchantPortal() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-base font-medium text-fg">£{redemption.value || '0'}</p>
+                          <p className="text-base font-medium text-fg">£{redemption.calculatedDiscount || redemption.value || '0.00'}</p>
                           <p className="text-base text-soft">{new Date(redemption.redeemedAt).toLocaleDateString()}</p>
                         </div>
                       </div>
