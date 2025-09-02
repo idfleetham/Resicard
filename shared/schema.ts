@@ -517,6 +517,7 @@ export const loyaltyTiers = pgTable("loyalty_tiers", {
   name: text("name").notNull(), // Bronze, Silver, Gold
   thresholdPoints: integer("threshold_points").notNull(), // or stamps
   discountPercent: integer("discount_percent").default(0), // Simple % discount
+  pointsMultiplier: numeric("points_multiplier", { precision: 3, scale: 2 }).default("1.00"), // e.g., 1.00, 1.50, 2.00
   color: text("color").default("#f97316"), // Tier color
   sortOrder: integer("sort_order").default(0),
 });

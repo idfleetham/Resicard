@@ -79,6 +79,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
   const [editName, setEditName] = useState(tier.name);
   const [editPoints, setEditPoints] = useState(tier.thresholdPoints);
   const [editColor, setEditColor] = useState(tier.color || getDefaultTierColor(index));
+  const [editMultiplier, setEditMultiplier] = useState(tier.pointsMultiplier || 1.0);
   const [editBenefits, setEditBenefits] = useState<Array<{ type: string; value: number; note?: string }>>(
     tier.perks || [{ type: 'discount', value: 5, note: '' }]
   );
@@ -89,6 +90,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
       name: editName,
       thresholdPoints: parseInt(editPoints.toString()),
       color: editColor,
+      pointsMultiplier: parseFloat(editMultiplier.toString()),
       perks: editBenefits
     });
     setIsEditing(false);
@@ -98,6 +100,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
     setEditName(tier.name);
     setEditPoints(tier.thresholdPoints);
     setEditColor(tier.color || getDefaultTierColor(index));
+    setEditMultiplier(tier.pointsMultiplier || 1.0);
     setEditBenefits(tier.perks || [{ type: 'discount', value: 5, note: '' }]);
     setIsEditing(false);
   };
@@ -135,7 +138,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
           ></div>
           {isEditing ? (
             <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
@@ -149,6 +152,19 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
                   className="bg-bg border-border-dim text-fg"
                   placeholder="Points required"
                 />
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min="0.1"
+                    max="10"
+                    step="0.1"
+                    value={editMultiplier}
+                    onChange={(e) => setEditMultiplier(parseFloat(e.target.value) || 1.0)}
+                    className="bg-bg border-border-dim text-fg w-20"
+                    placeholder="1.0"
+                  />
+                  <span className="text-fg text-sm">x points</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Label className="text-fg text-sm whitespace-nowrap">Color:</Label>
                   <Input
@@ -184,6 +200,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-white text-base">{tier.name}</h4>
               <p className="text-sm text-gray-300">{tier.thresholdPoints}+ points required</p>
+              <p className="text-xs text-blue-300">{tier.pointsMultiplier || 1.0}x points earning rate</p>
             </div>
           )}
         </div>
@@ -1318,15 +1335,26 @@ export default function LoyaltyDashboard() {
                         Unlock at {tier.thresholdPoints} points
                       </p>
                       
-                      {/* Simple Discount */}
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-white/80 uppercase tracking-wide">Benefit</p>
+                      {/* Benefits */}
+                      <div className="space-y-3">
+                        <p className="text-xs font-medium text-white/80 uppercase tracking-wide">Benefits</p>
+                        
+                        {/* Discount */}
                         <div className="flex items-center gap-2">
                           <Percent className="w-4 h-4" />
                           <span className="text-lg font-bold text-white">
                             {tier.perks && tier.perks[0] ? `${tier.perks[0].value}%` : '0%'}
                           </span>
                           <span className="text-sm text-white/90">off eligible offers</span>
+                        </div>
+                        
+                        {/* Points Multiplier */}
+                        <div className="flex items-center gap-2">
+                          <Star className="w-4 h-4" />
+                          <span className="text-lg font-bold text-white">
+                            {tier.pointsMultiplier || 1.0}x
+                          </span>
+                          <span className="text-sm text-white/90">points earning rate</span>
                         </div>
                       </div>
                     </div>
