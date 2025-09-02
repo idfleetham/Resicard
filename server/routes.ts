@@ -1754,21 +1754,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Found total redemptions:', redemptionResults.rows.length, 'merchant redemptions:', merchantRedemptions.length);
 
       // Transform data to match frontend expectations
-      const formattedRedemptions = merchantRedemptions.map((redemption: any) => ({
-        id: redemption.id,
-        offer_id: redemption.deal_id,
-        user_id: redemption.user_id,
-        redeemedAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
-        createdAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
-        value: redemption.value ? parseFloat(redemption.value).toFixed(2) : '0.00',
-        calculatedDiscount: redemption.value ? parseFloat(redemption.value).toFixed(2) : '0.00',
-        basketSubtotal: 'N/A', // Not available in legacy structure
-        voucher_code: `LEGACY-${redemption.id}`,
-        dealTitle: redemption.deal_title || 'Unknown Deal',
-        offerTitle: redemption.deal_title || 'Unknown Deal',
-        customerName: redemption.customer_name || 'Guest',
-        staffName: 'System'
-      }));
+      const formattedRedemptions = merchantRedemptions.map((redemption: any) => {
+        const discountAmount = redemption.value ? parseFloat(redemption.value) : 0;
+        
+        // For percentage discounts, calculate original price from discount amount
+        // For "50% off" deals, if discount is £200, original price is £400
+        let originalPrice = 'N/A';
+        let finalPrice = '0.00';
+        
+        // Try to determine if this is a percentage discount from the offer title
+        const isPercentageDiscount = redemption.deal_title && redemption.deal_title.includes('%');
+        
+        if (isPercentageDiscount) {
+          // Extract percentage from title (e.g., "50% off" -> 50)
+          const percentMatch = redemption.deal_title.match(/(\d+)%/);
+          if (percentMatch) {
+            const percent = parseInt(percentMatch[1]);
+            if (percent > 0 && percent < 100) {
+              // If discount is £200 and it's 50% off, original price is £400
+              const calculatedOriginalPrice = discountAmount / (percent / 100);
+              originalPrice = calculatedOriginalPrice.toFixed(2);
+              finalPrice = (calculatedOriginalPrice - discountAmount).toFixed(2);
+            }
+          }
+        }
+        
+        return {
+          id: redemption.id,
+          offer_id: redemption.deal_id,
+          user_id: redemption.user_id,
+          redeemedAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
+          createdAt: redemption.redeemed_at ? new Date(redemption.redeemed_at).toISOString() : new Date().toISOString(),
+          value: finalPrice, // What was actually paid
+          calculatedDiscount: discountAmount.toFixed(2), // Actual discount amount
+          basketSubtotal: originalPrice, // Original price before discount
+          voucher_code: `LEGACY-${redemption.id}`,
+          dealTitle: redemption.deal_title || 'Unknown Deal',
+          offerTitle: redemption.deal_title || 'Unknown Deal',
+          customerName: redemption.customer_name || 'Guest',
+          staffName: 'System'
+        };
+      });
 
       res.json(formattedRedemptions);
       
