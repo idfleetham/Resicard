@@ -2478,23 +2478,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Query redemptions for total, month-to-date, and year-to-date revenue impact
       const totalQuery = `
-        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as total_impact
+        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as total_impact
         FROM redemptions 
-        WHERE merchant_id = $1 AND status = 'completed'
+        WHERE "merchantId" = $1 AND status = 'completed'
       `;
       
       const monthQuery = `
-        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as month_impact
+        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as month_impact
         FROM redemptions 
-        WHERE merchant_id = $1 AND status = 'completed' 
-        AND redeemed_at >= $2
+        WHERE "merchantId" = $1 AND status = 'completed' 
+        AND "redeemedAt" >= $2
       `;
       
       const yearQuery = `
-        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as year_impact
+        SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as year_impact
         FROM redemptions 
-        WHERE merchant_id = $1 AND status = 'completed' 
-        AND redeemed_at >= $2
+        WHERE "merchantId" = $1 AND status = 'completed' 
+        AND "redeemedAt" >= $2
       `;
       
       const { pool } = await import('./db');
@@ -2514,6 +2514,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, revenueImpact });
     } catch (error) {
       console.error("Error fetching revenue impact:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Week-over-week analytics for all metrics
+  app.get("/api/loyalty/analytics/wow", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const merchantId = req.user.id;
+      
+      // Get current date ranges
+      const now = new Date();
+      const startOfThisWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+      const startOfLastWeek = new Date(startOfThisWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const endOfLastWeek = new Date(startOfThisWeek.getTime() - 1);
+      
+      const { pool } = await import('./db');
+      
+      // Get current week metrics
+      const [currentMembersResult, currentPointsResult, currentRedemptionsResult, currentRevenueResult] = await Promise.all([
+        pool.query(`
+          SELECT COUNT(*) as member_count
+          FROM loyalty_balances lb 
+          JOIN users u ON lb."userId" = u.id 
+          WHERE lb."merchantId" = $1 
+          AND lb."createdAt" >= $2
+        `, [merchantId, startOfThisWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0) as total_points
+          FROM loyalty_events 
+          WHERE "merchantId" = $1 
+          AND type = 'earn_points'
+          AND "createdAt" >= $2
+        `, [merchantId, startOfThisWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COUNT(*) as redemption_count
+          FROM redemptions 
+          WHERE "merchantId" = $1 
+          AND status = 'completed'
+          AND "redeemedAt" >= $2
+        `, [merchantId, startOfThisWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as revenue_impact
+          FROM redemptions 
+          WHERE "merchantId" = $1 
+          AND status = 'completed'
+          AND "redeemedAt" >= $2
+        `, [merchantId, startOfThisWeek.toISOString()])
+      ]);
+      
+      // Get last week metrics
+      const [lastMembersResult, lastPointsResult, lastRedemptionsResult, lastRevenueResult] = await Promise.all([
+        pool.query(`
+          SELECT COUNT(*) as member_count
+          FROM loyalty_balances lb 
+          JOIN users u ON lb."userId" = u.id 
+          WHERE lb."merchantId" = $1 
+          AND lb."createdAt" >= $2 
+          AND lb."createdAt" <= $3
+        `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0) as total_points
+          FROM loyalty_events 
+          WHERE "merchantId" = $1 
+          AND type = 'earn_points'
+          AND "createdAt" >= $2 
+          AND "createdAt" <= $3
+        `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COUNT(*) as redemption_count
+          FROM redemptions 
+          WHERE "merchantId" = $1 
+          AND status = 'completed'
+          AND "redeemedAt" >= $2 
+          AND "redeemedAt" <= $3
+        `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()]),
+        
+        pool.query(`
+          SELECT COALESCE(SUM(CAST("discountValue" AS DECIMAL)), 0) as revenue_impact
+          FROM redemptions 
+          WHERE "merchantId" = $1 
+          AND status = 'completed'
+          AND "redeemedAt" >= $2 
+          AND "redeemedAt" <= $3
+        `, [merchantId, startOfLastWeek.toISOString(), endOfLastWeek.toISOString()])
+      ]);
+      
+      // Calculate percentage changes
+      const currentMembers = parseInt(currentMembersResult.rows[0]?.member_count || 0);
+      const lastMembers = parseInt(lastMembersResult.rows[0]?.member_count || 0);
+      const membersGrowth = lastMembers > 0 ? ((currentMembers - lastMembers) / lastMembers * 100) : 0;
+      
+      const currentPoints = parseFloat(currentPointsResult.rows[0]?.total_points || 0);
+      const lastPoints = parseFloat(lastPointsResult.rows[0]?.total_points || 0);
+      const pointsGrowth = lastPoints > 0 ? ((currentPoints - lastPoints) / lastPoints * 100) : 0;
+      
+      const currentRedemptions = parseInt(currentRedemptionsResult.rows[0]?.redemption_count || 0);
+      const lastRedemptions = parseInt(lastRedemptionsResult.rows[0]?.redemption_count || 0);
+      const redemptionsGrowth = lastRedemptions > 0 ? ((currentRedemptions - lastRedemptions) / lastRedemptions * 100) : 0;
+      
+      const currentRevenue = parseFloat(currentRevenueResult.rows[0]?.revenue_impact || 0);
+      const lastRevenue = parseFloat(lastRevenueResult.rows[0]?.revenue_impact || 0);
+      const revenueGrowth = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue * 100) : 0;
+      
+      const analytics = {
+        members: {
+          current: currentMembers,
+          growth: parseFloat(membersGrowth.toFixed(1))
+        },
+        points: {
+          current: currentPoints,
+          growth: parseFloat(pointsGrowth.toFixed(1))
+        },
+        redemptions: {
+          current: currentRedemptions,
+          growth: parseFloat(redemptionsGrowth.toFixed(1))
+        },
+        revenue: {
+          current: currentRevenue,
+          growth: parseFloat(revenueGrowth.toFixed(1))
+        }
+      };
+      
+      res.json({ success: true, analytics });
+    } catch (error) {
+      console.error("Error fetching WoW analytics:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -758,6 +758,11 @@ export default function LoyaltyDashboard() {
     queryKey: ["/api/loyalty/revenue-impact"],
   });
 
+  // Fetch week-over-week analytics
+  const { data: wowData, isLoading: wowLoading } = useQuery({
+    queryKey: ["/api/loyalty/analytics/wow"],
+  });
+
   const updateProgramMutation = useMutation({
     mutationFn: (data: Partial<LoyaltyProgram>) => 
       apiRequest("POST", "/api/loyalty/program", data),
@@ -1091,21 +1096,36 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <MetricTile label="Active Members" value={membersData?.members?.length?.toString() || "0"} delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
+              <MetricTile 
+                label="Active Members" 
+                value={membersData?.members?.length?.toString() || "0"} 
+                delta={`${wowData?.analytics?.members?.growth >= 0 ? '+' : ''}${wowData?.analytics?.members?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                icon={<Users className="h-4 w-4 text-fg/80" />} 
+              />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value={Math.floor(membersData?.members?.reduce((total, member) => total + (parseFloat(member.points) || 0), 0) || 0).toString()} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
+              <MetricTile 
+                label="Points Earned" 
+                value={Math.floor(membersData?.members?.reduce((total, member) => total + (parseFloat(member.points) || 0), 0) || 0).toString()} 
+                delta={`${wowData?.analytics?.points?.growth >= 0 ? '+' : ''}${wowData?.analytics?.points?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                icon={<Star className="h-4 w-4 text-fg/80" />} 
+              />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <MetricTile label="Rewards Claimed" value="0" delta="0%" icon={<Gift className="h-4 w-4 text-fg/80" />} />
+              <MetricTile 
+                label="Rewards Claimed" 
+                value={wowData?.analytics?.redemptions?.current?.toString() || "0"} 
+                delta={`${wowData?.analytics?.redemptions?.growth >= 0 ? '+' : ''}${wowData?.analytics?.redemptions?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                icon={<Gift className="h-4 w-4 text-fg/80" />} 
+              />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1114,8 +1134,8 @@ export default function LoyaltyDashboard() {
             >
               <MetricTile 
                 label="Revenue Impact" 
-                value={`£${revenueData?.revenueImpact?.total?.toFixed(0) || "0"}`} 
-                delta={`MTD: £${revenueData?.revenueImpact?.monthToDate?.toFixed(0) || "0"} | YTD: £${revenueData?.revenueImpact?.yearToDate?.toFixed(0) || "0"}`} 
+                value={`£${revenueData?.revenueImpact?.total?.toFixed(0) || wowData?.analytics?.revenue?.current?.toFixed(0) || "0"}`} 
+                delta={`${wowData?.analytics?.revenue?.growth >= 0 ? '+' : ''}${wowData?.analytics?.revenue?.growth?.toFixed(1) || '0'}% (WoW)`} 
                 icon={<TrendingUp className="h-4 w-4 text-fg/80" />} 
               />
             </motion.div>
