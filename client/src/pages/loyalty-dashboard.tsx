@@ -1081,14 +1081,14 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <MetricTile label="Active Members" value="0" delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
+              <MetricTile label="Active Members" value={members?.length?.toString() || "0"} delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value="0" delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
+              <MetricTile label="Points Earned" value={members?.reduce((total, member) => total + (member.points || 0), 0)?.toString() || "0"} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1161,24 +1161,27 @@ export default function LoyaltyDashboard() {
               subtitle="Customer distribution across tiers"
             >
                 <div className="space-y-4">
-                  {loyaltyProgramme?.tiers.map((tier, index) => (
-                    <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          index === 0 ? 'bg-orange-500' : 
-                          index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
-                        }`}></div>
-                        <span className="font-medium text-fg">{tier.name}</span>
-                        <Badge variant="outline" className="text-xs text-fg/80 border-border-dim">
-                          {tier.thresholdPoints}+ pts
-                        </Badge>
+                  {loyaltyProgramme?.tiers.map((tier, index) => {
+                    const tierMemberCount = members?.filter(member => member.tierName === tier.name || (tier.name === "Bronze" && member.tierId === "bronze")).length || 0;
+                    return (
+                      <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            index === 0 ? 'bg-orange-500' : 
+                            index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
+                          }`}></div>
+                          <span className="font-medium text-fg">{tier.name}</span>
+                          <Badge variant="outline" className="text-xs text-fg/80 border-border-dim">
+                            {tier.thresholdPoints}+ pts
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-fg">{tierMemberCount}</p>
+                          <p className="text-xs text-fg/70">customers</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-fg">0</p>
-                        <p className="text-xs text-fg/70">customers</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
             </StatCard>
 
