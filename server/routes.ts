@@ -956,19 +956,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Count existing vouchers for this offer (use a different storage method or mock for now)
         activeVouchersCount = 0; // For now, allow unlimited comprehensive offer redemptions
       } else {
-        // Handle simple deals (integer IDs)
+        // Handle simple deals (integer IDs)  
         const dealIdNum = parseInt(dealId);
-        deal = await storage.getDeal(dealIdNum);
+        deal = await storage.getDeal(dealIdNum.toString());
         if (!deal) {
           return res.status(404).json({ message: "Deal not found" });
         }
         
-        if (!deal.isActive || new Date(deal.expiryDate) < new Date()) {
+        if (!deal.active || (deal.validTo && new Date(deal.validTo) < new Date())) {
           return res.status(400).json({ message: "Deal is no longer active" });
         }
         
         activeVouchersCount = await storage.getActiveVouchersCount(dealIdNum);
-        if (activeVouchersCount >= deal.usageLimit) {
+        if (activeVouchersCount >= (deal.globalUsageLimit || 100)) {
           return res.status(400).json({ message: "Deal voucher limit reached" });
         }
       }
@@ -983,7 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dealId: isUUID ? -1 : parseInt(dealId), // Use -1 as placeholder for UUID offers
         userId,
         voucherNumber,
-        expiresAt: new Date(deal.expiryDate),
+        expiresAt: new Date(deal.validTo || deal.expiryDate || Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
 
       // Store the original dealId (UUID or integer) in the voucher response for frontend use
@@ -994,7 +994,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         voucher: voucherWithOriginalId, 
-        voucherPosition: `${activeVouchersCount + 1} of ${deal.usageLimit}`,
+        voucherPosition: `${activeVouchersCount + 1} of ${deal.globalUsageLimit || deal.usageLimit || 100}`,
         message: "Voucher created successfully" 
       });
     } catch (error: any) {
@@ -1122,7 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dealId: isUUID ? -1 : originalDealId,
         userId,
         voucherNumber,
-        expiresAt: new Date(deal.expiryDate),
+        expiresAt: new Date(deal.validTo || deal.expiryDate || Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
       
       res.json({ 
