@@ -2346,7 +2346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           0 as stamps,
           lb.updated_at as last_activity,
           lp.model,
-          lp.name as program_name,
+          m."businessName" as program_name,
           lt.id as tier_id,
           lt.name as tier_name,
           lt.color as tier_color,
