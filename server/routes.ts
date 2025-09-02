@@ -2269,8 +2269,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           m.business_category,
           m.id as merchant_id
         FROM loyalty_balances lb
-        JOIN merchants m ON lb.merchant_id = m.id
-        JOIN loyalty_programs lp ON m.id = lp.merchant_id
+        JOIN merchants m ON lb.merchant_id::text = m.id::text
+        JOIN loyalty_programs lp ON m.id::text = lp.merchant_id::text
         LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
         WHERE lb.user_id = ${userId}
         AND (lb.points > 0 OR lb.stamps > 0)

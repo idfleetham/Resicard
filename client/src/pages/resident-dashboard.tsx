@@ -424,43 +424,82 @@ export default function ResidentDashboard() {
                         : 100;
 
                       return (
-                        <div key={membership.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-                          {/* Header */}
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-semibold text-white text-lg">{membership.businessName}</h4>
-                            {membership.tier && (
-                              <div 
-                                className="px-3 py-1 rounded-full text-xs font-bold text-white"
-                                style={{ backgroundColor: membership.tier.color }}
-                              >
-                                {membership.tier.name}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Current Status */}
-                          <div className="space-y-3 mb-4">
-                            <div className="flex justify-between items-center">
-                              <span className="text-white/90 text-sm">Current Balance:</span>
-                              <span className="text-white font-semibold">
-                                {currentBalance} {membership.model === 'points' ? 'points' : 'stamps'}
+                        <div key={membership.id} className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-xl">
+                          {/* Header with Logo and Business Name */}
+                          <div className="flex items-center mb-4">
+                            <div className="w-12 h-12 rounded-lg bg-purple-600 flex items-center justify-center mr-3 flex-shrink-0">
+                              {/* Business Logo - using first letter as fallback */}
+                              <span className="text-white font-bold text-xl">
+                                {membership.businessName.charAt(0)}
                               </span>
                             </div>
-                            
-                            {membership.tier && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/90 text-sm">Current Benefit:</span>
-                                <span className="text-white font-semibold">{membership.tier.discountPercent}% off</span>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-white text-lg truncate">{membership.businessName}</h4>
+                              <p className="text-slate-300 text-sm">Loyalty Member</p>
+                            </div>
+                          </div>
+
+                          {/* Prominent Tier Status */}
+                          {membership.tier && (
+                            <div className="mb-6">
+                              <div 
+                                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold text-white shadow-lg"
+                                style={{ backgroundColor: membership.tier.color }}
+                              >
+                                <span className="mr-2">🏆</span>
+                                {membership.tier.name} Tier
                               </div>
-                            )}
+                              <p className="text-slate-300 text-xs mt-1">
+                                {membership.tier.discountPercent}% discount on all purchases
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Balance Display with Tabs */}
+                          <div className="mb-6">
+                            <div className="flex border-b border-slate-600 mb-4">
+                              <button className="flex-1 px-4 py-2 text-center bg-slate-700 text-white rounded-t-lg border-b-2 border-purple-500">
+                                <div className="flex items-center justify-center">
+                                  <span className="mr-1">⚖️</span>
+                                  Balance
+                                </div>
+                              </button>
+                              <button className="flex-1 px-4 py-2 text-center text-slate-400">
+                                <div className="flex items-center justify-center">
+                                  <span className="mr-1">🎁</span>
+                                  Rewards
+                                </div>
+                              </button>
+                              <button className="flex-1 px-4 py-2 text-center text-slate-400">
+                                <div className="flex items-center justify-center">
+                                  <span className="mr-1">📈</span>
+                                  History
+                                </div>
+                              </button>
+                            </div>
+
+                            {/* Balance Content */}
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-white mb-1">
+                                  {membership.model === 'points' ? membership.pointsBalance : membership.stampsBalance}
+                                </div>
+                                <div className="text-slate-300 text-sm">
+                                  {membership.model === 'points' ? 'Points' : 'Stamps'}
+                                </div>
+                              </div>
+                              {membership.model === 'stamps' && (
+                                <div className="text-center">
+                                  <div className="text-3xl font-bold text-white mb-1">0</div>
+                                  <div className="text-slate-300 text-sm">Stamps</div>
+                                </div>
+                              )}
+                            </div>
 
                             {/* Tier Expiration */}
                             {membership.tierExpiresAt && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/90 text-sm">Tier Expires:</span>
-                                <span className="text-white font-semibold text-xs">
-                                  {new Date(membership.tierExpiresAt).toLocaleDateString()}
-                                </span>
+                              <div className="text-center text-xs text-slate-400">
+                                Tier expires: {new Date(membership.tierExpiresAt).toLocaleDateString()}
                               </div>
                             )}
                           </div>
