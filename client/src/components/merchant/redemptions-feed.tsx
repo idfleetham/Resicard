@@ -301,7 +301,7 @@ export default function RedemptionsFeed() {
                     <TableHead className="text-white">Date & Time</TableHead>
                     <TableHead className="text-white">Deal</TableHead>
                     <TableHead className="text-white">Customer</TableHead>
-                    <TableHead className="text-white">Discount</TableHead>
+                    <TableHead className="text-white">Offer Value</TableHead>
                     <TableHead className="text-white">Original Price</TableHead>
                     <TableHead className="text-white">Staff</TableHead>
                     <TableHead className="text-white">Status</TableHead>
@@ -319,7 +319,7 @@ export default function RedemptionsFeed() {
                       </TableCell>
                       <TableCell className="text-white">{redemption.customerName || "Guest"}</TableCell>
                       <TableCell className="text-green-400 font-medium">
-                        £{redemption.calculatedDiscount || redemption.value || "0.00"}
+                        £{redemption.value || "0.00"}
                       </TableCell>
                       <TableCell className="text-white">
                         £{redemption.basketSubtotal || "N/A"}
