@@ -504,13 +504,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Found/created merchant:', merchant.id, 'for user:', req.user.id);
       
-      // Process dates for comprehensive offers
+      // Process dates and numeric fields for comprehensive offers
       const processedData = {
         ...req.body,
         validFrom: req.body.validFrom ? new Date(req.body.validFrom) : new Date(),
         validTo: req.body.validTo ? new Date(req.body.validTo) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year from now
         daysOfWeek: req.body.daysOfWeek && req.body.daysOfWeek.length > 0 ? req.body.daysOfWeek : ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], // Default all days
         timeSlots: req.body.timeSlots && Object.keys(req.body.timeSlots).length > 0 ? req.body.timeSlots : {}, // Default no time restrictions (all day)
+        // Convert numeric fields from strings if needed
+        fixedPrice: req.body.fixedPrice ? (typeof req.body.fixedPrice === 'string' ? parseFloat(req.body.fixedPrice) : req.body.fixedPrice) : undefined,
+        originalValue: req.body.originalValue ? (typeof req.body.originalValue === 'string' ? parseFloat(req.body.originalValue) : req.body.originalValue) : undefined,
         merchantId: merchant.id, // Use the merchant UUID, not user ID
       };
       
