@@ -1148,9 +1148,9 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
+            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
+                <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
                 <div className="flex gap-3">
                   <motion.button 
                     className="btn btn-primary focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
@@ -1191,9 +1191,9 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
+            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">Tier Distribution</h3>
+                <h3 className="text-lg font-semibold text-white">Tier Distribution</h3>
                 <p className="text-slate-600 text-sm">Customer distribution across tiers</p>
               </div>
               <div className="space-y-4">
@@ -1206,13 +1206,13 @@ export default function LoyaltyDashboard() {
                           index === 0 ? 'bg-orange-500' : 
                           index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
                         }`}></div>
-                        <span className="font-medium text-slate-900">{tier.name}</span>
+                        <span className="font-medium text-white">{tier.name}</span>
                         <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
                           {tier.thresholdPoints}+ pts
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-slate-900">{tierMemberCount}</p>
+                        <p className="font-semibold text-white">{tierMemberCount}</p>
                         <p className="text-xs text-slate-600">customers</p>
                       </div>
                     </div>
@@ -1221,9 +1221,9 @@ export default function LoyaltyDashboard() {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
+            <div className="bg-slate-800 border border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">Popular Rewards</h3>
+                <h3 className="text-lg font-semibold text-white">Popular Rewards</h3>
                 <p className="text-slate-600 text-sm">Most redeemed rewards this month</p>
               </div>
               <div className="space-y-4">
@@ -1232,12 +1232,12 @@ export default function LoyaltyDashboard() {
                     <div className="flex items-center gap-3">
                       <Coffee className="w-5 h-5 text-amber-400" />
                       <div>
-                        <p className="font-medium text-slate-900">{reward.name}</p>
+                        <p className="font-medium text-white">{reward.name}</p>
                         <p className="text-xs text-slate-600">{reward.costPoints} points</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-slate-900">0</p>
+                      <p className="font-semibold text-white">0</p>
                       <p className="text-xs text-slate-600">redeemed</p>
                     </div>
                   </div>
