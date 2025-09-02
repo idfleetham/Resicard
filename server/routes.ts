@@ -122,30 +122,30 @@ async function awardLoyaltyPoints({
     if (loyaltyBalance.rows.length === 0) {
       // Create new loyalty balance
       await db.execute(sql`
-        INSERT INTO loyalty_balances (user_id, merchant_id, points, stamps, created_at, updated_at)
-        VALUES (${userId}, ${merchantId}::uuid, ${pointsToAdd}, 0, NOW(), NOW())
+        INSERT INTO loyalty_balances (user_id, merchant_id, balance, tier, created_at, updated_at)
+        VALUES (${userId}, ${merchantId}::uuid, ${pointsToAdd}, null, NOW(), NOW())
       `);
     } else {
       // Update existing balance
-      const currentPoints = loyaltyBalance.rows[0].points;
+      const currentPoints = loyaltyBalance.rows[0].balance;
       await db.execute(sql`
         UPDATE loyalty_balances 
-        SET points = ${currentPoints + pointsToAdd}, updated_at = NOW()
+        SET balance = ${currentPoints + pointsToAdd}, updated_at = NOW()
         WHERE user_id = ${userId} AND merchant_id::text = ${merchantId}::text
       `);
     }
 
     // Check for tier upgrades after awarding points
     const updatedBalance = await db.execute(sql`
-      SELECT lb.points, lt.id as current_tier_id, lt."thresholdPoints" as current_threshold
+      SELECT lb.balance, lt.id as current_tier_id, lt."thresholdPoints" as current_threshold
       FROM loyalty_balances lb
-      LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
+      LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
       WHERE lb.user_id = ${userId} AND lb.merchant_id::text = ${merchantId}::text
     `);
 
     if (updatedBalance.rows.length > 0) {
       const balance = updatedBalance.rows[0];
-      const newPoints = balance.points;
+      const newPoints = balance.balance;
       
       // Find highest tier this user qualifies for
       const availableTiers = await db.execute(sql`
@@ -163,7 +163,7 @@ async function awardLoyaltyPoints({
           // User qualifies for a new tier!
           await db.execute(sql`
             UPDATE loyalty_balances 
-            SET tier_id = ${newTier.id}, updated_at = NOW()
+            SET tier = ${newTier.id}::text, updated_at = NOW()
             WHERE user_id = ${userId} AND merchant_id::text = ${merchantId}::text
           `);
           console.log(`User ${userId} upgraded to tier ${newTier.name} for merchant ${merchantId}`);
@@ -2359,9 +2359,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM loyalty_balances lb
         JOIN merchants m ON lb.merchant_id::text = m.id::text
         JOIN loyalty_programs lp ON m.id::text = lp.merchant_id::text
-        LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
+        LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
         WHERE lb.user_id = ${userId}
-        AND (lb.points > 0 OR lb.stamps > 0)
+        AND lb.balance > 0
         ORDER BY lb.updated_at DESC
       `);
 

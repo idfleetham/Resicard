@@ -1,0 +1,61 @@
+auth.ts:88 
+ GET https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/user-memberships 500 (Internal Server Error)
+apiRequestWithAuth	@	auth.ts:88
+queryFn	@	resident-dashboard.tsx:134
+resident-dashboard.tsx:137 Failed to fetch loyalty memberships: Error: 500: {"error":"Failed to fetch loyalty memberships"}
+    at apiRequestWithAuth (auth.ts:105:11)
+    at async queryFn (resident-dashboard.tsx:134:26)
+queryFn	@	resident-dashboard.tsx:137
+await in queryFn		
+fetchFn	@	@tanstack_react-query.js?v=337bbc64:840
+run	@	@tanstack_react-query.js?v=337bbc64:494
+start	@	@tanstack_react-query.js?v=337bbc64:536
+fetch	@	@tanstack_react-query.js?v=337bbc64:926
+executeFetch_fn	@	@tanstack_react-query.js?v=337bbc64:2211
+setOptions	@	@tanstack_react-query.js?v=337bbc64:1955
+(anonymous)	@	@tanstack_react-query.js?v=337bbc64:3032
+commitHookEffectListMount	@	chunk-RPCDYKBN.js?v=337bbc64:16915
+commitPassiveMountOnFiber	@	chunk-RPCDYKBN.js?v=337bbc64:18156
+commitPassiveMountEffects_complete	@	chunk-RPCDYKBN.js?v=337bbc64:18129
+commitPassiveMountEffects_begin	@	chunk-RPCDYKBN.js?v=337bbc64:18119
+commitPassiveMountEffects	@	chunk-RPCDYKBN.js?v=337bbc64:18109
+flushPassiveEffectsImpl	@	chunk-RPCDYKBN.js?v=337bbc64:19490
+flushPassiveEffects	@	chunk-RPCDYKBN.js?v=337bbc64:19447
+commitRootImpl	@	chunk-RPCDYKBN.js?v=337bbc64:19416
+commitRoot	@	chunk-RPCDYKBN.js?v=337bbc64:19277
+performSyncWorkOnRoot	@	chunk-RPCDYKBN.js?v=337bbc64:18895
+flushSyncCallbacks	@	chunk-RPCDYKBN.js?v=337bbc64:9119
+(anonymous)	@	chunk-RPCDYKBN.js?v=337bbc64:18627
+setTimeout		
+scheduleFn	@	@tanstack_react-query.js?v=337bbc64:555
+flush	@	@tanstack_react-query.js?v=337bbc64:569
+batch	@	@tanstack_react-query.js?v=337bbc64:587
+dispatch_fn	@	@tanstack_react-query.js?v=337bbc64:996
+setData	@	@tanstack_react-query.js?v=337bbc64:696
+onSuccess	@	@tanstack_react-query.js?v=337bbc64:897
+resolve	@	@tanstack_react-query.js?v=337bbc64:456
+Promise.then		
+run	@	@tanstack_react-query.js?v=337bbc64:498
+start	@	@tanstack_react-query.js?v=337bbc64:536
+fetch	@	@tanstack_react-query.js?v=337bbc64:926
+executeFetch_fn	@	@tanstack_react-query.js?v=337bbc64:2211
+onSubscribe	@	@tanstack_react-query.js?v=337bbc64:1898
+subscribe	@	@tanstack_react-query.js?v=337bbc64:24
+(anonymous)	@	@tanstack_react-query.js?v=337bbc64:3022
+subscribeToStore	@	chunk-RPCDYKBN.js?v=337bbc64:11984
+commitHookEffectListMount	@	chunk-RPCDYKBN.js?v=337bbc64:16915
+commitPassiveMountOnFiber	@	chunk-RPCDYKBN.js?v=337bbc64:18156
+commitPassiveMountEffects_complete	@	chunk-RPCDYKBN.js?v=337bbc64:18129
+commitPassiveMountEffects_begin	@	chunk-RPCDYKBN.js?v=337bbc64:18119
+commitPassiveMountEffects	@	chunk-RPCDYKBN.js?v=337bbc64:18109
+flushPassiveEffectsImpl	@	chunk-RPCDYKBN.js?v=337bbc64:19490
+flushPassiveEffects	@	chunk-RPCDYKBN.js?v=337bbc64:19447
+performSyncWorkOnRoot	@	chunk-RPCDYKBN.js?v=337bbc64:18868
+flushSyncCallbacks	@	chunk-RPCDYKBN.js?v=337bbc64:9119
+commitRootImpl	@	chunk-RPCDYKBN.js?v=337bbc64:19432
+commitRoot	@	chunk-RPCDYKBN.js?v=337bbc64:19277
+finishConcurrentRender	@	chunk-RPCDYKBN.js?v=337bbc64:18805
+performConcurrentWorkOnRoot	@	chunk-RPCDYKBN.js?v=337bbc64:18718
+workLoop	@	chunk-RPCDYKBN.js?v=337bbc64:197
+flushWork	@	chunk-RPCDYKBN.js?v=337bbc64:176
+performWorkUntilDeadline	@	chunk-RPCDYKBN.js?v=337bbc64:384
