@@ -2256,25 +2256,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lb.id,
           lb.points,
           lb.stamps,
-          lb.updated_at as last_activity,
+          lb."updatedAt" as last_activity,
           lp.model,
           lp.name as program_name,
           lt.id as tier_id,
           lt.name as tier_name,
           lt.color as tier_color,
-          lt.threshold_points,
-          lt.discount_percent,
-          lt.points_multiplier,
-          m.business_name,
-          m.business_category,
+          lt."thresholdPoints" as threshold_points,
+          lt."discountPercent" as discount_percent,
+          lt."pointsMultiplier" as points_multiplier,
+          m."businessName" as business_name,
+          m."businessCategory" as business_category,
           m.id as merchant_id
         FROM loyalty_balances lb
-        JOIN merchants m ON lb.merchant_id::text = m.id::text
-        JOIN loyalty_programs lp ON m.id::text = lp.merchant_id::text
-        LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
-        WHERE lb.user_id = ${userId}
+        JOIN merchants m ON lb."merchantId"::text = m.id::text
+        JOIN loyalty_programs lp ON m.id::text = lp."merchantId"::text
+        LEFT JOIN loyalty_tiers lt ON lb."tierId" = lt.id
+        WHERE lb."userId" = ${userId}
         AND (lb.points > 0 OR lb.stamps > 0)
-        ORDER BY lb.updated_at DESC
+        ORDER BY lb."updatedAt" DESC
       `);
 
       // For each membership, we need to also get the next tier information
@@ -2283,11 +2283,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (row.tier_id && row.threshold_points !== undefined) {
           // Get next tier in the same program
           const nextTierResult = await db.execute(sql`
-            SELECT id, name, color, threshold_points, discount_percent, points_multiplier
+            SELECT id, name, color, "thresholdPoints" as threshold_points, "discountPercent" as discount_percent, "pointsMultiplier" as points_multiplier
             FROM loyalty_tiers 
-            WHERE program_id = (SELECT program_id FROM loyalty_tiers WHERE id = ${row.tier_id})
-            AND threshold_points > ${row.threshold_points}
-            ORDER BY threshold_points ASC
+            WHERE "programId" = (SELECT "programId" FROM loyalty_tiers WHERE id = ${row.tier_id})
+            AND "thresholdPoints" > ${row.threshold_points}
+            ORDER BY "thresholdPoints" ASC
             LIMIT 1
           `);
           if (nextTierResult.rows.length > 0) {
