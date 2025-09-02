@@ -2019,35 +2019,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // LOYALTY PROGRAM ENDPOINTS (Mock implementation for now)
+  // LOYALTY PROGRAM ENDPOINTS
   
   // Loyalty tiers storage (empty initially)
   let loyaltyTiers: any[] = [];
-  
-  // In-memory storage for loyalty programmes by merchant ID
-  const loyaltyPrograms = new Map();
 
   // Get merchant's loyalty program
   app.get("/api/loyalty/program", authenticateToken, async (req, res) => {
     try {
       const merchantId = req.user.merchantId || req.user.id;
-      const existingProgram = loyaltyPrograms.get(merchantId);
+      const existingProgram = await storage.getLoyaltyProgram(merchantId);
       
-      // Return existing program or default
-      const program = existingProgram || {
-        id: "mock-program-1",
-        merchantId: merchantId,
-        model: "points",
-        pointsPerCurrency: 10,
-        minBasketEarn: 5.00,
-        earnCooldownMinutes: 30,
-        dailyEarnCap: 3,
-        active: true,
-        tiers: loyaltyTiers,
-        rewards: []
-      };
-      
-      res.json(program);
+      if (existingProgram) {
+        // Add tiers (for now use mock data)
+        const programWithTiers = {
+          ...existingProgram,
+          tiers: loyaltyTiers,
+          rewards: []
+        };
+        res.json(programWithTiers);
+      } else {
+        // Create a default program if none exists
+        const defaultProgram = {
+          merchantId: String(merchantId),
+          model: "points" as const,
+          pointsPerCurrency: 10,
+          minBasketEarn: "5.00",
+          earnCooldownMinutes: 30,
+          dailyEarnCap: 3,
+          active: true,
+        };
+        
+        const newProgram = await storage.createLoyaltyProgram(defaultProgram);
+        const programWithTiers = {
+          ...newProgram,
+          tiers: loyaltyTiers,
+          rewards: []
+        };
+        res.json(programWithTiers);
+      }
     } catch (error) {
       console.error('Get loyalty program error:', error);
       res.status(500).json({ error: "Failed to fetch loyalty program" });
@@ -2058,19 +2068,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/loyalty/program", authenticateToken, async (req, res) => {
     try {
       const merchantId = req.user.merchantId || req.user.id;
-      const updatedProgram = {
-        ...req.body,
-        merchantId: merchantId,
-        id: req.body.id || "mock-program-1"
-      };
       
-      // Store the updated program in memory
-      loyaltyPrograms.set(merchantId, updatedProgram);
-      console.log('Updated loyalty program for merchant', merchantId, ':', updatedProgram);
+      // Update the existing program
+      const updatedProgram = await storage.updateLoyaltyProgram(merchantId, req.body);
       
-      res.json({ success: true, program: updatedProgram });
+      if (updatedProgram) {
+        console.log('Updated loyalty program for merchant', merchantId, ':', updatedProgram);
+        res.json({ success: true, program: updatedProgram });
+      } else {
+        res.status(404).json({ error: "Loyalty program not found" });
+      }
     } catch (error) {
-      console.error('Create loyalty program error:', error);
+      console.error('Update loyalty program error:', error);
       res.status(500).json({ error: "Failed to save loyalty program" });
     }
   });

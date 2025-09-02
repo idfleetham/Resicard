@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and } from "drizzle-orm";
 
@@ -70,6 +70,11 @@ export interface IStorage {
   createFamilyMembers(userId: number, familyMembers: InsertFamilyMember[]): Promise<FamilyMember[]>;
   getFamilyMembersByUser(userId: number): Promise<FamilyMember[]>;
   
+  // Loyalty Program operations
+  getLoyaltyProgram(merchantId: number): Promise<LoyaltyProgram | undefined>;
+  createLoyaltyProgram(program: InsertLoyaltyProgram): Promise<LoyaltyProgram>;
+  updateLoyaltyProgram(merchantId: number, updates: Partial<LoyaltyProgram>): Promise<LoyaltyProgram | undefined>;
+
   // Analytics
   getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }>;
   getMerchantRevenue(merchantId: number): Promise<number>;
@@ -451,6 +456,19 @@ export class MemStorage implements IStorage {
 
   async getFamilyMembersByUser(userId: number): Promise<FamilyMember[]> {
     return [];
+  }
+
+  // Loyalty Program operations (mock implementation)
+  async getLoyaltyProgram(merchantId: number): Promise<LoyaltyProgram | undefined> {
+    return undefined;
+  }
+
+  async createLoyaltyProgram(programData: InsertLoyaltyProgram): Promise<LoyaltyProgram> {
+    throw new Error("Loyalty programs not supported in memory storage");
+  }
+
+  async updateLoyaltyProgram(merchantId: number, updates: Partial<LoyaltyProgram>): Promise<LoyaltyProgram | undefined> {
+    return undefined;
   }
 
   // Merchant-related methods
@@ -1072,6 +1090,29 @@ export class DatabaseStorage implements IStorage {
 
   async getFamilyMembersByUser(userId: number): Promise<FamilyMember[]> {
     return await db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
+  }
+
+  // Loyalty Program operations
+  async getLoyaltyProgram(merchantId: number): Promise<LoyaltyProgram | undefined> {
+    const [program] = await db.select().from(loyaltyPrograms).where(eq(loyaltyPrograms.merchantId, String(merchantId)));
+    return program || undefined;
+  }
+
+  async createLoyaltyProgram(programData: InsertLoyaltyProgram): Promise<LoyaltyProgram> {
+    const [program] = await db
+      .insert(loyaltyPrograms)
+      .values(programData)
+      .returning();
+    return program;
+  }
+
+  async updateLoyaltyProgram(merchantId: number, updates: Partial<LoyaltyProgram>): Promise<LoyaltyProgram | undefined> {
+    const [program] = await db
+      .update(loyaltyPrograms)
+      .set(updates)
+      .where(eq(loyaltyPrograms.merchantId, String(merchantId)))
+      .returning();
+    return program || undefined;
   }
 }
 
