@@ -208,15 +208,15 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                 {balance?.tier && (
                   <div className="bg-gradient-to-br from-green-600/30 to-emerald-600/30 rounded-xl p-4 border border-green-400/20">
                     <div className="text-center">
-                      {balance.tier === 'Bronze' && Number(balance.points) < 250 && (
+                      {balance.tier === 'Bronze' && Number(balance.points) < 100 && (
                         <>
                           <div className="text-sm font-bold text-white mb-1">
-                            {250 - Number(balance.points || 0)} pts to Silver
+                            {100 - Number(balance.points || 0)} pts to Silver
                           </div>
                           <div className="text-xs text-green-100/70 font-medium">Progress</div>
                         </>
                       )}
-                      {balance.tier === 'Bronze' && Number(balance.points) >= 250 && (
+                      {balance.tier === 'Bronze' && Number(balance.points) >= 100 && (
                         <>
                           <div className="text-sm font-bold text-green-300 mb-1">Ready!</div>
                           <div className="text-xs text-green-100/70 font-medium">For Silver</div>

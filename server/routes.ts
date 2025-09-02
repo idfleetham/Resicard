@@ -3247,6 +3247,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Initialize loyalty tiers for Seaton House program (if missing)
+  app.post("/api/loyalty/initialize-tiers", async (req, res) => {
+    try {
+      const programId = 3; // Seaton House program ID
+      
+      // Check if tiers already exist
+      const existingTiers = await db.select().from(loyaltyTiers).where(eq(loyaltyTiers.programId, programId));
+      
+      if (existingTiers.length === 0) {
+        // Create Bronze, Silver, Gold tiers
+        const tierData = [
+          {
+            programId,
+            name: 'Bronze',
+            thresholdPoints: 0,
+            discountPercent: 5,
+            pointsMultiplier: '1.00',
+            color: '#CD7F32',
+            sortOrder: 1
+          },
+          {
+            programId,
+            name: 'Silver', 
+            thresholdPoints: 100,
+            discountPercent: 10,
+            pointsMultiplier: '1.50',
+            color: '#C0C0C0',
+            sortOrder: 2
+          },
+          {
+            programId,
+            name: 'Gold',
+            thresholdPoints: 250,
+            discountPercent: 15,
+            pointsMultiplier: '2.00',
+            color: '#FFD700',
+            sortOrder: 3
+          }
+        ];
+        
+        await db.insert(loyaltyTiers).values(tierData);
+        
+        // Update all existing user balances to correct tiers
+        const userBalances = await db.select().from(loyaltyBalances).where(eq(loyaltyBalances.merchantId, 32));
+        
+        for (const balance of userBalances) {
+          const points = Number(balance.balance);
+          let newTier = 'Bronze';
+          
+          if (points >= 250) newTier = 'Gold';
+          else if (points >= 100) newTier = 'Silver';
+          
+          await db.update(loyaltyBalances)
+            .set({ tier: newTier })
+            .where(and(eq(loyaltyBalances.merchantId, 32), eq(loyaltyBalances.userId, balance.userId)));
+        }
+        
+        res.json({ message: "Tiers initialized successfully", tiers: tierData });
+      } else {
+        res.json({ message: "Tiers already exist", tiers: existingTiers });
+      }
+    } catch (error: any) {
+      console.error('Error initializing tiers:', error);
+      res.status(500).json({ message: "Failed to initialize tiers" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
