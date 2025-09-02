@@ -39,8 +39,8 @@ const offerSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
   percentOff: z.number().min(1).max(100).optional(),
-  fixedPrice: z.number().min(0).optional(),
-  originalValue: z.number().min(0).optional(),
+  fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
+  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).default([]),
 
@@ -103,11 +103,17 @@ type OfferFormData = z.infer<typeof offerSchema>;
 
 const CATEGORIES = [
   "Food & Drink",
+  "Hotel & Accommodation",
   "Retail",
   "Services", 
   "Entertainment",
   "Health & Beauty",
-  "Sports & Fitness"
+  "Sports & Fitness",
+  "Transport & Travel",
+  "Education & Training",
+  "Professional Services",
+  "Home & Garden",
+  "Technology & Electronics"
 ];
 
 const COMMON_TAGS = [
@@ -932,7 +938,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark !text-black"
+                                className="input-dark text-slate-200"
                               />
                             </FormControl>
                             <FormMessage />
@@ -950,7 +956,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <Input
                                 {...field}
                                 type="datetime-local"
-                                className="input-dark !text-black"
+                                className="input-dark text-slate-200"
                               />
                             </FormControl>
                             <FormMessage />

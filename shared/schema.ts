@@ -338,6 +338,9 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   // Override date fields to accept strings from frontend
   validFrom: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
   validTo: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
+  // Override numeric fields to accept strings from frontend
+  fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
+  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
   // Override type field to use new enum values
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
 });
