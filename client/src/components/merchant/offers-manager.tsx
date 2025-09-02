@@ -558,15 +558,15 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
             <div className="rounded-xl bg-surface/80 border border-white/40 shadow-xl shadow-white/20 overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-surface2/70 sticky top-0 border-b border-white/5">
-                    <TableHead className="text-slate-300 font-medium text-xl">Type</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Title</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Offer Type</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Category</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Usage</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Expiry</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Status</TableHead>
-                    <TableHead className="text-slate-300 font-medium text-xl">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0 border-b-2 border-gradient-to-r from-purple-500/50 to-blue-500/50">
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Type</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Title</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Offer Type</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Category</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Usage</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Expiry</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Status</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide bg-gradient-to-b from-white/5 to-transparent">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-white/5">
