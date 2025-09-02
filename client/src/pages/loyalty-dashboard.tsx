@@ -748,6 +748,11 @@ export default function LoyaltyDashboard() {
     queryFn: () => apiRequest("GET", "/api/loyalty/program").then(res => res.json()) as Promise<LoyaltyProgram>
   });
 
+  // Fetch loyalty members data for overview statistics
+  const { data: membersData, isLoading: membersLoading } = useQuery({
+    queryKey: ["/api/loyalty/members"],
+  });
+
   const updateProgramMutation = useMutation({
     mutationFn: (data: Partial<LoyaltyProgram>) => 
       apiRequest("POST", "/api/loyalty/program", data),
