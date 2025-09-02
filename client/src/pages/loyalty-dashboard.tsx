@@ -1535,7 +1535,7 @@ export default function LoyaltyDashboard() {
                       <Button 
                         onClick={() => setShowAddReward(false)}
                         variant="outline" 
-                        className="flex-1 border-border-dim text-fg hover:bg-surface"
+                        className="flex-1 bg-red-100 border-red-200 text-red-800 hover:bg-red-200"
                       >
                         Cancel
                       </Button>
