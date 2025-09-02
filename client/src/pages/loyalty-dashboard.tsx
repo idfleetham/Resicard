@@ -198,7 +198,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
             </div>
           ) : (
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-white text-base">{tier.name}</h4>
+              <h4 className="font-semibold text-fg text-base">{tier.name}</h4>
               <p className="text-sm text-gray-300">{tier.thresholdPoints}+ points required</p>
               <p className="text-xs text-blue-300">{tier.pointsMultiplier || 1.0}x points earning rate</p>
             </div>
@@ -207,7 +207,7 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-1">
             {tier.perks?.map((perk: any, i: number) => (
-              <Badge key={i} variant="outline" className="text-xs border-gray-400 bg-gray-700/50 text-white">
+              <Badge key={i} variant="outline" className="text-xs border-border-dim bg-surface/50 text-fg">
                 {perk.value}% off
               </Badge>
             ))}
@@ -546,12 +546,12 @@ function LoyaltyMembersManager() {
                       {customerAlias.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-white text-lg">{customerAlias}</p>
+                      <p className="font-semibold text-fg text-lg">{customerAlias}</p>
                       <div className="flex items-center gap-2">
                         {member.tierName ? (
                           <Badge 
                             variant="outline" 
-                            className="text-xs border-gray-400 bg-gray-700/50 text-white"
+                            className="text-xs border-border-dim bg-surface/50 text-fg"
                             style={{ borderColor: tierColor, backgroundColor: `${tierColor}20` }}
                           >
                             {member.tierName}
@@ -570,7 +570,7 @@ function LoyaltyMembersManager() {
                   
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="font-bold text-white text-xl">{member.points || 0}</p>
+                      <p className="font-bold text-fg text-xl">{member.points || 0}</p>
                       <p className="text-xs text-gray-400">points</p>
                     </div>
                     
@@ -933,7 +933,7 @@ export default function LoyaltyDashboard() {
       <motion.nav 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 border-b border-white/10 bg-surface/80 backdrop-blur-xl"
+        className="sticky top-0 z-50 border-b border-border-dim bg-surface/80 backdrop-blur-xl"
       >
         <div className="mx-auto w-full max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
@@ -947,7 +947,7 @@ export default function LoyaltyDashboard() {
                 <ArrowLeft className="w-4 h-4" />
                 Back to Portal
               </motion.button>
-              <div className="w-px h-6 bg-white/10"></div>
+              <div className="w-px h-6 bg-border-dim/30"></div>
               <div className="flex items-center gap-3">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
                   <Star className="w-5 h-5 text-indigo-400" />
@@ -998,23 +998,23 @@ export default function LoyaltyDashboard() {
             <TabsList className="grid w-full grid-cols-5 p-1 card"
               style={{ background: 'rgba(18, 20, 30, 0.8)' }}
             >
-              <TabsTrigger value="overview" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
+              <TabsTrigger value="overview" className="flex items-center gap-2 text-fg/70 hover:text-fg data-[state=active]:text-fg data-[state=active]:bg-surface/20 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <TrendingUp className="w-4 h-4" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="setup" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
+              <TabsTrigger value="setup" className="flex items-center gap-2 text-fg/70 hover:text-fg data-[state=active]:text-fg data-[state=active]:bg-surface/20 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Settings className="w-4 h-4" />
                 Setup
               </TabsTrigger>
-              <TabsTrigger value="tiers" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
+              <TabsTrigger value="tiers" className="flex items-center gap-2 text-fg/70 hover:text-fg data-[state=active]:text-fg data-[state=active]:bg-surface/20 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Crown className="w-4 h-4" />
                 Tiers
               </TabsTrigger>
-              <TabsTrigger value="rewards" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
+              <TabsTrigger value="rewards" className="flex items-center gap-2 text-fg/70 hover:text-fg data-[state=active]:text-fg data-[state=active]:bg-surface/20 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Gift className="w-4 h-4" />
                 Rewards
               </TabsTrigger>
-              <TabsTrigger value="members" className="flex items-center gap-2 text-white/70 hover:text-white data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
+              <TabsTrigger value="members" className="flex items-center gap-2 text-fg/70 hover:text-fg data-[state=active]:text-fg data-[state=active]:bg-surface/20 data-[state=active]:border-b-2 data-[state=active]:border-brand1 transition-all duration-200">
                 <Users className="w-4 h-4" />
                 Members
               </TabsTrigger>
@@ -1034,28 +1034,28 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <MetricTile label="Active Members" value="0" delta="0%" icon={<Users className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Active Members" value="0" delta="0%" icon={<Users className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value="0" delta="0%" icon={<Star className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Points Earned" value="0" delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <MetricTile label="Rewards Claimed" value="0" delta="0%" icon={<Gift className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Rewards Claimed" value="0" delta="0%" icon={<Gift className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <MetricTile label="Revenue Impact" value="£0" delta="0%" icon={<TrendingUp className="h-4 w-4 text-white/80" />} />
+              <MetricTile label="Revenue Impact" value="£0" delta="0%" icon={<TrendingUp className="h-4 w-4 text-fg/80" />} />
             </motion.div>
           </motion.div>
 
@@ -1068,7 +1068,7 @@ export default function LoyaltyDashboard() {
           >
             <GradientPanel>
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+                <h3 className="text-lg font-semibold text-fg">Quick Actions</h3>
                 <div className="flex gap-3">
                   <motion.button 
                     className="btn btn-primary focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
@@ -1115,20 +1115,20 @@ export default function LoyaltyDashboard() {
             >
                 <div className="space-y-4">
                   {loyaltyProgramme?.tiers.map((tier, index) => (
-                    <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
+                    <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${
                           index === 0 ? 'bg-orange-500' : 
                           index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
                         }`}></div>
-                        <span className="font-medium text-white">{tier.name}</span>
-                        <Badge variant="outline" className="text-xs text-white/80 border-white/20">
+                        <span className="font-medium text-fg">{tier.name}</span>
+                        <Badge variant="outline" className="text-xs text-fg/80 border-border-dim">
                           {tier.thresholdPoints}+ pts
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-white">0</p>
-                        <p className="text-xs text-white/70">customers</p>
+                        <p className="font-semibold text-fg">0</p>
+                        <p className="text-xs text-fg/70">customers</p>
                       </div>
                     </div>
                   ))}
@@ -1141,17 +1141,17 @@ export default function LoyaltyDashboard() {
             >
               <div className="space-y-4">
                 {loyaltyProgramme?.rewards.slice(0, 3).map((reward, index) => (
-                  <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-white/5 last:border-b-0">
+                  <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
                     <div className="flex items-center gap-3">
                       <Coffee className="w-5 h-5 text-amber-400" />
                       <div>
-                        <p className="font-medium text-white">{reward.name}</p>
-                        <p className="text-xs text-white/70">{reward.costPoints} points</p>
+                        <p className="font-medium text-fg">{reward.name}</p>
+                        <p className="text-xs text-fg/70">{reward.costPoints} points</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-white">0</p>
-                      <p className="text-xs text-white/70">redeemed</p>
+                      <p className="font-semibold text-fg">0</p>
+                      <p className="text-xs text-fg/70">redeemed</p>
                     </div>
                   </div>
                 ))}

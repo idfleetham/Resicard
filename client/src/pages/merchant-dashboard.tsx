@@ -272,7 +272,7 @@ export default function MerchantDashboard() {
       <>
         <Navigation />
         <div data-theme="dim" className="min-h-screen bg-bg text-fg flex items-center justify-center">
-          <Card className="max-w-md mx-4 bg-card border border-white/40 shadow-xl shadow-white/20">
+          <Card className="max-w-md mx-4 bg-card border border-border-dim shadow-xl shadow-black/20">
             <CardBody className="p-8 text-center">
               <div className="bg-amber-500/20 p-4 rounded-full inline-block mb-4">
                 <Users className="h-8 w-8 text-amber-400" />
@@ -298,7 +298,7 @@ export default function MerchantDashboard() {
       <div data-theme="dim" className="min-h-screen bg-bg text-fg">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           {/* Merchant Header */}
-          <Card className="mb-8 bg-card border border-white/40 shadow-xl shadow-white/20">
+          <Card className="mb-8 bg-card border border-border-dim shadow-xl shadow-black/20">
             <CardBody className="p-4 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center">
@@ -412,7 +412,7 @@ export default function MerchantDashboard() {
             </TabsList>
 
             <TabsContent value="offers" className="space-y-6">
-              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Your Offers</CardTitle>
@@ -569,7 +569,7 @@ export default function MerchantDashboard() {
                   onToggleScanning={() => setIsScanning(!isScanning)}
                 />
                 
-                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
+                <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
                   <CardHeader>
                     <CardTitle className="text-fg">Recent Redemptions</CardTitle>
                     <p className="text-soft text-sm">Latest voucher redemptions processed by your staff</p>
@@ -605,7 +605,7 @@ export default function MerchantDashboard() {
                 </Card>
                 
                 {lastScannedVoucher && (
-                  <Card className="lg:col-span-2 bg-card border border-white/40 shadow-xl shadow-white/20">
+                  <Card className="lg:col-span-2 bg-card border border-border-dim shadow-xl shadow-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-green-600" />

@@ -104,7 +104,7 @@ export default function MerchantPortal() {
           transition={{ duration: 0.5 }}
           className="border-b border-border-dim"
         >
-          <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition-all duration-300">
+          <Card className="bg-card border border-border-dim shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 hover:border-border-dim/80 transition-all duration-300">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -183,9 +183,9 @@ export default function MerchantPortal() {
             <div className="space-y-6">
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/40 shadow-xl shadow-white/20">
+                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-border-dim shadow-xl shadow-black/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2 text-white">
+                    <CardTitle className="text-lg flex items-center gap-2 text-fg">
                       <Star className="w-5 h-5 text-yellow-400" />
                       Loyalty Overview
                     </CardTitle>
@@ -193,24 +193,24 @@ export default function MerchantPortal() {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-lg">Active Members</span>
-                        <span className="font-semibold text-white">0</span>
+                        <span className="text-fg/80 text-lg">Active Members</span>
+                        <span className="font-semibold text-fg">0</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-lg">Points Earned</span>
-                        <span className="font-semibold text-white">0</span>
+                        <span className="text-fg/80 text-lg">Points Earned</span>
+                        <span className="font-semibold text-fg">0</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80 text-lg">Rewards Claimed</span>
-                        <span className="font-semibold text-white">0</span>
+                        <span className="text-fg/80 text-lg">Rewards Claimed</span>
+                        <span className="font-semibold text-fg">0</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-white/40 shadow-xl shadow-white/20">
+                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-border-dim shadow-xl shadow-black/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2 text-white">
+                    <CardTitle className="text-lg flex items-center gap-2 text-fg">
                       <Gift className="w-5 h-5 text-green-400" />
                       Quick Actions
                     </CardTitle>
@@ -239,9 +239,9 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-white/40 shadow-xl shadow-white/20">
+                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-border-dim shadow-xl shadow-black/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-white">Program Status</CardTitle>
+                    <CardTitle className="text-lg text-fg">Program Status</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -254,9 +254,9 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-white/40 shadow-xl shadow-white/20">
+                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-border-dim shadow-xl shadow-black/20">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-white">This Month</CardTitle>
+                    <CardTitle className="text-lg text-fg">This Month</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -278,10 +278,10 @@ export default function MerchantPortal() {
               </div>
 
               {/* Recent Activity */}
-              <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
+              <Card className="bg-card/90 border border-border-dim shadow-xl shadow-black/20">
                 <CardHeader>
-                  <CardTitle className="text-white">Recent Loyalty Activity</CardTitle>
-                  <CardDescription className="text-white/80">Latest customer loyalty interactions</CardDescription>
+                  <CardTitle className="text-fg">Recent Loyalty Activity</CardTitle>
+                  <CardDescription className="text-fg/80">Latest customer loyalty interactions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
