@@ -211,9 +211,9 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                       {balance.tier === 'Bronze' && balance.points < 100 && (
                         <>
                           <div className="text-sm font-bold text-white mb-1">
-                            {100 - (balance.points || 0)} pts
+                            {100 - (balance.points || 0)} pts to Silver
                           </div>
-                          <div className="text-xs text-green-100/70 font-medium">to Silver</div>
+                          <div className="text-xs text-green-100/70 font-medium">Progress</div>
                         </>
                       )}
                       {balance.tier === 'Bronze' && balance.points >= 100 && (
@@ -233,22 +233,6 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                 )}
               </div>
 
-              {/* Tier Benefits */}
-              {balance?.tier && (
-                <div className="space-y-2">
-                  <h4 className="font-medium text-fg text-sm">Tier Benefits</h4>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Award className="w-3 h-3 text-yellow-500" />
-                      <span className="text-soft">
-                        {balance.tier === 'Bronze' && 'Earn 1 point per £1 spent'}
-                        {balance.tier === 'Silver' && 'Earn 1.5 points per £1 spent + Special offers'}
-                        {balance.tier === 'Gold' && 'Earn 2 points per £1 spent + Exclusive deals'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </TabsContent>
 
             <TabsContent value="rewards" className="space-y-4">
