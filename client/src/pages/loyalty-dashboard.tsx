@@ -1127,7 +1127,7 @@ export default function LoyaltyDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-xs text-gray-300">New Members</span>
-                  <span className="text-sm font-medium text-white">0</span>
+                  <span className="text-sm font-medium text-white">{membersData?.members?.length || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs text-gray-300">Repeat Visits</span>
@@ -1135,7 +1135,7 @@ export default function LoyaltyDashboard() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs text-gray-300">Revenue Impact</span>
-                  <span className="text-sm font-medium text-white">£0</span>
+                  <span className="text-sm font-medium text-white">£{revenueData?.revenueImpact?.monthToDate?.toFixed(0) || "0"}</span>
                 </div>
               </div>
             </div>
