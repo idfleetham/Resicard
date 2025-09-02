@@ -75,12 +75,16 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(tier.name);
   const [editPoints, setEditPoints] = useState(tier.thresholdPoints);
+  const [editBenefits, setEditBenefits] = useState<Array<{ type: string; value: number; note?: string }>>(
+    tier.perks || [{ type: 'discount', value: 5, note: '' }]
+  );
 
   const handleSave = () => {
     onUpdate({
       ...tier,
       name: editName,
-      thresholdPoints: parseInt(editPoints.toString())
+      thresholdPoints: parseInt(editPoints.toString()),
+      perks: editBenefits
     });
     setIsEditing(false);
   };
@@ -88,7 +92,22 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
   const handleCancel = () => {
     setEditName(tier.name);
     setEditPoints(tier.thresholdPoints);
+    setEditBenefits(tier.perks || [{ type: 'discount', value: 5, note: '' }]);
     setIsEditing(false);
+  };
+
+  const addBenefit = () => {
+    setEditBenefits([...editBenefits, { type: 'discount', value: 5, note: '' }]);
+  };
+
+  const updateBenefit = (index: number, field: string, value: any) => {
+    const updated = [...editBenefits];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditBenefits(updated);
+  };
+
+  const removeBenefit = (index: number) => {
+    setEditBenefits(editBenefits.filter((_, i) => i !== index));
   };
 
   const getTierColor = (index: number) => {
@@ -102,20 +121,91 @@ function TierEditor({ tier, index, onUpdate, onDelete }: {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className={`w-4 h-4 rounded-full ${getTierColor(index)} flex-shrink-0`}></div>
           {isEditing ? (
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="bg-bg border-border-dim text-fg"
-                placeholder="Tier name"
-              />
-              <Input
-                type="number"
-                value={editPoints}
-                onChange={(e) => setEditPoints(parseInt(e.target.value) || 0)}
-                className="bg-bg border-border-dim text-fg"
-                placeholder="Points required"
-              />
+            <div className="flex-1 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="bg-bg border-border-dim text-fg"
+                  placeholder="Tier name"
+                />
+                <Input
+                  type="number"
+                  value={editPoints}
+                  onChange={(e) => setEditPoints(parseInt(e.target.value) || 0)}
+                  className="bg-bg border-border-dim text-fg"
+                  placeholder="Points required"
+                />
+              </div>
+              
+              {/* Benefits Editor */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-fg font-medium text-sm">Tier Benefits</Label>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addBenefit}
+                    className="text-xs bg-surface border-border-dim text-fg hover:bg-surface/80"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Benefit
+                  </Button>
+                </div>
+                
+                {editBenefits.map((benefit, benefitIndex) => (
+                  <div key={benefitIndex} className="grid grid-cols-12 gap-2 items-center p-2 bg-bg/50 rounded border border-border-dim">
+                    <div className="col-span-4">
+                      <Select 
+                        value={benefit.type} 
+                        onValueChange={(value) => updateBenefit(benefitIndex, 'type', value)}
+                      >
+                        <SelectTrigger className="bg-bg border-border-dim text-fg text-xs h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="discount">% Discount</SelectItem>
+                          <SelectItem value="free_item">Free Item</SelectItem>
+                          <SelectItem value="early_access">Early Access</SelectItem>
+                          <SelectItem value="bonus_points">Bonus Points</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="col-span-3">
+                      <Input
+                        type="number"
+                        value={benefit.value}
+                        onChange={(e) => updateBenefit(benefitIndex, 'value', parseInt(e.target.value) || 0)}
+                        className="bg-bg border-border-dim text-fg text-xs h-8"
+                        placeholder="Value"
+                      />
+                    </div>
+                    
+                    <div className="col-span-4">
+                      <Input
+                        value={benefit.note || ''}
+                        onChange={(e) => updateBenefit(benefitIndex, 'note', e.target.value)}
+                        className="bg-bg border-border-dim text-fg text-xs h-8"
+                        placeholder="Description (optional)"
+                      />
+                    </div>
+                    
+                    <div className="col-span-1">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => removeBenefit(benefitIndex)}
+                        className="hover:bg-red-500/20 text-red-400 hover:text-red-300 h-8 w-8 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex-1 min-w-0">
