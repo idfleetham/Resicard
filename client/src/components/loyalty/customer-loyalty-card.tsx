@@ -23,10 +23,7 @@ import {
 interface LoyaltyBalance {
   points: number;
   stamps: number;
-  tier: {
-    name: string;
-    perks: Array<{ type: string; value: number; note?: string }>;
-  } | null;
+  tier: string | null;
 }
 
 interface LoyaltyEvent {
@@ -112,10 +109,12 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {merchantLogo ? (
-                <img src={merchantLogo} alt={merchantName} className="w-10 h-10 rounded-lg" />
+                <img src={merchantLogo} alt={merchantName} className="w-10 h-10 rounded-lg object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                  <Coffee className="w-6 h-6 text-white" />
+                  <span className="text-white font-bold text-lg">
+                    {merchantName.charAt(0).toUpperCase()}
+                  </span>
                 </div>
               )}
               <div>
@@ -128,7 +127,7 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                 <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border-yellow-500/30">
                   <Crown className="w-3 h-3 mr-1" />
                   <ShimmerText>
-                    <span>{balance.tier.name}</span>
+                    <span>{balance.tier} Tier</span>
                   </ShimmerText>
                 </Badge>
               </PulsingBadge>
@@ -154,38 +153,41 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
             </TabsList>
 
             <TabsContent value="balance" className="space-y-4">
-              {/* Points/Stamps Display */}
-              <div className="grid grid-cols-2 gap-4">
-                <motion.div 
-                  className="text-center p-4 rounded-lg bg-white/5"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <PulsingBadge isActive={false}>
-                    <div className="text-2xl font-bold text-fg">
-                      <AnimatedPointCounter 
-                        currentPoints={0}
-                        targetPoints={balance?.points || 0}
-                      />
-                    </div>
-                  </PulsingBadge>
-                  <div className="text-xs text-soft">Points</div>
-                </motion.div>
-                <motion.div 
-                  className="text-center p-4 rounded-lg bg-white/5"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <PulsingBadge isActive={false}>
-                    <div className="text-2xl font-bold text-fg">
-                      <AnimatedPointCounter 
-                        currentPoints={0}
-                        targetPoints={balance?.stamps || 0}
-                      />
-                    </div>
-                  </PulsingBadge>
-                  <div className="text-xs text-soft">Stamps</div>
-                </motion.div>
+              {/* Balance Display - Show only points OR stamps based on program type */}
+              <div className="text-center">
+                {program?.model === 'stamps' ? (
+                  <motion.div 
+                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <PulsingBadge isActive={balance && balance.stamps > 0}>
+                      <div className="text-4xl font-bold text-fg mb-2">
+                        <AnimatedPointCounter 
+                          currentPoints={0}
+                          targetPoints={balance?.stamps || 0}
+                        />
+                      </div>
+                    </PulsingBadge>
+                    <div className="text-sm text-soft font-medium">Stamps Collected</div>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <PulsingBadge isActive={balance && balance.points > 0}>
+                      <div className="text-4xl font-bold text-fg mb-2">
+                        <AnimatedPointCounter 
+                          currentPoints={0}
+                          targetPoints={balance?.points || 0}
+                        />
+                      </div>
+                    </PulsingBadge>
+                    <div className="text-sm text-soft font-medium">Points Earned</div>
+                  </motion.div>
+                )}
               </div>
 
               {/* Tier Progress */}
