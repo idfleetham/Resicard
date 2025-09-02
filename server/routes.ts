@@ -2462,6 +2462,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Revenue Impact Analytics
+  app.get("/api/loyalty/revenue-impact", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const merchantId = req.user.id;
+      
+      // Get current date for calculations
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      
+      // Query redemptions for total, month-to-date, and year-to-date revenue impact
+      const totalQuery = `
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as total_impact
+        FROM redemptions 
+        WHERE merchant_id = $1 AND status = 'completed'
+      `;
+      
+      const monthQuery = `
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as month_impact
+        FROM redemptions 
+        WHERE merchant_id = $1 AND status = 'completed' 
+        AND redeemed_at >= $2
+      `;
+      
+      const yearQuery = `
+        SELECT COALESCE(SUM(CAST(discount_value AS DECIMAL)), 0) as year_impact
+        FROM redemptions 
+        WHERE merchant_id = $1 AND status = 'completed' 
+        AND redeemed_at >= $2
+      `;
+      
+      const { pool } = await import('./db');
+      
+      const [totalResult, monthResult, yearResult] = await Promise.all([
+        pool.query(totalQuery, [merchantId]),
+        pool.query(monthQuery, [merchantId, startOfMonth.toISOString()]),
+        pool.query(yearQuery, [merchantId, startOfYear.toISOString()])
+      ]);
+      
+      const revenueImpact = {
+        total: parseFloat(totalResult.rows[0]?.total_impact || 0),
+        monthToDate: parseFloat(monthResult.rows[0]?.month_impact || 0),
+        yearToDate: parseFloat(yearResult.rows[0]?.year_impact || 0)
+      };
+      
+      res.json({ success: true, revenueImpact });
+    } catch (error) {
+      console.error("Error fetching revenue impact:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.put("/api/loyalty/members/:userId/tier", authenticateToken, async (req, res) => {
     try {
       if (req.user?.role !== "merchant") {

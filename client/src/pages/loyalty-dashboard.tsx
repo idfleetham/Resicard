@@ -753,6 +753,11 @@ export default function LoyaltyDashboard() {
     queryKey: ["/api/loyalty/members"],
   });
 
+  // Fetch revenue impact data
+  const { data: revenueData, isLoading: revenueLoading } = useQuery({
+    queryKey: ["/api/loyalty/revenue-impact"],
+  });
+
   const updateProgramMutation = useMutation({
     mutationFn: (data: Partial<LoyaltyProgram>) => 
       apiRequest("POST", "/api/loyalty/program", data),
@@ -1093,7 +1098,7 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <MetricTile label="Points Earned" value={membersData?.members?.reduce((total, member) => total + (member.points || 0), 0)?.toString() || "0"} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
+              <MetricTile label="Points Earned" value={Math.floor(membersData?.members?.reduce((total, member) => total + (parseFloat(member.points) || 0), 0) || 0).toString()} delta="0%" icon={<Star className="h-4 w-4 text-fg/80" />} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1107,7 +1112,12 @@ export default function LoyaltyDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <MetricTile label="Revenue Impact" value="£0" delta="0%" icon={<TrendingUp className="h-4 w-4 text-fg/80" />} />
+              <MetricTile 
+                label="Revenue Impact" 
+                value={`£${revenueData?.revenueImpact?.total?.toFixed(0) || "0"}`} 
+                delta={`MTD: £${revenueData?.revenueImpact?.monthToDate?.toFixed(0) || "0"} | YTD: £${revenueData?.revenueImpact?.yearToDate?.toFixed(0) || "0"}`} 
+                icon={<TrendingUp className="h-4 w-4 text-fg/80" />} 
+              />
             </motion.div>
           </motion.div>
 
@@ -1118,9 +1128,9 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <GradientPanel>
+            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-fg">Quick Actions</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
                 <div className="flex gap-3">
                   <motion.button 
                     className="btn btn-primary focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
@@ -1151,7 +1161,7 @@ export default function LoyaltyDashboard() {
                   </motion.button>
                 </div>
               </div>
-            </GradientPanel>
+            </div>
           </motion.div>
 
           {/* Program Performance */}
@@ -1161,57 +1171,59 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <StatCard 
-              title="Tier Distribution"
-              subtitle="Customer distribution across tiers"
-            >
-                <div className="space-y-4">
-                  {loyaltyProgramme?.tiers.map((tier, index) => {
-                    const tierMemberCount = membersData?.members?.filter(member => member.tierName === tier.name || (tier.name === "Bronze" && member.tierId === "bronze")).length || 0;
-                    return (
-                      <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${
-                            index === 0 ? 'bg-orange-500' : 
-                            index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
-                          }`}></div>
-                          <span className="font-medium text-fg">{tier.name}</span>
-                          <Badge variant="outline" className="text-xs text-fg/80 border-border-dim">
-                            {tier.thresholdPoints}+ pts
-                          </Badge>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-fg">{tierMemberCount}</p>
-                          <p className="text-xs text-fg/70">customers</p>
-                        </div>
+            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Tier Distribution</h3>
+                <p className="text-slate-600 text-sm">Customer distribution across tiers</p>
+              </div>
+              <div className="space-y-4">
+                {loyaltyProgramme?.tiers.map((tier, index) => {
+                  const tierMemberCount = membersData?.members?.filter(member => member.tierName === tier.name || (tier.name === "Bronze" && member.tierId === "bronze")).length || 0;
+                  return (
+                    <div key={tier.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-slate-50/50 border-b border-slate-200/20 last:border-b-0">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          index === 0 ? 'bg-orange-500' : 
+                          index === 1 ? 'bg-gray-400' : 'bg-yellow-500'
+                        }`}></div>
+                        <span className="font-medium text-slate-900">{tier.name}</span>
+                        <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
+                          {tier.thresholdPoints}+ pts
+                        </Badge>
                       </div>
-                    );
-                  })}
-                </div>
-            </StatCard>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-900">{tierMemberCount}</p>
+                        <p className="text-xs text-slate-600">customers</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-            <StatCard 
-              title="Popular Rewards"
-              subtitle="Most redeemed rewards this month"
-            >
+            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Popular Rewards</h3>
+                <p className="text-slate-600 text-sm">Most redeemed rewards this month</p>
+              </div>
               <div className="space-y-4">
                 {loyaltyProgramme?.rewards.slice(0, 3).map((reward, index) => (
-                  <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-surface/50 border-b border-border-dim/20 last:border-b-0">
+                  <div key={reward.id} className="flex items-center justify-between py-4 px-3 rounded-lg bg-slate-50/50 border-b border-slate-200/20 last:border-b-0">
                     <div className="flex items-center gap-3">
                       <Coffee className="w-5 h-5 text-amber-400" />
                       <div>
-                        <p className="font-medium text-fg">{reward.name}</p>
-                        <p className="text-xs text-fg/70">{reward.costPoints} points</p>
+                        <p className="font-medium text-slate-900">{reward.name}</p>
+                        <p className="text-xs text-slate-600">{reward.costPoints} points</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-fg">0</p>
-                      <p className="text-xs text-fg/70">redeemed</p>
+                      <p className="font-semibold text-slate-900">0</p>
+                      <p className="text-xs text-slate-600">redeemed</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </StatCard>
+            </div>
           </motion.div>
         </TabsContent>
 
