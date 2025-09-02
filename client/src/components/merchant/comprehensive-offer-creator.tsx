@@ -95,7 +95,6 @@ const offerSchema = z.object({
   autoPauseOnAbuse: z.boolean().default(true),
 
   // H) Fraud & safety
-  singleUse: z.boolean().default(true),
   deviceFingerprinting: z.boolean().default(true),
 });
 
@@ -1306,10 +1305,36 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
                       <FormField
                         control={form.control}
+                        name="maxLifetime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200 text-lg">Max per User (Lifetime)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min="1"
+                                className="input-dark"
+                                placeholder="1 (single use)"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormDescription className="text-slate-400 text-sm">
+                              How many times each user can redeem this offer (e.g., 1 for staycation offers)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={form.control}
                         name="globalUsageLimit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-200 text-lg">Total Usage Limit</FormLabel>
+                            <FormLabel className="text-slate-200 text-lg">Total Vouchers Available</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -1320,6 +1345,9 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                               />
                             </FormControl>
+                            <FormDescription className="text-slate-400 text-sm">
+                              Total number of vouchers available across all users (leave empty for unlimited)
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1397,28 +1425,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="singleUse"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-700 p-3">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-slate-200 text-lg">Single Use Only</FormLabel>
-                              <FormDescription className="text-slate-400 text-lg">
-                                Each voucher can only be used once
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
+                    <div className="grid grid-cols-1 gap-4">
                       <FormField
                         control={form.control}
                         name="deviceFingerprinting"

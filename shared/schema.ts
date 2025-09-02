@@ -140,7 +140,6 @@ export const offers = pgTable("offers", {
   autoPauseOnAbuse: boolean("auto_pause_on_abuse").default(true),
   
   // H) Fraud & safety
-  singleUse: boolean("single_use").default(true),
   deviceFingerprinting: boolean("device_fingerprinting").default(true),
   
   // Status and metadata
