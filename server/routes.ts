@@ -137,7 +137,7 @@ async function awardLoyaltyPoints({
 
     // Check for tier upgrades after awarding points
     const updatedBalance = await db.execute(sql`
-      SELECT lb.balance, lt.id as current_tier_id, lt."thresholdPoints" as current_threshold
+      SELECT lb.balance, lt.id as current_tier_id, lt.threshold_points as current_threshold
       FROM loyalty_balances lb
       LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
       WHERE lb.user_id = ${userId} AND lb.merchant_id::text = ${merchantId}::text
@@ -150,10 +150,10 @@ async function awardLoyaltyPoints({
       // Find highest tier this user qualifies for
       const availableTiers = await db.execute(sql`
         SELECT lt.* FROM loyalty_tiers lt
-        JOIN loyalty_programs lp ON lt."programId" = lp.id
+        JOIN loyalty_programs lp ON lt.program_id = lp.id
         WHERE lp.merchant_id::text = ${merchantId}::text
-        AND lt."thresholdPoints" <= ${newPoints}
-        ORDER BY lt."thresholdPoints" DESC
+        AND lt.threshold_points <= ${newPoints}
+        ORDER BY lt.threshold_points DESC
         LIMIT 1
       `);
 
@@ -919,7 +919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 SELECT DISTINCT lt.id, lt.name 
                 FROM loyalty_balances lb
                 JOIN loyalty_tiers lt ON lb.tier = lt.id::text
-                WHERE lb.user_id = ${userId} AND lb.balance >= lt."thresholdPoints"
+                WHERE lb.user_id = ${userId} AND lb.balance >= lt.threshold_points
               `);
               
               const userTierIds = userTiers.rows.map((tier: any) => tier.id.toString());
@@ -2350,9 +2350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lt.id as tier_id,
           lt.name as tier_name,
           lt.color as tier_color,
-          lt."thresholdPoints" as threshold_points,
-          lt."discountPercent" as discount_percent,
-          lt."pointsMultiplier" as points_multiplier,
+          lt.threshold_points,
+          lt.discount_percent,
+          lt.points_multiplier,
           m.name as business_name,
           'General' as business_category,
           m.id as merchant_id
