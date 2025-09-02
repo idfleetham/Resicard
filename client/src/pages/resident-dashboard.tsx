@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown, Trash2, CreditCard } from "lucide-react";
+import { Ticket, CheckCircle, PiggyBank, Calendar, MapPin, Filter, Settings, User, AlertTriangle, X, Smartphone, Tag, Wallet, Shield, Crown, Trash2, CreditCard, Copy, Check } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequestWithAuth } from "@/lib/auth";
@@ -22,6 +22,45 @@ import DocumentVerification from "@/components/document-verification";
 import SubscriptionManagement from "@/components/subscription-management";
 import { CustomerLoyaltyCard } from "@/components/loyalty/customer-loyalty-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+// Copy to clipboard component
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast({
+        title: "Copied!",
+        description: "Voucher code copied to clipboard",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Please manually copy the voucher code",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={handleCopy}
+      className="h-6 w-6 p-0 hover:bg-gray-200 rounded-md"
+    >
+      {copied ? (
+        <Check className="h-3 w-3 text-green-600" />
+      ) : (
+        <Copy className="h-3 w-3 text-gray-500" />
+      )}
+    </Button>
+  );
+}
 
 export default function ResidentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -654,7 +693,12 @@ export default function ResidentDashboard() {
                                     </span>
                                   </div>
                                   <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
-                                    <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
+                                      </div>
+                                      <CopyButton text={voucher.voucherNumber} />
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="text-right">
@@ -770,7 +814,12 @@ export default function ResidentDashboard() {
                                     </span>
                                   </div>
                                   <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
-                                    <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <span className="text-gray-500">Voucher Code:</span> {voucher.voucherNumber}
+                                      </div>
+                                      <CopyButton text={voucher.voucherNumber} />
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="text-right">
@@ -846,7 +895,12 @@ export default function ResidentDashboard() {
                                     </span>
                                   </div>
                                   <div className="mt-4 text-xs font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl border">
-                                    <span className="text-gray-400">Voucher Code:</span> {voucher.voucherNumber}
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <span className="text-gray-400">Voucher Code:</span> {voucher.voucherNumber}
+                                      </div>
+                                      <CopyButton text={voucher.voucherNumber} />
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="text-right">

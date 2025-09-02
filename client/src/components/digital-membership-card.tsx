@@ -1,8 +1,11 @@
 import { Card, CardBody } from "@/ui/Card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, User, MapPin, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { QrCode, User, MapPin, Calendar, Copy, Check } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import type { VoucherWithDeal } from "@shared/schema";
 import cardBackgroundImage from "@assets/DF611683-0C55-429D-9633-95A8FD10F9CE_1_105_c_1749807319428.jpeg";
 import QRCodeGenerator from "./qr-code-generator";
@@ -19,6 +22,45 @@ export default function DigitalMembershipCard({
   const { user } = useAuth();
 
   if (!user) return null;
+
+  // Copy to clipboard component
+  const CopyToClipboardButton = ({ text }: { text: string }) => {
+    const [copied, setCopied] = useState(false);
+    const { toast } = useToast();
+    
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        toast({
+          title: "Copied!",
+          description: "Voucher code copied to clipboard",
+        });
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        toast({
+          title: "Copy failed",
+          description: "Please manually copy the voucher code",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    return (
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleCopy}
+        className="h-6 w-6 p-0 hover:bg-gray-200 rounded-md"
+      >
+        {copied ? (
+          <Check className="h-3 w-3 text-green-600" />
+        ) : (
+          <Copy className="h-3 w-3 text-gray-500" />
+        )}
+      </Button>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -119,7 +161,10 @@ export default function DigitalMembershipCard({
               </div>
               
               <div className="bg-gray-100 rounded-lg p-4 mb-4">
-                <p className="text-xs text-muted-foreground mb-2">Voucher Number</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-muted-foreground">Voucher Number</p>
+                  <CopyToClipboardButton text={voucher.voucherNumber} />
+                </div>
                 <p className="text-sm font-mono font-bold tracking-wide break-all leading-relaxed text-gray-900">
                   {voucher.voucherNumber}
                 </p>
