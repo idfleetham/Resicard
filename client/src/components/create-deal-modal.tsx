@@ -19,6 +19,7 @@ import { insertDealSchema } from "@shared/schema";
 
 const createDealSchema = insertDealSchema.extend({
   expiryDate: z.string().min(1, "Expiry date is required"),
+  originalValue: z.string().min(1, "Offer value is required"),
   dealPercentage: z.string().optional(),
   freeItem: z.string().optional(),
   dealPrice: z.string().optional(),
@@ -354,6 +355,36 @@ export default function CreateDealModal({ isOpen, onClose, existingDeal }: Creat
                 )}
               />
             </div>
+
+            {/* Offer Value - Required for all deal types */}
+            <FormField
+              control={form.control}
+              name="originalValue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-lg font-semibold">Offer Value (£) *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="text-lg font-semibold border-2" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <strong>Enter the monetary value of this offer:</strong>
+                    <ul className="mt-1 ml-4 list-disc text-xs">
+                      <li><strong>BOGOF:</strong> Value of the item that must be purchased (e.g., £15 for main course)</li>
+                      <li><strong>Free item:</strong> Cost of qualifying item (e.g., £8 for cheapest champagne)</li>
+                      <li><strong>Percentage off:</strong> Typical spend where discount applies (e.g., £25 average meal)</li>
+                      <li><strong>Fixed price:</strong> Difference between original and deal price</li>
+                    </ul>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Dynamic fields based on deal type */}
             {watchedDealType === "fixed_percentage" && (
