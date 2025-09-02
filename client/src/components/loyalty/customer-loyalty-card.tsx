@@ -127,11 +127,17 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                 <img 
                   src={merchantLogo || merchantDetails?.logoUrl} 
                   alt={merchantName} 
-                  className="w-10 h-10 rounded-lg object-cover"
+                  className="w-12 h-12 rounded-xl object-cover border-2 border-white/20 shadow-lg"
+                />
+              ) : merchantDetails?.logo ? (
+                <img 
+                  src={merchantDetails.logo} 
+                  alt={merchantName} 
+                  className="w-12 h-12 rounded-xl object-cover border-2 border-white/20 shadow-lg"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center border-2 border-white/20 shadow-lg">
+                  <span className="text-white font-bold text-xl">
                     {merchantName.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -142,28 +148,10 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
               </div>
             </div>
             {balance?.tier && (
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  rotate: [0, 2, 0, -2, 0]
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <PulsingBadge isActive={true}>
-                  <Badge className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white border-2 border-amber-300 shadow-xl shadow-amber-500/50 px-4 py-2 font-bold text-sm">
-                    <motion.div
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="mr-2"
-                    >
-                      <Crown className="w-4 h-4" />
-                    </motion.div>
-                    <ShimmerText>
-                      <span className="drop-shadow-lg">{balance.tier} Tier</span>
-                    </ShimmerText>
-                  </Badge>
-                </PulsingBadge>
-              </motion.div>
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 shadow-lg px-3 py-1 font-bold text-sm">
+                <Crown className="w-3 h-3 mr-1" />
+                <span>{balance.tier} Tier</span>
+              </Badge>
             )}
           </div>
         </CardHeader>
@@ -186,218 +174,64 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
             </TabsList>
 
             <TabsContent value="balance" className="space-y-4">
-              {/* Balance Display - Show only points OR stamps based on program type */}
-              <div className="text-center">
-                {program?.model === 'stamps' ? (
-                  <motion.div 
-                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10"
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <PulsingBadge isActive={balance && balance.stamps > 0}>
-                      <div className="text-4xl font-bold text-fg mb-2">
-                        <AnimatedPointCounter 
-                          currentPoints={0}
-                          targetPoints={balance?.stamps || 0}
-                        />
-                      </div>
-                    </PulsingBadge>
-                    <div className="text-sm text-soft font-medium">Stamps Collected</div>
-                  </motion.div>
-                ) : (
-                  <motion.div 
-                    className="relative p-8 rounded-3xl bg-gradient-to-br from-amber-400/20 via-orange-500/20 to-red-500/20 border-2 border-amber-400/40 shadow-xl shadow-amber-500/20 overflow-hidden backdrop-blur-sm"
-                    whileHover={{ scale: 1.05, rotateY: 5 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                  >
-                    {/* Animated background glow */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-amber-400/10 via-orange-500/10 to-yellow-400/10 rounded-3xl"
-                      animate={{ 
-                        opacity: [0.3, 0.6, 0.3],
-                        scale: [1, 1.05, 1]
-                      }}
-                      transition={{ 
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
-                    
-                    <div className="relative z-10">
-                      <PulsingBadge isActive={balance && balance.points > 0}>
-                        <motion.div 
-                          className="text-6xl font-black text-white mb-3 drop-shadow-2xl"
-                          animate={{ 
-                            textShadow: [
-                              "0 0 20px rgba(251, 191, 36, 0.8)",
-                              "0 0 40px rgba(251, 191, 36, 0.4)",
-                              "0 0 20px rgba(251, 191, 36, 0.8)"
-                            ]
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          <AnimatedPointCounter 
-                            currentPoints={0}
-                            targetPoints={balance?.points || 0}
-                          />
-                        </motion.div>
-                      </PulsingBadge>
-                      <motion.div 
-                        className="text-lg text-amber-100 font-bold tracking-wide uppercase"
-                        animate={{ opacity: [0.8, 1, 0.8] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        Points Earned
-                      </motion.div>
+              {/* Horizontal Layout: Points, Tier, Progress */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Points/Stamps Card */}
+                <div className="bg-gradient-to-br from-purple-600/30 to-blue-600/30 rounded-xl p-4 border border-purple-400/20">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white mb-1">
+                      <AnimatedPointCounter 
+                        currentPoints={0}
+                        targetPoints={program?.model === 'stamps' ? (balance?.stamps || 0) : (balance?.points || 0)}
+                      />
                     </div>
-                    
-                    {/* Sparkle effects */}
-                    <motion.div
-                      className="absolute top-2 right-2 w-2 h-2 bg-yellow-300 rounded-full"
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1, 0]
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                    />
-                    <motion.div
-                      className="absolute bottom-3 left-3 w-1.5 h-1.5 bg-amber-200 rounded-full"
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1, 0]
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-                    />
-                    <motion.div
-                      className="absolute top-1/2 right-1/4 w-1 h-1 bg-orange-300 rounded-full"
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1, 0]
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
-                    />
-                  </motion.div>
+                    <div className="text-xs text-white/70 font-medium">
+                      {program?.model === 'stamps' ? 'Stamps' : 'Points'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tier Status Card */}
+                {balance?.tier && (
+                  <div className="bg-gradient-to-br from-amber-600/30 to-orange-600/30 rounded-xl p-4 border border-amber-400/20">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Crown className="w-4 h-4 text-amber-300" />
+                        <span className="text-sm font-bold text-white">{balance.tier}</span>
+                      </div>
+                      <div className="text-xs text-amber-100/70 font-medium">Current Tier</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Card */}
+                {balance?.tier && (
+                  <div className="bg-gradient-to-br from-green-600/30 to-emerald-600/30 rounded-xl p-4 border border-green-400/20">
+                    <div className="text-center">
+                      {balance.tier === 'Bronze' && balance.points < 100 && (
+                        <>
+                          <div className="text-sm font-bold text-white mb-1">
+                            {100 - (balance.points || 0)}
+                          </div>
+                          <div className="text-xs text-green-100/70 font-medium">To Silver</div>
+                        </>
+                      )}
+                      {balance.tier === 'Bronze' && balance.points >= 100 && (
+                        <>
+                          <div className="text-sm font-bold text-green-300 mb-1">Ready!</div>
+                          <div className="text-xs text-green-100/70 font-medium">For Silver</div>
+                        </>
+                      )}
+                      {balance.tier !== 'Bronze' && (
+                        <>
+                          <div className="text-sm font-bold text-white mb-1">Max</div>
+                          <div className="text-xs text-white/70 font-medium">Tier</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Premium Tier Display */}
-              {balance?.tier && (
-                <motion.div 
-                  className="mt-6 p-6 rounded-3xl bg-gradient-to-r from-yellow-600/30 via-amber-500/30 to-orange-600/30 border-2 border-amber-400/50 shadow-2xl shadow-amber-500/25 backdrop-blur-sm relative overflow-hidden"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  {/* Animated shimmer effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                    animate={{ x: ['-100%', '100%'] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <motion.div
-                          animate={{ 
-                            rotate: [0, 10, 0, -10, 0],
-                            scale: [1, 1.1, 1]
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          <Crown className="w-6 h-6 text-amber-300 drop-shadow-lg" />
-                        </motion.div>
-                        <motion.span 
-                          className="text-xl font-bold text-white tracking-wide drop-shadow-lg"
-                          animate={{ 
-                            textShadow: [
-                              "0 0 10px rgba(251, 191, 36, 0.8)",
-                              "0 0 20px rgba(251, 191, 36, 0.4)",
-                              "0 0 10px rgba(251, 191, 36, 0.8)"
-                            ]
-                          }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                        >
-                          {balance.tier} Tier
-                        </motion.span>
-                      </div>
-                      <motion.div
-                        animate={{ 
-                          boxShadow: [
-                            "0 0 20px rgba(34, 197, 94, 0.5)",
-                            "0 0 30px rgba(34, 197, 94, 0.3)",
-                            "0 0 20px rgba(34, 197, 94, 0.5)"
-                          ]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold px-4 py-2 shadow-lg">
-                          ✨ Active
-                        </Badge>
-                      </motion.div>
-                    </div>
-                    
-                    {/* Enhanced progression hint */}
-                    <motion.div 
-                      className="mt-4 text-sm text-amber-100 font-medium"
-                      animate={{ opacity: [0.8, 1, 0.8] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      {balance.tier === 'Bronze' && balance.points >= 100 && (
-                        <div className="flex items-center gap-2">
-                          <motion.div
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                          >
-                            <TrendingUp className="w-4 h-4 text-green-400" />
-                          </motion.div>
-                          <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent font-bold">
-                            🚀 Almost there! Silver tier is within reach!
-                          </span>
-                        </div>
-                      )}
-                      {balance.tier === 'Bronze' && balance.points < 100 && (
-                        <div className="flex items-center gap-2">
-                          <motion.div
-                            animate={{ 
-                              y: [0, -2, 0],
-                              rotate: [0, 5, -5, 0]
-                            }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          >
-                            <TrendingUp className="w-4 h-4 text-blue-400" />
-                          </motion.div>
-                          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold">
-                            💎 {100 - (balance.points || 0)} more points for Silver tier!
-                          </span>
-                        </div>
-                      )}
-                    </motion.div>
-                  </div>
-                  
-                  {/* Floating particles */}
-                  {[...Array(3)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 bg-amber-300 rounded-full"
-                      style={{
-                        top: `${20 + i * 30}%`,
-                        right: `${10 + i * 15}%`
-                      }}
-                      animate={{
-                        y: [0, -10, 0],
-                        opacity: [0.3, 1, 0.3],
-                        scale: [0.5, 1, 0.5]
-                      }}
-                      transition={{
-                        duration: 2 + i * 0.5,
-                        repeat: Infinity,
-                        delay: i * 0.3
-                      }}
-                    />
-                  ))}
-                </motion.div>
-              )}
 
               {/* Perks */}
               {balance?.tier?.perks && balance.tier.perks.length > 0 && (
