@@ -1943,7 +1943,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             merchantId: offerData.merchantId,
             title: offerData.title,
             discountType: offerData.type === 'percentage_discount' ? 'percentage' : 'fixed',
-            discountValue: offerData.percentOff?.toString() || offerData.fixedPrice?.toString() || '0'
+            discountValue: offerData.percentOff?.toString() || offerData.fixedPrice?.toString() || '0',
+            originalValue: offerData.originalValue?.toString() || '0'
           };
           isUuidOffer = true;
         } else {
@@ -2018,7 +2019,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createLegacyRedemption({
         dealId: legacyDealId,
         userId: voucher.userId,
-        value: Math.max(discountValue, parseFloat(offer.discountValue || '0')), // Use offer value if no basket amount
+        value: offer.originalValue ? parseFloat(offer.originalValue) : Math.max(discountValue, parseFloat(offer.discountValue || '0')), // Use original value for free items, discount value otherwise
       });
 
       // Award loyalty points for the redemption
