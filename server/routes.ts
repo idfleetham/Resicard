@@ -2432,12 +2432,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get customer loyalty balance
   app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
     try {
-      // Return mock data for now to avoid database errors
-      res.json({
-        points: 0,
-        stamps: 0,
-        tier: null
-      });
+      const merchantName = req.params.merchantId;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // Get loyalty balance for this user and merchant by name
+      const result = await db.execute(sql`
+        SELECT lb.balance as points, 0 as stamps, lb.tier, lt.name as tier_name
+        FROM loyalty_balances lb
+        JOIN loyalty_programs lp ON lb.merchant_id = lp.merchant_id
+        JOIN merchants m ON (
+          CASE lp.merchant_id
+            WHEN 1001 THEN '52e9f857-5b2f-4164-b266-b7c1b86267dd'
+            WHEN 1002 THEN '4949dea8-6956-494c-a43b-47d568eeb481'
+            ELSE m.id::text
+          END
+        ) = m.id::text
+        LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
+        WHERE lb.user_id = ${userId}
+        AND m.name = ${merchantName}
+        LIMIT 1
+      `);
+
+      if (result.rows.length > 0) {
+        const row = result.rows[0];
+        res.json({
+          points: row.points || 0,
+          stamps: row.stamps || 0,
+          tier: row.tier_name || null
+        });
+      } else {
+        res.json({
+          points: 0,
+          stamps: 0,
+          tier: null
+        });
+      }
       return;
       
       // Get user's loyalty balance from database using raw query to match existing table structure

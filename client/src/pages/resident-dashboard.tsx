@@ -405,8 +405,8 @@ export default function ResidentDashboard() {
                 </div>
               </div>
 
-              {/* Loyalty Status Section */}
-              {loyaltyMemberships?.success && loyaltyMemberships.memberships.length > 0 && (
+              {/* Loyalty Status Section - Hidden for now */}
+              {false && loyaltyMemberships?.success && loyaltyMemberships.memberships.length > 0 && (
                 <div className="mt-8 max-w-6xl mx-auto">
                   <h3 className="text-xl font-semibold text-white mb-4 text-center">Your Loyalty Memberships</h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
