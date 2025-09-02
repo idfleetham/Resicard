@@ -80,8 +80,6 @@ export default function MerchantSettings() {
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const [showCropper, setShowCropper] = useState(false);
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<'square' | 'landscape' | 'portrait'>('square');
-  const [scale, setScale] = useState(1);
-  const [rotation, setRotation] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -255,8 +253,6 @@ export default function MerchantSettings() {
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setImgSrc(reader.result?.toString() || '');
-        setScale(1); // Reset scale
-        setRotation(0); // Reset rotation
         setShowCropper(true);
         // Reset to square by default when new image is selected
         setSelectedAspectRatio('square');
@@ -305,38 +301,40 @@ export default function MerchantSettings() {
     const canvas = previewCanvasRef.current;
     const crop = completedCrop;
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
     const ctx = canvas.getContext('2d');
-
     if (!ctx) return;
 
-    const pixelRatio = window.devicePixelRatio;
-    canvas.width = crop.width * pixelRatio;
-    canvas.height = crop.height * pixelRatio;
+    // Use natural dimensions for proper scaling
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
 
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    // Calculate actual crop dimensions in source image pixels
+    const cropX = crop.x * scaleX;
+    const cropY = crop.y * scaleY;
+    const cropWidth = crop.width * scaleX;
+    const cropHeight = crop.height * scaleY;
+
+    // Set canvas size to desired output dimensions (fixed size for better quality)
+    const outputSize = 400; // High quality output
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+
+    // Clear canvas and set high quality rendering
+    ctx.clearRect(0, 0, outputSize, outputSize);
+    ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // Apply transformations to canvas
-    const centerX = crop.width / 2;
-    const centerY = crop.height / 2;
-    
-    ctx.translate(centerX, centerY);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.scale(scale, scale);
-    ctx.translate(-centerX, -centerY);
-
+    // Draw the cropped portion directly to the canvas
     ctx.drawImage(
       image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
-      0,
-      0,
-      crop.width,
-      crop.height
+      cropX,        // Source x
+      cropY,        // Source y  
+      cropWidth,    // Source width
+      cropHeight,   // Source height
+      0,           // Destination x
+      0,           // Destination y
+      outputSize,  // Destination width
+      outputSize   // Destination height
     );
 
     return new Promise<File>((resolve) => {
@@ -345,9 +343,9 @@ export default function MerchantSettings() {
           const file = new File([blob], 'logo.png', { type: 'image/png' });
           resolve(file);
         }
-      }, 'image/png', 1);
+      }, 'image/png', 0.95);
     });
-  }, [completedCrop, scale, rotation]);
+  }, [completedCrop]);
 
   const handleCropComplete = async () => {
     try {
@@ -1041,75 +1039,6 @@ export default function MerchantSettings() {
                   </div>
                 </div>
 
-                {/* Zoom and Rotation Controls */}
-                <div className="mb-4 space-y-3">
-                  <div>
-                    <label className="text-base font-medium text-slate-200 mb-2 block">
-                      Zoom: {scale.toFixed(1)}x
-                    </label>
-                    <input
-                      type="range"
-                      min={0.1}
-                      max={3}
-                      step={0.1}
-                      value={scale}
-                      onChange={(e) => setScale(parseFloat(e.target.value))}
-                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-                    />
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setScale(Math.max(0.1, scale - 0.1))}
-                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
-                    >
-                      Zoom Out
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setScale(Math.min(3, scale + 0.1))}
-                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
-                    >
-                      Zoom In
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setRotation(rotation - 90)}
-                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
-                    >
-                      Rotate Left
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setRotation(rotation + 90)}
-                      className="border-slate-600 text-black bg-white hover:bg-gray-100"
-                    >
-                      Rotate Right
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setLogoPreview(null);
-                        setImgSrc('');
-                        setShowCropper(false);
-                      }}
-                      className="bg-red-100 text-black border-red-300 hover:bg-red-200"
-                    >
-                      Remove Image
-                    </Button>
-                  </div>
-                </div>
 
                 <div className="space-y-4">
                   <ReactCrop
@@ -1125,9 +1054,6 @@ export default function MerchantSettings() {
                       src={imgSrc}
                       onLoad={onImageLoad}
                       className="max-w-full max-h-[60vh]"
-                      style={{
-                        transform: `scale(${scale}) rotate(${rotation}deg)`,
-                      }}
                     />
                   </ReactCrop>
                   
