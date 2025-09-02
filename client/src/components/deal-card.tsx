@@ -29,7 +29,7 @@ export default function DealCard({
   hasExistingVoucher = false
 }: DealCardProps) {
   const usagePercentage = deal.usageLimit >= 999999 ? 0 : ((deal.usageCount || 0) / deal.usageLimit) * 100;
-  const isExpired = new Date(deal.expiryDate || deal.validTo) < new Date();
+  const isExpired = new Date(deal.expiryDate) < new Date();
   const isFullyUsed = deal.usageLimit >= 999999 ? false : (deal.usageCount || 0) >= deal.usageLimit;
   const canRedeem = !isExpired && !isFullyUsed && deal.isActive;
 
@@ -72,7 +72,7 @@ export default function DealCard({
 
   const getExpiryBadgeColor = () => {
     const now = new Date();
-    const expiry = new Date(deal.expiryDate || deal.validTo);
+    const expiry = new Date(deal.expiryDate);
     const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysUntilExpiry <= 0) return "bg-red-100 text-red-700 border-red-200";
@@ -99,10 +99,10 @@ export default function DealCard({
         
         {/* Tier Requirements Badge */}
         {deal.eligibleTiers && deal.eligibleTiers.length > 0 && (
-          <div className="absolute top-3 left-3 mt-8">
+          <div className="absolute bottom-3 left-3">
             <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs font-semibold shadow-sm">
               <Users className="w-3 h-3 mr-1" />
-              {deal.eligibleTiers.join(', ')} Members Only
+              {Array.isArray(deal.eligibleTiers) ? deal.eligibleTiers.join(', ') : JSON.parse(deal.eligibleTiers).join(', ')} Only
             </Badge>
           </div>
         )}
@@ -112,13 +112,13 @@ export default function DealCard({
             <Clock className="w-3 h-3 mr-1" />
             {(() => {
               const now = new Date();
-              const expiry = new Date(deal.expiryDate || deal.validTo);
+              const expiry = new Date(deal.expiryDate);
               const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
               
               if (daysUntilExpiry <= 0) return "Expired";
               if (daysUntilExpiry === 1) return "1 day";
               if (daysUntilExpiry <= 7) return `${daysUntilExpiry} days`;
-              return formatRelativeTime(deal.expiryDate || deal.validTo);
+              return formatRelativeTime(deal.expiryDate);
             })()}
           </Badge>
         </div>

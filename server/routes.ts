@@ -2242,6 +2242,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User loyalty memberships endpoint
+  app.get("/api/loyalty/user-memberships", authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Get all loyalty balances for this user with merchant and tier info
+      const balances = await db.execute(sql`
+        SELECT 
+          lb.id,
+          lb.points_balance,
+          lb.stamps_balance,
+          lb.last_activity,
+          lp.model,
+          lp.name as program_name,
+          lt.id as tier_id,
+          lt.name as tier_name,
+          lt.color as tier_color,
+          lt.threshold_points,
+          lt.discount_percent,
+          lt.points_multiplier,
+          m.business_name,
+          m.business_category,
+          u.username as merchant_username
+        FROM loyalty_balances lb
+        JOIN loyalty_programs lp ON lb.program_id = lp.id
+        LEFT JOIN loyalty_tiers lt ON lb.tier_id = lt.id
+        JOIN users u ON lp.merchant_id = u.id
+        LEFT JOIN merchants m ON u.merchant_id = m.id
+        WHERE lb.user_id = ${userId}
+        AND (lb.points_balance > 0 OR lb.stamps_balance > 0)
+        ORDER BY lb.last_activity DESC
+      `);
+
+      const memberships = balances.rows.map((row: any) => ({
+        id: row.id,
+        programName: row.program_name,
+        businessName: row.business_name || row.merchant_username,
+        businessCategory: row.business_category,
+        model: row.model,
+        pointsBalance: row.points_balance || 0,
+        stampsBalance: row.stamps_balance || 0,
+        lastActivity: row.last_activity,
+        tier: row.tier_id ? {
+          id: row.tier_id,
+          name: row.tier_name,
+          color: row.tier_color,
+          thresholdPoints: row.threshold_points,
+          discountPercent: row.discount_percent,
+          pointsMultiplier: parseFloat(row.points_multiplier)
+        } : null
+      }));
+
+      res.json({ success: true, memberships });
+    } catch (error) {
+      console.error("Error fetching user loyalty memberships:", error);
+      res.status(500).json({ error: "Failed to fetch loyalty memberships" });
+    }
+  });
+
   // Get customer loyalty balance
   app.get("/api/loyalty/balance/:merchantId", authenticateToken, async (req, res) => {
     try {

@@ -126,6 +126,22 @@ export default function ResidentDashboard() {
     retry: false, // Don't retry on auth failures
   });
 
+  // Fetch user loyalty memberships
+  const { data: loyaltyMemberships, isLoading: loyaltyLoading } = useQuery({
+    queryKey: ['/api/loyalty/user-memberships'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequestWithAuth('GET', '/api/loyalty/user-memberships');
+        return response.json();
+      } catch (error) {
+        console.warn('Failed to fetch loyalty memberships:', error);
+        return { success: false, memberships: [] };
+      }
+    },
+    enabled: !!user && user.role === 'resident',
+    retry: false,
+  });
+
   // Fetch subscription plans
   const { data: plans } = useQuery({
     queryKey: ['/api/subscription/plans'],
@@ -274,7 +290,7 @@ export default function ResidentDashboard() {
   // Combine loading states
   const isLoadingOffers = dealsLoading || offersLoading;
 
-  // Combine deals and offers, then filter based on category and availability
+  // Combine deals and offers, then filter based on category, availability, and loyalty tier eligibility
   const allOffers = [...deals, ...offers];
   const filteredDeals = allOffers.filter(deal => {
     const matchesCategory = selectedCategory === "all" || deal.category === selectedCategory;
@@ -283,7 +299,32 @@ export default function ResidentDashboard() {
       new Date(deal.expiryDate || deal.validUntil) > new Date() && 
       (deal.usageCount || 0) < (deal.usageLimit || deal.redeemLimit || Infinity)
     );
-    return matchesCategory && isAvailable;
+    
+    // Check tier eligibility if the deal has tier requirements
+    let meetsLoyaltyRequirement = true;
+    if (deal.eligibleTiers && loyaltyMemberships?.success) {
+      // Parse eligible tiers if it's a string
+      const eligibleTiers = typeof deal.eligibleTiers === 'string' 
+        ? JSON.parse(deal.eligibleTiers) 
+        : deal.eligibleTiers;
+      
+      if (eligibleTiers && eligibleTiers.length > 0) {
+        // Find user's membership with this merchant
+        const userMembership = loyaltyMemberships.memberships.find(
+          (membership: any) => membership.businessName === deal.merchantName
+        );
+        
+        if (userMembership?.tier) {
+          // Check if user's tier is in the eligible tiers list
+          meetsLoyaltyRequirement = eligibleTiers.includes(userMembership.tier.name);
+        } else {
+          // User has no tier with this merchant, can't access tier-restricted deals
+          meetsLoyaltyRequirement = false;
+        }
+      }
+    }
+    
+    return matchesCategory && isAvailable && meetsLoyaltyRequirement;
   });
 
   const categories = [
@@ -362,6 +403,43 @@ export default function ResidentDashboard() {
                   <div className="text-xs sm:text-sm opacity-90">Redeemed</div>
                 </div>
               </div>
+
+              {/* Loyalty Status Section */}
+              {loyaltyMemberships?.success && loyaltyMemberships.memberships.length > 0 && (
+                <div className="mt-8 max-w-6xl mx-auto">
+                  <h3 className="text-xl font-semibold text-white mb-4 text-center">Your Loyalty Memberships</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {loyaltyMemberships.memberships.map((membership: any) => (
+                      <div key={membership.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-white truncate">{membership.businessName}</h4>
+                          {membership.tier && (
+                            <div 
+                              className="px-2 py-1 rounded-full text-xs font-bold text-white"
+                              style={{ backgroundColor: membership.tier.color }}
+                            >
+                              {membership.tier.name}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-white/90">
+                          <span>
+                            {membership.model === 'points' 
+                              ? `${membership.pointsBalance} points`
+                              : `${membership.stampsBalance} stamps`
+                            }
+                          </span>
+                          {membership.tier && (
+                            <span className="text-xs">
+                              {membership.tier.discountPercent}% off
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
