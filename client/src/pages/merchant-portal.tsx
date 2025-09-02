@@ -63,6 +63,19 @@ export default function MerchantPortal() {
 
   console.log('MerchantPortal: Total redemptions count:', redemptions.length);
 
+  // Fetch loyalty data for the overview cards
+  const { data: membersData } = useQuery({
+    queryKey: ["/api/loyalty/members"],
+  });
+
+  const { data: revenueData } = useQuery({
+    queryKey: ["/api/loyalty/revenue-impact"],
+  });
+
+  const { data: loyaltyProgramme } = useQuery({
+    queryKey: ["/api/loyalty/program"],
+  });
+
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "merchant")) {
       navigate("/login");
@@ -194,11 +207,11 @@ export default function MerchantPortal() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-fg/80 text-lg">Active Members</span>
-                        <span className="font-semibold text-fg">0</span>
+                        <span className="font-semibold text-fg">{membersData?.members?.length || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-fg/80 text-lg">Points Earned</span>
-                        <span className="font-semibold text-fg">0</span>
+                        <span className="font-semibold text-fg">{membersData?.members?.reduce((sum, member) => sum + (member.points || 0), 0) || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-fg/80 text-lg">Rewards Claimed</span>
@@ -220,11 +233,11 @@ export default function MerchantPortal() {
                       <StaffEarningTool 
                         merchantId={user?.id?.toString() || ""}
                         program={{
-                          model: "points",
-                          pointsPerCurrency: 10,
-                          minBasketEarn: 5.00,
-                          earnCooldownMinutes: 30,
-                          dailyEarnCap: 3
+                          model: loyaltyProgramme?.model || "points",
+                          pointsPerCurrency: loyaltyProgramme?.pointsPerCurrency || 10,
+                          minBasketEarn: parseFloat(loyaltyProgramme?.minBasketEarn || "5.00"),
+                          earnCooldownMinutes: loyaltyProgramme?.earnCooldownMinutes || 30,
+                          dailyEarnCap: loyaltyProgramme?.dailyEarnCap || 3
                         }}
                       />
                       <Button 
@@ -245,11 +258,11 @@ export default function MerchantPortal() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        Active
+                      <Badge className={`${loyaltyProgramme?.active ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
+                        {loyaltyProgramme?.active ? 'Active' : 'Inactive'}
                       </Badge>
-                      <p className="text-lg text-soft">Points Model</p>
-                      <p className="text-base text-soft">10 points per £1 spent</p>
+                      <p className="text-lg text-soft">{loyaltyProgramme?.model === 'points' ? 'Points Model' : 'Stamps Model'}</p>
+                      <p className="text-base text-soft">{loyaltyProgramme?.pointsPerCurrency || 10} points per £1 spent</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -262,7 +275,7 @@ export default function MerchantPortal() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-soft text-base">New Members</span>
-                        <span className="font-semibold text-green-400">0</span>
+                        <span className="font-semibold text-green-400">{membersData?.members?.length || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Repeat Visits</span>
@@ -270,7 +283,7 @@ export default function MerchantPortal() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Revenue Impact</span>
-                        <span className="font-semibold text-purple-400">£0</span>
+                        <span className="font-semibold text-purple-400">£{revenueData?.revenueImpact?.monthToDate?.toFixed(0) || "0"}</span>
                       </div>
                     </div>
                   </CardContent>
