@@ -15,9 +15,9 @@ import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequestWithAuth } from "@/lib/auth";
-import { insertDealSchema } from "@shared/schema";
+import { insertOfferSchema } from "@shared/schema";
 
-const createDealSchema = insertDealSchema.extend({
+const createDealSchema = insertOfferSchema.extend({
   expiryDate: z.string().min(1, "Expiry date is required"),
   originalValue: z.string().min(1, "Offer value is required"),
   dealPercentage: z.string().optional(),

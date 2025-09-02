@@ -149,23 +149,7 @@ export const offers = pgTable("offers", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const deals = pgTable("deals", {
-  id: serial("id").primaryKey(),
-  merchantId: integer("merchant_id").notNull(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  category: text("category").notNull(),
-  discountType: text("discount_type").notNull(), // 'percentage', 'fixed', 'bogo', 'free_item'
-  discountValue: decimal("discount_value", { precision: 10, scale: 2 }),
-  originalValue: decimal("original_value", { precision: 10, scale: 2 }),
-  usageLimit: integer("usage_limit").notNull(),
-  usageCount: integer("usage_count").default(0),
-  isActive: boolean("is_active").default(true),
-  expiryDate: timestamp("expiry_date").notNull(),
-  terms: text("terms"),
-  imageUrl: text("image_url"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// REMOVED: deals table - using offers table instead
 
 // Enhanced redemptions table with comprehensive tracking
 export const redemptions = pgTable("redemptions", {
@@ -231,7 +215,7 @@ export const offerBlackouts = pgTable("offer_blackouts", {
 
 export const vouchers = pgTable("vouchers", {
   id: serial("id").primaryKey(),
-  dealId: integer("deal_id").notNull(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull(),
   voucherNumber: text("voucher_number").notNull().unique(),
   isUsed: boolean("is_used").default(false),
@@ -262,19 +246,7 @@ export const insertFamilyMemberSchema = createInsertSchema(familyMembers).pick({
   relationship: true,
 });
 
-// Schema for legacy deals (backward compatibility)
-export const insertDealSchema = createInsertSchema(deals).pick({
-  title: true,
-  description: true,
-  category: true,
-  discountType: true,
-  discountValue: true,
-  originalValue: true,
-  usageLimit: true,
-  expiryDate: true,
-  terms: true,
-  imageUrl: true,
-});
+// REMOVED: deals schema - using offers instead
 
 // Schema for new comprehensive offers
 export const insertOfferSchema = createInsertSchema(offers).pick({
@@ -398,7 +370,7 @@ export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
 });
 
 export const insertVoucherSchema = createInsertSchema(vouchers).pick({
-  dealId: true,
+  offerId: true,
   userId: true,
   voucherNumber: true,
   expiresAt: true,
@@ -408,8 +380,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 export type FamilyMember = typeof familyMembers.$inferSelect;
-export type InsertDeal = z.infer<typeof insertDealSchema>;
-export type Deal = typeof deals.$inferSelect;
+// REMOVED: Deal types - using Offer types instead
 export type InsertOffer = z.infer<typeof insertOfferSchema>;
 export type Offer = typeof offers.$inferSelect;
 export type InsertMerchant = z.infer<typeof insertMerchantSchema>;
@@ -434,7 +405,6 @@ export function generateCustomerAlias(user: { id: number; username?: string | nu
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
-  deals: many(deals),
   redemptions: many(redemptions),
   vouchers: many(vouchers),
   familyMembers: many(familyMembers),
@@ -472,37 +442,13 @@ export const redemptionsRelations = relations(redemptions, ({ one }) => ({
   }),
 }));
 
-export const dealsRelations = relations(deals, ({ one, many }) => ({
-  merchant: one(users, {
-    fields: [deals.merchantId],
-    references: [users.id],
-  }),
-  vouchers: many(vouchers),
-}));
+// REMOVED: dealsRelations - using offersRelations instead
 
-export const vouchersRelations = relations(vouchers, ({ one }) => ({
-  deal: one(deals, {
-    fields: [vouchers.dealId],
-    references: [deals.id],
-  }),
-  user: one(users, {
-    fields: [vouchers.userId],
-    references: [users.id],
-  }),
-}));
+// REMOVED: vouchersRelations - vouchers will be updated to use offers
 
-export type DealWithMerchant = Deal & {
-  merchantName: string;
-  merchantAddress: string;
-  eligibleTiers?: string[];
-};
+// REMOVED: DealWithMerchant type - using OfferWithMerchant instead
 
-export type VoucherWithDeal = Voucher & {
-  dealTitle: string;
-  merchantName: string;
-  discountValue: string;
-  discountType: string;
-};
+// REMOVED: VoucherWithDeal type - will be replaced with VoucherWithOffer
 
 export type UserRole = 'resident' | 'merchant' | 'admin';
 

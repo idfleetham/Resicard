@@ -3,13 +3,13 @@ import { createServer, type Server } from "http";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
-import { insertUserSchema, insertDealSchema, insertEnhancedRedemptionSchema, insertOfferSchema } from "@shared/schema";
+import { insertUserSchema, insertEnhancedRedemptionSchema, insertOfferSchema } from "@shared/schema";
 import { eq, sql, and, gt, desc, count } from "drizzle-orm";
 import { db } from "./db";
 import multer from "multer";
 import express from "express";
 import fs from "fs";
-import { merchants, deals, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, loyaltyBalances, merchantTierPricing, userTierMemberships } from "@shared/schema";
+import { merchants, users, vouchers, redemptions, offers, loyaltyPrograms, loyaltyTiers, loyaltyRewards, loyaltyBalances, merchantTierPricing, userTierMemberships } from "@shared/schema";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { PassKitService } from "./passkit";
@@ -615,7 +615,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiryDate: new Date(req.body.expiryDate),
       };
       
-      const dealData = insertDealSchema.parse(processedData);
+      const dealData = insertOfferSchema.parse(processedData);
       console.log('Parsed deal data:', dealData);
       
       const deal = await storage.createDeal({
@@ -650,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiryDate: new Date(req.body.expiryDate),
       };
       
-      const dealData = insertDealSchema.parse(processedData);
+      const dealData = insertOfferSchema.parse(processedData);
       
       const updatedDeal = await storage.updateDeal(dealId, dealData);
       
