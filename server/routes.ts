@@ -2447,16 +2447,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           0 as stamps, 
           INITCAP(lb.tier) as tier_name
         FROM loyalty_balances lb
-        JOIN loyalty_programs lp ON lb.merchant_id = lp.merchant_id
-        JOIN merchants m ON (
-          CASE lp.merchant_id
-            WHEN 1001 THEN '52e9f857-5b2f-4164-b266-b7c1b86267dd'
-            WHEN 1002 THEN '4949dea8-6956-494c-a43b-47d568eeb481'
-            ELSE m.id::text
-          END
-        ) = m.id::text
+        JOIN users u ON lb.merchant_id = u.id
         WHERE lb.user_id = ${userId}
-        AND m.name = ${merchantName}
+        AND u.business_name = ${merchantName}
         LIMIT 1
       `);
 
