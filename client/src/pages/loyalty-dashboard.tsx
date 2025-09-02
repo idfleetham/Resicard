@@ -43,11 +43,11 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface LoyaltyProgramme {
-  id: string;
-  merchantId: string;
-  model: "points" | "stamps" | "hybrid";
+  id: number;
+  merchantId: number;
+  model: "points" | "stamps";
   pointsPerCurrency: number;
-  minBasketEarn: number;
+  minBasketEarn: string; // Database stores as text
   earnCooldownMinutes: number;
   dailyEarnCap: number;
   active: boolean;
@@ -237,7 +237,7 @@ export default function LoyaltyDashboard() {
     if (loyaltyProgramme) {
       updateProgramMutation.mutate({
         ...loyaltyProgramme,
-        minBasketEarn: parseFloat(value) || 0
+        minBasketEarn: value || "0.00"
       });
     }
   };
@@ -651,10 +651,10 @@ export default function LoyaltyDashboard() {
                     <Label className="text-fg font-medium">£ Spending per Stamp</Label>
                     <Input 
                       type="number" 
-                      value={loyaltyProgramme?.minBasketEarn || 5}
+                      value={loyaltyProgramme?.minBasketEarn || "5.00"}
                       onChange={(e) => handleMinBasketChange(e.target.value)}
                       className="bg-surface border-dim"
-                      placeholder="e.g. 5"
+                      placeholder="e.g. 5.00"
                     />
                   </div>
                 )}
@@ -665,10 +665,10 @@ export default function LoyaltyDashboard() {
                   </Label>
                   <Input 
                     type="number" 
-                    value={loyaltyProgramme?.minBasketEarn || 0}
+                    value={loyaltyProgramme?.minBasketEarn || "0.00"}
                     onChange={(e) => handleMinBasketChange(e.target.value)}
                     className="bg-surface border-dim"
-                    placeholder="e.g. 0"
+                    placeholder="e.g. 0.00"
                   />
                 </div>
               </div>

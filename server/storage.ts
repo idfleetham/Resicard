@@ -1094,7 +1094,7 @@ export class DatabaseStorage implements IStorage {
 
   // Loyalty Program operations
   async getLoyaltyProgram(merchantId: number): Promise<LoyaltyProgram | undefined> {
-    const [program] = await db.select().from(loyaltyPrograms).where(eq(loyaltyPrograms.merchantId, String(merchantId)));
+    const [program] = await db.select().from(loyaltyPrograms).where(eq(loyaltyPrograms.merchantId, merchantId));
     return program || undefined;
   }
 
@@ -1110,7 +1110,7 @@ export class DatabaseStorage implements IStorage {
     const [program] = await db
       .update(loyaltyPrograms)
       .set(updates)
-      .where(eq(loyaltyPrograms.merchantId, String(merchantId)))
+      .where(eq(loyaltyPrograms.merchantId, merchantId))
       .returning();
     return program || undefined;
   }

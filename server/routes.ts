@@ -2041,7 +2041,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Create a default program if none exists
         const defaultProgram = {
-          merchantId: String(merchantId),
+          merchantId: merchantId,
           model: "points" as const,
           pointsPerCurrency: 10,
           minBasketEarn: "5.00",

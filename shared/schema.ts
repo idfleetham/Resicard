@@ -493,13 +493,13 @@ export type UserRole = 'resident' | 'merchant' | 'admin';
 
 export type SubscriptionType = 'individual' | 'family';
 
-// Loyalty Program Tables
+// Loyalty Program Tables  
 export const loyaltyPrograms = pgTable("loyalty_programs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
-  model: text("model").$type<"points"|"stamps"|"hybrid">().default("points"),
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").notNull(),
+  model: text("model").$type<"points"|"stamps">().default("points"),
   pointsPerCurrency: integer("points_per_currency").default(10), // e.g. 10 points per £1
-  minBasketEarn: numeric("min_basket_earn", { precision: 10, scale: 2 }).default("0.00"),
+  minBasketEarn: text("min_basket_earn").default("0.00"),
   earnCooldownMinutes: integer("earn_cooldown_minutes").default(30),
   dailyEarnCap: integer("daily_earn_cap").default(3), // per user per day
   stackingAllowed: boolean("stacking_allowed").default(false),
