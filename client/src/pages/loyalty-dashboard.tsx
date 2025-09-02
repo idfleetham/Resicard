@@ -215,7 +215,7 @@ export default function LoyaltyDashboard() {
     }
   };
 
-  const handleModelChange = (model: "points" | "stamps" | "hybrid") => {
+  const handleModelChange = (model: "points" | "stamps") => {
     if (loyaltyProgramme) {
       updateProgramMutation.mutate({
         ...loyaltyProgramme,
@@ -624,11 +624,10 @@ export default function LoyaltyDashboard() {
                   <SelectContent>
                     <SelectItem value="points">Points (£1 = X points)</SelectItem>
                     <SelectItem value="stamps">Stamps (visit-based)</SelectItem>
-                    <SelectItem value="hybrid">Hybrid (points + stamps)</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-soft">
-                  Points reward spending, stamps reward visits, hybrid combines both
+                  Points reward spending, stamps reward visits
                 </p>
               </div>
 
