@@ -918,8 +918,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const userTiers = await db.execute(sql`
                 SELECT DISTINCT lt.id, lt.name 
                 FROM loyalty_balances lb
-                JOIN loyalty_tiers lt ON lb."tierId" = lt.id
-                WHERE lb."userId" = ${userId} AND lb.points >= lt."thresholdPoints"
+                JOIN loyalty_tiers lt ON lb.tier = lt.id::text
+                WHERE lb.user_id = ${userId} AND lb.balance >= lt."thresholdPoints"
               `);
               
               const userTierIds = userTiers.rows.map((tier: any) => tier.id.toString());
@@ -2342,9 +2342,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const balances = await db.execute(sql`
         SELECT 
           lb.id,
-          lb.points,
-          lb.stamps,
-          lb."updatedAt" as last_activity,
+          lb.balance as points,
+          0 as stamps,
+          lb.updated_at as last_activity,
           lp.model,
           lp.name as program_name,
           lt.id as tier_id,
