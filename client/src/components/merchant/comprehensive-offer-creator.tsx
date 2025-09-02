@@ -40,7 +40,7 @@ const offerSchema = z.object({
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
   percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
   fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
-  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
+  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).refine(val => val > 0, "Offer value is required"),
   category: z.string().optional(),
   tags: z.array(z.string()).default([]),
 
@@ -468,6 +468,38 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           <FormControl>
                             <Textarea {...field} className="input-dark" placeholder="Detailed offer description..." />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Mandatory Offer Value Field */}
+                    <FormField
+                      control={form.control}
+                      name="originalValue"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-200 text-xl font-bold">Offer Value (£) *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="input-dark text-xl font-semibold border-2 border-yellow-500"
+                              placeholder="0.00"
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <div className="text-sm text-slate-400 mt-2">
+                            <strong className="text-yellow-400">Enter the monetary value of this offer:</strong>
+                            <ul className="mt-2 ml-4 list-disc text-xs">
+                              <li><strong>BOGOF:</strong> Value of the item that must be purchased (e.g., £15 for main course)</li>
+                              <li><strong>Free item:</strong> Cost of qualifying item (e.g., £8 for cheapest champagne)</li>
+                              <li><strong>Percentage off:</strong> Typical spend where discount applies (e.g., £25 average meal)</li>
+                              <li><strong>Fixed price:</strong> Difference between original and deal price</li>
+                            </ul>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
