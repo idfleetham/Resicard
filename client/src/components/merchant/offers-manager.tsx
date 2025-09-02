@@ -69,7 +69,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       isActive: offer.active ?? true,
       discountText: offer.type === 'bogo' ? 'BOGOF' : (offer.type ? offer.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Offer'),
       usageCount: 0, // TODO: implement usage tracking for comprehensive offers
-      usageLimit: offer.usageLimit || '∞',
+      usageLimit: offer.usageLimit || 100,
       expiryDate: offer.validTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
     }))
   ];
