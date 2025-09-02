@@ -1150,77 +1150,68 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLoyaltyMembers(merchantId: number): Promise<any[]> {
-    const members = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        firstName: users.firstName,
-        surname: users.surname,
-        points: loyaltyBalances.points,
-        stamps: loyaltyBalances.stamps,
-        tierId: loyaltyBalances.tierId,
-        tierName: loyaltyTiers.name,
-        tierColor: loyaltyTiers.color,
-        updatedAt: loyaltyBalances.updatedAt,
-      })
-      .from(loyaltyBalances)
-      .innerJoin(users, eq(loyaltyBalances.userId, users.id))
-      .leftJoin(loyaltyTiers, eq(loyaltyBalances.tierId, loyaltyTiers.id))
-      .where(eq(loyaltyBalances.merchantId, merchantId));
+    // Use raw SQL query to match actual table structure
+    const result = await db.execute(sql`
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.first_name as "firstName",
+        u.surname,
+        lb.balance as points,
+        0 as stamps,
+        lb.tier as "tierId",
+        lb.tier as "tierName",
+        '#cd7f32' as "tierColor",
+        lb.updated_at as "updatedAt"
+      FROM loyalty_balances lb
+      INNER JOIN users u ON lb.user_id = u.id
+      WHERE lb.merchant_id = ${merchantId}
+    `);
     
-    return members;
+    return result.rows.map((row: any) => ({
+      id: row.id,
+      username: row.username,
+      email: row.email,
+      firstName: row.firstName,
+      surname: row.surname,
+      points: row.points,
+      stamps: row.stamps,
+      tierId: row.tierId,
+      tierName: row.tierName,
+      tierColor: row.tierColor,
+      updatedAt: row.updatedAt,
+    }));
   }
 
   async awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any> {
     return await db.transaction(async (tx) => {
-      // Get or create loyalty balance
-      let [balance] = await tx
-        .select()
-        .from(loyaltyBalances)
-        .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)));
+      // Use raw SQL to work with actual table structure
+      const existingResult = await tx.execute(sql`
+        SELECT balance, tier FROM loyalty_balances 
+        WHERE merchant_id = ${merchantId} AND user_id = ${userId}
+      `);
 
-      if (!balance) {
-        [balance] = await tx
-          .insert(loyaltyBalances)
-          .values({
-            merchantId,
-            userId,
-            points: points,
-            stamps: 0,
-          })
-          .returning();
+      let newBalance: number;
+      if (existingResult.rows.length === 0) {
+        // Create new balance record
+        newBalance = points;
+        await tx.execute(sql`
+          INSERT INTO loyalty_balances (user_id, merchant_id, balance, tier, created_at, updated_at)
+          VALUES (${userId}, ${merchantId}, ${points}, 'bronze', NOW(), NOW())
+        `);
       } else {
-        [balance] = await tx
-          .update(loyaltyBalances)
-          .set({
-            points: (balance.points || 0) + points,
-            updatedAt: new Date(),
-          })
-          .where(and(eq(loyaltyBalances.merchantId, merchantId), eq(loyaltyBalances.userId, userId)))
-          .returning();
+        // Update existing balance
+        const currentBalance = Number(existingResult.rows[0].balance) || 0;
+        newBalance = currentBalance + points;
+        await tx.execute(sql`
+          UPDATE loyalty_balances 
+          SET balance = ${newBalance}, updated_at = NOW()
+          WHERE merchant_id = ${merchantId} AND user_id = ${userId}
+        `);
       }
 
-      // Get loyalty program for this merchant
-      const [program] = await tx
-        .select()
-        .from(loyaltyPrograms)
-        .where(eq(loyaltyPrograms.merchantId, merchantId));
-
-      // Create loyalty event
-      await tx.insert(loyaltyEvents).values({
-        merchantId,
-        userId,
-        programId: program?.id,
-        type: "adjust",
-        amount: points,
-        metadata: { reason, source: "manual" },
-      });
-
-      // Check for tier upgrades
-      await this.checkAndUpdateTier(tx, merchantId, userId, balance.points || 0);
-
-      return { success: true, balance, pointsAwarded: points };
+      return { success: true, pointsAwarded: points, newBalance };
     });
   }
 
