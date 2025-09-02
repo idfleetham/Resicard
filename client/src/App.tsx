@@ -39,6 +39,7 @@ function Router() {
       <Route path="/merchant/offers/:id" component={OfferDetails} />
       <Route path="/merchant/loyalty" component={LoyaltyDashboard} />
       <Route path="/loyalty-dashboard" component={LoyaltyDashboard} />
+      <Route path="/loyalty" component={LoyaltyDashboard} />
       <Route path="/tier-memberships" component={TierMemberships} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/wallet/add" component={WalletAdd} />
