@@ -1,4 +1,4 @@
-import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent } from "@shared/schema";
+import { users, deals, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, loyaltyRewards, type User, type InsertUser, type Deal, type InsertDeal, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type DealWithMerchant, type VoucherWithDeal, type Offer, type InsertOffer, type Merchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent, type LoyaltyReward, type InsertLoyaltyReward } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and } from "drizzle-orm";
 
@@ -80,6 +80,9 @@ export interface IStorage {
   awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any>;
   collectPointsFromTransaction(merchantId: number, userId: number, basketAmount: number): Promise<any>;
   updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any>;
+  
+  // Loyalty Rewards operations
+  createLoyaltyReward(rewardData: InsertLoyaltyReward): Promise<LoyaltyReward>;
 
   // Analytics
   getDealStats(dealId: number): Promise<{ totalRedemptions: number; totalValue: number }>;
@@ -491,6 +494,10 @@ export class MemStorage implements IStorage {
 
   async updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any> {
     return { success: false, message: "Member tier updates not supported in memory storage" };
+  }
+
+  async createLoyaltyReward(rewardData: InsertLoyaltyReward): Promise<LoyaltyReward> {
+    throw new Error("Loyalty rewards not supported in memory storage");
   }
 
   // Merchant-related methods
@@ -1338,6 +1345,14 @@ export class DatabaseStorage implements IStorage {
 
       return { success: true, balance, newTierId: tierId };
     });
+  }
+
+  async createLoyaltyReward(rewardData: InsertLoyaltyReward): Promise<LoyaltyReward> {
+    const [reward] = await db
+      .insert(loyaltyRewards)
+      .values(rewardData)
+      .returning();
+    return reward;
   }
 
   private async checkAndUpdateTier(tx: any, merchantId: number, userId: number, currentPoints: number): Promise<void> {

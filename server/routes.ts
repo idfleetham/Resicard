@@ -2330,6 +2330,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Loyalty Rewards endpoints
+  app.post("/api/loyalty/rewards", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { name, costPoints, costStamps, terms, active } = req.body;
+      const merchantId = req.user.id;
+
+      if (!name) {
+        return res.status(400).json({ error: "Reward name is required" });
+      }
+
+      // Get merchant's loyalty program
+      const loyaltyProgram = await storage.getLoyaltyProgram(merchantId);
+      if (!loyaltyProgram) {
+        return res.status(404).json({ error: "Loyalty programme not found" });
+      }
+
+      // Create reward
+      const reward = await storage.createLoyaltyReward({
+        programId: loyaltyProgram.id,
+        name,
+        costPoints: costPoints || null,
+        costStamps: costStamps || null,
+        terms: terms || null,
+        active: active !== false, // Default to true
+      });
+
+      res.json({ success: true, reward });
+    } catch (error) {
+      console.error("Error creating loyalty reward:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Apple Wallet Pass endpoints
   // Public Apple Wallet pass endpoint (no auth required for QR code access)
   app.get("/api/wallet/pass", async (req, res) => {

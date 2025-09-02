@@ -736,6 +736,12 @@ export default function LoyaltyDashboard() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddReward, setShowAddReward] = useState(false);
+  const [rewardForm, setRewardForm] = useState({
+    name: "",
+    costPoints: "",
+    terms: "",
+    active: true
+  });
 
   const { data: loyaltyProgramme, isLoading } = useQuery({
     queryKey: ["/api/loyalty/program"],
@@ -757,6 +763,47 @@ export default function LoyaltyDashboard() {
       });
     },
   });
+
+  const createRewardMutation = useMutation({
+    mutationFn: (data: { name: string; costPoints?: number; terms?: string; active: boolean }) =>
+      apiRequest("POST", "/api/loyalty/rewards", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/loyalty/program"] });
+      setShowAddReward(false);
+      setRewardForm({ name: "", costPoints: "", terms: "", active: true });
+      toast({
+        title: "Reward Created",
+        description: "New reward has been added to your catalogue.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error creating reward",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateReward = () => {
+    if (!rewardForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Reward name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const data = {
+      name: rewardForm.name.trim(),
+      costPoints: rewardForm.costPoints ? parseInt(rewardForm.costPoints) : undefined,
+      terms: rewardForm.terms.trim() || undefined,
+      active: rewardForm.active,
+    };
+
+    createRewardMutation.mutate(data);
+  };
 
   const handleToggleProgram = () => {
     if (loyaltyProgramme) {
@@ -1430,7 +1477,7 @@ export default function LoyaltyDashboard() {
 
         <TabsContent value="rewards" className="space-y-6">
           <StatCard 
-            title="Rewards Catalog"
+            title="Rewards Catalogue"
             subtitle="Manage rewards that customers can redeem with points or stamps"
           >
             <div className="mb-6">
@@ -1453,6 +1500,8 @@ export default function LoyaltyDashboard() {
                       <Label className="text-fg">Reward Name</Label>
                       <Input 
                         placeholder="e.g., Free Coffee, 20% Off Meal"
+                        value={rewardForm.name}
+                        onChange={(e) => setRewardForm({...rewardForm, name: e.target.value})}
                         className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
@@ -1461,6 +1510,8 @@ export default function LoyaltyDashboard() {
                       <Input 
                         type="number"
                         placeholder="50"
+                        value={rewardForm.costPoints}
+                        onChange={(e) => setRewardForm({...rewardForm, costPoints: e.target.value})}
                         className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
@@ -1468,11 +1519,16 @@ export default function LoyaltyDashboard() {
                       <Label className="text-fg">Description</Label>
                       <Input 
                         placeholder="Brief description of the reward"
+                        value={rewardForm.terms}
+                        onChange={(e) => setRewardForm({...rewardForm, terms: e.target.value})}
                         className="bg-surface border-border-dim text-fg placeholder:text-gray-400"
                       />
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Switch />
+                      <Switch 
+                        checked={rewardForm.active}
+                        onCheckedChange={(checked) => setRewardForm({...rewardForm, active: checked})}
+                      />
                       <Label className="text-fg">Active (visible to customers)</Label>
                     </div>
                     <div className="flex gap-3 pt-4">
@@ -1484,16 +1540,11 @@ export default function LoyaltyDashboard() {
                         Cancel
                       </Button>
                       <Button 
-                        onClick={() => {
-                          setShowAddReward(false);
-                          toast({
-                            title: "Reward Created",
-                            description: "New reward has been added to your catalog.",
-                          });
-                        }}
+                        onClick={handleCreateReward}
+                        disabled={createRewardMutation.isPending}
                         className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                       >
-                        Create Reward
+                        {createRewardMutation.isPending ? "Creating..." : "Create Reward"}
                       </Button>
                     </div>
                   </div>
