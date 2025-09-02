@@ -298,10 +298,15 @@ export default function MerchantPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {redemptions.length > 0 ? redemptions.slice(0, 5).map((redemption, index) => (
+                    {redemptions.length > 0 ? redemptions.slice(0, 5).map((redemption, index) => {
+                      // Find the member's tier color based on their user ID
+                      const member = membersData?.members?.find(m => m.userId === redemption.user_id);
+                      const tierColor = member?.tier?.color || '#f97316'; // Default to orange if no tier found
+                      
+                      return (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-base font-semibold">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-base font-semibold" style={{ backgroundColor: tierColor }}>
                             {redemption.customer_name?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div>
@@ -314,7 +319,8 @@ export default function MerchantPortal() {
                           <p className="text-base text-soft">{new Date(redemption.redeemed_at).toLocaleDateString()}</p>
                         </div>
                       </div>
-                    )) : (
+                      )
+                    }) : (
                       <div className="text-center py-8">
                         <p className="text-soft">No recent loyalty activity</p>
                       </div>
