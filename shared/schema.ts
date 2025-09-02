@@ -313,7 +313,6 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   customFee: true,
   budgetCap: true,
   autoPauseOnAbuse: true,
-  singleUse: true,
   deviceFingerprinting: true,
 }).extend({
   // Override fields that need special handling for arrays/objects from frontend
