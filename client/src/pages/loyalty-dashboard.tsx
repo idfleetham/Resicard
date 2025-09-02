@@ -1099,7 +1099,7 @@ export default function LoyaltyDashboard() {
               <MetricTile 
                 label="Active Members" 
                 value={membersData?.members?.length?.toString() || "0"} 
-                delta={`${wowData?.analytics?.members?.growth >= 0 ? '+' : ''}${wowData?.analytics?.members?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                delta="0% (WoW)" 
                 icon={<Users className="h-4 w-4 text-fg/80" />} 
               />
             </motion.div>
@@ -1111,7 +1111,7 @@ export default function LoyaltyDashboard() {
               <MetricTile 
                 label="Points Earned" 
                 value={Math.floor(membersData?.members?.reduce((total, member) => total + (parseFloat(member.points) || 0), 0) || 0).toString()} 
-                delta={`${wowData?.analytics?.points?.growth >= 0 ? '+' : ''}${wowData?.analytics?.points?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                delta="0% (WoW)" 
                 icon={<Star className="h-4 w-4 text-fg/80" />} 
               />
             </motion.div>
@@ -1123,7 +1123,7 @@ export default function LoyaltyDashboard() {
               <MetricTile 
                 label="Rewards Claimed" 
                 value={wowData?.analytics?.redemptions?.current?.toString() || "0"} 
-                delta={`${wowData?.analytics?.redemptions?.growth >= 0 ? '+' : ''}${wowData?.analytics?.redemptions?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                delta="0% (WoW)" 
                 icon={<Gift className="h-4 w-4 text-fg/80" />} 
               />
             </motion.div>
@@ -1135,7 +1135,7 @@ export default function LoyaltyDashboard() {
               <MetricTile 
                 label="Revenue Impact" 
                 value={`£${revenueData?.revenueImpact?.total?.toFixed(0) || wowData?.analytics?.revenue?.current?.toFixed(0) || "0"}`} 
-                delta={`${wowData?.analytics?.revenue?.growth >= 0 ? '+' : ''}${wowData?.analytics?.revenue?.growth?.toFixed(1) || '0'}% (WoW)`} 
+                delta="0% (WoW)" 
                 icon={<TrendingUp className="h-4 w-4 text-fg/80" />} 
               />
             </motion.div>
@@ -1148,7 +1148,7 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
+            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
                 <div className="flex gap-3">
@@ -1191,7 +1191,7 @@ export default function LoyaltyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
+            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-slate-900">Tier Distribution</h3>
                 <p className="text-slate-600 text-sm">Customer distribution across tiers</p>
@@ -1221,7 +1221,7 @@ export default function LoyaltyDashboard() {
               </div>
             </div>
 
-            <div className="card bg-white border-white/40 shadow-xl shadow-white/20 p-6 rounded-2xl">
+            <div className="bg-white border border-gray-200 shadow-lg p-6 rounded-2xl">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-slate-900">Popular Rewards</h3>
                 <p className="text-slate-600 text-sm">Most redeemed rewards this month</p>
