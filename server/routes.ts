@@ -2346,15 +2346,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           0 as stamps,
           lb.updated_at as last_activity,
           lp.model,
-          m."businessName" as program_name,
+          m.name as program_name,
           lt.id as tier_id,
           lt.name as tier_name,
           lt.color as tier_color,
           lt."thresholdPoints" as threshold_points,
           lt."discountPercent" as discount_percent,
           lt."pointsMultiplier" as points_multiplier,
-          m."businessName" as business_name,
-          m."businessCategory" as business_category,
+          m.name as business_name,
+          'General' as business_category,
           m.id as merchant_id
         FROM loyalty_balances lb
         JOIN merchants m ON lb.merchant_id::text = m.id::text
