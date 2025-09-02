@@ -2441,7 +2441,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get loyalty balance for this user and merchant by name
       const result = await db.execute(sql`
-        SELECT lb.balance as points, 0 as stamps, lb.tier, lt.name as tier_name
+        SELECT 
+          lb.balance as points, 
+          0 as stamps, 
+          INITCAP(lb.tier) as tier_name
         FROM loyalty_balances lb
         JOIN loyalty_programs lp ON lb.merchant_id = lp.merchant_id
         JOIN merchants m ON (
@@ -2451,7 +2454,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ELSE m.id::text
           END
         ) = m.id::text
-        LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
         WHERE lb.user_id = ${userId}
         AND m.name = ${merchantName}
         LIMIT 1

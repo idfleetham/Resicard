@@ -58,6 +58,21 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
     queryFn: () => apiRequest("GET", "/api/loyalty/program").then(res => res.json())
   });
 
+  // Get merchant details for logo
+  const { data: merchantDetails } = useQuery({
+    queryKey: ["/api/merchants", merchantName],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("GET", "/api/merchants");
+        const merchants = await response.json();
+        return merchants.find((m: any) => m.name === merchantName);
+      } catch (error) {
+        console.warn('Failed to fetch merchant details:', error);
+        return null;
+      }
+    }
+  });
+
   const getNextTier = () => {
     if (!program?.tiers || !balance) return null;
     
@@ -108,8 +123,12 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {merchantLogo ? (
-                <img src={merchantLogo} alt={merchantName} className="w-10 h-10 rounded-lg object-cover" />
+              {merchantLogo || merchantDetails?.logoUrl ? (
+                <img 
+                  src={merchantLogo || merchantDetails?.logoUrl} 
+                  alt={merchantName} 
+                  className="w-10 h-10 rounded-lg object-cover"
+                />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
@@ -190,19 +209,34 @@ export function CustomerLoyaltyCard({ merchantId, merchantName, merchantLogo }: 
                 )}
               </div>
 
-              {/* Tier Progress */}
-              {getNextTier() && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-soft">Progress to {getNextTier()?.name}</span>
-                    <span className="text-fg font-medium">
-                      {balance?.points}/{getNextTier()?.thresholdPoints} pts
-                    </span>
+              {/* Tier Progress - Simplified for now */}
+              {balance?.tier && (
+                <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm font-semibold text-fg">Current Tier: {balance.tier}</span>
+                    </div>
+                    <Badge className="bg-yellow-500/20 text-yellow-600 text-xs">
+                      Active
+                    </Badge>
                   </div>
-                  <Progress value={getTierProgress()} className="h-2" />
-                  <p className="text-xs text-soft">
-                    {(getNextTier()?.thresholdPoints || 0) - (balance?.points || 0)} points to go
-                  </p>
+                  
+                  {/* Show progression hint */}
+                  <div className="mt-3 text-xs text-soft">
+                    {balance.tier === 'Bronze' && balance.points >= 100 && (
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" />
+                        <span>Getting close to Silver tier! Keep earning points.</span>
+                      </div>
+                    )}
+                    {balance.tier === 'Bronze' && balance.points < 100 && (
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" />
+                        <span>Earn {100 - (balance.points || 0)} more points for Silver tier!</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
