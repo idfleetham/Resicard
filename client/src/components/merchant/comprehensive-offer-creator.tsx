@@ -479,7 +479,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                       name="originalValue"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-200 text-xl font-bold">Discount Value (£) *</FormLabel>
+                          <FormLabel className="text-slate-200 text-xl font-bold">Original Value (£) *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -487,17 +487,17 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               min="0"
                               step="0.01"
                               className="input-dark text-xl font-semibold border-2 border-yellow-500"
-                              placeholder="200.00"
+                              placeholder="599.00"
                               onChange={(e) => field.onChange(Number(e.target.value))}
                             />
                           </FormControl>
                           <div className="text-sm text-slate-400 mt-2">
-                            <strong className="text-yellow-400">Enter the savings amount customers receive:</strong>
+                            <strong className="text-yellow-400">Enter the original price before discount:</strong>
                             <ul className="mt-2 ml-4 list-disc text-xs">
-                              <li><strong>BOGOF:</strong> Value of the free item (e.g., £15 for free main course)</li>
-                              <li><strong>Free item:</strong> Cost of the free item (e.g., £8 for free champagne)</li>
-                              <li><strong>Percentage off:</strong> Average discount amount (e.g., £5 off £25 meal)</li>
-                              <li><strong>Fixed price:</strong> Savings amount (original price - bundle price)</li>
+                              <li><strong>BOGOF:</strong> Value of the item that must be purchased (e.g., £15 for main course)</li>
+                              <li><strong>Free item:</strong> Cost of qualifying item (e.g., £8 for cheapest champagne)</li>
+                              <li><strong>Percentage off:</strong> Typical spend where discount applies (e.g., £25 average meal)</li>
+                              <li><strong>Fixed price:</strong> Original price before bundle discount</li>
                             </ul>
                           </div>
                           <FormMessage />
@@ -656,7 +656,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         />
                         <FormField
                           control={form.control}
-                          name="maxDiscount"
+                          name="originalValue"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-slate-200 text-lg">Original Value (£)</FormLabel>
