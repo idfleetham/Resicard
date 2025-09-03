@@ -3658,6 +3658,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve set menu PDFs
+  app.get("/api/offers/:id/menu-pdf", async (req, res) => {
+    try {
+      const offerId = req.params.id;
+      const offer = await storage.getOffer(offerId);
+      
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (offer.type !== "set_menu" || !offer.menuPdf) {
+        return res.status(404).json({ error: "Menu PDF not found" });
+      }
+      
+      // Extract the base64 data from the data URL
+      const base64Data = offer.menuPdf.replace(/^data:application\/pdf;base64,/, '');
+      const pdfBuffer = Buffer.from(base64Data, 'base64');
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="${offer.title}_menu.pdf"`,
+        'Content-Length': pdfBuffer.length
+      });
+      
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('Error serving menu PDF:', error);
+      res.status(500).json({ error: "Failed to serve menu PDF" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

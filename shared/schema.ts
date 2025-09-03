@@ -83,7 +83,7 @@ export const offers = pgTable("offers", {
   // A) Core & pricing
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"fixed_price_bundle"|"free_item_with_purchase"|"bogo"|"day_time_specific"|"limited_redemptions"|"loyalty_reward">().default("percentage_discount"),
+  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"fixed_price_bundle"|"free_item_with_purchase"|"bogo"|"day_time_specific"|"limited_redemptions"|"loyalty_reward"|"set_menu">().default("percentage_discount"),
   percentOff: integer("percent_off"), // For percentage discounts
   fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }), // For fixed price offers
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),
@@ -130,6 +130,7 @@ export const offers = pgTable("offers", {
   
   // F) Media & presentation
   imageUrl: text("image_url"),
+  menuPdf: text("menu_pdf"), // Base64 encoded PDF for set menu offers
   shortPromo: text("short_promo"), // <= 90 chars
   priority: text("priority").$type<"standard"|"featured">().default("standard"),
   
@@ -256,6 +257,7 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   serviceChargeIncluded: true,
   validOnBankHolidays: true,
   imageUrl: true,
+  menuPdf: true,
   shortPromo: true,
   priority: true,
   feeModel: true,
@@ -299,7 +301,7 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   customFee: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
   budgetCap: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
   // Override type field to use new enum values
-  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
+  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward", "set_menu"]),
 });
 
 export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({

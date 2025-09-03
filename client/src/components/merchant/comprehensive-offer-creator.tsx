@@ -37,7 +37,7 @@ const offerSchema = z.object({
   // A) Core & pricing
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
+  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward", "set_menu"]),
   percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
   fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
@@ -85,6 +85,7 @@ const offerSchema = z.object({
 
   // F) Media & presentation
   imageUrl: z.string().optional(),
+  menuPdf: z.string().optional(),
   shortPromo: z.string().max(90, "Promo must be 90 characters or less").optional(),
   priority: z.enum(["standard", "featured"]).default("standard"),
 
@@ -621,6 +622,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 <SelectItem value="day_time_specific">Day/Time-Specific Offers</SelectItem>
                                 <SelectItem value="limited_redemptions">Limited Redemptions Offer</SelectItem>
                                 <SelectItem value="loyalty_reward">Loyalty Reward Offer</SelectItem>
+                                <SelectItem value="set_menu">Set Menu</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -844,6 +846,97 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                             </FormItem>
                           )}
                         />
+                      </div>
+                    )}
+
+                    {form.watch("type") === "set_menu" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="fixedPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Set Menu Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 25.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Regular Value (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 35.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        {/* PDF Upload for Set Menu */}
+                        <div className="space-y-2">
+                          <label className="text-slate-200 text-lg font-medium">Set Menu PDF</label>
+                          <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast({
+                                      title: "File too large",
+                                      description: "PDF must be smaller than 5MB",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    const base64 = event.target?.result as string;
+                                    form.setValue("menuPdf", base64);
+                                    toast({
+                                      title: "PDF uploaded",
+                                      description: "Menu PDF has been uploaded successfully",
+                                    });
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-slate-700 file:text-slate-200 hover:file:bg-slate-600"
+                            />
+                            <p className="text-sm text-slate-400 mt-2">
+                              Upload your set menu PDF (max 5MB)
+                            </p>
+                            {form.watch("menuPdf") && (
+                              <p className="text-green-400 text-sm mt-2">✓ PDF uploaded successfully</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </CardBody>
