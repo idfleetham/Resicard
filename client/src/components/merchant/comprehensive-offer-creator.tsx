@@ -346,7 +346,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
       console.log('Final crop coords:', {
         sourceX, sourceY, sourceWidth, sourceHeight,
-        offsetX, offsetY
+        scaledCropX, scaledCropY, finalCropX, finalCropY
       });
 
       // Apply rotation if needed
