@@ -963,11 +963,18 @@ export class DatabaseStorage implements IStorage {
     console.log('Found offers for merchant', merchantId, ':', result.length);
     
     // Map database field names to frontend expected field names
-    return result.map(offer => ({
-      ...offer,
-      usageCount: (offer as any).usage_count || 0, // Map usage_count to usageCount
-      usageLimit: (offer as any).usage_limit || (offer as any).global_usage_limit || 100 // Map usage_limit to usageLimit
-    }));
+    return result.map(offer => {
+      const usageCount = (offer as any).usage_count || 0;
+      const usageLimit = (offer as any).usage_limit || (offer as any).global_usage_limit || 100;
+      
+      console.log(`Offer "${offer.title}": usageCount=${usageCount}, usageLimit=${usageLimit}`);
+      
+      return {
+        ...offer,
+        usageCount,
+        usageLimit
+      };
+    });
   }
 
   async updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined> {
