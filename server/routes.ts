@@ -933,14 +933,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 WHERE lb.user_id = ${userId} AND lb.balance >= lt.threshold_points
               `);
               
-              const userTierIds = userTiers.rows.map((tier: any) => tier.id.toString());
-              const hasRequiredTier = requiredTiers.some((reqTier: string) => userTierIds.includes(reqTier));
+              const userTierNames = userTiers.rows.map((tier: any) => tier.name);
+              const hasRequiredTier = requiredTiers.some((reqTier: string) => userTierNames.includes(reqTier));
               
               if (!hasRequiredTier) {
                 return res.status(403).json({ 
                   message: "You don't have the required loyalty tier for this offer",
                   requiredTiers,
-                  userTiers: userTierIds
+                  userTiers: userTierNames
                 });
               }
             }
@@ -2423,11 +2423,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (row.tier_id && row.threshold_points !== undefined) {
           // Get next tier in the same program
           const nextTierResult = await db.execute(sql`
-            SELECT id, name, color, "thresholdPoints" as threshold_points, "discountPercent" as discount_percent, "pointsMultiplier" as points_multiplier
+            SELECT id, name, color, threshold_points, discount_percent, points_multiplier
             FROM loyalty_tiers 
-            WHERE "programId" = (SELECT "programId" FROM loyalty_tiers WHERE id = ${row.tier_id})
-            AND "thresholdPoints" > ${row.threshold_points}
-            ORDER BY "thresholdPoints" ASC
+            WHERE program_id = (SELECT program_id FROM loyalty_tiers WHERE id = ${row.tier_id})
+            AND threshold_points > ${row.threshold_points}
+            ORDER BY threshold_points ASC
             LIMIT 1
           `);
           if (nextTierResult.rows.length > 0) {
