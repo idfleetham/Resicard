@@ -3583,6 +3583,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subscription settings endpoints
+  app.get("/api/subscription/settings", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = req.user?.id;
+      if (!merchantId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // For now, return default settings - in the future this could be stored in the database
+      const defaultSettings = {
+        monthlyFee: 29.99,
+        processingFeePercent: 10.0,
+        status: 'trial',
+        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error("Error fetching subscription settings:", error);
+      res.status(500).json({ error: "Failed to fetch subscription settings" });
+    }
+  });
+
+  app.put("/api/subscription/settings", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = req.user?.id;
+      if (!merchantId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const { processingFeePercent } = req.body;
+
+      // Validate the processing fee percentage
+      if (processingFeePercent < 0 || processingFeePercent > 100) {
+        return res.status(400).json({ error: "Processing fee percentage must be between 0 and 100" });
+      }
+
+      // For now, just return success - in the future this would update the database
+      console.log(`Merchant ${merchantId} updated processing fee to ${processingFeePercent}%`);
+
+      res.json({ 
+        success: true, 
+        message: "Subscription settings updated successfully",
+        processingFeePercent: processingFeePercent
+      });
+    } catch (error) {
+      console.error("Error updating subscription settings:", error);
+      res.status(500).json({ error: "Failed to update subscription settings" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

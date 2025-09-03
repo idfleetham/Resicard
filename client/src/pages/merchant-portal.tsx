@@ -36,6 +36,7 @@ import QRRedemption from "../components/merchant/qr-redemption";
 import BillingPreview from "../components/merchant/billing-preview";
 import TeamManagement from "../components/merchant/team-management";
 import MerchantSettings from "../components/merchant/merchant-settings";
+import SubscriptionManagement from "../components/merchant/subscription-management";
 import { StaffEarningTool } from "../components/loyalty/staff-earning-tool";
 
 export default function MerchantPortal() {
@@ -149,7 +150,7 @@ export default function MerchantPortal() {
         {/* Main Content */}
         <main className="mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-surface border-border-border-dim">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 bg-surface border-border-border-dim">
             <TabsTrigger value="offers" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Offers</span>
@@ -173,6 +174,10 @@ export default function MerchantPortal() {
             <TabsTrigger value="team" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Team</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
+              <CreditCard className="w-4 h-4" />
+              <span className="hidden sm:inline">Subscription</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2 text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-xl">
               <Settings className="w-4 h-4" />
@@ -352,6 +357,10 @@ export default function MerchantPortal() {
 
           <TabsContent value="team" className="mt-6">
             <TeamManagement />
+          </TabsContent>
+
+          <TabsContent value="subscription" className="mt-6">
+            <SubscriptionManagement />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">
