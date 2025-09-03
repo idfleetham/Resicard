@@ -156,7 +156,7 @@ async function awardLoyaltyPoints({
 
     if (updatedBalance.rows.length > 0) {
       const balance = updatedBalance.rows[0];
-      const newPoints = balance.balance;
+      const newPoints = parseFloat(balance.balance) || 0;
       
       // Find highest tier this user qualifies for
       const availableTiers = await db.execute(sql`
@@ -2023,6 +2023,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (offer.discountType === 'percentage') {
         discountValue = basketValue * (parseFloat(offer.discountValue || '0') / 100);
+      } else if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+        // For BOGO offers, use the configured discount value or calculate from original value
+        const offerData = await storage.getOffer(offer.id);
+        if (offerData?.discountValue) {
+          discountValue = parseFloat(offerData.discountValue);
+        } else if (offerData?.originalValue) {
+          discountValue = parseFloat(offerData.originalValue) / 2; // BOGO = 50% off
+        } else {
+          discountValue = basketValue / 2; // Fallback to 50% of basket
+        }
       } else {
         discountValue = parseFloat(offer.discountValue || '0');
       }
