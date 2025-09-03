@@ -132,13 +132,13 @@ export default function BillingPreview() {
         />
         <MetricTile 
           label="Fee Per Redemption" 
-          value={`£${feePerRedemption}`} 
+          value={`£${feePerRedemption.toFixed(2)}`} 
           icon={<CreditCard className="h-4 w-4" />}
-          subtitle="Standard rate"
+          subtitle="Average rate"
         />
         <MetricTile 
           label="Total Fees" 
-          value={`£${currentPeriod.totalFees}`} 
+          value={`£${currentPeriod.totalFees.toFixed(2)}`} 
           icon={<Calendar className="h-4 w-4" />}
           subtitle={currentPeriod.status === 'draft' ? 'Estimated' : 'Final'}
         />
@@ -172,7 +172,7 @@ export default function BillingPreview() {
               <TableRow>
                 <TableCell className="text-slate-300 text-lg">Redemption Processing Fee</TableCell>
                 <TableCell className="text-slate-300 text-lg">{currentPeriod.redemptions}</TableCell>
-                <TableCell className="text-slate-300 text-lg">£{feePerRedemption}</TableCell>
+                <TableCell className="text-slate-300 text-lg">£{feePerRedemption.toFixed(2)}</TableCell>
                 <TableCell className="text-right text-slate-300 text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow className="border-t-2 border-white/40 shadow-xl shadow-white/20Strong font-medium">

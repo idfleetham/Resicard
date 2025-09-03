@@ -3491,12 +3491,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const totalRedemptions = merchantRedemptions.length;
       const totalFees = merchantRedemptions.reduce((sum, r) => sum + r.feeAmount, 0);
+      const averageFee = totalRedemptions > 0 ? totalFees / totalRedemptions : 0;
 
       res.json({
         period: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
         redemptions: totalRedemptions,
-        totalFees: totalFees,
-        averageFee: totalRedemptions > 0 ? totalFees / totalRedemptions : 0,
+        totalFees: Math.round(totalFees * 100) / 100, // Round to 2 decimal places
+        averageFee: Math.round(averageFee * 100) / 100, // Round to 2 decimal places
         feeBreakdown: merchantRedemptions.map(r => ({
           description: 'Redemption Processing Fee',
           feeModel: r.feeModel,
