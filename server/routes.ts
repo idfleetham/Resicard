@@ -3408,6 +3408,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Billing stats endpoint
+  app.get("/api/billing/stats", authenticateToken, requireRole('merchant'), async (req, res) => {
+    try {
+      const merchantId = req.user?.id;
+      if (!merchantId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // Get current month redemptions for this merchant
+      const now = new Date();
+      const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // Get merchant's UUID for offers table lookup
+      const merchant = await storage.getMerchantByUserId(merchantId);
+      const merchantUuid = merchant?.id;
+
+      // Get all redemptions for this month and filter by merchant
+      const redemptionResults = await db.execute(sql`
+        SELECT 
+          r.id,
+          r.deal_id,
+          r.user_id,
+          r.redeemed_at,
+          r.value,
+          d.title as legacy_title,
+          d.merchant_id as legacy_merchant_id
+        FROM redemptions r
+        LEFT JOIN deals d ON r.deal_id = d.id
+        WHERE r.redeemed_at >= ${startOfCurrentMonth.toISOString()}
+        AND r.redeemed_at <= ${endOfCurrentMonth.toISOString()}
+        ORDER BY r.redeemed_at DESC
+      `);
+
+      // Filter to include only this merchant's redemptions and calculate fees
+      let merchantRedemptions = [];
+      
+      for (const redemption of redemptionResults.rows) {
+        let belongsToMerchant = false;
+        let feeAmount = 0.50; // Default flat fee
+        let feeModel = 'flat';
+        let feePercent = null;
+        
+        // Check if it's a legacy deal redemption
+        if (redemption.legacy_merchant_id === merchantId) {
+          belongsToMerchant = true;
+        } else {
+          // Check if it's a UUID offer redemption by looking up the hashed deal_id
+          const offers = await storage.getOffersByMerchant(merchantUuid);
+          for (const offer of offers) {
+            // Calculate the same hash we used when creating the redemption
+            const offerHash = Math.abs(offer.id.split('-')[0].split('').reduce((a, b) => {
+              a = ((a << 5) - a) + b.charCodeAt(0);
+              return a & a;
+            }, 0)) % 1000000;
+            
+            if (offerHash === parseInt(redemption.deal_id)) {
+              belongsToMerchant = true;
+              
+              // Calculate fee based on offer's fee model
+              if (offer.feeModel === 'percent_discount' && offer.customFee) {
+                // Fee is percentage of the discount amount
+                feeAmount = (parseFloat(redemption.value) * parseFloat(offer.customFee)) / 100;
+                feeModel = 'percent_discount';
+                feePercent = offer.customFee;
+              }
+              break;
+            }
+          }
+        }
+        
+        if (belongsToMerchant) {
+          merchantRedemptions.push({
+            ...redemption,
+            feeAmount,
+            feeModel,
+            feePercent
+          });
+        }
+      }
+
+      const totalRedemptions = merchantRedemptions.length;
+      const totalFees = merchantRedemptions.reduce((sum, r) => sum + r.feeAmount, 0);
+
+      res.json({
+        period: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+        redemptions: totalRedemptions,
+        totalFees: totalFees,
+        averageFee: totalRedemptions > 0 ? totalFees / totalRedemptions : 0,
+        feeBreakdown: merchantRedemptions.map(r => ({
+          description: 'Redemption Processing Fee',
+          feeModel: r.feeModel,
+          feePercent: r.feePercent,
+          discountValue: parseFloat(r.value),
+          feeAmount: r.feeAmount
+        })),
+        status: 'draft'
+      });
+    } catch (error) {
+      console.error("Error fetching billing stats:", error);
+      res.status(500).json({ error: "Failed to fetch billing stats" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

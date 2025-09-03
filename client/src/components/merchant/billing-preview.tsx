@@ -23,36 +23,34 @@ export default function BillingPreview() {
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("current");
   
-  // Real billing periods (empty until actual redemptions generate billing data)
-  const billingPeriods: BillingPeriod[] = [
-    {
-      id: "current",
-      period: format(new Date(), "MMMM yyyy"),
-      redemptions: 0,
-      totalFees: 0,
-      status: "draft",
-      dueDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
-    },
-  ];
-
-  const currentPeriod = billingPeriods.find(p => p.id === selectedPeriod) || billingPeriods[0];
-  const feePerRedemption = 0.50; // £0.50 per redemption
-
   const { data: billingStats } = useQuery({
     queryKey: ['/api/billing/stats'],
     enabled: !!user && user.role === 'merchant',
   });
 
+  // Use real billing data or fallback to default
+  const currentPeriod: BillingPeriod = {
+    id: "current",
+    period: billingStats?.period || format(new Date(), "MMMM yyyy"),
+    redemptions: billingStats?.redemptions || 0,
+    totalFees: billingStats?.totalFees || 0,
+    status: billingStats?.status || "draft",
+    dueDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
+  };
+
+  const feePerRedemption = billingStats?.averageFee || 0.50;
+
   const handleDownloadInvoice = (periodId: string) => {
-    const period = billingPeriods.find(p => p.id === periodId);
+    // Use current period data for download
+    const period = currentPeriod;
     if (!period) return;
 
     // Create CSV content
     const csvData = [
       ["Item", "Quantity", "Rate", "Amount"],
-      ["Redemption Processing Fee", period.redemptions.toString(), `£${feePerRedemption}`, `£${period.totalFees}`],
+      ["Redemption Processing Fee", period.redemptions.toString(), `£${feePerRedemption.toFixed(2)}`, `£${period.totalFees.toFixed(2)}`],
       [""],
-      ["Total Due:", "", "", `£${period.totalFees}`],
+      ["Total Due:", "", "", `£${period.totalFees.toFixed(2)}`],
     ];
 
     const csvContent = "data:text/csv;charset=utf-8," + 
@@ -108,11 +106,9 @@ export default function BillingPreview() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-surface2 border-white/40 shadow-xl shadow-white/20">
-                {billingPeriods.map((period) => (
-                  <SelectItem key={period.id} value={period.id} className="text-fg">
-                    {period.period}
-                  </SelectItem>
-                ))}
+                <SelectItem key={currentPeriod.id} value={currentPeriod.id} className="text-fg">
+                  {currentPeriod.period}
+                </SelectItem>
               </SelectContent>
             </Select>
             <Button 
