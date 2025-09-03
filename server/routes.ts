@@ -2044,11 +2044,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Award loyalty points for the redemption
       try {
+        // Calculate the correct value for loyalty points (what customer actually paid)
+        let loyaltyEarnAmount = basketValue;
+        if (offer.type === 'fixed_price_bundle' && offer.fixedPrice) {
+          // For fixed price bundles, use the offer value (what customer paid)
+          loyaltyEarnAmount = parseFloat(offer.fixedPrice);
+        } else if (offer.type === 'percentage_discount' && offer.percentOff && offer.originalValue) {
+          // For percentage discounts, calculate what customer paid
+          const discountAmount = (parseFloat(offer.originalValue) * parseFloat(offer.percentOff)) / 100;
+          loyaltyEarnAmount = parseFloat(offer.originalValue) - discountAmount;
+        } else {
+          // Fallback for other types
+          loyaltyEarnAmount = Math.max(basketValue, parseFloat(offer.fixedPrice || offer.discountValue || '0'));
+        }
+
         const loyaltyResult = await awardLoyaltyPoints({
           merchantId: merchant.id,
           userId: voucher.userId,
-          basketValue: basketValue,
-          redemptionValue: offer.originalValue || Math.max(discountValue, parseFloat(offer.discountValue || '0')),
+          basketValue: loyaltyEarnAmount,
+          redemptionValue: loyaltyEarnAmount,
           type: 'purchase'
         });
         console.log('Loyalty points awarded:', loyaltyResult);
@@ -2645,8 +2659,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For debugging - use merchant ID 32 when no auth
       const merchantId = 32;
       
+      // Get merchant's UUID for loyalty balance lookup
+      const merchant = await storage.getMerchantByUserId(merchantId);
+      const merchantUuid = merchant?.id;
+      
+      if (!merchantUuid) {
+        return res.status(404).json({ error: "Merchant not found" });
+      }
+      
       // Get all loyalty members for this merchant with their balances, tiers, and user info
-      const members = await storage.getLoyaltyMembers(merchantId);
+      const members = await storage.getLoyaltyMembersByUuid(merchantUuid);
       
       res.json({ success: true, members });
     } catch (error) {
@@ -2723,6 +2745,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           r.deal_id,
           r.value,
           r.redeemed_at,
+          d.title as legacy_title,
           d.merchant_id as legacy_merchant_id
         FROM redemptions r
         LEFT JOIN deals d ON r.deal_id = d.id
@@ -2737,6 +2760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const redemption of redemptionResults.rows) {
         let belongsToMerchant = false;
+        let offerData = null;
         
         // Check if it's a legacy deal redemption
         if (redemption.legacy_merchant_id === merchantId) {
@@ -2753,13 +2777,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             if (offerHash === parseInt(redemption.deal_id)) {
               belongsToMerchant = true;
+              offerData = offer; // Store the full offer data for accurate pricing
               break;
             }
           }
         }
         
         if (belongsToMerchant) {
-          const revenueValue = parseFloat(redemption.value) || 0;
+          // Calculate correct revenue value (what customer paid)
+          let revenueValue = 0;
+          
+          if (offerData) {
+            // For fixed price bundles, use the offer value (what customer paid)
+            if (offerData.type === 'fixed_price_bundle' && offerData.fixedPrice) {
+              revenueValue = parseFloat(offerData.fixedPrice);
+            } 
+            // For percentage discounts
+            else if (offerData.type === 'percentage_discount' && offerData.percentOff && offerData.originalValue) {
+              const discountAmount = (parseFloat(offerData.originalValue) * parseFloat(offerData.percentOff)) / 100;
+              revenueValue = parseFloat(offerData.originalValue) - discountAmount;
+            }
+            // Fallback for other types
+            else {
+              revenueValue = parseFloat(offerData.fixedPrice || offerData.discountValue || redemption.value || 0);
+            }
+          } else {
+            // Legacy calculation for deals without offer data
+            revenueValue = parseFloat(redemption.value) || 0;
+          }
+          
           totalImpact += revenueValue;
           
           // Check if within current month

@@ -88,6 +88,7 @@ export interface IStorage {
   
   // Loyalty Members operations
   getLoyaltyMembers(merchantId: number): Promise<any[]>;
+  getLoyaltyMembersByUuid(merchantUuid: string): Promise<any[]>;
   awardLoyaltyPoints(merchantId: number, userId: number, points: number, reason: string): Promise<any>;
   collectPointsFromTransaction(merchantId: number, userId: number, basketAmount: number): Promise<any>;
   updateMemberTier(merchantId: number, userId: number, tierId: string, reason: string): Promise<any>;
@@ -492,6 +493,10 @@ export class MemStorage implements IStorage {
   }
 
   async getLoyaltyMembers(merchantId: number): Promise<any[]> {
+    return [];
+  }
+
+  async getLoyaltyMembersByUuid(merchantUuid: string): Promise<any[]> {
     return [];
   }
 
@@ -1161,6 +1166,41 @@ export class DatabaseStorage implements IStorage {
       FROM loyalty_balances lb
       INNER JOIN users u ON lb.user_id = u.id
       WHERE lb.merchant_id = ${merchantId}
+    `);
+    
+    return result.rows.map((row: any) => ({
+      id: row.id,
+      username: row.username,
+      email: row.email,
+      firstName: row.firstName,
+      surname: row.surname,
+      points: row.points,
+      stamps: row.stamps,
+      tierId: row.tierId,
+      tierName: row.tierName,
+      tierColor: row.tierColor,
+      updatedAt: row.updatedAt,
+    }));
+  }
+
+  async getLoyaltyMembersByUuid(merchantUuid: string): Promise<any[]> {
+    // Use raw SQL query to match actual table structure with UUID merchant ID
+    const result = await db.execute(sql`
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.first_name as "firstName",
+        u.surname,
+        lb.balance as points,
+        0 as stamps,
+        lb.tier as "tierId",
+        lb.tier as "tierName",
+        '#cd7f32' as "tierColor",
+        lb.updated_at as "updatedAt"
+      FROM loyalty_balances lb
+      INNER JOIN users u ON lb.user_id = u.id
+      WHERE lb.merchant_id = ${merchantUuid}::uuid
     `);
     
     return result.rows.map((row: any) => ({

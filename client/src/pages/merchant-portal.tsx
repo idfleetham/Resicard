@@ -275,11 +275,26 @@ export default function MerchantPortal() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-soft text-base">New Members</span>
-                        <span className="font-semibold text-green-400">{membersData?.members?.length || 0}</span>
+                        <span className="font-semibold text-green-400">{(() => {
+                          // Calculate new members this month
+                          const now = new Date();
+                          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                          return (membersData?.members || []).filter(member => 
+                            member.updatedAt && new Date(member.updatedAt) >= startOfMonth
+                          ).length;
+                        })()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Repeat Visits</span>
-                        <span className="font-semibold text-blue-400">{redemptions.length || 0}</span>
+                        <span className="font-semibold text-blue-400">{(() => {
+                          // Calculate customers with multiple redemptions (repeat visits)
+                          const customerCounts = {};
+                          redemptions.forEach(redemption => {
+                            const customerId = redemption.user_id;
+                            customerCounts[customerId] = (customerCounts[customerId] || 0) + 1;
+                          });
+                          return Object.values(customerCounts).filter(count => count > 1).length;
+                        })()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-soft text-base">Revenue Impact</span>
