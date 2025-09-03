@@ -3562,8 +3562,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         feePercent: group.feePercent
       }));
 
-      // Calculate VAT (20%)
-      const netFees = Math.round(totalFees * 100) / 100;
+      // Add monthly subscription fee to breakdown
+      const monthlySubscriptionFee = 29.99;
+      detailedBreakdown.push({
+        description: "Monthly Platform Subscription",
+        quantity: 1,
+        rate: Math.round(monthlySubscriptionFee * 100) / 100,
+        amount: Math.round(monthlySubscriptionFee * 100) / 100,
+        feeModel: 'subscription',
+        feePercent: null
+      });
+
+      // Calculate VAT (20%) on total fees including subscription
+      const totalNetFees = totalFees + monthlySubscriptionFee;
+      const netFees = Math.round(totalNetFees * 100) / 100;
       const vatAmount = Math.round(netFees * 0.20 * 100) / 100;
       const grossFees = Math.round((netFees + vatAmount) * 100) / 100;
 
@@ -3591,13 +3603,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "User not authenticated" });
       }
 
+      // Calculate next billing date (15 days after month end)
+      const now = new Date();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const endOfNextMonth = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0);
+      const nextBillingDate = new Date(endOfNextMonth);
+      nextBillingDate.setDate(endOfNextMonth.getDate() + 15);
+
+      // Mock joining date (in real implementation, this would come from database)
+      const joiningDate = new Date('2024-08-15'); // Example joining date
+
       // For now, return default settings - in the future this could be stored in the database
       const defaultSettings = {
         monthlyFee: 29.99,
         processingFeePercent: 10.0,
         status: 'trial',
-        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        nextBillingDate: nextBillingDate.toISOString(),
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        joiningDate: joiningDate.toISOString()
       };
 
       res.json(defaultSettings);

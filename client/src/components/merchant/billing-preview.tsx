@@ -241,7 +241,7 @@ export default function BillingPreview() {
                   <h4 className="text-lg font-medium text-fg">Draft Invoice</h4>
                   <p className="text-base text-slate-300 mt-1">
                     This is a draft invoice. The final amount will be calculated at the end of the billing period 
-                    and collected via direct debit on {format(new Date(currentPeriod.dueDate), "MMM d, yyyy")}.
+                    and collected via direct debit 15 days after month end.
                   </p>
                 </div>
               </div>
