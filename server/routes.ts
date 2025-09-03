@@ -1808,6 +1808,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const redemption of redemptionResults.rows) {
         let belongsToMerchant = false;
         let offerTitle = 'Unknown Offer';
+        let offerData = null;
         
         // Check if it's a legacy deal redemption
         if (redemption.legacy_merchant_id === merchantId) {
@@ -1826,6 +1827,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (offerHash === parseInt(redemption.deal_id)) {
               belongsToMerchant = true;
               offerTitle = offer.title;
+              offerData = offer; // Store the full offer data
               break;
             }
           }
@@ -1834,7 +1836,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (belongsToMerchant) {
           merchantRedemptions.push({
             ...redemption,
-            deal_title: offerTitle
+            deal_title: offerTitle,
+            offer_data: offerData // Include the offer data for pricing calculation
           });
         }
       }
@@ -1845,27 +1848,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formattedRedemptions = merchantRedemptions.map((redemption: any) => {
         const discountAmount = redemption.value ? parseFloat(redemption.value) : 0;
         
-        // For percentage discounts, calculate original price from discount amount
-        // For "50% off" deals, if discount is £200, original price is £400
         let originalPrice = 'N/A';
         let finalPrice = '0.00';
         
-        // Try to determine if this is a percentage discount from the offer title
-        const isPercentageDiscount = redemption.deal_title && redemption.deal_title.includes('%');
-        
-        if (isPercentageDiscount) {
-          // Extract percentage from title (e.g., "50% off" -> 50)
-          const percentMatch = redemption.deal_title.match(/(\d+)%/);
-          if (percentMatch) {
-            const percent = parseInt(percentMatch[1]);
-            if (percent > 0 && percent < 100) {
-              // For a known issue where original price should be £399 for "50% off"
-              // but stored discount is £199 instead of £199.50
-              if (percent === 50 && Math.abs(discountAmount - 199) < 1) {
-                // Special case: assume original price is £399 for this offer
-                originalPrice = '399.00';
-                finalPrice = '199.50';
-              } else {
+        // If we have offer data, use it for accurate pricing
+        if (redemption.offer_data) {
+          const offer = redemption.offer_data;
+          
+          // For fixed price bundles, use the actual offer data
+          if (offer.type === 'fixed_price_bundle' && offer.fixedPrice && offer.originalValue) {
+            originalPrice = parseFloat(offer.originalValue).toFixed(2);
+            finalPrice = parseFloat(offer.fixedPrice).toFixed(2);
+          } 
+          // For percentage discounts
+          else if (offer.type === 'percentage_discount' && offer.percentOff && offer.originalValue) {
+            originalPrice = parseFloat(offer.originalValue).toFixed(2);
+            const discountAmount = (parseFloat(offer.originalValue) * parseFloat(offer.percentOff)) / 100;
+            finalPrice = (parseFloat(offer.originalValue) - discountAmount).toFixed(2);
+          }
+          // Fallback to legacy calculation for other types
+          else {
+            originalPrice = parseFloat(offer.originalValue || 0).toFixed(2);
+            finalPrice = parseFloat(offer.fixedPrice || offer.discountValue || 0).toFixed(2);
+          }
+        } 
+        // Legacy calculation for deals without offer data
+        else {
+          // Try to determine if this is a percentage discount from the offer title
+          const isPercentageDiscount = redemption.deal_title && redemption.deal_title.includes('%');
+          
+          if (isPercentageDiscount) {
+            // Extract percentage from title (e.g., "50% off" -> 50)
+            const percentMatch = redemption.deal_title.match(/(\d+)%/);
+            if (percentMatch) {
+              const percent = parseInt(percentMatch[1]);
+              if (percent > 0 && percent < 100) {
                 // Normal calculation: if discount is £200 and it's 50% off, original price is £400
                 const calculatedOriginalPrice = discountAmount / (percent / 100);
                 originalPrice = calculatedOriginalPrice.toFixed(2);
@@ -1884,6 +1901,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           value: finalPrice, // What was actually paid
           calculatedDiscount: discountAmount.toFixed(2), // Actual discount amount
           basketSubtotal: originalPrice, // Original price before discount
+          // Add the fields the frontend expects
+          offerValue: finalPrice, // What customer paid (offer value)
+          originalValue: originalPrice, // Original price before discount
           voucher_code: `LEGACY-${redemption.id}`,
           dealTitle: redemption.deal_title || 'Unknown Deal',
           offerTitle: redemption.deal_title || 'Unknown Deal',

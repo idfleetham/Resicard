@@ -53,8 +53,8 @@ export default function RedemptionsFeed() {
       Date: format(parseISO(redemption.redeemedAt), "yyyy-MM-dd HH:mm:ss"),
       Deal: redemption.dealTitle,
       Customer: redemption.customerName || "Guest",
-      "Discount Value": `£${redemption.calculatedDiscount || redemption.value}`,
-      "Original Price": `£${redemption.basketSubtotal || "N/A"}`,
+      "Offer Value": `£${redemption.offerValue || redemption.calculatedDiscount || redemption.value}`,
+      "Original Price": `£${redemption.originalValue || redemption.basketSubtotal || "N/A"}`,
       Staff: redemption.staffName || "System",
     }));
 
@@ -81,7 +81,7 @@ export default function RedemptionsFeed() {
 
   const getTotalValue = () => {
     return filteredRedemptions.reduce((sum: number, redemption: any) => 
-      sum + parseFloat(redemption.calculatedDiscount || redemption.value || 0), 0
+      sum + parseFloat(redemption.offerValue || redemption.calculatedDiscount || redemption.value || 0), 0
     ).toFixed(2);
   };
 
@@ -123,12 +123,12 @@ export default function RedemptionsFeed() {
               <h3 className="text-sm font-medium text-white mb-2">Transaction</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-white">Discount Value:</span>
-                  <span className="text-green-400 font-medium">£{redemption.calculatedDiscount || redemption.value || "0.00"}</span>
+                  <span className="text-white">Offer Value:</span>
+                  <span className="text-green-400 font-medium">£{redemption.offerValue || redemption.calculatedDiscount || redemption.value || "0.00"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Original Price:</span>
-                  <span className="text-fg">£{redemption.basketSubtotal || "N/A"}</span>
+                  <span className="text-fg">£{redemption.originalValue || redemption.basketSubtotal || "N/A"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Date:</span>
@@ -319,10 +319,10 @@ export default function RedemptionsFeed() {
                       </TableCell>
                       <TableCell className="text-white">{redemption.customerName || "Guest"}</TableCell>
                       <TableCell className="text-green-400 font-medium">
-                        £{redemption.calculatedDiscount || redemption.value || "0.00"}
+                        £{redemption.offerValue || redemption.calculatedDiscount || redemption.value || "0.00"}
                       </TableCell>
                       <TableCell className="text-white">
-                        £{redemption.basketSubtotal || "N/A"}
+                        £{redemption.originalValue || redemption.basketSubtotal || "N/A"}
                       </TableCell>
                       <TableCell className="text-white">{redemption.staffName || "System"}</TableCell>
                       <TableCell>{getStatusBadge(redemption)}</TableCell>
