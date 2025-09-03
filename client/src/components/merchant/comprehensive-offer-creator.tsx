@@ -320,10 +320,15 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       canvas.width = outputWidth;
       canvas.height = outputHeight;
 
+      // Account for image positioning (pan offset) in pixels
+      // Convert the pixel offset to natural image coordinates
+      const offsetX = (imagePosition.x / imageScaleFactor) * coordinateScaleX;
+      const offsetY = (imagePosition.y / imageScaleFactor) * coordinateScaleY;
+
       // Calculate source coordinates on the original image
-      // The crop coordinates are relative to the scaled/displayed image
-      const sourceX = completedCrop.x * coordinateScaleX;
-      const sourceY = completedCrop.y * coordinateScaleY;
+      // The crop coordinates are relative to the scaled/displayed image, but we need to account for panning
+      const sourceX = (completedCrop.x * coordinateScaleX) - offsetX;
+      const sourceY = (completedCrop.y * coordinateScaleY) - offsetY;
       const sourceWidth = completedCrop.width * coordinateScaleX;
       const sourceHeight = completedCrop.height * coordinateScaleY;
 
