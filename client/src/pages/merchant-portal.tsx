@@ -285,7 +285,7 @@ export default function MerchantPortal() {
                         })()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-soft text-base">Repeat Visits</span>
+                        <span className="text-soft text-base">Repeat Visitors</span>
                         <span className="font-semibold text-blue-400">{(() => {
                           // Calculate customers with multiple redemptions (repeat visits)
                           const customerCounts = {};
