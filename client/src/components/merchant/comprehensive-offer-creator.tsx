@@ -754,13 +754,13 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   <SelectValue placeholder="Select offer type" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
+                              <SelectContent className="bg-slate-800 border-slate-600">
                                 {/* Global offer types */}
-                                <div className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                                <div className="px-2 py-1 text-xs font-semibold text-slate-300 uppercase tracking-wide bg-slate-700">
                                   Global Core Types
                                 </div>
                                 {GLOBAL_OFFER_TYPES.map((type) => (
-                                  <SelectItem key={type.value} value={type.value}>
+                                  <SelectItem key={type.value} value={type.value} className="text-slate-200 hover:bg-slate-700 focus:bg-slate-700">
                                     {type.label}
                                   </SelectItem>
                                 ))}
@@ -768,11 +768,11 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 {/* Category-specific offer types */}
                                 {selectedCategory && CATEGORY_SPECIFIC_OFFER_TYPES[selectedCategory] && (
                                   <>
-                                    <div className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-2">
+                                    <div className="px-2 py-1 text-xs font-semibold text-slate-300 uppercase tracking-wide mt-2 bg-slate-700">
                                       {selectedCategory} Specific
                                     </div>
                                     {CATEGORY_SPECIFIC_OFFER_TYPES[selectedCategory].map((type) => (
-                                      <SelectItem key={type.value} value={type.value}>
+                                      <SelectItem key={type.value} value={type.value} className="text-slate-200 hover:bg-slate-700 focus:bg-slate-700">
                                         {type.label}
                                       </SelectItem>
                                     ))}
@@ -1068,6 +1068,546 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               <p className="text-green-400 text-sm mt-2">✓ PDF uploaded successfully</p>
                             )}
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Category-Specific Offer Types */}
+                    {(form.watch("type") === "meal_deal" || 
+                      form.watch("type") === "seasonal_rate" || 
+                      form.watch("type") === "stay_dine_package" || 
+                      form.watch("type") === "free_upgrade") && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="fixedPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Special Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 45.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Regular Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 65.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "spend_save" || 
+                      form.watch("type") === "multi_buy_bundle" || 
+                      form.watch("type") === "package_deals" || 
+                      form.watch("type") === "class_pass_bundle") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Bundle/Package Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., Buy 3 get 1 free, or Spend £50 save £10"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="fixedPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Package Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 40.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Individual Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 60.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "introductory_offer" || 
+                      form.watch("type") === "free_trial" || 
+                      form.watch("type") === "free_taster" || 
+                      form.watch("type") === "free_consultation") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Trial/Consultation Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., Free 30-minute consultation, First class trial"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="originalValue"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Regular Price (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 25.00"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "group_discount" || 
+                      form.watch("type") === "group_booking" || 
+                      form.watch("type") === "student_night" || 
+                      form.watch("type") === "off_peak_discount") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Discount Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., 20% off for groups of 4+, Student night special"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="percentOff"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Discount (%)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    className="input-dark"
+                                    placeholder="e.g., 20"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="minBasket"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Minimum Spend (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 30.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "clearance_sale" || 
+                      form.watch("type") === "seasonal_service" || 
+                      form.watch("type") === "installation_discount" || 
+                      form.watch("type") === "repair_discount") && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="percentOff"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Discount (%)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    className="input-dark"
+                                    placeholder="e.g., 30"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Savings Value (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 15.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "referral_discount" || 
+                      form.watch("type") === "subscription_trial" || 
+                      form.watch("type") === "membership_discount") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Offer Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., Bring a friend and both get 20% off, Free first month trial"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="originalValue"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Value of Offer (£)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  className="input-dark"
+                                  placeholder="e.g., 20.00"
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "free_ticket" || 
+                      form.watch("type") === "free_delivery" || 
+                      form.watch("type") === "accessory_bundle" || 
+                      form.watch("type") === "trade_in_bonus") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Free Item/Service Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., Free delivery on orders over £50, Free accessory with purchase"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Value of Free Item (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 12.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="minBasket"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Minimum Purchase (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 50.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "transfer_discount" || 
+                      form.watch("type") === "day_pass" || 
+                      form.watch("type") === "seasonal_ticket" || 
+                      form.watch("type") === "experience_package") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Service/Package Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., Airport transfer discount, All-day unlimited pass"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="fixedPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Special Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 25.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Regular Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 40.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(form.watch("type") === "multi_lesson_package" || 
+                      form.watch("type") === "student_concession" || 
+                      form.watch("type") === "loyalty_stamp") && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200 text-lg">Program Details</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  className="input-dark h-24" 
+                                  placeholder="e.g., 10 lessons for the price of 8, Student discount with valid ID"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="fixedPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Package Price (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 80.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="originalValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 text-lg">Individual Value (£)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    className="input-dark"
+                                    placeholder="e.g., 100.00"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
                     )}
