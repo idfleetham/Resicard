@@ -256,40 +256,69 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
     const image = new Image();
     image.onload = async () => {
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
+      // Get the actual displayed image element
+      const imgElement = document.querySelector('.ReactCrop__crop-image img') as HTMLImageElement;
+      if (!imgElement) {
+        toast({ title: "Error", description: "Could not find image element", variant: "destructive" });
+        return;
+      }
 
-      canvas.width = completedCrop.width;
-      canvas.height = completedCrop.height;
-
-      // Save the context state
-      ctx.save();
+      // Get the natural image dimensions
+      const naturalWidth = image.naturalWidth;
+      const naturalHeight = image.naturalHeight;
       
-      // Apply transformations to match the preview
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(scale, scale);
-      ctx.translate(-canvas.width / 2, -canvas.height / 2);
+      // Get the displayed dimensions (before any CSS transforms)
+      const displayedWidth = imgElement.naturalWidth || imgElement.offsetWidth;
+      const displayedHeight = imgElement.naturalHeight || imgElement.offsetHeight;
+      
+      // Calculate scale factors for coordinate conversion
+      // We need to account for the CSS scale transform applied to the image
+      const imageScaleFactor = scale; // The zoom level set by user
+      const coordinateScaleX = naturalWidth / (displayedWidth * imageScaleFactor);
+      const coordinateScaleY = naturalHeight / (displayedHeight * imageScaleFactor);
 
+      // Output size for the cropped image (reasonable size)
+      const outputWidth = 400; // Fixed output width
+      const outputHeight = Math.round(outputWidth * (9/16)); // Maintain 16:9 aspect ratio
+
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+
+      // Calculate source coordinates on the original image
+      // The crop coordinates are relative to the scaled/displayed image
+      const sourceX = completedCrop.x * coordinateScaleX;
+      const sourceY = completedCrop.y * coordinateScaleY;
+      const sourceWidth = completedCrop.width * coordinateScaleX;
+      const sourceHeight = completedCrop.height * coordinateScaleY;
+
+      // Apply rotation if needed
+      if (rotation !== 0) {
+        ctx.save();
+        ctx.translate(outputWidth / 2, outputHeight / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-outputWidth / 2, -outputHeight / 2);
+      }
+
+      // Draw the cropped portion
       ctx.drawImage(
         image,
-        completedCrop.x * scaleX,
-        completedCrop.y * scaleY,
-        completedCrop.width * scaleX,
-        completedCrop.height * scaleY,
+        Math.max(0, sourceX),
+        Math.max(0, sourceY),
+        Math.min(sourceWidth, naturalWidth - sourceX),
+        Math.min(sourceHeight, naturalHeight - sourceY),
         0,
         0,
-        completedCrop.width,
-        completedCrop.height
+        outputWidth,
+        outputHeight
       );
-      
-      // Restore the context state
-      ctx.restore();
+
+      if (rotation !== 0) {
+        ctx.restore();
+      }
 
       canvas.toBlob(async (blob) => {
         if (blob) {
           try {
-            // Convert to base64 for both new and editing offers (simpler and more reliable)
             const reader = new FileReader();
             reader.onload = () => {
               const base64 = reader.result as string;
@@ -297,14 +326,15 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               setImagePreview(base64);
               setShowCropper(false);
               setImgSrc('');
-              toast({ title: "Success", description: "Image processed successfully" });
+              toast({ title: "Success", description: "Image cropped and uploaded successfully" });
             };
             reader.readAsDataURL(blob);
           } catch (error) {
+            console.error('Crop error:', error);
             toast({ title: "Error", description: "Failed to process image", variant: "destructive" });
           }
         }
-      }, 'image/jpeg', 0.8);
+      }, 'image/jpeg', 0.9);
     };
     image.src = imgSrc;
   };
@@ -1901,32 +1931,35 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           <span className="text-slate-300 text-sm w-12">{scale.toFixed(1)}x</span>
                         </div>
                         
-                        <ReactCrop
-                          crop={crop}
-                          onChange={(_, percentCrop) => setCrop(percentCrop)}
-                          onComplete={(c) => setCompletedCrop(c)}
-                          aspect={16 / 9}
-                          className="max-w-full"
-                        >
-                          <img
-                            src={imgSrc}
-                            style={{ 
-                              transform: `scale(${scale}) rotate(${rotation}deg)`,
-                              maxWidth: '100%',
-                              transformOrigin: 'center'
-                            }}
-                            onLoad={(e) => {
-                              const { width, height } = e.currentTarget;
-                              setCrop({
-                                unit: '%',
-                                width: 90,
-                                height: 90 * (9 / 16),
-                                x: 5,
-                                y: 5,
-                              });
-                            }}
-                          />
-                        </ReactCrop>
+                        <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg">
+                          <ReactCrop
+                            crop={crop}
+                            onChange={(_, percentCrop) => setCrop(percentCrop)}
+                            onComplete={(c) => setCompletedCrop(c)}
+                            aspect={16 / 9}
+                            className="ReactCrop__crop-image"
+                          >
+                            <img
+                              src={imgSrc}
+                              style={{ 
+                                transform: `scale(${scale}) rotate(${rotation}deg)`,
+                                transformOrigin: 'center',
+                                display: 'block',
+                                maxWidth: 'none'
+                              }}
+                              onLoad={(e) => {
+                                const { width, height } = e.currentTarget;
+                                setCrop({
+                                  unit: '%',
+                                  width: 80,
+                                  height: 80 * (9 / 16),
+                                  x: 10,
+                                  y: 10,
+                                });
+                              }}
+                            />
+                          </ReactCrop>
+                        </div>
                         
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
