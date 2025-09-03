@@ -303,34 +303,50 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       const naturalWidth = image.naturalWidth;
       const naturalHeight = image.naturalHeight;
       
-      // Get the displayed dimensions (before any CSS transforms)
-      const displayedWidth = imgElement.naturalWidth || imgElement.offsetWidth;
-      const displayedHeight = imgElement.naturalHeight || imgElement.offsetHeight;
+      // Get the actual rendered size of the image element (after CSS sizing)
+      const renderedWidth = imgElement.offsetWidth;
+      const renderedHeight = imgElement.offsetHeight;
       
-      // Calculate scale factors for coordinate conversion
-      // We need to account for the CSS scale transform applied to the image
-      const imageScaleFactor = scale; // The zoom level set by user
-      const coordinateScaleX = naturalWidth / (displayedWidth * imageScaleFactor);
-      const coordinateScaleY = naturalHeight / (displayedHeight * imageScaleFactor);
+      console.log('Debug crop:', {
+        naturalWidth, naturalHeight,
+        renderedWidth, renderedHeight,
+        scale, imagePosition,
+        completedCrop
+      });
+
+      // Calculate scale factors from rendered size to natural size
+      const scaleToNaturalX = naturalWidth / renderedWidth;
+      const scaleToNaturalY = naturalHeight / renderedHeight;
 
       // Output size for the cropped image (reasonable size)
-      const outputWidth = 400; // Fixed output width
-      const outputHeight = Math.round(outputWidth * (9/16)); // Maintain 16:9 aspect ratio
+      const outputWidth = 400;
+      const outputHeight = Math.round(outputWidth * (9/16));
 
       canvas.width = outputWidth;
       canvas.height = outputHeight;
 
-      // Account for image positioning (pan offset) in pixels
-      // Convert the pixel offset to natural image coordinates
-      const offsetX = (imagePosition.x / imageScaleFactor) * coordinateScaleX;
-      const offsetY = (imagePosition.y / imageScaleFactor) * coordinateScaleY;
+      // Convert crop coordinates to natural image coordinates
+      // The crop coordinates are in percentage of the rendered image
+      const cropLeft = (completedCrop.x / 100) * renderedWidth;
+      const cropTop = (completedCrop.y / 100) * renderedHeight;
+      const cropWidth = (completedCrop.width / 100) * renderedWidth;
+      const cropHeight = (completedCrop.height / 100) * renderedHeight;
 
-      // Calculate source coordinates on the original image
-      // The crop coordinates are relative to the scaled/displayed image, but we need to account for panning
-      const sourceX = (completedCrop.x * coordinateScaleX) - offsetX;
-      const sourceY = (completedCrop.y * coordinateScaleY) - offsetY;
-      const sourceWidth = completedCrop.width * coordinateScaleX;
-      const sourceHeight = completedCrop.height * coordinateScaleY;
+      // Account for image positioning and scaling
+      // Convert the position offset to natural coordinates
+      const offsetX = (imagePosition.x / scale) * scaleToNaturalX;
+      const offsetY = (imagePosition.y / scale) * scaleToNaturalY;
+
+      // Final source coordinates on the original image
+      const sourceX = ((cropLeft / scale) * scaleToNaturalX) - offsetX;
+      const sourceY = ((cropTop / scale) * scaleToNaturalY) - offsetY;
+      const sourceWidth = (cropWidth / scale) * scaleToNaturalX;
+      const sourceHeight = (cropHeight / scale) * scaleToNaturalY;
+
+      console.log('Final crop coords:', {
+        sourceX, sourceY, sourceWidth, sourceHeight,
+        offsetX, offsetY
+      });
 
       // Apply rotation if needed
       if (rotation !== 0) {
