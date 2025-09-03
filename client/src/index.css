@@ -299,3 +299,15 @@
   @apply w-full rounded-lg text-fg placeholder:text-slate-500 border border-dim focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition px-3 py-2;
   background-color: rgb(var(--surface-2) / 0.9);
 }
+
+/* Custom styling for datetime-local calendar icons */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(34%) sepia(100%) saturate(5000%) hue-rotate(347deg) brightness(95%) contrast(100%);
+  cursor: pointer;
+}
+
+/* Firefox support for calendar icon color */
+input[type="datetime-local"]::-moz-calendar-picker-indicator {
+  filter: invert(34%) sepia(100%) saturate(5000%) hue-rotate(347deg) brightness(95%) contrast(100%);
+  cursor: pointer;
+}
