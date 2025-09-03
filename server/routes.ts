@@ -3493,6 +3493,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalFees = merchantRedemptions.reduce((sum, r) => sum + r.feeAmount, 0);
       const averageFee = totalRedemptions > 0 ? totalFees / totalRedemptions : 0;
 
+      // Debug logging
+      console.log('Billing calculation debug:');
+      merchantRedemptions.forEach((r, i) => {
+        console.log(`Redemption ${i+1}: value=${r.value}, feeModel=${r.feeModel}, feePercent=${r.feePercent}, feeAmount=${r.feeAmount}`);
+      });
+      console.log(`Total fees: ${totalFees}, Average fee: ${averageFee}`);
+
       res.json({
         period: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
         redemptions: totalRedemptions,
