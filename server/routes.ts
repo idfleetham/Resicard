@@ -2490,9 +2490,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         SELECT 
           lb.balance as points, 
           0 as stamps, 
-          INITCAP(lb.tier) as tier_name
+          lt.name as tier_name
         FROM loyalty_balances lb
         JOIN users u ON lb.merchant_id = u.id
+        LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
         WHERE lb.user_id = ${userId}
         AND u.business_name = ${merchantName}
         LIMIT 1
