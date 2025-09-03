@@ -138,7 +138,7 @@ async function awardLoyaltyPoints({
       `);
     } else {
       // Update existing balance
-      const currentPoints = loyaltyBalance.rows[0].balance;
+      const currentPoints = parseFloat(loyaltyBalance.rows[0].balance) || 0;
       await db.execute(sql`
         UPDATE loyalty_balances 
         SET balance = ${currentPoints + pointsToAdd}, updated_at = NOW()
@@ -2047,10 +2047,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }, 0)) % 1000000; // Keep it reasonable size
       }
       
+      // Calculate the correct value for redemption record (what customer actually saved)
+      let redemptionValue = discountValue;
+      if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+        // For BOGO: show the discount value (what they saved), not what they paid
+        redemptionValue = offer.discountValue ? parseFloat(offer.discountValue) : (offer.originalValue ? parseFloat(offer.originalValue) / 2 : discountValue);
+      } else if (offer.type === 'fixed_price_bundle') {
+        // For fixed price bundles: show the savings (original - fixed price)
+        redemptionValue = offer.originalValue && offer.fixedPrice ? 
+          parseFloat(offer.originalValue) - parseFloat(offer.fixedPrice) : discountValue;
+      }
+      
       await storage.createLegacyRedemption({
         dealId: legacyDealId,
         userId: voucher.userId,
-        value: offer.originalValue ? parseFloat(offer.originalValue) : Math.max(discountValue, parseFloat(offer.discountValue || '0')), // Use original value for free items, discount value otherwise
+        value: redemptionValue,
       });
 
       // Award loyalty points for the redemption
@@ -2064,6 +2075,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // For percentage discounts, calculate what customer paid
           const discountAmount = (parseFloat(offer.originalValue) * parseFloat(offer.percentOff)) / 100;
           loyaltyEarnAmount = parseFloat(offer.originalValue) - discountAmount;
+        } else if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+          // For BOGO and free item offers, use the original value (what customer paid for the full items)
+          loyaltyEarnAmount = offer.originalValue ? parseFloat(offer.originalValue) : basketValue;
         } else {
           // Fallback for other types
           loyaltyEarnAmount = Math.max(basketValue, parseFloat(offer.fixedPrice || offer.discountValue || '0'));
