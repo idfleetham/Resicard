@@ -961,7 +961,13 @@ export class DatabaseStorage implements IStorage {
   async getOffersByMerchant(merchantId: string): Promise<Offer[]> {
     const result = await db.select().from(offers).where(eq(offers.merchantId, merchantId));
     console.log('Found offers for merchant', merchantId, ':', result.length);
-    return result;
+    
+    // Map database field names to frontend expected field names
+    return result.map(offer => ({
+      ...offer,
+      usageCount: (offer as any).usage_count || 0, // Map usage_count to usageCount
+      usageLimit: (offer as any).usage_limit || (offer as any).global_usage_limit || 100 // Map usage_limit to usageLimit
+    }));
   }
 
   async updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined> {
