@@ -101,9 +101,9 @@ type OfferFormData = z.infer<typeof offerSchema>;
 
 const CATEGORIES = [
   "Food & Drink",
-  "Hotel & Accommodation",
+  "Hotel & Accommodation", 
   "Retail",
-  "Services", 
+  "Services",
   "Entertainment",
   "Health & Beauty",
   "Sports & Fitness",
@@ -111,8 +111,88 @@ const CATEGORIES = [
   "Education & Training",
   "Professional Services",
   "Home & Garden",
-  "Technology & Electronics"
+  "Technology & Electronics",
+  "Experiences & Leisure"
 ];
+
+// Global core types available for all categories
+const GLOBAL_OFFER_TYPES = [
+  { value: "percentage_discount", label: "Percentage Discount" },
+  { value: "fixed_amount_discount", label: "Fixed Amount Discount" },
+  { value: "free_item_with_purchase", label: "Free Item with Purchase" },
+  { value: "bogo", label: "BOGOF (Buy One, Get One Free)" },
+  { value: "limited_redemptions", label: "Limited Redemptions Offer" },
+  { value: "loyalty_reward", label: "Loyalty Reward Offer" }
+];
+
+// Category-specific offer types
+const CATEGORY_SPECIFIC_OFFER_TYPES = {
+  "Food & Drink": [
+    { value: "set_menu", label: "Set Menu / Fixed Price Menu" },
+    { value: "day_time_specific", label: "Happy Hour / Day-Time Discount" },
+    { value: "meal_deal", label: "Meal Deal (bundle: starter+main+drink)" }
+  ],
+  "Hotel & Accommodation": [
+    { value: "seasonal_rate", label: "Seasonal Rate / % Off Nights" },
+    { value: "stay_dine_package", label: "Stay + Dine Package" },
+    { value: "free_upgrade", label: "Free Upgrade / Late Checkout" }
+  ],
+  "Retail": [
+    { value: "spend_save", label: "Spend X, Save Y" },
+    { value: "multi_buy_bundle", label: "Multi-Buy Bundle (3 for 2, etc.)" },
+    { value: "clearance_sale", label: "Clearance / End-of-Line Sale" }
+  ],
+  "Services": [
+    { value: "introductory_offer", label: "Introductory Offer (first booking)" },
+    { value: "referral_discount", label: "Referral Discount (bring a friend)" },
+    { value: "subscription_trial", label: "Subscription Trial / First Month Free" }
+  ],
+  "Professional Services": [
+    { value: "introductory_offer", label: "Introductory Offer (first booking)" },
+    { value: "referral_discount", label: "Referral Discount (bring a friend)" },
+    { value: "subscription_trial", label: "Subscription Trial / First Month Free" }
+  ],
+  "Entertainment": [
+    { value: "free_ticket", label: "Free Ticket with Purchase" },
+    { value: "group_discount", label: "Group Discount (e.g., 4+ people)" },
+    { value: "student_night", label: "Student Night Special" }
+  ],
+  "Health & Beauty": [
+    { value: "package_deals", label: "Package Deals (e.g. 6 sessions for price of 5)" },
+    { value: "free_consultation", label: "Free Consultation" },
+    { value: "loyalty_stamp", label: "Loyalty Stamp (10th treatment free)" }
+  ],
+  "Sports & Fitness": [
+    { value: "free_trial", label: "Free First Class / Trial" },
+    { value: "class_pass_bundle", label: "Class Pass Bundle" },
+    { value: "membership_discount", label: "Membership Discount" }
+  ],
+  "Transport & Travel": [
+    { value: "transfer_discount", label: "Airport Transfer Discount" },
+    { value: "day_pass", label: "Day Pass (unlimited use)" },
+    { value: "seasonal_ticket", label: "Seasonal Ticket Reduction" }
+  ],
+  "Education & Training": [
+    { value: "free_taster", label: "Free Taster Lesson" },
+    { value: "multi_lesson_package", label: "Multi-Lesson Package" },
+    { value: "student_concession", label: "Student/Resident Concession" }
+  ],
+  "Home & Garden": [
+    { value: "installation_discount", label: "Installation Discount" },
+    { value: "free_delivery", label: "Free Delivery / Setup" },
+    { value: "seasonal_service", label: "Seasonal Service Offer" }
+  ],
+  "Technology & Electronics": [
+    { value: "accessory_bundle", label: "Accessory Bundle" },
+    { value: "repair_discount", label: "Repair Discount" },
+    { value: "trade_in_bonus", label: "Trade-In Bonus" }
+  ],
+  "Experiences & Leisure": [
+    { value: "group_booking", label: "Group Booking Discount" },
+    { value: "off_peak_discount", label: "Off-Peak Discount" },
+    { value: "experience_package", label: "Package Deals (e.g., golf + dinner + transfer)" }
+  ]
+};
 
 const COMMON_TAGS = [
   "happy-hour", "lunch", "dinner", "family", "students", "weekend", 
