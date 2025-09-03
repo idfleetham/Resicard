@@ -1008,19 +1008,35 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   className="input-dark text-slate-200"
                                 />
                               </FormControl>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
-                                onClick={() => {
-                                  const now = new Date();
-                                  const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                                  field.onChange(formatted);
-                                }}
-                              >
-                                Today
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  Today
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                                    const formatted = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  Tomorrow
+                                </Button>
+                              </div>
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1042,6 +1058,20 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 />
                               </FormControl>
                               <div className="flex gap-2 flex-wrap">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                                    const formatted = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  Tomorrow
+                                </Button>
                                 <Button
                                   type="button"
                                   variant="outline"
