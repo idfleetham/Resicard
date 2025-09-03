@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ const offerSchema = z.object({
   type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward"]),
   percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
   fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
-  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).refine(val => val > 0, "Offer value is required"),
+  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).default([]),
 
@@ -134,6 +134,12 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState("core");
+
+  // Fetch loyalty program to get available tiers
+  const { data: loyaltyProgram } = useQuery({
+    queryKey: ["/api/loyalty/program"],
+    queryFn: () => apiRequest("GET", "/api/loyalty/program").then(res => res.json())
+  });
   
   // Image cropper state
   const [imgSrc, setImgSrc] = useState('');
@@ -824,8 +830,10 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                             Select which loyalty tiers can access this offer. Leave empty to make available to all customers.
                           </FormDescription>
                           <div className="flex flex-wrap gap-2 mt-2">
-                            {["Bronze", "Silver", "Gold", "Platinum"].map((tier) => (
-                              <Badge
+                            {(loyaltyProgram?.tiers || []).map((tierData: any) => {
+                              const tier = tierData.name;
+                              return (
+                                <Badge
                                 key={tier}
                                 variant={field.value.includes(tier) ? "default" : "outline"}
                                 className={`cursor-pointer transition-colors ${
@@ -842,7 +850,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               >
                                 {tier} Tier
                               </Badge>
-                            ))}
+                              );
+                            })}
                           </div>
                           {field.value.length > 0 && (
                             <p className="text-sm text-slate-400 mt-2">
