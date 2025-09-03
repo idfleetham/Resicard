@@ -2013,7 +2013,11 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         </div>
                         
                         <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg relative">
-                          <div className="relative">
+                          <div 
+                            className="relative select-none"
+                            onMouseDown={handleImageMouseDown}
+                            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                          >
                             <ReactCrop
                               crop={crop}
                               onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -2028,10 +2032,9 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   transformOrigin: 'center',
                                   display: 'block',
                                   maxWidth: 'none',
-                                  cursor: isDragging ? 'grabbing' : 'grab',
-                                  userSelect: 'none'
+                                  userSelect: 'none',
+                                  pointerEvents: 'none'
                                 }}
-                                onMouseDown={handleImageMouseDown}
                                 onLoad={(e) => {
                                   const { width, height } = e.currentTarget;
                                   setCrop({
