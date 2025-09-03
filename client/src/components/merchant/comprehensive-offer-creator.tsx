@@ -147,6 +147,10 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   const [imagePreview, setImagePreview] = useState<string | null>(editingOffer?.imageUrl || null);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
+  // Image positioning state for pan/drag
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   console.log('ComprehensiveOfferCreator: editingOffer type:', editingOffer?.type);
   
@@ -239,10 +243,37 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
         setImgSrc(reader.result?.toString() || '');
         setScale(1); // Reset scale
         setRotation(0); // Reset rotation
+        setImagePosition({ x: 0, y: 0 }); // Reset position
         setShowCropper(true);
       });
       reader.readAsDataURL(e.target.files[0]);
     }
+  };
+
+  // Image panning functions
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - imagePosition.x,
+      y: e.clientY - imagePosition.y
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setImagePosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Center image function
+  const centerImage = () => {
+    setImagePosition({ x: 0, y: 0 });
   };
 
   const cropImage = async () => {
@@ -1955,6 +1986,9 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                   <div className="bg-slate-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
                     <h3 className="text-lg font-semibold mb-4 text-slate-200">Crop Offer Image</h3>
+                    <p className="text-slate-400 text-sm mb-4">
+                      💡 <strong>Tip:</strong> Click and drag the image to reposition it, use the crop handles to adjust the selection area, and zoom to get the perfect framing.
+                    </p>
                     <div className="space-y-4">
                       <div className="space-y-4">
                         <div className="flex items-center space-x-4">
@@ -1971,7 +2005,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           <span className="text-slate-300 text-sm w-12">{scale.toFixed(1)}x</span>
                         </div>
                         
-                        <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg">
+                        <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg relative">
                           <ReactCrop
                             crop={crop}
                             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -1982,11 +2016,16 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                             <img
                               src={imgSrc}
                               style={{ 
-                                transform: `scale(${scale}) rotate(${rotation}deg)`,
+                                transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${scale}) rotate(${rotation}deg)`,
                                 transformOrigin: 'center',
                                 display: 'block',
-                                maxWidth: 'none'
+                                maxWidth: 'none',
+                                cursor: isDragging ? 'grabbing' : 'grab'
                               }}
+                              onMouseDown={handleMouseDown}
+                              onMouseMove={handleMouseMove}
+                              onMouseUp={handleMouseUp}
+                              onMouseLeave={handleMouseUp}
                               onLoad={(e) => {
                                 const { width, height } = e.currentTarget;
                                 setCrop({
@@ -1997,6 +2036,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   y: 10,
                                 });
                               }}
+                              draggable={false}
                             />
                           </ReactCrop>
                         </div>
@@ -2020,6 +2060,15 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               className="border-slate-600 text-black bg-white hover:bg-gray-100"
                             >
                               Zoom In
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={centerImage}
+                              className="border-slate-600 text-black bg-white hover:bg-gray-100"
+                            >
+                              Center
                             </Button>
                           </div>
                           <div className="flex items-center space-x-2">
