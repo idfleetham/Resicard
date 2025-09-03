@@ -3469,10 +3469,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Calculate fee based on offer's fee model
               if (offer.feeModel === 'percent_discount' && offer.customFee) {
-                // Fee is percentage of the discount amount
-                feeAmount = (parseFloat(redemption.value) * parseFloat(offer.customFee)) / 100;
+                // Calculate the actual discount amount based on offer type
+                let discountAmount = 0;
+                if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+                  // For BOGO offers, use the discount value (what they saved)
+                  discountAmount = offer.discountValue ? parseFloat(offer.discountValue) : 15; // Default BOGO discount
+                } else if (offer.type === 'fixed_price_bundle') {
+                  // For fixed price bundles: savings = original - fixed price  
+                  discountAmount = offer.originalValue && offer.fixedPrice ? 
+                    parseFloat(offer.originalValue) - parseFloat(offer.fixedPrice) : 200; // Default fixed bundle discount
+                } else if (offer.discountType === 'percentage') {
+                  // For percentage discounts, the stored value should be the discount amount
+                  discountAmount = parseFloat(redemption.value);
+                } else {
+                  // For other types, use discount value or stored value
+                  discountAmount = offer.discountValue ? parseFloat(offer.discountValue) : parseFloat(redemption.value);
+                }
+                
+                // Fee is percentage of the actual discount amount
+                feeAmount = (discountAmount * parseFloat(offer.customFee)) / 100;
                 feeModel = 'percent_discount';
                 feePercent = offer.customFee;
+                
+                // Debug: log the discount calculation
+                console.log(`Offer ${offer.id}: type=${offer.type}, discountAmount=${discountAmount}, fee=${feeAmount}`);
               }
               break;
             }

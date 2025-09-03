@@ -1,0 +1,163 @@
+2merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 3
+Navigated to https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/merchant
+chunk-RPCDYKBN.js?v=337bbc64:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 0
+merchant-portal.tsx:64 MerchantPortal: Total redemptions count: 0
+queryClient.ts:50 Fetch finished loading: GET "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/program".
+(anonymous) @ queryClient.ts:50
+fetchFn @ @tanstack_react-query.js?v=337bbc64:840
+run @ @tanstack_react-query.js?v=337bbc64:494
+start @ @tanstack_react-query.js?v=337bbc64:536
+fetch @ @tanstack_react-query.js?v=337bbc64:926
+executeFetch_fn @ @tanstack_react-query.js?v=337bbc64:2211
+onSubscribe @ @tanstack_react-query.js?v=337bbc64:1898
+subscribe @ @tanstack_react-query.js?v=337bbc64:24
+(anonymous) @ @tanstack_react-query.js?v=337bbc64:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=337bbc64:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=337bbc64:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=337bbc64:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=337bbc64:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=337bbc64:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=337bbc64:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=337bbc64:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=337bbc64:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=337bbc64:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=337bbc64:19432
+commitRoot @ chunk-RPCDYKBN.js?v=337bbc64:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=337bbc64:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18718
+workLoop @ chunk-RPCDYKBN.js?v=337bbc64:197
+flushWork @ chunk-RPCDYKBN.js?v=337bbc64:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=337bbc64:384
+queryClient.ts:50 Fetch finished loading: GET "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/members".
+(anonymous) @ queryClient.ts:50
+fetchFn @ @tanstack_react-query.js?v=337bbc64:840
+run @ @tanstack_react-query.js?v=337bbc64:494
+start @ @tanstack_react-query.js?v=337bbc64:536
+fetch @ @tanstack_react-query.js?v=337bbc64:926
+executeFetch_fn @ @tanstack_react-query.js?v=337bbc64:2211
+onSubscribe @ @tanstack_react-query.js?v=337bbc64:1898
+subscribe @ @tanstack_react-query.js?v=337bbc64:24
+(anonymous) @ @tanstack_react-query.js?v=337bbc64:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=337bbc64:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=337bbc64:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=337bbc64:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=337bbc64:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=337bbc64:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=337bbc64:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=337bbc64:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=337bbc64:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=337bbc64:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=337bbc64:19432
+commitRoot @ chunk-RPCDYKBN.js?v=337bbc64:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=337bbc64:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18718
+workLoop @ chunk-RPCDYKBN.js?v=337bbc64:197
+flushWork @ chunk-RPCDYKBN.js?v=337bbc64:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=337bbc64:384
+retailer.js:2 XHR finished loading: POST "https://api.iterable.com/api/users/update".
+(anonymous) @ retailer.js:2
+xhr @ retailer.js:2
+Le @ retailer.js:2
+Promise.then
+request @ retailer.js:2
+(anonymous) @ retailer.js:2
+e.baseIterableRequest @ retailer.js:2
+e.updateUser @ retailer.js:2
+t @ retailer.js:2
+(anonymous) @ retailer.js:2
+Promise.then
+setUserID @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Vg @ retailer.js:2
+queryClient.ts:50 Fetch finished loading: GET "https://06ccd567-0ed2-4ca6-ac36-3a8c4e8676fb-00-ekzddiqdl8ww.picard.replit.dev/api/loyalty/revenue-impact".
+(anonymous) @ queryClient.ts:50
+fetchFn @ @tanstack_react-query.js?v=337bbc64:840
+run @ @tanstack_react-query.js?v=337bbc64:494
+start @ @tanstack_react-query.js?v=337bbc64:536
+fetch @ @tanstack_react-query.js?v=337bbc64:926
+executeFetch_fn @ @tanstack_react-query.js?v=337bbc64:2211
+onSubscribe @ @tanstack_react-query.js?v=337bbc64:1898
+subscribe @ @tanstack_react-query.js?v=337bbc64:24
+(anonymous) @ @tanstack_react-query.js?v=337bbc64:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=337bbc64:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=337bbc64:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=337bbc64:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=337bbc64:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=337bbc64:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=337bbc64:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=337bbc64:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=337bbc64:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=337bbc64:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=337bbc64:19432
+commitRoot @ chunk-RPCDYKBN.js?v=337bbc64:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=337bbc64:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=337bbc64:18718
+workLoop @ chunk-RPCDYKBN.js?v=337bbc64:197
+flushWork @ chunk-RPCDYKBN.js?v=337bbc64:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=337bbc64:384
+retailer.js:2 XHR finished loading: GET "https://api.iterable.com/api/inApp/web/getMessages?count=1&packageName=donation-reminder&platform=Web&SDKVersion=1.0.7&userId=2819505".
+(anonymous) @ retailer.js:2
+xhr @ retailer.js:2
+Le @ retailer.js:2
+Promise.then
+request @ retailer.js:2
+(anonymous) @ retailer.js:2
+e.baseIterableRequest @ retailer.js:2
+u @ retailer.js:2
+e.requestMessages @ retailer.js:2
+e.getInAppMessages @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Promise.then
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+Promise.then
+Kd @ retailer.js:2
+a @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+(anonymous) @ retailer.js:2
+Vg @ retailer.js:2
+retailer.js:2 No messages from Iterable
+retailer.js:2 Error fetching messages from Iterable No messages from Iterable
