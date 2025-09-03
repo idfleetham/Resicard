@@ -93,7 +93,7 @@ async function awardLoyaltyPoints({
   redemptionValue,
   type = 'purchase'
 }: {
-  merchantId: string;
+  merchantId: number;
   userId: number;
   basketValue: number;
   redemptionValue: number;
@@ -116,14 +116,14 @@ async function awardLoyaltyPoints({
     // Find or create loyalty balance for this user and merchant
     let loyaltyBalance = await db.execute(sql`
       SELECT * FROM loyalty_balances 
-      WHERE user_id = ${userId} AND merchant_id::text = ${merchantId}::text
+      WHERE user_id = ${userId} AND merchant_id = ${merchantId}
     `);
     
     if (loyaltyBalance.rows.length === 0) {
       // Create new loyalty balance
       await db.execute(sql`
         INSERT INTO loyalty_balances (user_id, merchant_id, balance, tier, created_at, updated_at)
-        VALUES (${userId}, ${merchantId}::uuid, ${pointsToAdd}, null, NOW(), NOW())
+        VALUES (${userId}, ${merchantId}, ${pointsToAdd}, null, NOW(), NOW())
       `);
     } else {
       // Update existing balance
@@ -131,7 +131,7 @@ async function awardLoyaltyPoints({
       await db.execute(sql`
         UPDATE loyalty_balances 
         SET balance = ${currentPoints + pointsToAdd}, updated_at = NOW()
-        WHERE user_id = ${userId} AND merchant_id::text = ${merchantId}::text
+        WHERE user_id = ${userId} AND merchant_id = ${merchantId}
       `);
     }
 
@@ -140,7 +140,7 @@ async function awardLoyaltyPoints({
       SELECT lb.balance, lt.id as current_tier_id, lt.threshold_points as current_threshold
       FROM loyalty_balances lb
       LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
-      WHERE lb.user_id = ${userId} AND lb.merchant_id::text = ${merchantId}::text
+      WHERE lb.user_id = ${userId} AND lb.merchant_id = ${merchantId}
     `);
 
     if (updatedBalance.rows.length > 0) {
@@ -151,7 +151,7 @@ async function awardLoyaltyPoints({
       const availableTiers = await db.execute(sql`
         SELECT lt.* FROM loyalty_tiers lt
         JOIN loyalty_programs lp ON lt.program_id = lp.id
-        WHERE lp.merchant_id::text = ${merchantId}::text
+        WHERE lp.merchant_id = ${merchantId}
         AND lt.threshold_points <= ${newPoints}
         ORDER BY lt.threshold_points DESC
         LIMIT 1
@@ -164,7 +164,7 @@ async function awardLoyaltyPoints({
           await db.execute(sql`
             UPDATE loyalty_balances 
             SET tier = ${newTier.id}::text, updated_at = NOW()
-            WHERE user_id = ${userId} AND merchant_id::text = ${merchantId}::text
+            WHERE user_id = ${userId} AND merchant_id = ${merchantId}
           `);
           console.log(`User ${userId} upgraded to tier ${newTier.name} for merchant ${merchantId}`);
         }
@@ -2059,7 +2059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const loyaltyResult = await awardLoyaltyPoints({
-          merchantId: merchant.id,
+          merchantId: getMerchantId(req), // Use integer merchant ID, not UUID
           userId: voucher.userId,
           basketValue: loyaltyEarnAmount,
           redemptionValue: loyaltyEarnAmount,
@@ -2659,16 +2659,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For debugging - use merchant ID 32 when no auth
       const merchantId = 32;
       
-      // Get merchant's UUID for loyalty balance lookup
-      const merchant = await storage.getMerchantByUserId(merchantId);
-      const merchantUuid = merchant?.id;
-      
-      if (!merchantUuid) {
-        return res.status(404).json({ error: "Merchant not found" });
-      }
-      
       // Get all loyalty members for this merchant with their balances, tiers, and user info
-      const members = await storage.getLoyaltyMembersByUuid(merchantUuid);
+      const members = await storage.getLoyaltyMembers(merchantId);
       
       res.json({ success: true, members });
     } catch (error) {
