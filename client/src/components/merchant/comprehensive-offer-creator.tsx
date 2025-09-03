@@ -638,7 +638,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           name="fixedPrice"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-200 text-lg">Bundle Price (£)</FormLabel>
+                              <FormLabel className="text-slate-200 text-lg">Offer Value (£)</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -646,7 +646,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   min="0"
                                   step="0.01"
                                   className="input-dark"
-                                  placeholder="e.g., 15"
+                                  placeholder="e.g., 399"
                                   onChange={(e) => field.onChange(Number(e.target.value))}
                                 />
                               </FormControl>
@@ -667,7 +667,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   min="0"
                                   step="0.01"
                                   className="input-dark"
-                                  placeholder="e.g., 22"
+                                  placeholder="e.g., 599"
                                   onChange={(e) => field.onChange(Number(e.target.value))}
                                 />
                               </FormControl>
