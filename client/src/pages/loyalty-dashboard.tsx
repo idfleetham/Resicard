@@ -1462,7 +1462,7 @@ export default function LoyaltyDashboard() {
             <div className="space-y-6">
               {loyaltyProgramme?.tiers.map((tier, index) => {
                 // Calculate actual customer count for this tier
-                const tierMembers = membersData?.members?.filter(member => member.tier === tier.name.toLowerCase()) || [];
+                const tierMembers = membersData?.members?.filter(member => member.tierName === tier.name) || [];
                 const customerCount = tierMembers.length;
                 
                 // Calculate average monthly spend for this tier (using total redemption value)

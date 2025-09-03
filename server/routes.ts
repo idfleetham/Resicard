@@ -101,23 +101,34 @@ async function awardLoyaltyPoints({
 }) {
   try {
     // For simplicity, use a default loyalty program with 1 point per £1
-    const pointsPerPound = 1;
+    const basePointsPerPound = 1;
     
     // Calculate points based on the actual spend amount (use redemption value as minimum)
     let earnAmount = Math.max(basketValue, redemptionValue); 
-    const pointsToAdd = Math.floor(earnAmount * pointsPerPound);
+    
+    // Find or create loyalty balance for this user and merchant
+    let loyaltyBalance = await db.execute(sql`
+      SELECT lb.*, lt.points_multiplier 
+      FROM loyalty_balances lb
+      LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
+      WHERE lb.user_id = ${userId} AND lb.merchant_id = ${merchantId}
+    `);
+    
+    // Get current tier multiplier (default to 1.0 for Bronze/new users)
+    let tierMultiplier = 1.0;
+    if (loyaltyBalance.rows.length > 0 && loyaltyBalance.rows[0].points_multiplier) {
+      tierMultiplier = parseFloat(loyaltyBalance.rows[0].points_multiplier);
+    }
+    
+    // Apply tier multiplier to points calculation
+    const basePoints = Math.floor(earnAmount * basePointsPerPound);
+    const pointsToAdd = Math.floor(basePoints * tierMultiplier);
     
     if (pointsToAdd <= 0) {
       return { pointsAdded: 0, stampsAdded: 0, message: 'No points to award' };
     }
 
-    console.log(`Awarding ${pointsToAdd} points to user ${userId} for merchant ${merchantId} (transaction: £${earnAmount.toFixed(2)})`);
-
-    // Find or create loyalty balance for this user and merchant
-    let loyaltyBalance = await db.execute(sql`
-      SELECT * FROM loyalty_balances 
-      WHERE user_id = ${userId} AND merchant_id = ${merchantId}
-    `);
+    console.log(`Awarding ${pointsToAdd} points to user ${userId} for merchant ${merchantId} (transaction: £${earnAmount.toFixed(2)}, tier multiplier: ${tierMultiplier}x)`);
     
     if (loyaltyBalance.rows.length === 0) {
       // Create new loyalty balance

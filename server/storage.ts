@@ -1160,11 +1160,12 @@ export class DatabaseStorage implements IStorage {
         lb.balance as points,
         0 as stamps,
         lb.tier as "tierId",
-        lb.tier as "tierName",
-        '#cd7f32' as "tierColor",
+        COALESCE(lt.name, 'Bronze') as "tierName",
+        COALESCE(lt.color, '#cd7f32') as "tierColor",
         lb.updated_at as "updatedAt"
       FROM loyalty_balances lb
       INNER JOIN users u ON lb.user_id = u.id
+      LEFT JOIN loyalty_tiers lt ON lb.tier = lt.id::text
       WHERE lb.merchant_id = ${merchantId}
     `);
     
