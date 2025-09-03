@@ -89,8 +89,6 @@ const offerSchema = z.object({
   priority: z.enum(["standard", "featured"]).default("standard"),
 
   // G) Budget & billing controls
-  feeModel: z.enum(["default", "per_redemption", "percent_discount"]).default("default"),
-  customFee: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
   budgetCap: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || undefined : val).optional(),
   autoPauseOnAbuse: z.boolean().default(true),
 
@@ -1790,56 +1788,6 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                     </CardTitle>
                   </CardHeader>
                   <CardBody className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="feeModel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200 text-lg">Fee Model</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="input-dark">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="default">Platform Default</SelectItem>
-                                <SelectItem value="per_redemption">Per Redemption</SelectItem>
-                                <SelectItem value="percent_discount">% of Discount</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {form.watch("feeModel") !== "default" && (
-                        <FormField
-                          control={form.control}
-                          name="customFee"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-200 text-lg">
-                                Custom Fee ({form.watch("feeModel") === "per_redemption" ? "£ per redemption" : "% of discount"})
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  min="0"
-                                  step={form.watch("feeModel") === "per_redemption" ? "0.01" : "1"}
-                                  className="input-dark"
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-                    </div>
-
                     <FormField
                       control={form.control}
                       name="budgetCap"
@@ -1858,7 +1806,8 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                             />
                           </FormControl>
                           <FormDescription className="text-slate-400 text-lg">
-                            Automatically pause offer when budget is reached
+                            Set the maximum total amount you're willing to spend on processing fees for this promotion. 
+                            The offer will automatically pause when this budget is reached to prevent overspending.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
