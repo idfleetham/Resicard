@@ -66,9 +66,17 @@ export default function BillingPreview() {
         "Redemption Processing Fee",
         period.redemptions.toString(),
         `£${feePerRedemption.toFixed(2)}`,
-        `£${period.totalFees.toFixed(2)}`
+        `£${(billingStats?.netFees || period.totalFees).toFixed(2)}`
       ]);
     }
+
+    // Add VAT as a separate line item
+    csvData.push([
+      "VAT (20%)",
+      "1",
+      `£${(billingStats?.vatAmount || 0).toFixed(2)}`,
+      `£${(billingStats?.vatAmount || 0).toFixed(2)}`
+    ]);
 
     csvData.push(
       [""],
