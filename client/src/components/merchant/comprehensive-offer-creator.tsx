@@ -988,7 +988,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
-                      <Calendar className="w-5 h-5 mr-2 text-blue-400" />
+                      <Calendar className="w-5 h-5 mr-2 text-red-500" />
                       Scheduling & Availability
                     </CardTitle>
                   </CardHeader>
@@ -1000,13 +1000,28 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-200 text-lg">Valid From</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="datetime-local"
-                                className="input-dark text-slate-200"
-                              />
-                            </FormControl>
+                            <div className="space-y-2">
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="datetime-local"
+                                  className="input-dark text-slate-200"
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                onClick={() => {
+                                  const now = new Date();
+                                  const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                  field.onChange(formatted);
+                                }}
+                              >
+                                Today
+                              </Button>
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1018,13 +1033,59 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-200 text-lg">Valid Until</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="datetime-local"
-                                className="input-dark text-slate-200"
-                              />
-                            </FormControl>
+                            <div className="space-y-2">
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="datetime-local"
+                                  className="input-dark text-slate-200"
+                                />
+                              </FormControl>
+                              <div className="flex gap-2 flex-wrap">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const oneWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                                    const formatted = new Date(oneWeek.getTime() - oneWeek.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  1 Week
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const oneMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+                                    const formatted = new Date(oneMonth.getTime() - oneMonth.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  1 Month
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    const oneYear = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+                                    const formatted = new Date(oneYear.getTime() - oneYear.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                    field.onChange(formatted);
+                                  }}
+                                >
+                                  1 Year
+                                </Button>
+                              </div>
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
