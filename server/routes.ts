@@ -100,8 +100,8 @@ async function awardLoyaltyPoints({
   type?: string;
 }) {
   try {
-    // For simplicity, use a default loyalty program with 10 points per £1
-    const pointsPerPound = 10;
+    // For simplicity, use a default loyalty program with 1 point per £1
+    const pointsPerPound = 1;
     
     // Calculate points based on the actual spend amount (use redemption value as minimum)
     let earnAmount = Math.max(basketValue, redemptionValue); 
