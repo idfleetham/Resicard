@@ -325,23 +325,24 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       canvas.width = outputWidth;
       canvas.height = outputHeight;
 
-      // Convert crop coordinates to natural image coordinates
-      // The crop coordinates are in percentage of the rendered image
-      const cropLeft = (completedCrop.x / 100) * renderedWidth;
-      const cropTop = (completedCrop.y / 100) * renderedHeight;
-      const cropWidth = (completedCrop.width / 100) * renderedWidth;
-      const cropHeight = (completedCrop.height / 100) * renderedHeight;
-
-      // Account for image positioning and scaling
-      // Convert the position offset to natural coordinates
-      const offsetX = (imagePosition.x / scale) * scaleToNaturalX;
-      const offsetY = (imagePosition.y / scale) * scaleToNaturalY;
-
-      // Final source coordinates on the original image
-      const sourceX = ((cropLeft / scale) * scaleToNaturalX) - offsetX;
-      const sourceY = ((cropTop / scale) * scaleToNaturalY) - offsetY;
-      const sourceWidth = (cropWidth / scale) * scaleToNaturalX;
-      const sourceHeight = (cropHeight / scale) * scaleToNaturalY;
+      // The crop coordinates from ReactCrop are in pixels relative to the rendered image
+      // but we need to account for our transform: translate(x,y) scale(s)
+      
+      // Step 1: Convert crop coordinates to account for our CSS scale
+      const scaledCropX = completedCrop.x / scale;
+      const scaledCropY = completedCrop.y / scale;
+      const scaledCropWidth = completedCrop.width / scale;
+      const scaledCropHeight = completedCrop.height / scale;
+      
+      // Step 2: Account for the image positioning (translate offset)
+      const finalCropX = scaledCropX - imagePosition.x;
+      const finalCropY = scaledCropY - imagePosition.y;
+      
+      // Step 3: Convert from rendered image coordinates to natural image coordinates
+      const sourceX = (finalCropX * scaleToNaturalX);
+      const sourceY = (finalCropY * scaleToNaturalY);
+      const sourceWidth = scaledCropWidth * scaleToNaturalX;
+      const sourceHeight = scaledCropHeight * scaleToNaturalY;
 
       console.log('Final crop coords:', {
         sourceX, sourceY, sourceWidth, sourceHeight,
