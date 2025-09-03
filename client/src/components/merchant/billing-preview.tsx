@@ -45,13 +45,32 @@ export default function BillingPreview() {
     const period = currentPeriod;
     if (!period) return;
 
-    // Create CSV content
+    // Create CSV content with detailed breakdown
     const csvData = [
       ["Item", "Quantity", "Rate", "Amount"],
-      ["Redemption Processing Fee", period.redemptions.toString(), `£${feePerRedemption.toFixed(2)}`, `£${period.totalFees.toFixed(2)}`],
-      [""],
-      ["Total Due:", "", "", `£${period.totalFees.toFixed(2)}`],
     ];
+
+    // Add detailed breakdown if available
+    if (billingStats?.detailedBreakdown && billingStats.detailedBreakdown.length > 0) {
+      billingStats.detailedBreakdown.forEach((item: any) => {
+        csvData.push([
+          item.description,
+          item.quantity.toString(),
+          `£${item.rate.toFixed(2)}`,
+          `£${item.amount.toFixed(2)}`
+        ]);
+      });
+    } else {
+      // Fallback to summary line
+      csvData.push([
+        "Redemption Processing Fee",
+        period.redemptions.toString(),
+        `£${feePerRedemption.toFixed(2)}`,
+        `£${period.totalFees.toFixed(2)}`
+      ]);
+    }
+
+    csvData.push([""], ["Total Due:", "", "", `£${period.totalFees.toFixed(2)}`]);
 
     const csvContent = "data:text/csv;charset=utf-8," + 
       csvData.map(row => row.join(",")).join("\n");
@@ -169,12 +188,23 @@ export default function BillingPreview() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="text-slate-300 text-lg">Redemption Processing Fee</TableCell>
-                <TableCell className="text-slate-300 text-lg">{currentPeriod.redemptions}</TableCell>
-                <TableCell className="text-slate-300 text-lg">£{feePerRedemption.toFixed(2)}</TableCell>
-                <TableCell className="text-right text-slate-300 text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
-              </TableRow>
+              {(billingStats?.detailedBreakdown || []).map((item: any, index: number) => (
+                <TableRow key={index}>
+                  <TableCell className="text-slate-300 text-lg">{item.description}</TableCell>
+                  <TableCell className="text-slate-300 text-lg">{item.quantity}</TableCell>
+                  <TableCell className="text-slate-300 text-lg">£{item.rate.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-slate-300 text-lg">£{item.amount.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+              {/* Fallback if no detailed breakdown */}
+              {(!billingStats?.detailedBreakdown || billingStats.detailedBreakdown.length === 0) && (
+                <TableRow>
+                  <TableCell className="text-slate-300 text-lg">Redemption Processing Fee</TableCell>
+                  <TableCell className="text-slate-300 text-lg">{currentPeriod.redemptions}</TableCell>
+                  <TableCell className="text-slate-300 text-lg">£{feePerRedemption.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-slate-300 text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
+                </TableRow>
+              )}
               <TableRow className="border-t-2 border-white/40 shadow-xl shadow-white/20Strong font-medium">
                 <TableCell className="text-fg font-semibold text-lg" colSpan={3}>Total Due</TableCell>
                 <TableCell className="text-right text-fg font-semibold text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>

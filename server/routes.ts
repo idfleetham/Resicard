@@ -3491,8 +3491,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 feeModel = 'percent_discount';
                 feePercent = offer.customFee;
                 
-                // Debug: log the discount calculation
-                console.log(`Offer ${offer.id}: type=${offer.type}, discountAmount=${discountAmount}, fee=${feeAmount}`);
               }
               break;
             }
@@ -3500,38 +3498,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         if (belongsToMerchant) {
+          // Find the offer title if it's a UUID offer
+          let offerTitle = 'Legacy Offer';
+          if (!redemption.legacy_merchant_id) {
+            // Try to find matching offer by checking hash again
+            const offers = await storage.getOffersByMerchant(merchantUuid);
+            for (const offer of offers) {
+              const offerHash = Math.abs(offer.id.split('-')[0].split('').reduce((a, b) => {
+                a = ((a << 5) - a) + b.charCodeAt(0);
+                return a & a;
+              }, 0)) % 1000000;
+              
+              if (offerHash === parseInt(redemption.deal_id)) {
+                offerTitle = offer.title;
+                break;
+              }
+            }
+          }
+
           merchantRedemptions.push({
             ...redemption,
             feeAmount,
             feeModel,
-            feePercent
+            feePercent,
+            offerTitle
           });
         }
+      }
+
+      // Group redemptions by offer to create detailed breakdown
+      const offerGroups = new Map();
+      
+      for (const redemption of merchantRedemptions) {
+        const key = `${redemption.offerTitle || 'Legacy Offer'}-${redemption.feeModel}-${redemption.feePercent}`;
+        
+        if (!offerGroups.has(key)) {
+          offerGroups.set(key, {
+            offerTitle: redemption.offerTitle || 'Legacy Offer',
+            feeModel: redemption.feeModel,
+            feePercent: redemption.feePercent,
+            count: 0,
+            totalFeeAmount: 0,
+            individualFee: redemption.feeAmount
+          });
+        }
+        
+        const group = offerGroups.get(key);
+        group.count += 1;
+        group.totalFeeAmount += redemption.feeAmount;
       }
 
       const totalRedemptions = merchantRedemptions.length;
       const totalFees = merchantRedemptions.reduce((sum, r) => sum + r.feeAmount, 0);
       const averageFee = totalRedemptions > 0 ? totalFees / totalRedemptions : 0;
 
-      // Debug logging
-      console.log('Billing calculation debug:');
-      merchantRedemptions.forEach((r, i) => {
-        console.log(`Redemption ${i+1}: value=${r.value}, feeModel=${r.feeModel}, feePercent=${r.feePercent}, feeAmount=${r.feeAmount}`);
-      });
-      console.log(`Total fees: ${totalFees}, Average fee: ${averageFee}`);
+      // Create detailed breakdown for display
+      const detailedBreakdown = Array.from(offerGroups.values()).map(group => ({
+        description: `${group.offerTitle} - Processing Fee`,
+        quantity: group.count,
+        rate: Math.round(group.individualFee * 100) / 100,
+        amount: Math.round(group.totalFeeAmount * 100) / 100,
+        feeModel: group.feeModel,
+        feePercent: group.feePercent
+      }));
 
       res.json({
         period: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
         redemptions: totalRedemptions,
-        totalFees: Math.round(totalFees * 100) / 100, // Round to 2 decimal places
-        averageFee: Math.round(averageFee * 100) / 100, // Round to 2 decimal places
-        feeBreakdown: merchantRedemptions.map(r => ({
-          description: 'Redemption Processing Fee',
-          feeModel: r.feeModel,
-          feePercent: r.feePercent,
-          discountValue: parseFloat(r.value),
-          feeAmount: r.feeAmount
-        })),
+        totalFees: Math.round(totalFees * 100) / 100,
+        averageFee: Math.round(averageFee * 100) / 100,
+        detailedBreakdown,
         status: 'draft'
       });
     } catch (error) {
