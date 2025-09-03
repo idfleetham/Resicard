@@ -656,7 +656,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         />
                         <FormField
                           control={form.control}
-                          name="originalValue"
+                          name="maxDiscount"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-slate-200 text-lg">Original Value (£)</FormLabel>
