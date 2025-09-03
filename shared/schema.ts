@@ -83,7 +83,7 @@ export const offers = pgTable("offers", {
   // A) Core & pricing
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"fixed_price_bundle"|"free_item_with_purchase"|"bogo"|"day_time_specific"|"limited_redemptions"|"loyalty_reward"|"set_menu">().default("percentage_discount"),
+  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"free_item_with_purchase"|"bogo"|"limited_redemptions"|"loyalty_reward"|"set_menu"|"day_time_specific"|"meal_deal"|"seasonal_rate"|"stay_dine_package"|"free_upgrade"|"spend_save"|"multi_buy_bundle"|"clearance_sale"|"introductory_offer"|"referral_discount"|"subscription_trial"|"free_ticket"|"group_discount"|"student_night"|"package_deals"|"free_consultation"|"loyalty_stamp"|"free_trial"|"class_pass_bundle"|"membership_discount"|"transfer_discount"|"day_pass"|"seasonal_ticket"|"free_taster"|"multi_lesson_package"|"student_concession"|"installation_discount"|"free_delivery"|"seasonal_service"|"accessory_bundle"|"repair_discount"|"trade_in_bonus"|"group_booking"|"off_peak_discount"|"experience_package"|"fixed_price_bundle">().default("percentage_discount"),
   percentOff: integer("percent_off"), // For percentage discounts
   fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }), // For fixed price offers
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),
@@ -301,7 +301,17 @@ export const insertOfferSchema = createInsertSchema(offers).pick({
   customFee: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
   budgetCap: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
   // Override type field to use new enum values
-  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward", "set_menu"]),
+  type: z.enum([
+    "percentage_discount", "fixed_amount_discount", "free_item_with_purchase", "bogo", "limited_redemptions", "loyalty_reward",
+    "set_menu", "day_time_specific", "meal_deal", "seasonal_rate", "stay_dine_package", "free_upgrade", 
+    "spend_save", "multi_buy_bundle", "clearance_sale", "introductory_offer", "referral_discount", 
+    "subscription_trial", "free_ticket", "group_discount", "student_night", "package_deals", 
+    "free_consultation", "loyalty_stamp", "free_trial", "class_pass_bundle", "membership_discount", 
+    "transfer_discount", "day_pass", "seasonal_ticket", "free_taster", "multi_lesson_package", 
+    "student_concession", "installation_discount", "free_delivery", "seasonal_service", 
+    "accessory_bundle", "repair_discount", "trade_in_bonus", "group_booking", "off_peak_discount", 
+    "experience_package", "fixed_price_bundle"
+  ]),
 });
 
 export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -37,7 +38,19 @@ const offerSchema = z.object({
   // A) Core & pricing
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  type: z.enum(["percentage_discount", "fixed_amount_discount", "fixed_price_bundle", "free_item_with_purchase", "bogo", "day_time_specific", "limited_redemptions", "loyalty_reward", "set_menu"]),
+  type: z.enum([
+    // Global core types
+    "percentage_discount", "fixed_amount_discount", "free_item_with_purchase", "bogo", "limited_redemptions", "loyalty_reward",
+    // Category-specific types
+    "set_menu", "day_time_specific", "meal_deal", "seasonal_rate", "stay_dine_package", "free_upgrade", 
+    "spend_save", "multi_buy_bundle", "clearance_sale", "introductory_offer", "referral_discount", 
+    "subscription_trial", "free_ticket", "group_discount", "student_night", "package_deals", 
+    "free_consultation", "loyalty_stamp", "free_trial", "class_pass_bundle", "membership_discount", 
+    "transfer_discount", "day_pass", "seasonal_ticket", "free_taster", "multi_lesson_package", 
+    "student_concession", "installation_discount", "free_delivery", "seasonal_service", 
+    "accessory_bundle", "repair_discount", "trade_in_bonus", "group_booking", "off_peak_discount", 
+    "experience_package", "fixed_price_bundle"
+  ]),
   percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || undefined : val).optional(),
   fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
   originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
@@ -209,6 +222,12 @@ const DAYS_OF_WEEK = [
   { value: "sun", label: "Sunday" },
 ];
 
+// Function to get available offer types based on selected category
+function getAvailableOfferTypes(category: string | undefined) {
+  const categorySpecific = category ? CATEGORY_SPECIFIC_OFFER_TYPES[category] || [] : [];
+  return [...GLOBAL_OFFER_TYPES, ...categorySpecific];
+}
+
 export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { onClose?: () => void; editingOffer?: any }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -315,6 +334,25 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
     control: form.control,
     name: "blackoutDates",
   });
+
+  // Watch for category changes to update available offer types
+  const selectedCategory = form.watch("category");
+  const selectedOfferType = form.watch("type");
+  const availableOfferTypes = getAvailableOfferTypes(selectedCategory);
+
+  // Reset offer type when category changes and current type is not available
+  useEffect(() => {
+    if (selectedCategory && selectedOfferType) {
+      const isCurrentTypeAvailable = availableOfferTypes.some(type => type.value === selectedOfferType);
+      if (!isCurrentTypeAvailable) {
+        form.setValue("type", "percentage_discount"); // Reset to default
+        toast({
+          title: "Offer type reset",
+          description: `Offer type was reset because it's not available for ${selectedCategory}`,
+        });
+      }
+    }
+  }, [selectedCategory, selectedOfferType, availableOfferTypes, form, toast]);
 
   // Image upload and cropping functions
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -694,15 +732,29 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="percentage_discount">Percentage Discount</SelectItem>
-                                <SelectItem value="fixed_amount_discount">Fixed Amount Discount</SelectItem>
-                                <SelectItem value="fixed_price_bundle">Fixed Price / Bundle Deal</SelectItem>
-                                <SelectItem value="free_item_with_purchase">Free Item with Purchase</SelectItem>
-                                <SelectItem value="bogo">BOGOF (Buy One, Get One Free)</SelectItem>
-                                <SelectItem value="day_time_specific">Day/Time-Specific Offers</SelectItem>
-                                <SelectItem value="limited_redemptions">Limited Redemptions Offer</SelectItem>
-                                <SelectItem value="loyalty_reward">Loyalty Reward Offer</SelectItem>
-                                <SelectItem value="set_menu">Set Menu</SelectItem>
+                                {/* Global offer types */}
+                                <div className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                                  Global Core Types
+                                </div>
+                                {GLOBAL_OFFER_TYPES.map((type) => (
+                                  <SelectItem key={type.value} value={type.value}>
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                                
+                                {/* Category-specific offer types */}
+                                {selectedCategory && CATEGORY_SPECIFIC_OFFER_TYPES[selectedCategory] && (
+                                  <>
+                                    <div className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-2">
+                                      {selectedCategory} Specific
+                                    </div>
+                                    {CATEGORY_SPECIFIC_OFFER_TYPES[selectedCategory].map((type) => (
+                                      <SelectItem key={type.value} value={type.value}>
+                                        {type.label}
+                                      </SelectItem>
+                                    ))}
+                                  </>
+                                )}
                               </SelectContent>
                             </Select>
                             <FormMessage />
