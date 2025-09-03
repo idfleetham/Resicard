@@ -251,29 +251,36 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
   };
 
   // Image panning functions
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleImageMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
-    setDragStart({
-      x: e.clientX - imagePosition.x,
-      y: e.clientY - imagePosition.y
-    });
-  };
+    
+    const startX = e.clientX - imagePosition.x;
+    const startY = e.clientY - imagePosition.y;
+    
+    // Add global event listeners for mouse move and up
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      setImagePosition({
+        x: e.clientX - startX,
+        y: e.clientY - startY
+      });
+    };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setImagePosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
   };
 
   // Center image function
   const centerImage = () => {
     setImagePosition({ x: 0, y: 0 });
+    setScale(1);
   };
 
   const cropImage = async () => {
@@ -2006,39 +2013,39 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                         </div>
                         
                         <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg relative">
-                          <ReactCrop
-                            crop={crop}
-                            onChange={(_, percentCrop) => setCrop(percentCrop)}
-                            onComplete={(c) => setCompletedCrop(c)}
-                            aspect={16 / 9}
-                            className="ReactCrop__crop-image"
-                          >
-                            <img
-                              src={imgSrc}
-                              style={{ 
-                                transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${scale}) rotate(${rotation}deg)`,
-                                transformOrigin: 'center',
-                                display: 'block',
-                                maxWidth: 'none',
-                                cursor: isDragging ? 'grabbing' : 'grab'
-                              }}
-                              onMouseDown={handleMouseDown}
-                              onMouseMove={handleMouseMove}
-                              onMouseUp={handleMouseUp}
-                              onMouseLeave={handleMouseUp}
-                              onLoad={(e) => {
-                                const { width, height } = e.currentTarget;
-                                setCrop({
-                                  unit: '%',
-                                  width: 80,
-                                  height: 80 * (9 / 16),
-                                  x: 10,
-                                  y: 10,
-                                });
-                              }}
-                              draggable={false}
-                            />
-                          </ReactCrop>
+                          <div className="relative">
+                            <ReactCrop
+                              crop={crop}
+                              onChange={(_, percentCrop) => setCrop(percentCrop)}
+                              onComplete={(c) => setCompletedCrop(c)}
+                              aspect={16 / 9}
+                              className="ReactCrop__crop-image"
+                            >
+                              <img
+                                src={imgSrc}
+                                style={{ 
+                                  transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${scale}) rotate(${rotation}deg)`,
+                                  transformOrigin: 'center',
+                                  display: 'block',
+                                  maxWidth: 'none',
+                                  cursor: isDragging ? 'grabbing' : 'grab',
+                                  userSelect: 'none'
+                                }}
+                                onMouseDown={handleImageMouseDown}
+                                onLoad={(e) => {
+                                  const { width, height } = e.currentTarget;
+                                  setCrop({
+                                    unit: '%',
+                                    width: 80,
+                                    height: 80 * (9 / 16),
+                                    x: 10,
+                                    y: 10,
+                                  });
+                                }}
+                                draggable={false}
+                              />
+                            </ReactCrop>
+                          </div>
                         </div>
                         
                         <div className="flex items-center justify-between">
