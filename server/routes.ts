@@ -1877,6 +1877,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const discountAmount = (parseFloat(offer.originalValue) * parseFloat(offer.percentOff)) / 100;
             finalPrice = (parseFloat(offer.originalValue) - discountAmount).toFixed(2);
           }
+          // For BOGO and free item offers
+          else if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+            // For BOGO: show the discount amount as the value saved
+            originalPrice = '0.00'; // BOGO doesn't have an "original price" - it's the discount
+            finalPrice = discountAmount.toFixed(2); // Show the discount amount as the offer value
+          }
           // Fallback to legacy calculation for other types
           else {
             originalPrice = parseFloat(offer.originalValue || 0).toFixed(2);
