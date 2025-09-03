@@ -739,12 +739,16 @@ export default function MerchantDashboard() {
                               <h4 className="font-semibold text-lg">{offer.title}</h4>
                               <p className="text-sm text-muted-foreground">{offer.category}</p>
                               <p className="text-xs text-muted-foreground">
-                                Value: {offer.discountType === 'percentage' 
-                                  ? `${offer.discountValue}% off £${offer.originalValue || 0}`
-                                  : offer.type === 'fixed_price_bundle' && offer.fixedPrice 
-                                    ? `£${offer.fixedPrice} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
-                                    : `£${offer.discountValue} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
-                                }
+                                {(() => {
+                                  if (offer.discountType === 'percentage') {
+                                    return `Value: ${offer.discountValue}% off £${offer.originalValue || 0}`;
+                                  } else if (offer.type === 'fixed_price_bundle' && offer.fixedPrice && offer.originalValue) {
+                                    const discountAmount = parseFloat(offer.originalValue.toString()) - parseFloat(offer.fixedPrice.toString());
+                                    return `Discount: £${discountAmount.toFixed(2)} off (offer: £${offer.fixedPrice}, was: £${offer.originalValue})`;
+                                  } else {
+                                    return `Value: £${offer.discountValue} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`;
+                                  }
+                                })()}
                               </p>
                             </div>
                             <Badge variant={offer.isActive ? "default" : "secondary"}>
