@@ -3562,10 +3562,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         feePercent: group.feePercent
       }));
 
+      // Calculate VAT (20%)
+      const netFees = Math.round(totalFees * 100) / 100;
+      const vatAmount = Math.round(netFees * 0.20 * 100) / 100;
+      const grossFees = Math.round((netFees + vatAmount) * 100) / 100;
+
       res.json({
         period: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
         redemptions: totalRedemptions,
-        totalFees: Math.round(totalFees * 100) / 100,
+        netFees: netFees,
+        vatAmount: vatAmount,
+        totalFees: grossFees,
         averageFee: Math.round(averageFee * 100) / 100,
         detailedBreakdown,
         status: 'draft'

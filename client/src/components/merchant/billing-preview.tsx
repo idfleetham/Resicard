@@ -70,7 +70,12 @@ export default function BillingPreview() {
       ]);
     }
 
-    csvData.push([""], ["Total Due:", "", "", `£${period.totalFees.toFixed(2)}`]);
+    csvData.push(
+      [""],
+      ["Net Fees:", "", "", `£${(billingStats?.netFees || period.totalFees).toFixed(2)}`],
+      ["VAT (20%):", "", "", `£${(billingStats?.vatAmount || 0).toFixed(2)}`],
+      ["Total Due:", "", "", `£${period.totalFees.toFixed(2)}`]
+    );
 
     const csvContent = "data:text/csv;charset=utf-8," + 
       csvData.map(row => row.join(",")).join("\n");
@@ -205,6 +210,14 @@ export default function BillingPreview() {
                   <TableCell className="text-right text-slate-300 text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
                 </TableRow>
               )}
+              <TableRow>
+                <TableCell className="text-slate-300 text-lg" colSpan={3}>Net Fees</TableCell>
+                <TableCell className="text-right text-slate-300 text-lg">£{(billingStats?.netFees || currentPeriod.totalFees).toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="text-slate-300 text-lg" colSpan={3}>VAT (20%)</TableCell>
+                <TableCell className="text-right text-slate-300 text-lg">£{(billingStats?.vatAmount || 0).toFixed(2)}</TableCell>
+              </TableRow>
               <TableRow className="border-t-2 border-white/40 shadow-xl shadow-white/20Strong font-medium">
                 <TableCell className="text-fg font-semibold text-lg" colSpan={3}>Total Due</TableCell>
                 <TableCell className="text-right text-fg font-semibold text-lg">£{currentPeriod.totalFees.toFixed(2)}</TableCell>
@@ -249,15 +262,11 @@ export default function BillingPreview() {
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-lg">
               <span className="text-slate-300">Collection Date:</span>
-              <span className="text-fg">End of each month</span>
-            </div>
-            <div className="flex justify-between text-lg">
-              <span className="text-slate-300">Processing Fee:</span>
-              <span className="text-fg">£0.50 per redemption</span>
+              <span className="text-fg">15 days following month end</span>
             </div>
             <div className="flex justify-between text-lg">
               <span className="text-slate-300">VAT:</span>
-              <span className="text-fg">Included</span>
+              <span className="text-fg">Added at 20%</span>
             </div>
           </div>
         </CardBody>
