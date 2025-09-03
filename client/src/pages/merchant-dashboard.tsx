@@ -643,10 +643,14 @@ export default function MerchantDashboard() {
                       let offerValue = 0;
                       const discountVal = parseFloat((offer.discountValue as string) || '0');
                       const originalVal = parseFloat((offer.originalValue as string) || '0');
+                      const fixedPriceVal = parseFloat((offer.fixedPrice as string) || '0');
                       
                       if (offer.discountType === 'percentage' && originalVal > 0) {
                         // For percentage offers, use the discount amount (what customer saves)
                         offerValue = originalVal * (discountVal / 100);
+                      } else if (offer.type === 'fixed_price_bundle' && fixedPriceVal > 0) {
+                        // For fixed price bundles, use the bundle price (what customer pays)
+                        offerValue = fixedPriceVal;
                       } else if (offer.discountType === 'fixed') {
                         // For fixed offers, use the discount value (what customer saves)
                         offerValue = discountVal;
@@ -710,10 +714,14 @@ export default function MerchantDashboard() {
                       let offerValue = 0;
                       const discountVal = parseFloat((offer.discountValue as string) || '0');
                       const originalVal = parseFloat((offer.originalValue as string) || '0');
+                      const fixedPriceVal = parseFloat((offer.fixedPrice as string) || '0');
                       
                       if (offer.discountType === 'percentage' && originalVal > 0) {
                         // For percentage offers, use the discount amount (what customer saves)
                         offerValue = originalVal * (discountVal / 100);
+                      } else if (offer.type === 'fixed_price_bundle' && fixedPriceVal > 0) {
+                        // For fixed price bundles, use the bundle price (what customer pays)
+                        offerValue = fixedPriceVal;
                       } else if (offer.discountType === 'fixed') {
                         // For fixed offers, use the discount value (what customer saves)
                         offerValue = discountVal;
@@ -733,7 +741,9 @@ export default function MerchantDashboard() {
                               <p className="text-xs text-muted-foreground">
                                 Value: {offer.discountType === 'percentage' 
                                   ? `${offer.discountValue}% off £${offer.originalValue || 0}`
-                                  : `£${offer.discountValue} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
+                                  : offer.type === 'fixed_price_bundle' && offer.fixedPrice 
+                                    ? `£${offer.fixedPrice} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
+                                    : `£${offer.discountValue} ${offer.originalValue ? `(was £${offer.originalValue})` : ''}`
                                 }
                               </p>
                             </div>
