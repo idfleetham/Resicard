@@ -129,11 +129,11 @@ export default function SubscriptionManagement() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CreditCard className="h-6 w-6 text-brand1" />
-              <CardTitle className="text-xl">Current Subscription</CardTitle>
+              <CardTitle className="text-xl text-white">Current Subscription</CardTitle>
             </div>
             {getStatusBadge(subscriptionData?.status || 'trial')}
           </div>
-          <CardDescription>
+          <CardDescription className="text-slate-300">
             Your platform subscription details and billing information
           </CardDescription>
         </CardHeader>
@@ -196,7 +196,7 @@ export default function SubscriptionManagement() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Settings className="h-6 w-6 text-brand1" />
-              <CardTitle className="text-xl">Processing Fee Settings</CardTitle>
+              <CardTitle className="text-xl text-white">Processing Fee Settings</CardTitle>
             </div>
             <Button
               variant="outline"
@@ -207,7 +207,7 @@ export default function SubscriptionManagement() {
               {isEditing ? 'Save Changes' : 'Edit Settings'}
             </Button>
           </div>
-          <CardDescription>
+          <CardDescription className="text-slate-300">
             Configure your processing fee rate for voucher redemptions
           </CardDescription>
         </CardHeader>
@@ -277,8 +277,8 @@ export default function SubscriptionManagement() {
       {/* Example Calculations */}
       <Card className="bg-surface border-white/20">
         <CardHeader>
-          <CardTitle className="text-xl">Fee Calculation Examples</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl text-white">Fee Calculation Examples</CardTitle>
+          <CardDescription className="text-slate-300">
             See how your processing fee rate applies to different redemption values
           </CardDescription>
         </CardHeader>
