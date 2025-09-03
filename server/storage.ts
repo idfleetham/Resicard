@@ -964,14 +964,8 @@ export class DatabaseStorage implements IStorage {
     
     // Map database field names to frontend expected field names
     return result.map(offer => {
-      // Debug: Check what fields actually exist
-      console.log(`Debug offer "${offer.title}":`, Object.keys(offer));
-      console.log(`Raw values: usage_count=${(offer as any).usage_count}, usageCount=${(offer as any).usageCount}`);
-      
       const usageCount = (offer as any).usageCount || (offer as any).usage_count || 0;
       const usageLimit = (offer as any).usageLimit || (offer as any).usage_limit || (offer as any).globalUsageLimit || (offer as any).global_usage_limit || 100;
-      
-      console.log(`Offer "${offer.title}": usageCount=${usageCount}, usageLimit=${usageLimit}`);
       
       return {
         ...offer,
