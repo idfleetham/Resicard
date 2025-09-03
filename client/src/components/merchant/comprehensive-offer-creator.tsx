@@ -2012,9 +2012,9 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                           <span className="text-slate-300 text-sm w-12">{scale.toFixed(1)}x</span>
                         </div>
                         
-                        <div className="max-w-full overflow-auto border-2 border-slate-600 rounded-lg relative">
+                        <div className="w-full border-2 border-slate-600 rounded-lg relative" style={{ minHeight: '400px' }}>
                           <div 
-                            className="relative select-none"
+                            className="relative select-none w-full h-full"
                             onMouseDown={handleImageMouseDown}
                             style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                           >
@@ -2024,6 +2024,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                               onComplete={(c) => setCompletedCrop(c)}
                               aspect={16 / 9}
                               className="ReactCrop__crop-image"
+                              style={{ width: '100%', height: '100%' }}
                             >
                               <img
                                 src={imgSrc}
@@ -2031,19 +2032,40 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
                                   transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${scale}) rotate(${rotation}deg)`,
                                   transformOrigin: 'center',
                                   display: 'block',
-                                  maxWidth: 'none',
+                                  width: 'auto',
+                                  height: 'auto',
+                                  maxWidth: '100%',
+                                  maxHeight: '100%',
                                   userSelect: 'none',
                                   pointerEvents: 'none'
                                 }}
                                 onLoad={(e) => {
-                                  const { width, height } = e.currentTarget;
-                                  setCrop({
-                                    unit: '%',
-                                    width: 80,
-                                    height: 80 * (9 / 16),
-                                    x: 10,
-                                    y: 10,
-                                  });
+                                  const { naturalWidth, naturalHeight } = e.currentTarget;
+                                  // Set crop to show full image initially
+                                  const aspectRatio = 16 / 9;
+                                  if (naturalWidth / naturalHeight > aspectRatio) {
+                                    // Image is wider - fit by height
+                                    const cropHeight = 60;
+                                    const cropWidth = cropHeight * aspectRatio * (naturalHeight / naturalWidth);
+                                    setCrop({
+                                      unit: '%',
+                                      width: Math.min(cropWidth, 80),
+                                      height: cropHeight,
+                                      x: (100 - Math.min(cropWidth, 80)) / 2,
+                                      y: 20,
+                                    });
+                                  } else {
+                                    // Image is taller - fit by width
+                                    const cropWidth = 80;
+                                    const cropHeight = cropWidth / aspectRatio * (naturalWidth / naturalHeight);
+                                    setCrop({
+                                      unit: '%',
+                                      width: cropWidth,
+                                      height: Math.min(cropHeight, 60),
+                                      x: 10,
+                                      y: (100 - Math.min(cropHeight, 60)) / 2,
+                                    });
+                                  }
                                 }}
                                 draggable={false}
                               />
