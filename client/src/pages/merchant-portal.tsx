@@ -105,11 +105,11 @@ export default function MerchantPortal() {
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'fixed',
-            filter: 'grayscale(100%) contrast(1.2) brightness(0.3)',
+            filter: 'grayscale(100%) contrast(1.1) brightness(0.7)',
             mixBlendMode: 'multiply'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/70 to-slate-900/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-900/30 to-slate-900/40" />
         <div className="flex items-center justify-center min-h-screen st-andrews-content">
           <div className="space-y-4 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-brand1 border-t-transparent rounded-full mx-auto" />
