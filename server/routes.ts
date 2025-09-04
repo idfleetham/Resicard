@@ -1869,7 +1869,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // For fixed price bundles, use the actual offer data
           if (offer.type === 'fixed_price_bundle' && offer.fixedPrice && offer.originalValue) {
             originalPrice = parseFloat(offer.originalValue).toFixed(2);
-            finalPrice = parseFloat(offer.fixedPrice).toFixed(2);
+            // For display purposes, show the discount amount as the offer value (what customer saved)
+            finalPrice = (parseFloat(offer.originalValue) - parseFloat(offer.fixedPrice)).toFixed(2);
           } 
           // For percentage discounts
           else if (offer.type === 'percentage_discount' && offer.percentOff && offer.originalValue) {
@@ -2030,35 +2031,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const basketValue = basketAmount ? parseFloat(basketAmount) : 0;
       let discountValue = 0;
       
-      console.log('=== REDEMPTION DEBUG ===');
-      console.log('Offer data:', JSON.stringify(offer, null, 2));
-      console.log('Basket value:', basketValue);
-      
       if (offer.discountType === 'percentage') {
         discountValue = basketValue * (parseFloat(offer.discountValue || '0') / 100);
-        console.log('Percentage discount calculated:', discountValue);
       } else if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
-        console.log('Processing BOGO/Free item offer');
         // For BOGO offers, use the configured discount value or calculate from original value
         const offerData = await storage.getOffer(offer.id);
-        console.log('Full offer data from storage:', JSON.stringify(offerData, null, 2));
         
         if (offerData?.discountValue) {
           discountValue = parseFloat(offerData.discountValue);
-          console.log('Using offer discountValue:', discountValue);
         } else if (offerData?.originalValue) {
           discountValue = parseFloat(offerData.originalValue) / 2; // BOGO = 50% off
-          console.log('Calculated BOGO discount from originalValue:', discountValue);
         } else {
           discountValue = basketValue / 2; // Fallback to 50% of basket
-          console.log('Fallback BOGO discount from basket:', discountValue);
         }
       } else {
         discountValue = parseFloat(offer.discountValue || '0');
-        console.log('Fixed discount value:', discountValue);
       }
-      
-      console.log('Final discount value:', discountValue);
 
       const finalValue = Math.max(0, basketValue - discountValue);
 
@@ -2100,7 +2088,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Increment usage count for the offer
       try {
         await storage.incrementOfferUsage(offer.id);
-        console.log('Incremented usage count for offer:', offer.id);
       } catch (usageError) {
         console.error('Error incrementing offer usage:', usageError);
         // Continue with redemption even if usage increment fails
