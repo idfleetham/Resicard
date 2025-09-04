@@ -1979,9 +1979,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: offerData.id,
             merchantId: offerData.merchantId,
             title: offerData.title,
+            type: offerData.type, // Keep the original type for proper logic
             discountType: offerData.type === 'percentage_discount' ? 'percentage' : 'fixed',
-            discountValue: offerData.percentOff?.toString() || offerData.fixedPrice?.toString() || '0',
-            originalValue: offerData.originalValue?.toString() || '0'
+            discountValue: offerData.percentOff?.toString() || offerData.fixedPrice?.toString() || offerData.discountValue?.toString() || '0',
+            originalValue: offerData.originalValue?.toString() || '0',
+            percentOff: offerData.percentOff,
+            fixedPrice: offerData.fixedPrice
           };
           isUuidOffer = true;
         } else {
