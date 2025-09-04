@@ -367,8 +367,8 @@ export default function MerchantPortal() {
                   <div className="space-y-4">
                     {redemptions.length > 0 ? redemptions.slice(0, 5).map((redemption, index) => {
                       // Find the member's tier color based on their user ID
-                      const member = membersData?.members?.find(m => m.userId === redemption.user_id);
-                      const tierColor = member?.tier?.color || '#f97316'; // Default to orange if no tier found
+                      const member = membersData?.members?.find(m => m.id === redemption.user_id);
+                      const tierColor = member?.tierColor || '#f97316'; // Default to orange if no tier found
                       
                       return (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-surface/30">
