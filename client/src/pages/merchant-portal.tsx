@@ -85,10 +85,8 @@ export default function MerchantPortal() {
 
   if (isLoading) {
     return (
-      <div data-theme="dim" className="min-h-screen bg-bg text-fg relative">
-        <div className="pointer-events-none absolute inset-0 -z-10
-            bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
-        <div className="flex items-center justify-center min-h-screen">
+      <div data-theme="dim" className="min-h-screen st-andrews-bg text-fg relative">
+        <div className="flex items-center justify-center min-h-screen st-andrews-content">
           <div className="space-y-4 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-brand1 border-t-transparent rounded-full mx-auto" />
             <div className="space-y-2">
@@ -106,11 +104,9 @@ export default function MerchantPortal() {
   }
 
   return (
-    <div data-theme="dim" className="min-h-screen bg-bg text-fg relative">
-      <div className="pointer-events-none absolute inset-0 -z-10
-          bg-[radial-gradient(1000px_700px_at_10%_-10%,rgba(120,119,198,.12)_0%,transparent_55%),radial-gradient(900px_600px_at_110%_0%,rgba(147,51,234,.10)_0%,transparent_52%)]" />
+    <div data-theme="dim" className="min-h-screen st-andrews-bg text-fg relative">
       
-      <div className="mx-auto max-w-7xl px-5 py-6">
+      <div className="mx-auto max-w-7xl px-5 py-6 st-andrews-content">
         {/* Hero Header Card */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}

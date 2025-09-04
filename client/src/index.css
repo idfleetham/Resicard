@@ -311,3 +311,57 @@ input[type="datetime-local"]::-moz-calendar-picker-indicator {
   filter: invert(34%) sepia(100%) saturate(5000%) hue-rotate(347deg) brightness(95%) contrast(100%);
   cursor: pointer;
 }
+
+/* St Andrews inspired dark background pattern */
+.st-andrews-bg {
+  background-color: rgb(var(--bg));
+  background-image: 
+    /* Stone texture pattern */
+    radial-gradient(circle at 2px 2px, rgba(71, 85, 105, 0.08) 1px, transparent 0),
+    /* Medieval architecture lines */
+    linear-gradient(45deg, transparent 49%, rgba(51, 65, 85, 0.06) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(51, 65, 85, 0.06) 50%, transparent 51%),
+    /* Castle rampart pattern */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 300px,
+      rgba(30, 41, 59, 0.05) 300px,
+      rgba(30, 41, 59, 0.05) 302px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 200px,
+      rgba(30, 41, 59, 0.04) 200px,
+      rgba(30, 41, 59, 0.04) 202px
+    );
+  background-size: 8px 8px, 20px 20px, 20px 20px, 100% 100%, 100% 100%;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+  position: relative;
+}
+
+.st-andrews-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    /* University spire silhouettes */
+    radial-gradient(ellipse 250px 500px at 12% 100%, rgba(15, 23, 42, 0.6) 20%, transparent 21%),
+    radial-gradient(ellipse 180px 400px at 88% 100%, rgba(15, 23, 42, 0.5) 25%, transparent 26%),
+    /* Cathedral ruins outline */
+    radial-gradient(ellipse 350px 150px at 50% 100%, rgba(30, 41, 59, 0.4) 30%, transparent 31%),
+    /* Coastal horizon with subtle architectural elements */
+    linear-gradient(180deg, transparent 85%, rgba(15, 23, 42, 0.2) 90%, rgba(15, 23, 42, 0.6) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content appears above background */
+.st-andrews-content {
+  position: relative;
+  z-index: 1;
+}
