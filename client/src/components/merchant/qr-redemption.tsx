@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
 import { MetricTile } from "@/ui/MetricTile";
@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Camera, Hash, CheckCircle, XCircle, Zap, CreditCard, Download } from "lucide-react";
+import { QrCode, Camera, Hash, CheckCircle, XCircle, Zap, CreditCard, Download, X } from "lucide-react";
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
+import QrScanner from "qr-scanner";
 
 export default function QRRedemption() {
   const { user } = useAuth();
@@ -27,6 +28,9 @@ export default function QRRedemption() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [selectedOffer, setSelectedOffer] = useState("");
   const [activeTab, setActiveTab] = useState<'manual' | 'qr-scan'>('manual');
+  const [qrScanner, setQrScanner] = useState<QrScanner | null>(null);
+  const [hasCamera, setHasCamera] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const qrRef = useRef<HTMLDivElement>(null);
 
   // Fetch merchant's redemptions for stats
@@ -133,15 +137,70 @@ export default function QRRedemption() {
   };
 
   const handleScanQR = async () => {
-    setIsScanning(true);
-    // Placeholder for QR scanning functionality
-    // In a real implementation, this would open camera and scan QR codes
-    toast({
-      title: "QR Scanner",
-      description: "QR scanner functionality would be implemented here using camera API",
-    });
+    if (!videoRef.current) return;
+    
+    try {
+      setIsScanning(true);
+      
+      // Create QR Scanner instance
+      const scanner = new QrScanner(
+        videoRef.current,
+        (result) => {
+          // QR code detected
+          console.log('QR Code detected:', result.data);
+          setVoucherCode(result.data);
+          stopScanner();
+          toast({
+            title: "QR Code Scanned",
+            description: `Voucher code: ${result.data}`,
+          });
+        },
+        {
+          returnDetailedScanResult: true,
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+        }
+      );
+      
+      setQrScanner(scanner);
+      await scanner.start();
+      
+    } catch (error: any) {
+      console.error('Camera error:', error);
+      setHasCamera(false);
+      setIsScanning(false);
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera. Please check permissions or use manual entry.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const stopScanner = () => {
+    if (qrScanner) {
+      qrScanner.stop();
+      qrScanner.destroy();
+      setQrScanner(null);
+    }
     setIsScanning(false);
   };
+  
+  // Cleanup scanner on component unmount or tab change
+  useEffect(() => {
+    return () => {
+      if (qrScanner) {
+        qrScanner.stop();
+        qrScanner.destroy();
+      }
+    };
+  }, [qrScanner]);
+  
+  useEffect(() => {
+    if (activeTab !== 'qr-scan' && qrScanner) {
+      stopScanner();
+    }
+  }, [activeTab, qrScanner]);
 
   const generateOfferQR = () => {
     if (!selectedOffer) {
@@ -395,37 +454,116 @@ export default function QRRedemption() {
             </div>
           ) : (
             <div className="rounded-xl bg-surface border border-white/40 shadow-xl shadow-white/20 p-4">
-              <div className="text-center py-8">
-                <Camera className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                <p className="text-slate-300 mb-4">Camera preview and scanner go here</p>
-                <button 
-                  onClick={handleScanQR}
-                  disabled={isScanning}
-                  className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all disabled:opacity-50"
-                >
-                  {isScanning ? (
-                    <>
-                      <Camera className="w-4 h-4 mr-2 animate-pulse inline" />
-                      Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4 mr-2 inline" />
-                      Start QR Scanner
-                    </>
-                  )}
-                </button>
-              </div>
+              {!hasCamera ? (
+                <div className="text-center py-8">
+                  <XCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                  <p className="text-slate-300 mb-4">Camera not available</p>
+                  <p className="text-sm text-slate-400 mb-4">Please use manual entry or check camera permissions</p>
+                  <button 
+                    onClick={() => setHasCamera(true)}
+                    className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all"
+                  >
+                    <Camera className="w-4 h-4 mr-2 inline" />
+                    Retry Camera
+                  </button>
+                </div>
+              ) : !isScanning ? (
+                <div className="text-center py-8">
+                  <Camera className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                  <p className="text-slate-300 mb-4">Ready to scan QR codes</p>
+                  <button 
+                    onClick={handleScanQR}
+                    className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all"
+                  >
+                    <Camera className="w-4 h-4 mr-2 inline" />
+                    Start QR Scanner
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="text-center mb-4">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Camera className="w-5 h-5 text-green-400 animate-pulse" />
+                      <span className="text-green-400 font-medium">Scanner Active</span>
+                    </div>
+                    <button
+                      onClick={stopScanner}
+                      className="inline-flex items-center px-3 py-1 bg-red-500/20 text-red-400 border border-red-400/30 rounded-lg hover:bg-red-500/30 transition-all"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Stop Scanner
+                    </button>
+                  </div>
+                  
+                  <div className="relative bg-black rounded-lg overflow-hidden">
+                    <video
+                      ref={videoRef}
+                      className="w-full h-64 object-cover"
+                      playsInline
+                      muted
+                    />
+                    <div className="absolute inset-0 border-2 border-green-400/50 rounded-lg pointer-events-none">
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-green-400 rounded-lg">
+                        <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-400"></div>
+                        <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-400"></div>
+                        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-400"></div>
+                        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-400"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-center text-sm text-slate-400 mt-2">
+                    Position QR code within the green frame
+                  </p>
+                </div>
+              )}
               
-              <div className="mt-4 pt-4 border-t border-white/40 shadow-xl shadow-white/20">
-                <label className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</label>
-                <Input
-                  type="password"
-                  placeholder="Enter your staff PIN"
-                  value={staffPin}
-                  onChange={(e) => setStaffPin(e.target.value)}
-                  className="input-dark"
-                />
+              <div className="mt-4 pt-4 border-t border-white/40 shadow-xl shadow-white/20 space-y-4">
+                <div>
+                  <label className="block text-base font-medium tracking-wide text-fg mb-1">Staff PIN</label>
+                  <Input
+                    type="password"
+                    placeholder="Enter your staff PIN"
+                    value={staffPin}
+                    onChange={(e) => setStaffPin(e.target.value)}
+                    className="input-dark border-white/80 placeholder:text-white/70"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-base font-medium tracking-wide text-fg mb-1">
+                    Basket Amount <span className="text-slate-300">(Optional)</span>
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="£0.00"
+                    value={basketAmount}
+                    onChange={(e) => setBasketAmount(e.target.value)}
+                    className="input-dark border-white/80 placeholder:text-white/70"
+                  />
+                  <p className="text-xs text-slate-300/80 mt-1">Enter basket total for percentage discounts</p>
+                </div>
+
+                <div className="pt-2">
+                  <button 
+                    onClick={handleRedeemVoucher}
+                    disabled={redeemVoucherMutation.isPending || !voucherCode}
+                    className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all disabled:opacity-50 w-full"
+                  >
+                    {redeemVoucherMutation.isPending ? (
+                      <>
+                        <Zap className="w-4 h-4 mr-2 animate-pulse inline" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2 inline" />
+                        Redeem {voucherCode ? 'Scanned ' : ''}Voucher
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
