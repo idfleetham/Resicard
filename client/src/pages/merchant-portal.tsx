@@ -174,9 +174,6 @@ export default function MerchantPortal() {
                     <CardTitle className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                       {user.businessName || "Merchant Portal"}
                     </CardTitle>
-                    <CardDescription className="text-purple-200/90 text-base font-medium">
-                      Manage your offers, track redemptions, and grow your business
-                    </CardDescription>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
