@@ -94,22 +94,12 @@ export default function MerchantPortal() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          filter: 'grayscale(50%) brightness(3.0) contrast(1.3)',
           backgroundAttachment: 'fixed'
         }}
       >
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',
-            filter: 'grayscale(80%) contrast(1.2) brightness(5.0)',
-            mixBlendMode: 'normal'
-          }}
-        />
-        <div className="flex items-center justify-center min-h-screen st-andrews-content">
+        <div className="absolute inset-0 bg-slate-900/20" />
+        <div className="flex items-center justify-center min-h-screen st-andrews-content relative z-10">
           <div className="space-y-4 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-brand1 border-t-transparent rounded-full mx-auto" />
             <div className="space-y-2">
@@ -135,24 +125,13 @@ export default function MerchantPortal() {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        filter: 'grayscale(50%) brightness(3.0) contrast(1.3)',
         backgroundAttachment: 'fixed'
       }}
     >
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-          filter: 'grayscale(100%) contrast(1.2) brightness(0.3)',
-          mixBlendMode: 'multiply'
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/70 to-slate-900/80" />
+      <div className="absolute inset-0 bg-slate-900/20" />
       
-      <div className="mx-auto max-w-7xl px-5 py-6 st-andrews-content">
+      <div className="mx-auto max-w-7xl px-5 py-6 st-andrews-content relative z-10">
         {/* Hero Header Card */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
