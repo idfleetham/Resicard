@@ -266,8 +266,8 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allOffers.map((offer: any) => (
-                    <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
+                  {allOffers.map((offer: any, index: number) => (
+                    <TableRow key={`${offer.type}-${offer.id}`} className={`hover:bg-white/[0.05] ${index % 2 === 0 ? 'bg-white/[0.02]' : 'bg-transparent'}`}>
                       <TableCell className="font-medium text-fg text-lg">
                         <div>{offer.title}</div>
                       </TableCell>
