@@ -186,34 +186,34 @@ export default function RedemptionsFeed() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-        <div className="bg-white border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
-            <span className="text-gray-700">Total Redemptions</span>
+            <span className="text-white">Total Redemptions</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-green-500/70 to-green-600/70 text-white shadow-elev-1">
               📈
             </span>
           </div>
-          <div className="mt-3 text-3xl font-semibold text-black">{getTotalRedemptions()}</div>
+          <div className="mt-3 text-3xl font-semibold text-fg">{getTotalRedemptions()}</div>
         </div>
         
-        <div className="bg-white border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
-            <span className="text-gray-700">Total Value</span>
+            <span className="text-white">Total Value</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500/70 to-blue-600/70 text-white shadow-elev-1">
               £
             </span>
           </div>
-          <div className="mt-3 text-3xl font-semibold text-black">£{getTotalValue()}</div>
+          <div className="mt-3 text-3xl font-semibold text-fg">£{getTotalValue()}</div>
         </div>
         
-        <div className="bg-white border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
+        <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl p-5">
           <div className="flex items-center justify-between">
-            <span className="text-gray-700">This Period</span>
+            <span className="text-white">This Period</span>
             <span className="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br from-purple-500/70 to-purple-600/70 text-white shadow-elev-1">
               📅
             </span>
           </div>
-          <div className="mt-3 text-3xl font-semibold text-black">{filteredRedemptions.length}</div>
+          <div className="mt-3 text-3xl font-semibold text-fg">{filteredRedemptions.length}</div>
         </div>
       </div>
 

@@ -601,7 +601,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
   return (
     <div className="max-w-6xl mx-auto p-2 sm:p-6 space-y-4 sm:space-y-6">
-      <Card className="bg-slate-900/50 border-slate-700">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-slate-100 text-xl">
             <Plus className="w-5 h-5 text-blue-400" />
@@ -616,7 +616,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Navigation Sidebar */}
         <div className="lg:col-span-1">
-          <Card className="bg-slate-900/50 border-slate-700 sticky top-6">
+          <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 sticky top-6">
             <CardBody className="p-4">
               <nav className="space-y-2">
                 {sections.map((section) => {
@@ -650,7 +650,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
               
               {/* A) Core & Pricing Section */}
               {activeSection === "core" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <PoundSterling className="w-5 h-5 mr-2 text-blue-400" />
@@ -1617,7 +1617,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* B) Eligibility Section */}
               {activeSection === "eligibility" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Users className="w-5 h-5 mr-2 text-blue-400" />
@@ -1810,7 +1810,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* C) Scheduling Section */}
               {activeSection === "scheduling" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Calendar className="w-5 h-5 mr-2 text-red-500" />
@@ -2213,7 +2213,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* D) Limits & Rules Section */}
               {activeSection === "limits" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Shield className="w-5 h-5 mr-2 text-blue-400" />
@@ -2436,7 +2436,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* E) Terms Section */}
               {activeSection === "terms" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <Settings className="w-5 h-5 mr-2 text-blue-400" />
@@ -2555,7 +2555,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* F) Media Section */}
               {activeSection === "media" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <ImageIcon className="w-5 h-5 mr-2 text-blue-400" />
@@ -2696,7 +2696,7 @@ export default function ComprehensiveOfferCreator({ onClose, editingOffer }: { o
 
               {/* G) Controls Section */}
               {activeSection === "controls" && (
-                <Card className="bg-slate-900/50 border-slate-700">
+                <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader>
                     <CardTitle className="text-slate-100 flex items-center text-xl">
                       <BarChart3 className="w-5 h-5 mr-2 text-blue-400" />

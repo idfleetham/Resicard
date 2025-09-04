@@ -124,7 +124,7 @@ export default function SubscriptionManagement() {
       </div>
 
       {/* Current Subscription Status */}
-      <Card className="bg-surface border-white/20">
+      <Card className="bg-surface border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -191,7 +191,7 @@ export default function SubscriptionManagement() {
       </Card>
 
       {/* Fee Settings */}
-      <Card className="bg-surface border-white/20">
+      <Card className="bg-surface border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -202,7 +202,7 @@ export default function SubscriptionManagement() {
               variant="outline"
               onClick={() => isEditing ? handleSaveSettings() : setIsEditing(true)}
               disabled={updateSettingsMutation.isPending}
-              className="border-white/20 text-fg hover:bg-white/10"
+              className="border-white/40 shadow-xl shadow-white/20 text-fg hover:bg-white/10"
             >
               {isEditing ? 'Save Changes' : 'Edit Settings'}
             </Button>
@@ -224,7 +224,7 @@ export default function SubscriptionManagement() {
                     type="number"
                     value={processingFeePercent}
                     onChange={(e) => setProcessingFeePercent(parseFloat(e.target.value) || 0)}
-                    className="w-24 bg-surface border-white/20 text-fg"
+                    className="w-24 bg-surface border-white/40 shadow-xl shadow-white/20 text-fg"
                     min="0"
                     max="100"
                     step="0.1"
@@ -275,7 +275,7 @@ export default function SubscriptionManagement() {
       </Card>
 
       {/* Example Calculations */}
-      <Card className="bg-surface border-white/20">
+      <Card className="bg-surface border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl text-white">Fee Calculation Examples</CardTitle>
           <CardDescription className="text-slate-300">

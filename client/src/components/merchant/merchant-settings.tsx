@@ -499,7 +499,7 @@ export default function MerchantSettings() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="bg-card border border-border-dim shadow-xl shadow-black/20 p-8 text-center">
+        <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 p-8 text-center">
           <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Authentication Required</h3>
             <p className="text-slate-300 mb-4">Please log in to access merchant settings.</p>
@@ -518,7 +518,7 @@ export default function MerchantSettings() {
   if (user.role !== 'merchant') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="bg-card border border-border-dim shadow-xl shadow-black/20 p-8 text-center">
+        <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 p-8 text-center">
           <CardBody>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">Access Denied</h3>
             <p className="text-slate-300 mb-4">This page is only accessible to merchant accounts.</p>
@@ -542,7 +542,7 @@ export default function MerchantSettings() {
       className="space-y-6"
     >
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-border-dim shadow-xl shadow-black/20 p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Business Settings</h1>
@@ -551,7 +551,7 @@ export default function MerchantSettings() {
         </div>
       </div>
 
-      <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -570,7 +570,7 @@ export default function MerchantSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Navigation */}
         <div className="lg:col-span-1">
-          <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+          <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
             <CardBody className="p-4">
               <nav className="space-y-2">
                 <Button
@@ -670,7 +670,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Building2 className="w-5 h-5 text-blue-400" />
@@ -851,7 +851,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Clock className="w-5 h-5 text-green-400" />
@@ -963,7 +963,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Camera className="w-5 h-5 text-purple-400" />
@@ -1130,7 +1130,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Calendar className="w-5 h-5 text-green-400" />
@@ -1250,7 +1250,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <DollarSign className="w-5 h-5 text-green-400" />
@@ -1372,7 +1372,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <ArrowUp className="w-5 h-5 text-green-400" />
@@ -1563,7 +1563,7 @@ export default function MerchantSettings() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="bg-card border border-border-dim shadow-xl shadow-black/20">
+              <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-slate-100">
                     <Key className="w-5 h-5 text-yellow-400" />
