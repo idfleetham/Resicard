@@ -172,11 +172,14 @@ export default function QRRedemption() {
       pdf.setFillColor(59, 130, 246); // Blue
       pdf.rect(0, 20, 210, 5, 'F');
       
-      // Add main title
+      // Add Resicard branding
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(24);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('POWERED BY', 105, 12, { align: 'center' });
+      pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('EXCLUSIVE OFFER', 105, 18, { align: 'center' });
+      pdf.text('RESICARD', 105, 22, { align: 'center' });
       
       // Add business name
       pdf.setTextColor(0, 0, 0);
