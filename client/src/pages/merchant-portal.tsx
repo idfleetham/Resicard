@@ -149,27 +149,27 @@ export default function MerchantPortal() {
           transition={{ duration: 0.5 }}
           className="border-b border-border-dim"
         >
-          <Card className="bg-card border border-border-dim shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 hover:border-border-dim/80 transition-all duration-300">
-            <CardHeader>
+          <Card className="bg-gradient-to-r from-brand1/20 via-brand2/15 to-transparent border border-white/40 shadow-xl shadow-white/20">
+            <CardHeader className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-brand1 to-brand2 rounded-xl flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-white" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-brand1 to-brand2 rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                    <Building2 className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-bold text-fg">
+                    <CardTitle className="text-3xl font-bold text-white">
                       {user.businessName || "Merchant Portal"}
                     </CardTitle>
-                    <CardDescription className="text-slate-300">
+                    <CardDescription className="text-slate-200 text-lg">
                       Manage your offers, track redemptions, and grow your business
                     </CardDescription>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  <Badge className="bg-green-500/30 text-green-300 border-green-400/50 px-3 py-1 text-sm font-medium">
                     Verified Business
                   </Badge>
-                  <Button variant="outline" onClick={logout} className="border-border-dim hover:bg-surface text-black">
+                  <Button variant="outline" onClick={logout} className="border-white/30 hover:bg-white/10 text-white hover:text-white bg-black/20">
                     Logout
                   </Button>
                 </div>
