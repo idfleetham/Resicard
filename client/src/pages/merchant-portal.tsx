@@ -232,7 +232,7 @@ export default function MerchantPortal() {
             <div className="space-y-6">
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-border-dim shadow-xl shadow-black/20">
+                <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2 text-fg">
                       <Star className="w-5 h-5 text-yellow-400" />
@@ -257,7 +257,7 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-border-dim shadow-xl shadow-black/20">
+                <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2 text-fg">
                       <Gift className="w-5 h-5 text-green-400" />
@@ -288,7 +288,7 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-border-dim shadow-xl shadow-black/20">
+                <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-fg">Program Status</CardTitle>
                   </CardHeader>
@@ -303,7 +303,7 @@ export default function MerchantPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-border-dim shadow-xl shadow-black/20">
+                <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-fg">This Month</CardTitle>
                   </CardHeader>
@@ -342,7 +342,7 @@ export default function MerchantPortal() {
               </div>
 
               {/* Recent Activity */}
-              <Card className="bg-card/90 border border-white/40 shadow-xl shadow-white/20">
+              <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
                 <CardHeader>
                   <CardTitle className="text-fg">Recent Loyalty Activity</CardTitle>
                   <CardDescription className="text-fg/80">Latest customer loyalty interactions</CardDescription>
