@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +38,15 @@ export default function QRRedemption() {
     },
     enabled: !!user?.id,
   });
+
+  // Fetch available offers for dropdown
+  const { data: offersResponse } = useQuery<any>({
+    queryKey: ["/api/offers/my-offers"],
+    queryFn: () => apiRequest("GET", "/api/offers/my-offers").then(res => res.json()),
+    enabled: !!user?.id,
+  });
+
+  const availableOffers = Array.isArray(offersResponse) ? offersResponse : [];
 
   // Handle the response structure - it could be an array or an object with rows
   const redemptions = Array.isArray(redemptionsResponse) 
@@ -148,11 +158,10 @@ export default function QRRedemption() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/60 via-brand2/60 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">QR & Code Redemption</h1>
-            <p className="text-slate-300 text-lg">Redeem customer vouchers and generate QR codes for your offers</p>
           </div>
         </div>
       </div>
@@ -160,15 +169,14 @@ export default function QRRedemption() {
       <div className="space-y-6">
         {/* Main Voucher Redemption Card */}
         <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl transition p-5">
-          <h2 className="text-2xl font-semibold mb-1 text-fg">Redeem Voucher</h2>
-          <p className="text-slate-300 text-lg mb-4">Enter voucher code or scan QR to process customer redemption</p>
+          <h2 className="text-2xl font-semibold mb-4 text-fg">Redeem Voucher</h2>
 
           {/* Custom Tab Buttons */}
           <div className="mb-4 inline-flex rounded-xl border border-white/40 shadow-xl shadow-white/20 bg-surface overflow-hidden">
             <button
               className={`px-4 py-2 text-base transition-colors ${
                 activeTab === 'manual'
-                  ? 'bg-surface2 text-fg'
+                  ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white'
                   : 'text-slate-300 hover:bg-white/[0.03]'
               }`}
               onClick={() => setActiveTab('manual')}
@@ -178,7 +186,7 @@ export default function QRRedemption() {
             <button
               className={`px-4 py-2 text-base transition-colors ${
                 activeTab === 'qr-scan'
-                  ? 'bg-surface2 text-fg'
+                  ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white'
                   : 'text-slate-300 hover:bg-white/[0.03]'
               }`}
               onClick={() => setActiveTab('qr-scan')}
@@ -197,7 +205,7 @@ export default function QRRedemption() {
                   placeholder="Enter voucher code"
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value)}
-                  className="input-dark"
+                  className="input-dark border-white/60 placeholder:text-white/60"
                 />
               </div>
 
@@ -210,7 +218,7 @@ export default function QRRedemption() {
                   placeholder="Enter your staff PIN"
                   value={staffPin}
                   onChange={(e) => setStaffPin(e.target.value)}
-                  className="input-dark"
+                  className="input-dark border-white/60 placeholder:text-white/60"
                 />
               </div>
 
@@ -226,7 +234,7 @@ export default function QRRedemption() {
                   placeholder="£0.00"
                   value={basketAmount}
                   onChange={(e) => setBasketAmount(e.target.value)}
-                  className="input-dark"
+                  className="input-dark border-white/60 placeholder:text-white/60"
                 />
                 <p className="text-xs text-slate-300/80 mt-1">Enter basket total for percentage discounts</p>
               </div>
@@ -296,18 +304,23 @@ export default function QRRedemption() {
               <QrCode className="w-5 h-5" />
               <span>Generate Offer QR</span>
             </h2>
-            <p className="text-slate-300 text-lg mt-1">Create QR codes for your offers to display in-store</p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-base font-medium tracking-wide text-fg mb-1">Select Offer</label>
-              <Input
-                placeholder="Enter offer ID or select from list"
-                value={selectedOffer}
-                onChange={(e) => setSelectedOffer(e.target.value)}
-                className="input-dark"
-              />
+              <Select value={selectedOffer} onValueChange={setSelectedOffer}>
+                <SelectTrigger className="border-white/60 bg-surface text-white">
+                  <SelectValue placeholder="Choose an offer to generate QR code" className="placeholder:text-white/60" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  {availableOffers.map((offer: any) => (
+                    <SelectItem key={offer.id} value={offer.id} className="text-black">
+                      {offer.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="pt-2">
@@ -345,47 +358,6 @@ export default function QRRedemption() {
         </div>
       </div>
 
-      {/* Recent Redemptions */}
-      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-        <CardHeader>
-          <CardTitle>Recent Redemptions</CardTitle>
-          <CardDescription>
-            Latest voucher redemptions processed by your staff
-          </CardDescription>
-        </CardHeader>
-        <CardBody>
-          {redemptions.length === 0 ? (
-            <EmptyState 
-              title="No recent redemptions"
-              subtitle="Processed redemptions will appear here in real-time"
-              icon={<CreditCard className="h-6 w-6" />}
-            />
-          ) : (
-            <div className="space-y-3">
-              {redemptions.slice(0, 5).map((redemption: any) => (
-                <div key={redemption.id} className="bg-surface/50 rounded-lg p-3 border border-white/20">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-fg">{redemption.dealTitle || redemption.offerTitle}</p>
-                      <p className="text-sm text-slate-300">
-                        {redemption.customerName} • £{redemption.calculatedDiscount || redemption.value}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-slate-400">
-                        {new Date(redemption.redeemedAt).toLocaleDateString()}
-                      </p>
-                      <Badge className="bg-green-500/20 text-green-400 text-xs">
-                        Redeemed
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardBody>
-      </Card>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
