@@ -203,11 +203,33 @@ export default function QRRedemption() {
         pdf.text(description, 105, 70, { align: 'center' });
       }
       
-      // Add QR code image (centered and larger)
-      const imgWidth = 80;
-      const imgHeight = 80;
+      let currentY = 85;
+      
+      // Add offer image if available
+      if (offerDetails.imageUrl) {
+        try {
+          const offerImgWidth = 60;
+          const offerImgHeight = 40;
+          const offerImgX = (210 - offerImgWidth) / 2;
+          
+          // Add image background
+          pdf.setFillColor(255, 255, 255);
+          pdf.roundedRect(offerImgX - 5, currentY - 5, offerImgWidth + 10, offerImgHeight + 10, 3, 3, 'F');
+          pdf.setDrawColor(229, 231, 235);
+          pdf.roundedRect(offerImgX - 5, currentY - 5, offerImgWidth + 10, offerImgHeight + 10, 3, 3, 'S');
+          
+          pdf.addImage(offerDetails.imageUrl, 'JPEG', offerImgX, currentY, offerImgWidth, offerImgHeight);
+          currentY += offerImgHeight + 15;
+        } catch (error) {
+          console.log('Could not add offer image to PDF:', error);
+        }
+      }
+      
+      // Add QR code image (centered)
+      const imgWidth = 70;
+      const imgHeight = 70;
       const x = (210 - imgWidth) / 2;
-      const y = 85;
+      const y = currentY;
       
       // Add QR code background
       pdf.setFillColor(248, 250, 252); // Light gray background
