@@ -255,7 +255,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
         ) : (
             <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0">
+                  <TableRow className="bg-gradient-to-r from-purple-600 to-blue-600 sticky top-0">
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Title</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase w-48">Offer Type</TableHead>
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Category</TableHead>
