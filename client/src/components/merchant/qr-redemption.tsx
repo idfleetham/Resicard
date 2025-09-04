@@ -174,12 +174,9 @@ export default function QRRedemption() {
       
       // Add Resicard branding
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('POWERED BY', 105, 12, { align: 'center' });
-      pdf.setFontSize(20);
+      pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('RESICARD', 105, 22, { align: 'center' });
+      pdf.text('Resicard ©', 105, 18, { align: 'center' });
       
       // Add business name
       pdf.setTextColor(0, 0, 0);
@@ -240,44 +237,46 @@ export default function QRRedemption() {
       // Add QR code label
       pdf.setFontSize(10);
       pdf.setTextColor(107, 114, 128);
-      pdf.text('SCAN TO REDEEM', 105, 180, { align: 'center' });
+      pdf.text('SCAN TO REDEEM', 105, currentY + imgHeight + 15, { align: 'center' });
       
-      // Add offer details box
+      // Add offer details box (with proper spacing)
+      const detailsY = currentY + imgHeight + 25;
       pdf.setFillColor(239, 246, 255); // Light blue background
-      pdf.roundedRect(20, 190, 170, 50, 3, 3, 'F');
+      pdf.roundedRect(20, detailsY, 170, 50, 3, 3, 'F');
       
       // Add offer value/type
       pdf.setFontSize(12);
       pdf.setTextColor(0, 0, 0);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Offer Type:', 25, 205);
+      pdf.text('Offer Type:', 25, detailsY + 15);
       pdf.setFont('helvetica', 'normal');
       const offerType = offerDetails.type?.replace(/_/g, ' ').toUpperCase() || 'SPECIAL DISCOUNT';
-      pdf.text(offerType, 65, 205);
+      pdf.text(offerType, 65, detailsY + 15);
       
       // Add validity info
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Valid Until:', 25, 220);
+      pdf.text('Valid Until:', 25, detailsY + 30);
       pdf.setFont('helvetica', 'normal');
       const validUntil = offerDetails.validTo ? 
         new Date(offerDetails.validTo).toLocaleDateString() : 
         'End of promotion';
-      pdf.text(validUntil, 65, 220);
+      pdf.text(validUntil, 65, detailsY + 30);
       
       // Add terms
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Usage Limit:', 25, 235);
+      pdf.text('Usage Limit:', 25, detailsY + 45);
       pdf.setFont('helvetica', 'normal');
       const usageLimit = offerDetails.usageLimit ? `${offerDetails.usageLimit} uses` : 'Limited time';
-      pdf.text(usageLimit, 65, 235);
+      pdf.text(usageLimit, 65, detailsY + 45);
       
-      // Add footer
+      // Add footer (with proper spacing)
+      const footerY = detailsY + 65;
       pdf.setFillColor(75, 85, 99);
-      pdf.rect(0, 260, 210, 37, 'F');
+      pdf.rect(0, footerY, 210, 37, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(10);
-      pdf.text('Present this QR code to redeem your exclusive offer', 105, 275, { align: 'center' });
-      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
+      pdf.text('Present this QR code to redeem your exclusive offer', 105, footerY + 15, { align: 'center' });
+      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, 105, footerY + 25, { align: 'center' });
       
       // Download the PDF
       const fileName = `${businessName.replace(/\s+/g, '-')}-${offerTitle.replace(/\s+/g, '-').substring(0, 20)}-qr.pdf`.toLowerCase();
