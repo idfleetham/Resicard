@@ -220,7 +220,7 @@ export default function RedemptionsFeed() {
 
 
       {/* Filters */}
-      <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl text-fg">Filters</CardTitle>
         </CardHeader>
@@ -275,7 +275,7 @@ export default function RedemptionsFeed() {
       </Card>
 
       {/* Redemptions Table */}
-      <Card className="bg-white border border-white/40 shadow-xl shadow-white/20">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl text-fg">Recent Redemptions</CardTitle>
           <CardDescription className="text-white text-lg">
