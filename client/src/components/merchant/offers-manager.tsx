@@ -165,7 +165,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       className="space-y-6"
     >
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1 via-brand2 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/60 via-brand2/60 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
