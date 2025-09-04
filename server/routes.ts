@@ -2097,6 +2097,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         value: redemptionValue,
       });
 
+      // Increment usage count for the offer
+      try {
+        await storage.incrementOfferUsage(offer.id);
+        console.log('Incremented usage count for offer:', offer.id);
+      } catch (usageError) {
+        console.error('Error incrementing offer usage:', usageError);
+        // Continue with redemption even if usage increment fails
+      }
+
       // Award loyalty points for the redemption
       try {
         // Calculate the correct value for loyalty points (what customer actually paid)

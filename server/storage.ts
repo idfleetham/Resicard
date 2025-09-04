@@ -46,6 +46,7 @@ export interface IStorage {
   getOffersByMerchant(merchantId: string): Promise<Offer[]>;
   updateOffer(id: string, updates: Partial<Offer>): Promise<Offer | undefined>;
   deleteOffer(id: string): Promise<boolean>;
+  incrementOfferUsage(offerId: string): Promise<Offer | undefined>;
   
   // Merchant operations
   createMerchant(merchant: InsertMerchant): Promise<Merchant>;
@@ -1001,6 +1002,18 @@ export class DatabaseStorage implements IStorage {
   async deleteOffer(id: string): Promise<boolean> {
     const result = await db.delete(offers).where(eq(offers.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  async incrementOfferUsage(offerId: string): Promise<Offer | undefined> {
+    const [updatedOffer] = await db
+      .update(offers)
+      .set({ 
+        usageCount: sql`${offers.usageCount} + 1`,
+        updatedAt: new Date()
+      })
+      .where(eq(offers.id, offerId))
+      .returning();
+    return updatedOffer || undefined;
   }
 
   // Merchant management methods
