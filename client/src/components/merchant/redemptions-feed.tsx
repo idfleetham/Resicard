@@ -219,11 +219,9 @@ export default function RedemptionsFeed() {
 
 
       {/* Filters */}
-      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
-        <CardHeader>
-          <CardTitle className="text-xl text-fg">Filters</CardTitle>
-        </CardHeader>
-        <CardBody className="p-5">
+      <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl">
+        <div className="p-5">
+          <h2 className="text-xl text-fg font-semibold mb-4">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-lg font-medium mb-2 block">Search</label>
@@ -270,15 +268,13 @@ export default function RedemptionsFeed() {
               </Button>
             </div>
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Redemptions Table */}
-      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
-        <CardHeader>
-          <CardTitle className="text-xl text-fg">Recent Redemptions</CardTitle>
-        </CardHeader>
-        <CardBody className="p-5">
+      <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl">
+        <div className="p-5">
+          <h2 className="text-xl text-fg font-semibold mb-4">Recent Redemptions</h2>
           {filteredRedemptions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-white mb-4">No redemptions found</p>
@@ -338,8 +334,8 @@ export default function RedemptionsFeed() {
               </Table>
             </div>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Redemption Details Modal */}
       <RedemptionDetailsModal redemption={selectedRedemption} />
