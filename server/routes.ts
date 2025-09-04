@@ -2150,6 +2150,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Migration endpoint to update usage counts from historic redemptions
+  app.post("/api/admin/migrate-usage-counts", authenticateToken, async (req, res) => {
+    try {
+      console.log('Starting usage count migration from historic redemptions...');
+      
+      // Get all redemptions grouped by dealId (which maps to offer)
+      const redemptionCounts = await db
+        .select({
+          dealId: redemptions.dealId,
+          count: sql<number>`COUNT(*)`
+        })
+        .from(redemptions)
+        .groupBy(redemptions.dealId);
+      
+      console.log(`Found ${redemptionCounts.length} offers with historic redemptions`);
+      
+      let updated = 0;
+      let errors = 0;
+      
+      for (const redemptionCount of redemptionCounts) {
+        try {
+          // For legacy deals (integer IDs), we need to find the corresponding offer
+          // For now, let's focus on offers with UUID format (dealId = -1 indicates offer system)
+          if (redemptionCount.dealId === -1) {
+            // These are comprehensive offers, but we need to map them differently
+            console.log('Skipping dealId -1 (needs special handling)');
+            continue;
+          }
+          
+          // Try to find offer by the legacy mapping
+          // The redemption dealId might map to an offer's ID in some cases
+          const count = Number(redemptionCount.count);
+          
+          // Look for offers that might correspond to this dealId
+          // In the current system, we need to identify which offers these belong to
+          console.log(`Processing dealId ${redemptionCount.dealId} with ${count} redemptions`);
+          
+          // For now, let's update offers by checking vouchers table to find the mapping
+          const relatedVouchers = await db
+            .select({ 
+              voucherNumber: vouchers.voucherNumber,
+              dealId: vouchers.dealId 
+            })
+            .from(vouchers)
+            .where(eq(vouchers.dealId, redemptionCount.dealId))
+            .limit(1);
+          
+          if (relatedVouchers.length > 0) {
+            // Extract offer ID from voucher number if it follows the UUID pattern
+            const voucherNumber = relatedVouchers[0].voucherNumber;
+            const uuidMatch = voucherNumber.match(/([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})/i);
+            
+            if (uuidMatch) {
+              const offerId = uuidMatch[1].toLowerCase();
+              console.log(`Mapping dealId ${redemptionCount.dealId} to offer ${offerId}`);
+              
+              // Update the offer usage count
+              const result = await db
+                .update(offers)
+                .set({ 
+                  usageCount: count,
+                  updatedAt: new Date()
+                })
+                .where(eq(offers.id, offerId));
+              
+              if (result.rowCount && result.rowCount > 0) {
+                console.log(`Updated offer ${offerId} usage count to ${count}`);
+                updated++;
+              } else {
+                console.log(`Offer ${offerId} not found or not updated`);
+              }
+            }
+          }
+          
+        } catch (error: any) {
+          console.error(`Error updating dealId ${redemptionCount.dealId}:`, error.message);
+          errors++;
+        }
+      }
+      
+      console.log(`Migration completed: ${updated} offers updated, ${errors} errors`);
+      
+      res.json({
+        success: true,
+        message: `Usage count migration completed: ${updated} offers updated, ${errors} errors`,
+        updated,
+        errors,
+        totalProcessed: redemptionCounts.length
+      });
+      
+    } catch (error: any) {
+      console.error('Error in usage count migration:', error);
+      res.status(500).json({ 
+        error: "Failed to migrate usage counts",
+        message: error.message 
+      });
+    }
+  });
+
   // Generate QR code for offer
   app.post("/api/offers/generate-qr", authenticateToken, requireRole('merchant'), async (req, res) => {
     const { offerId } = req.body;
