@@ -147,7 +147,6 @@ export default function MerchantPortal() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="border-b border-border-dim"
         >
           <Card className="bg-gradient-to-r from-purple-900/40 via-blue-900/30 to-purple-800/20 backdrop-blur-sm border border-purple-400/30 shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-500">
             <CardHeader className="p-8">
