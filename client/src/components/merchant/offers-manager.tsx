@@ -169,7 +169,6 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Your Offers</h1>
-            <p className="text-slate-300 text-lg">Manage all your business offers</p>
           </div>
           <div className="flex gap-3">
             <Button
