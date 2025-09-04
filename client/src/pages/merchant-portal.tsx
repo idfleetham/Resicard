@@ -38,6 +38,7 @@ import TeamManagement from "../components/merchant/team-management";
 import MerchantSettings from "../components/merchant/merchant-settings";
 import SubscriptionManagement from "../components/merchant/subscription-management";
 import { StaffEarningTool } from "../components/loyalty/staff-earning-tool";
+import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
 
 export default function MerchantPortal() {
   const { user, isLoading, logout } = useAuth();
@@ -85,7 +86,30 @@ export default function MerchantPortal() {
 
   if (isLoading) {
     return (
-      <div data-theme="dim" className="min-h-screen st-andrews-bg text-fg relative">
+      <div 
+        data-theme="dim" 
+        className="min-h-screen text-fg relative"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+            filter: 'grayscale(100%) contrast(1.2) brightness(0.3)',
+            mixBlendMode: 'multiply'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/70 to-slate-900/80" />
         <div className="flex items-center justify-center min-h-screen st-andrews-content">
           <div className="space-y-4 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-brand1 border-t-transparent rounded-full mx-auto" />
@@ -104,7 +128,30 @@ export default function MerchantPortal() {
   }
 
   return (
-    <div data-theme="dim" className="min-h-screen st-andrews-bg text-fg relative">
+    <div 
+      data-theme="dim" 
+      className="min-h-screen text-fg relative"
+      style={{
+        backgroundImage: `url(${heroImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed',
+          filter: 'grayscale(100%) contrast(1.2) brightness(0.3)',
+          mixBlendMode: 'multiply'
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/70 to-slate-900/80" />
       
       <div className="mx-auto max-w-7xl px-5 py-6 st-andrews-content">
         {/* Hero Header Card */}
