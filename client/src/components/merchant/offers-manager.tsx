@@ -236,31 +236,24 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
-        <CardBody className="p-5">
-          {allOffers.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center py-12"
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition overflow-hidden">
+        {allOffers.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="h-8 w-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-fg mb-2">No offers yet</h3>
+            <p className="text-slate-300 mb-6">Create your first offer to start attracting customers</p>
+            <Button 
+              onClick={() => setIsCreateOpen(true)}
+              className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1"
             >
-              <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="h-8 w-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-fg mb-2">No offers yet</h3>
-              <p className="text-slate-300 mb-6">Create your first offer to start attracting customers</p>
-              <Button 
-                onClick={() => setIsCreateOpen(true)}
-                className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Offer
-              </Button>
-            </motion.div>
-          ) : (
-            <div className="rounded-xl bg-surface/80 border border-white/40 shadow-xl shadow-white/20 overflow-hidden">
-              <Table>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Offer
+            </Button>
+          </div>
+        ) : (
+            <Table>
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0 border-b-2 border-gradient-to-r from-purple-500/50 to-blue-500/50">
                     <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Title</TableHead>
@@ -335,9 +328,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                   ))}
                 </TableBody>
               </Table>
-            </div>
           )}
-        </CardBody>
       </Card>
 
 
