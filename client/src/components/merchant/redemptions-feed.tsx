@@ -43,10 +43,33 @@ export default function RedemptionsFeed() {
     console.log('RedemptionsFeed: First redemption:', redemptions[0]);
   }
 
-  const filteredRedemptions = redemptions.filter((redemption: any) =>
-    redemption.dealTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    redemption.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRedemptions = redemptions.filter((redemption: any) => {
+    // Search filter
+    const searchMatch = searchTerm === "" || 
+      redemption.dealTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      redemption.customerName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Status filter (currently all redemptions are "completed" so only filter if not "all")
+    const statusMatch = filter === "all" || filter === "completed";
+    
+    // Date range filter
+    const redemptionDate = new Date(redemption.redeemedAt || redemption.createdAt);
+    const now = new Date();
+    let dateMatch = true;
+    
+    if (dateRange === "7days") {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      dateMatch = redemptionDate >= sevenDaysAgo;
+    } else if (dateRange === "30days") {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dateMatch = redemptionDate >= thirtyDaysAgo;
+    } else if (dateRange === "90days") {
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      dateMatch = redemptionDate >= ninetyDaysAgo;
+    }
+    
+    return searchMatch && statusMatch && dateMatch;
+  });
 
   const handleExportCSV = () => {
     const csvData = filteredRedemptions.map((redemption: any) => ({
@@ -218,63 +241,65 @@ export default function RedemptionsFeed() {
 
 
 
-      {/* Filters */}
-      <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl">
-        <div className="p-5">
-          <h2 className="text-xl text-fg font-semibold mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-lg font-medium mb-2 block">Search</label>
-              <Input
-                placeholder="Search deals or customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-lg font-medium mb-2 block">Status</label>
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="text-black text-lg">
-                  <SelectValue className="text-black" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all" className="text-black text-lg">All Redemptions</SelectItem>
-                  <SelectItem value="completed" className="text-black text-lg">Completed</SelectItem>
-                  <SelectItem value="pending" className="text-black text-lg">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-lg font-medium mb-2 block">Date Range</label>
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="text-black text-lg">
-                  <SelectValue className="text-black" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="7days" className="text-black text-lg">Last 7 days</SelectItem>
-                  <SelectItem value="30days" className="text-black text-lg">Last 30 days</SelectItem>
-                  <SelectItem value="90days" className="text-black text-lg">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button variant="outline" onClick={() => {
-                setSearchTerm("");
-                setFilter("all");
-                setDateRange("7days");
-              }}>
-                <Filter className="w-4 h-4 mr-2" />
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Redemptions Table */}
       <div className="bg-card border border-white/40 shadow-xl shadow-white/20 rounded-2xl">
         <div className="p-5">
           <h2 className="text-xl text-fg font-semibold mb-4">Recent Redemptions</h2>
+          
+          {/* Filters */}
+          <div className="mb-6 p-4 bg-surface/30 rounded-lg border border-white/20">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block text-white">Search</label>
+                <Input
+                  placeholder="Search deals or customers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="text-black"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block text-white">Status</label>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="text-black">
+                    <SelectValue className="text-black" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all" className="text-black">All Redemptions</SelectItem>
+                    <SelectItem value="completed" className="text-black">Completed</SelectItem>
+                    <SelectItem value="pending" className="text-black">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block text-white">Date Range</label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger className="text-black">
+                    <SelectValue className="text-black" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="7days" className="text-black">Last 7 days</SelectItem>
+                    <SelectItem value="30days" className="text-black">Last 30 days</SelectItem>
+                    <SelectItem value="90days" className="text-black">Last 90 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button 
+                  variant="outline" 
+                  className="bg-white text-black border-white hover:bg-gray-100"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilter("all");
+                    setDateRange("7days");
+                  }}
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </div>
           {filteredRedemptions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-white mb-4">No redemptions found</p>
