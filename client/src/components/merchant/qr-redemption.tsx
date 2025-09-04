@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Camera, Hash, CheckCircle, XCircle, Zap, CreditCard } from "lucide-react";
+import { QrCode, Camera, Hash, CheckCircle, XCircle, Zap, CreditCard, Download } from "lucide-react";
 import QRCode from "qrcode";
+import jsPDF from "jspdf";
 
 export default function QRRedemption() {
   const { user } = useAuth();
@@ -155,6 +156,44 @@ export default function QRRedemption() {
     generateOfferQRMutation.mutate(selectedOffer);
   };
 
+  const downloadQRCodeAsPDF = () => {
+    if (!qrCodeUrl) return;
+
+    const pdf = new jsPDF();
+    const img = document.getElementById('qr-code-image') as HTMLImageElement;
+    
+    if (img) {
+      // Add title
+      pdf.setFontSize(20);
+      pdf.text('Offer QR Code', 105, 30, { align: 'center' });
+      
+      // Add business name
+      pdf.setFontSize(14);
+      pdf.text(user?.username || 'Business', 105, 50, { align: 'center' });
+      
+      // Add QR code image (centered)
+      const imgWidth = 100;
+      const imgHeight = 100;
+      const x = (210 - imgWidth) / 2; // Center on A4 width (210mm)
+      const y = 70;
+      
+      pdf.addImage(qrCodeUrl, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // Add instructions
+      pdf.setFontSize(10);
+      pdf.text('Scan this QR code to view the offer', 105, 190, { align: 'center' });
+      
+      // Download the PDF
+      const fileName = `offer-qr-code-${Date.now()}.pdf`;
+      pdf.save(fileName);
+      
+      toast({
+        title: "PDF Downloaded",
+        description: `QR code saved as ${fileName}`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -205,7 +244,7 @@ export default function QRRedemption() {
                   placeholder="Enter voucher code"
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value)}
-                  className="input-dark border-white/60 placeholder:text-white/60"
+                  className="input-dark border-white/80 placeholder:text-white/70"
                 />
               </div>
 
@@ -218,7 +257,7 @@ export default function QRRedemption() {
                   placeholder="Enter your staff PIN"
                   value={staffPin}
                   onChange={(e) => setStaffPin(e.target.value)}
-                  className="input-dark border-white/60 placeholder:text-white/60"
+                  className="input-dark border-white/80 placeholder:text-white/70"
                 />
               </div>
 
@@ -234,7 +273,7 @@ export default function QRRedemption() {
                   placeholder="£0.00"
                   value={basketAmount}
                   onChange={(e) => setBasketAmount(e.target.value)}
-                  className="input-dark border-white/60 placeholder:text-white/60"
+                  className="input-dark border-white/80 placeholder:text-white/70"
                 />
                 <p className="text-xs text-slate-300/80 mt-1">Enter basket total for percentage discounts</p>
               </div>
@@ -253,7 +292,7 @@ export default function QRRedemption() {
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2 inline" />
-                      Redeem Voucher
+                      Redeem
                     </>
                   )}
                 </button>
@@ -310,7 +349,7 @@ export default function QRRedemption() {
             <div>
               <label className="block text-base font-medium tracking-wide text-fg mb-1">Select Offer</label>
               <Select value={selectedOffer} onValueChange={setSelectedOffer}>
-                <SelectTrigger className="border-white/60 bg-surface text-white">
+                <SelectTrigger className="border-white/80 bg-surface text-white">
                   <SelectValue placeholder="Choose an offer to generate QR code" className="placeholder:text-white/60" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -347,7 +386,16 @@ export default function QRRedemption() {
               <div className="text-center pt-4 border-t border-white/40 shadow-xl shadow-white/20">
                 <p className="text-base font-medium mb-2 text-fg">Generated QR Code</p>
                 <div className="inline-block p-4 bg-surface border border-white/40 shadow-xl shadow-white/20 rounded-lg">
-                  <img src={qrCodeUrl} alt="Offer QR Code" className="w-32 h-32" />
+                  <img src={qrCodeUrl} alt="Offer QR Code" className="w-32 h-32" id="qr-code-image" />
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={downloadQRCodeAsPDF}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-elev-1 hover:shadow-elev-2 transition-all"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </button>
                 </div>
                 <p className="text-xs text-slate-300 mt-2">
                   Print this QR code and display it in your store
