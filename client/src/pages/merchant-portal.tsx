@@ -149,27 +149,47 @@ export default function MerchantPortal() {
           transition={{ duration: 0.5 }}
           className="border-b border-border-dim"
         >
-          <Card className="bg-gradient-to-r from-brand1/20 via-brand2/15 to-transparent border border-white/40 shadow-xl shadow-white/20">
-            <CardHeader className="p-6">
+          <Card className="bg-gradient-to-r from-purple-900/40 via-blue-900/30 to-purple-800/20 backdrop-blur-sm border border-purple-400/30 shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-500">
+            <CardHeader className="p-8">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-brand1 to-brand2 rounded-xl flex items-center justify-center shadow-lg border border-white/30">
-                    <Building2 className="h-7 w-7 text-white" />
+                <div className="flex items-center space-x-6">
+                  <div className="relative">
+                    {user.profilePhoto ? (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-purple-400/50 shadow-lg ring-4 ring-purple-500/20">
+                        <img 
+                          src={user.profilePhoto} 
+                          alt={`${user.businessName} logo`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-purple-400/50 ring-4 ring-purple-500/20">
+                        <Building2 className="h-8 w-8 text-white" />
+                      </div>
+                    )}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
                   </div>
                   <div>
-                    <CardTitle className="text-3xl font-bold text-white">
+                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                       {user.businessName || "Merchant Portal"}
                     </CardTitle>
-                    <CardDescription className="text-slate-200 text-lg">
+                    <CardDescription className="text-purple-200/90 text-base font-medium">
                       Manage your offers, track redemptions, and grow your business
                     </CardDescription>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Badge className="bg-green-500/30 text-green-300 border-green-400/50 px-3 py-1 text-sm font-medium">
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/50 px-4 py-2 text-sm font-semibold rounded-full shadow-lg">
+                    <span className="mr-2">✓</span>
                     Verified Business
                   </Badge>
-                  <Button variant="outline" onClick={logout} className="border-white/30 hover:bg-white/10 text-white hover:text-white bg-black/20">
+                  <Button 
+                    variant="outline" 
+                    onClick={logout} 
+                    className="border-purple-400/40 hover:bg-purple-600/20 text-purple-200 hover:text-white bg-black/30 backdrop-blur-sm shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                  >
                     Logout
                   </Button>
                 </div>
