@@ -134,7 +134,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-card/70 border border-white/40 shadow-xl shadow-white/20">
+            <Card key={i} className="bg-card border border-white/40 shadow-xl shadow-white/20">
               <CardBody className="p-6">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20 bg-surface" />
@@ -144,7 +144,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
             </Card>
           ))}
         </div>
-        <Card className="bg-card/70 border border-white/40 shadow-xl shadow-white/20">
+        <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
           <CardBody className="p-6">
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -237,7 +237,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-card/70 border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
+      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
           <CardTitle className="text-fg text-5xl">Your Offers</CardTitle>
           <CardDescription className="text-slate-300 text-xl">
