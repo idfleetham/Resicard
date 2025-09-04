@@ -271,12 +271,12 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                       <TableCell className="font-medium text-fg text-lg">
                         <div>{offer.title}</div>
                       </TableCell>
-                      <TableCell className="text-slate-200 text-lg w-48">{offer.discountText}</TableCell>
-                      <TableCell className="text-slate-200 text-lg">{offer.category}</TableCell>
-                      <TableCell className="text-slate-200 text-lg">
+                      <TableCell className="text-slate-200 text-base w-48">{offer.discountText}</TableCell>
+                      <TableCell className="text-slate-200 text-base">{offer.category}</TableCell>
+                      <TableCell className="text-slate-200 text-base">
                         {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
-                      <TableCell className="text-slate-200 text-lg">
+                      <TableCell className="text-slate-200 text-base">
                         {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
