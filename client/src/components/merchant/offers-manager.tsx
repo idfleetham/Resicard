@@ -268,22 +268,22 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                 <TableBody>
                   {allOffers.map((offer: any) => (
                     <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
-                      <TableCell className="font-medium text-fg text-xl">
+                      <TableCell className="font-medium text-fg text-lg">
                         <div>{offer.title}</div>
                       </TableCell>
-                      <TableCell className="text-slate-200 text-xl w-48">{offer.discountText}</TableCell>
-                      <TableCell className="text-slate-200 text-xl">{offer.category}</TableCell>
-                      <TableCell className="text-slate-200 text-xl">
+                      <TableCell className="text-slate-200 text-lg w-48">{offer.discountText}</TableCell>
+                      <TableCell className="text-slate-200 text-lg">{offer.category}</TableCell>
+                      <TableCell className="text-slate-200 text-lg">
                         {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
-                      <TableCell className="text-slate-200 text-xl">
+                      <TableCell className="text-slate-200 text-lg">
                         {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
                         <Badge className={
-                          offer.isExpired ? "bg-orange-500/20 text-orange-400 border-orange-500/30 text-lg" :
-                          offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30 text-lg" : 
-                          "bg-red-500/20 text-red-400 border-red-500/30 text-lg"
+                          offer.isExpired ? "bg-orange-500/20 text-orange-400 border-orange-500/30 text-base" :
+                          offer.isActive ? "bg-green-500/20 text-green-400 border-green-500/30 text-base" : 
+                          "bg-red-500/20 text-red-400 border-red-500/30 text-base"
                         }>
                           {offer.isExpired ? "Expired" : (offer.isActive ? "Active" : "Paused")}
                         </Badge>
