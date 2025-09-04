@@ -137,10 +137,27 @@ export default function QRRedemption() {
   };
 
   const handleScanQR = async () => {
-    if (!videoRef.current) return;
+    console.log('Start QR Scanner button clicked');
     
     try {
+      // Set scanning to true first to show the video element
       setIsScanning(true);
+      
+      // Wait a bit for the video element to render
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!videoRef.current) {
+        console.error('Video ref not available');
+        setIsScanning(false);
+        toast({
+          title: "Camera Error",
+          description: "Video element not ready. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log('Creating QR Scanner instance...');
       
       // Create QR Scanner instance
       const scanner = new QrScanner(
@@ -162,8 +179,10 @@ export default function QRRedemption() {
         }
       );
       
+      console.log('Starting scanner...');
       setQrScanner(scanner);
       await scanner.start();
+      console.log('Scanner started successfully');
       
     } catch (error: any) {
       console.error('Camera error:', error);
@@ -472,7 +491,10 @@ export default function QRRedemption() {
                   <Camera className="w-12 h-12 mx-auto mb-4 text-slate-300" />
                   <p className="text-slate-300 mb-4">Ready to scan QR codes</p>
                   <button 
-                    onClick={handleScanQR}
+                    onClick={() => {
+                      console.log('Button clicked!');
+                      handleScanQR();
+                    }}
                     className="rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-white px-4 py-2 shadow-elev-1 hover:shadow-elev-2 transition-all"
                   >
                     <Camera className="w-4 h-4 mr-2 inline" />
