@@ -16,7 +16,7 @@ import type { Redemption } from "@shared/schema";
 export default function RedemptionsFeed() {
   const { user } = useAuth();
   const [filter, setFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOffer, setSelectedOffer] = useState("all");
   const [dateRange, setDateRange] = useState("7days");
   const [selectedRedemption, setSelectedRedemption] = useState<any>(null);
 
@@ -43,11 +43,17 @@ export default function RedemptionsFeed() {
     console.log('RedemptionsFeed: First redemption:', redemptions[0]);
   }
 
+  // Get unique offer names for dropdown
+  const uniqueOffers = Array.from(new Set(
+    redemptions.map((redemption: any) => redemption.dealTitle || redemption.offerTitle)
+      .filter(Boolean)
+  )).sort();
+
   const filteredRedemptions = redemptions.filter((redemption: any) => {
-    // Search filter
-    const searchMatch = searchTerm === "" || 
-      redemption.dealTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      redemption.customerName?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Offer filter
+    const offerMatch = selectedOffer === "all" || 
+      redemption.dealTitle === selectedOffer ||
+      redemption.offerTitle === selectedOffer;
     
     // Status filter (currently all redemptions are "completed" so only filter if not "all")
     const statusMatch = filter === "all" || filter === "completed";
@@ -68,7 +74,7 @@ export default function RedemptionsFeed() {
       dateMatch = redemptionDate >= ninetyDaysAgo;
     }
     
-    return searchMatch && statusMatch && dateMatch;
+    return offerMatch && statusMatch && dateMatch;
   });
 
   const handleExportCSV = () => {
@@ -250,13 +256,20 @@ export default function RedemptionsFeed() {
           <div className="mb-6 p-4 bg-surface/30 rounded-lg border border-white/20">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block text-white">Search</label>
-                <Input
-                  placeholder="Search deals or customers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="text-black"
-                />
+                <label className="text-sm font-medium mb-2 block text-white">Offer</label>
+                <Select value={selectedOffer} onValueChange={setSelectedOffer}>
+                  <SelectTrigger className="text-black">
+                    <SelectValue className="text-black" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all" className="text-black">All Offers</SelectItem>
+                    {uniqueOffers.map((offer) => (
+                      <SelectItem key={offer} value={offer} className="text-black">
+                        {offer}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block text-white">Status</label>
@@ -289,7 +302,7 @@ export default function RedemptionsFeed() {
                   variant="outline" 
                   className="bg-white text-black border-white hover:bg-gray-100"
                   onClick={() => {
-                    setSearchTerm("");
+                    setSelectedOffer("all");
                     setFilter("all");
                     setDateRange("7days");
                   }}
