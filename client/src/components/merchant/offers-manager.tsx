@@ -223,7 +223,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <div className="rounded-2xl bg-white/[0.03] border border-white/40 shadow-xl shadow-white/20 p-5">
+            <div className="rounded-2xl bg-card border border-white/40 shadow-xl shadow-white/20 p-5">
               <div className="flex items-center justify-between">
                 <span className="text-slate-300 text-lg">{stat.title}</span>
                 <span className={`inline-flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-elev-1`}>
