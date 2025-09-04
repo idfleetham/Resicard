@@ -277,7 +277,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                         {offer.usageCount || 0} / {offer.usageLimit}
                       </TableCell>
                       <TableCell className="text-slate-200 text-base">
-                        {offer.expiryDate ? format(new Date(offer.expiryDate), "MMM d, yyyy") : 'No expiry'}
+                        {offer.expiryDate ? format(new Date(offer.expiryDate), "dd-MMM-yy") : 'No expiry'}
                       </TableCell>
                       <TableCell>
                         <Badge className={
