@@ -83,7 +83,6 @@ export default function RedemptionsFeed() {
       Deal: redemption.dealTitle,
       Customer: redemption.customerName || "Guest",
       "Offer Value": `£${redemption.offerValue || redemption.calculatedDiscount || redemption.value}`,
-      "Original Price": `£${redemption.originalValue || redemption.basketSubtotal || "N/A"}`,
       Staff: redemption.staffName || "System",
     }));
 
@@ -154,10 +153,6 @@ export default function RedemptionsFeed() {
                 <div className="flex justify-between">
                   <span className="text-white">Offer Value:</span>
                   <span className="text-green-400 font-medium">£{redemption.offerValue || redemption.calculatedDiscount || redemption.value || "0.00"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white">Original Price:</span>
-                  <span className="text-fg">£{redemption.originalValue || redemption.basketSubtotal || "N/A"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Date:</span>
@@ -332,7 +327,6 @@ export default function RedemptionsFeed() {
                     <TableHead className="text-white">Deal</TableHead>
                     <TableHead className="text-white">Customer</TableHead>
                     <TableHead className="text-white">Offer Value</TableHead>
-                    <TableHead className="text-white">Original Price</TableHead>
                     <TableHead className="text-white">Staff</TableHead>
                     <TableHead className="text-white">Status</TableHead>
                     <TableHead className="text-white">Actions</TableHead>
@@ -350,9 +344,6 @@ export default function RedemptionsFeed() {
                       <TableCell className="text-white">{redemption.customerName || "Guest"}</TableCell>
                       <TableCell className="text-green-400 font-medium">
                         £{redemption.offerValue || redemption.calculatedDiscount || redemption.value || "0.00"}
-                      </TableCell>
-                      <TableCell className="text-white">
-                        £{redemption.originalValue || redemption.basketSubtotal || "N/A"}
                       </TableCell>
                       <TableCell className="text-white">{redemption.staffName || "System"}</TableCell>
                       <TableCell>{getStatusBadge(redemption)}</TableCell>
