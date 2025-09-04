@@ -2030,21 +2030,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const basketValue = basketAmount ? parseFloat(basketAmount) : 0;
       let discountValue = 0;
       
+      console.log('=== REDEMPTION DEBUG ===');
+      console.log('Offer data:', JSON.stringify(offer, null, 2));
+      console.log('Basket value:', basketValue);
+      
       if (offer.discountType === 'percentage') {
         discountValue = basketValue * (parseFloat(offer.discountValue || '0') / 100);
+        console.log('Percentage discount calculated:', discountValue);
       } else if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
+        console.log('Processing BOGO/Free item offer');
         // For BOGO offers, use the configured discount value or calculate from original value
         const offerData = await storage.getOffer(offer.id);
+        console.log('Full offer data from storage:', JSON.stringify(offerData, null, 2));
+        
         if (offerData?.discountValue) {
           discountValue = parseFloat(offerData.discountValue);
+          console.log('Using offer discountValue:', discountValue);
         } else if (offerData?.originalValue) {
           discountValue = parseFloat(offerData.originalValue) / 2; // BOGO = 50% off
+          console.log('Calculated BOGO discount from originalValue:', discountValue);
         } else {
           discountValue = basketValue / 2; // Fallback to 50% of basket
+          console.log('Fallback BOGO discount from basket:', discountValue);
         }
       } else {
         discountValue = parseFloat(offer.discountValue || '0');
+        console.log('Fixed discount value:', discountValue);
       }
+      
+      console.log('Final discount value:', discountValue);
 
       const finalValue = Math.max(0, basketValue - discountValue);
 
