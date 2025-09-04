@@ -168,11 +168,10 @@ export default function RedemptionsFeed() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
+      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/60 via-brand2/60 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-fg">Redemptions</h1>
-            <p className="text-white text-lg">Track and manage customer voucher redemptions</p>
           </div>
           <Button 
             onClick={handleExportCSV}
@@ -278,9 +277,6 @@ export default function RedemptionsFeed() {
       <Card className="bg-card border border-white/40 shadow-xl shadow-white/20">
         <CardHeader>
           <CardTitle className="text-xl text-fg">Recent Redemptions</CardTitle>
-          <CardDescription className="text-white text-lg">
-            Live feed of customer redemptions for your offers
-          </CardDescription>
         </CardHeader>
         <CardBody className="p-5">
           {filteredRedemptions.length === 0 ? (
