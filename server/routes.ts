@@ -2517,6 +2517,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recalculate all member tiers for a merchant
+  app.post("/api/loyalty/recalculate-tiers", authenticateToken, async (req, res) => {
+    try {
+      if (req.user?.role !== "merchant") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const merchantId = req.user.id;
+      const { reason } = req.body;
+      
+      console.log(`Starting tier recalculation for merchant ${merchantId}`);
+      
+      const result = await storage.recalculateAllMemberTiers(
+        merchantId, 
+        reason || "Manual tier recalculation triggered"
+      );
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: result.error || "Failed to recalculate tiers",
+          result 
+        });
+      }
+
+      res.json({
+        success: true,
+        ...result,
+        message: `Tier recalculation completed. ${result.updatedMembers} of ${result.totalMembers} members had tier changes.`
+      });
+    } catch (error) {
+      console.error("Error recalculating tiers:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // User loyalty memberships endpoint
   app.get("/api/loyalty/user-memberships", authenticateToken, async (req, res) => {
     try {

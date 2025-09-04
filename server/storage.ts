@@ -1457,6 +1457,96 @@ export class DatabaseStorage implements IStorage {
       });
     }
   }
+
+  async recalculateAllMemberTiers(merchantId: number, reason: string = "Tier thresholds updated"): Promise<{ success: boolean; updatedMembers: number; tierChanges: any[] }> {
+    return await db.transaction(async (tx) => {
+      // Get loyalty program for this merchant
+      const [program] = await tx
+        .select()
+        .from(loyaltyPrograms)
+        .where(eq(loyaltyPrograms.merchantId, merchantId));
+
+      if (!program) {
+        return { success: false, updatedMembers: 0, tierChanges: [], error: "Loyalty program not found" };
+      }
+
+      // Get all tiers for this merchant, ordered by threshold
+      const tiers = await tx
+        .select()
+        .from(loyaltyTiers)
+        .where(eq(loyaltyTiers.programId, program.id))
+        .orderBy(loyaltyTiers.thresholdPoints);
+
+      if (tiers.length === 0) {
+        return { success: false, updatedMembers: 0, tierChanges: [], error: "No tiers found" };
+      }
+
+      // Get all members for this merchant
+      const members = await tx
+        .select()
+        .from(loyaltyBalances)
+        .where(eq(loyaltyBalances.merchantId, merchantId));
+
+      let updatedMembers = 0;
+      const tierChanges = [];
+
+      for (const member of members) {
+        const currentPoints = parseFloat(member.balance?.toString() || '0');
+        const currentTierId = member.tier;
+
+        // Find the highest tier this member qualifies for
+        let qualifyingTier = null;
+        for (const tier of tiers) {
+          if (currentPoints >= tier.thresholdPoints) {
+            qualifyingTier = tier;
+          }
+        }
+
+        // If no qualifying tier found, use the lowest tier (Bronze)
+        if (!qualifyingTier) {
+          qualifyingTier = tiers[0]; // First tier (lowest threshold)
+        }
+
+        // Check if tier needs to be updated
+        if (qualifyingTier.id !== currentTierId) {
+          // Update member's tier
+          await tx
+            .update(loyaltyBalances)
+            .set({
+              tier: qualifyingTier.id,
+              updatedAt: new Date(),
+            })
+            .where(and(
+              eq(loyaltyBalances.merchantId, merchantId), 
+              eq(loyaltyBalances.userId, member.userId)
+            ));
+
+          // Log the tier change
+          tierChanges.push({
+            userId: member.userId,
+            fromTier: currentTierId,
+            toTier: qualifyingTier.id,
+            tierName: qualifyingTier.name,
+            points: currentPoints
+          });
+
+          updatedMembers++;
+
+          console.log(`Tier recalculated for user ${member.userId}: ${currentTierId} -> ${qualifyingTier.id} (${qualifyingTier.name}) with ${currentPoints} points`);
+        }
+      }
+
+      console.log(`Tier recalculation complete for merchant ${merchantId}: ${updatedMembers} members updated`);
+
+      return { 
+        success: true, 
+        updatedMembers, 
+        tierChanges,
+        totalMembers: members.length,
+        message: `Successfully recalculated tiers for ${members.length} members. ${updatedMembers} members had tier changes.`
+      };
+    });
+  }
 }
 
 export const storage = new DatabaseStorage();
