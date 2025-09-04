@@ -89,16 +89,20 @@ export default function MerchantPortal() {
       <div 
         data-theme="dim" 
         className="min-h-screen text-fg relative"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          filter: 'grayscale(80%) brightness(1.2) contrast(1.0)',
-          backgroundAttachment: 'fixed'
-        }}
       >
-        <div className="absolute inset-0 bg-slate-900/70" />
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            filter: 'grayscale(80%) brightness(1.2) contrast(1.0)',
+            backgroundAttachment: 'fixed',
+            zIndex: 0
+          }}
+        />
+        <div className="absolute inset-0 bg-slate-900/70" style={{ zIndex: 1 }} />
         <div className="flex items-center justify-center min-h-screen st-andrews-content relative z-10">
           <div className="space-y-4 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-brand1 border-t-transparent rounded-full mx-auto" />
@@ -120,16 +124,20 @@ export default function MerchantPortal() {
     <div 
       data-theme="dim" 
       className="min-h-screen text-fg relative"
-      style={{
-        backgroundImage: `url(${heroImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        filter: 'grayscale(80%) brightness(1.2) contrast(1.0)',
-        backgroundAttachment: 'fixed'
-      }}
     >
-      <div className="absolute inset-0 bg-slate-900/70" />
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'grayscale(80%) brightness(1.2) contrast(1.0)',
+          backgroundAttachment: 'fixed',
+          zIndex: 0
+        }}
+      />
+      <div className="absolute inset-0 bg-slate-900/70" style={{ zIndex: 1 }} />
       
       <div className="mx-auto max-w-7xl px-5 py-6 st-andrews-content relative z-10">
         {/* Hero Header Card */}
