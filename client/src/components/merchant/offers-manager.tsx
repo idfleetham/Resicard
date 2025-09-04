@@ -236,7 +236,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       </div>
 
       {/* Offers Table */}
-      <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition overflow-hidden">
+      <div className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition overflow-hidden rounded-xl">
         {allOffers.length === 0 ? (
           <div className="p-12 text-center">
             <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
@@ -255,17 +255,17 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
         ) : (
             <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0 border-b-2 border-gradient-to-r from-purple-500/50 to-blue-500/50">
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Title</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent w-48">Offer Type</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Category</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Usage</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Expiry</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide border-r border-white/10 bg-gradient-to-b from-white/5 to-transparent">Status</TableHead>
-                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase letter-spacing-wide bg-gradient-to-b from-white/5 to-transparent">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 sticky top-0">
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Title</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase w-48">Offer Type</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Category</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Usage</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Expiry</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Status</TableHead>
+                    <TableHead className="text-white font-semibold text-base tracking-wide uppercase">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody className="divide-y divide-white/5">
+                <TableBody>
                   {allOffers.map((offer: any) => (
                     <TableRow key={`${offer.type}-${offer.id}`} className="hover:bg-white/[0.03]">
                       <TableCell className="font-medium text-fg text-xl">
@@ -329,7 +329,7 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
                 </TableBody>
               </Table>
           )}
-      </Card>
+      </div>
 
 
 
