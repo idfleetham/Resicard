@@ -239,9 +239,6 @@ export default function OffersManager({ totalRedemptions = 0 }: OffersManagerPro
       <Card className="bg-card border border-white/40 shadow-xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:border-white/60 transition">
         <CardHeader className="border-b border-white/30">
           <CardTitle className="text-fg text-5xl">Your Offers</CardTitle>
-          <CardDescription className="text-slate-300 text-xl">
-            Manage all your business offers and track their performance
-          </CardDescription>
         </CardHeader>
         <CardBody className="p-5">
           {allOffers.length === 0 ? (
