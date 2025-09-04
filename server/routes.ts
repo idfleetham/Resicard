@@ -1869,8 +1869,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // For fixed price bundles, use the actual offer data
           if (offer.type === 'fixed_price_bundle' && offer.fixedPrice && offer.originalValue) {
             originalPrice = parseFloat(offer.originalValue).toFixed(2);
-            // For display purposes, show the discount amount as the offer value (what customer saved)
-            finalPrice = (parseFloat(offer.originalValue) - parseFloat(offer.fixedPrice)).toFixed(2);
+            // Show the offer value (what customer paid)
+            finalPrice = parseFloat(offer.fixedPrice).toFixed(2);
           } 
           // For percentage discounts
           else if (offer.type === 'percentage_discount' && offer.percentOff && offer.originalValue) {
@@ -2068,15 +2068,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }, 0)) % 1000000; // Keep it reasonable size
       }
       
-      // Calculate the correct value for redemption record (what customer actually saved)
+      // Calculate the correct value for redemption record (what customer actually paid - the offer value)
       let redemptionValue = discountValue;
       if (offer.type === 'bogo' || offer.type === 'free_item_with_purchase') {
         // For BOGO: show the discount value (what they saved), not what they paid
         redemptionValue = offer.discountValue ? parseFloat(offer.discountValue) : (offer.originalValue ? parseFloat(offer.originalValue) / 2 : discountValue);
       } else if (offer.type === 'fixed_price_bundle') {
-        // For fixed price bundles: show the savings (original - fixed price)
-        redemptionValue = offer.originalValue && offer.fixedPrice ? 
-          parseFloat(offer.originalValue) - parseFloat(offer.fixedPrice) : discountValue;
+        // For fixed price bundles: show the offer value (what customer paid)
+        redemptionValue = offer.fixedPrice ? parseFloat(offer.fixedPrice) : discountValue;
       }
       
       await storage.createLegacyRedemption({
