@@ -157,39 +157,110 @@ export default function QRRedemption() {
   };
 
   const downloadQRCodeAsPDF = () => {
-    if (!qrCodeUrl) return;
+    if (!qrCodeUrl || !selectedOffer) return;
 
     const pdf = new jsPDF();
     const img = document.getElementById('qr-code-image') as HTMLImageElement;
     
-    if (img) {
-      // Add title
-      pdf.setFontSize(20);
-      pdf.text('Offer QR Code', 105, 30, { align: 'center' });
+    // Find the selected offer details
+    const offerDetails = availableOffers.find(offer => offer.id === selectedOffer);
+    
+    if (img && offerDetails) {
+      // Add decorative header with gradient effect (simulated with rectangles)
+      pdf.setFillColor(139, 69, 199); // Purple
+      pdf.rect(0, 0, 210, 25, 'F');
+      pdf.setFillColor(59, 130, 246); // Blue
+      pdf.rect(0, 20, 210, 5, 'F');
+      
+      // Add main title
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('EXCLUSIVE OFFER', 105, 18, { align: 'center' });
       
       // Add business name
-      pdf.setFontSize(14);
-      pdf.text(user?.username || 'Business', 105, 50, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      const businessName = user?.businessName || user?.username || 'Business';
+      pdf.text(businessName.toUpperCase(), 105, 40, { align: 'center' });
       
-      // Add QR code image (centered)
-      const imgWidth = 100;
-      const imgHeight = 100;
-      const x = (210 - imgWidth) / 2; // Center on A4 width (210mm)
-      const y = 70;
+      // Add offer title
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(59, 130, 246); // Blue color
+      const offerTitle = offerDetails.title || 'Special Offer';
+      pdf.text(offerTitle, 105, 55, { align: 'center' });
+      
+      // Add offer description if available
+      if (offerDetails.description) {
+        pdf.setFontSize(12);
+        pdf.setTextColor(75, 85, 99); // Gray
+        const description = offerDetails.description.substring(0, 80) + (offerDetails.description.length > 80 ? '...' : '');
+        pdf.text(description, 105, 70, { align: 'center' });
+      }
+      
+      // Add QR code image (centered and larger)
+      const imgWidth = 80;
+      const imgHeight = 80;
+      const x = (210 - imgWidth) / 2;
+      const y = 85;
+      
+      // Add QR code background
+      pdf.setFillColor(248, 250, 252); // Light gray background
+      pdf.roundedRect(x - 10, y - 10, imgWidth + 20, imgHeight + 20, 5, 5, 'F');
       
       pdf.addImage(qrCodeUrl, 'PNG', x, y, imgWidth, imgHeight);
       
-      // Add instructions
+      // Add QR code label
       pdf.setFontSize(10);
-      pdf.text('Scan this QR code to view the offer', 105, 190, { align: 'center' });
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('SCAN TO REDEEM', 105, 180, { align: 'center' });
+      
+      // Add offer details box
+      pdf.setFillColor(239, 246, 255); // Light blue background
+      pdf.roundedRect(20, 190, 170, 50, 3, 3, 'F');
+      
+      // Add offer value/type
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Offer Type:', 25, 205);
+      pdf.setFont('helvetica', 'normal');
+      const offerType = offerDetails.type?.replace(/_/g, ' ').toUpperCase() || 'SPECIAL DISCOUNT';
+      pdf.text(offerType, 65, 205);
+      
+      // Add validity info
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Valid Until:', 25, 220);
+      pdf.setFont('helvetica', 'normal');
+      const validUntil = offerDetails.validTo ? 
+        new Date(offerDetails.validTo).toLocaleDateString() : 
+        'End of promotion';
+      pdf.text(validUntil, 65, 220);
+      
+      // Add terms
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Usage Limit:', 25, 235);
+      pdf.setFont('helvetica', 'normal');
+      const usageLimit = offerDetails.usageLimit ? `${offerDetails.usageLimit} uses` : 'Limited time';
+      pdf.text(usageLimit, 65, 235);
+      
+      // Add footer
+      pdf.setFillColor(75, 85, 99);
+      pdf.rect(0, 260, 210, 37, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.text('Present this QR code to redeem your exclusive offer', 105, 275, { align: 'center' });
+      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
       
       // Download the PDF
-      const fileName = `offer-qr-code-${Date.now()}.pdf`;
+      const fileName = `${businessName.replace(/\s+/g, '-')}-${offerTitle.replace(/\s+/g, '-').substring(0, 20)}-qr.pdf`.toLowerCase();
       pdf.save(fileName);
       
       toast({
-        title: "PDF Downloaded",
-        description: `QR code saved as ${fileName}`,
+        title: "PDF Downloaded Successfully",
+        description: `Professional QR code saved as ${fileName}`,
       });
     }
   };
