@@ -101,10 +101,10 @@ export default function ForgotPassword() {
                     <Mail className="h-8 w-8 text-indigo-600" />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-slate-700">
+                    <p className="!text-slate-900 font-medium">
                       We've sent a password reset link to your email address.
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm !text-slate-700">
                       Didn't receive the email? Check your spam folder or try again.
                     </p>
                   </div>
