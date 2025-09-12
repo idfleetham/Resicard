@@ -6,7 +6,8 @@ type InsertDeal = InsertOffer;
 type DealWithMerchant = Offer & { merchant: Merchant };
 type VoucherWithDeal = Voucher;
 import { db } from "./db";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, gt, isNull, isNotNull } from "drizzle-orm";
+import crypto from "crypto";
 
 export interface IStorage {
   // User operations
@@ -1551,6 +1552,112 @@ export class DatabaseStorage implements IStorage {
         message: `Successfully recalculated tiers for ${members.length} members. ${updatedMembers} members had tier changes.`
       };
     });
+  }
+
+  // Password reset implementation
+  async createPasswordResetRequest(email: string, ctx: { ip?: string; userAgent?: string }): Promise<void> {
+    // Find user by email
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      // Return success even if user doesn't exist to prevent account enumeration
+      return;
+    }
+
+    // Revoke any existing tokens for this user first
+    await this.revokePasswordResetTokens(user.id);
+
+    // Generate secure random token (32 bytes)
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Hash the token with SHA-256 for constant-time lookup
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    
+    // Set expiration to 30 minutes from now
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+    // Store the hashed token in database
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+      requestIp: ctx.ip || null,
+      userAgent: ctx.userAgent || null,
+    });
+
+    // Import and use email service
+    const { emailService } = await import('./email');
+    
+    // Create reset URL with the raw token (not the hash)
+    const resetUrl = `http://localhost:5000/reset-password?token=${token}`;
+    
+    // Send email with reset link
+    await emailService.sendPasswordReset(user.email, resetUrl, user.username);
+  }
+
+  async consumePasswordResetToken(token: string, newPasswordHash: string): Promise<{ userId: number }> {
+    return await db.transaction(async (tx) => {
+      // Hash the provided token for direct lookup
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      // Find and atomically consume the token
+      const [matchingToken] = await tx
+        .select()
+        .from(passwordResetTokens)
+        .where(
+          and(
+            eq(passwordResetTokens.tokenHash, tokenHash),
+            gt(passwordResetTokens.expiresAt, new Date()),
+            isNull(passwordResetTokens.usedAt)
+          )
+        )
+        .limit(1);
+
+      if (!matchingToken) {
+        throw new Error('Invalid or expired reset token');
+      }
+
+      // Atomically mark token as used
+      const updateResult = await tx
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(
+          and(
+            eq(passwordResetTokens.id, matchingToken.id),
+            isNull(passwordResetTokens.usedAt)
+          )
+        );
+
+      // Update user password with correct column name
+      await tx
+        .update(users)
+        .set({ password: newPasswordHash })
+        .where(eq(users.id, matchingToken.userId));
+
+      // Revoke all other tokens for this user
+      await tx
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(
+          and(
+            eq(passwordResetTokens.userId, matchingToken.userId),
+            isNull(passwordResetTokens.usedAt)
+          )
+        );
+
+      return { userId: matchingToken.userId };
+    });
+  }
+
+  async revokePasswordResetTokens(userId: number): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(passwordResetTokens.userId, userId),
+          isNull(passwordResetTokens.usedAt)
+        )
+      );
   }
 }
 
