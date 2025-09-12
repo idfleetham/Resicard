@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
+import fs from "fs";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -53,7 +55,16 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Serve built frontend from dist/public directory
+    const builtPath = path.resolve(import.meta.dirname, "..", "dist", "public");
+    if (fs.existsSync(builtPath)) {
+      app.use(express.static(builtPath));
+      app.use("*", (_req, res) => res.sendFile(path.join(builtPath, "index.html")));
+    } else {
+      // fallback to legacy location to support local scenarios
+      log(`Warning: Built frontend not found at ${builtPath}, falling back to legacy location`);
+      serveStatic(app);
+    }
   }
 
   // ALWAYS serve the app on port 5000
