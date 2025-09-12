@@ -92,8 +92,8 @@ export default function ForgotPassword() {
 
           {/* Form Card */}
           <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-center text-slate-900 text-2xl">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-center text-slate-900 text-2xl font-bold">
                 {isSubmitted ? "Check Your Email" : "Reset Password"}
               </CardTitle>
             </CardHeader>

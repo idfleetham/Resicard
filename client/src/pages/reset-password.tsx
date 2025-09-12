@@ -181,8 +181,8 @@ export default function ResetPassword() {
 
             {/* Error Card */}
             <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
-              <CardHeader>
-                <CardTitle className="text-center text-slate-900 text-2xl">Invalid Reset Link</CardTitle>
+              <CardHeader className="bg-white">
+                <CardTitle className="text-center text-slate-900 text-2xl font-bold">Invalid Reset Link</CardTitle>
               </CardHeader>
               <CardBody>
                 <div className="text-center space-y-4">
@@ -252,8 +252,8 @@ export default function ResetPassword() {
 
           {/* Form Card */}
           <Card className="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-center text-slate-900 text-2xl">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-center text-slate-900 text-2xl font-bold">
                 {isSuccess ? "Password Updated" : "Set New Password"}
               </CardTitle>
             </CardHeader>
