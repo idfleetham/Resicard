@@ -1,4 +1,4 @@
-import { users, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, loyaltyRewards, type User, type InsertUser, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type Offer, type InsertOffer, type Merchant, type InsertMerchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent, type LoyaltyReward, type InsertLoyaltyReward } from "@shared/schema";
+import { users, redemptions, vouchers, familyMembers, offers, merchants, loyaltyPrograms, loyaltyBalances, loyaltyEvents, loyaltyTiers, loyaltyRewards, passwordResetTokens, type User, type InsertUser, type Redemption, type InsertRedemption, type Voucher, type InsertVoucher, type FamilyMember, type InsertFamilyMember, type Offer, type InsertOffer, type Merchant, type InsertMerchant, type LoyaltyProgram, type InsertLoyaltyProgram, type LoyaltyBalance, type InsertLoyaltyBalance, type LoyaltyEvent, type InsertLoyaltyEvent, type LoyaltyReward, type InsertLoyaltyReward, type PasswordResetToken, type InsertPasswordResetToken } from "@shared/schema";
 
 // Legacy Deal types mapped to Offer types
 type Deal = Offer;
@@ -107,6 +107,11 @@ export interface IStorage {
     totalRedemptions: number;
     totalRevenue: number;
   }>;
+
+  // Password reset operations
+  createPasswordResetRequest(email: string, ctx: { ip?: string; userAgent?: string }): Promise<void>;
+  consumePasswordResetToken(token: string, newPasswordHash: string): Promise<{ userId: number }>;
+  revokePasswordResetTokens(userId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {

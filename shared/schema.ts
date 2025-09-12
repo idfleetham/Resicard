@@ -38,6 +38,17 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(), // SHA-256 hash of the actual token
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"), // Null until token is used
+  requestIp: text("request_ip"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const billingRuns = pgTable("billing_runs", {
   id: uuid("id").primaryKey().defaultRandom(),
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
@@ -621,5 +632,16 @@ export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards);
 export const insertMerchantTierPricingSchema = createInsertSchema(merchantTierPricing);
 export const insertTierUpgradePricingSchema = createInsertSchema(tierUpgradePricing);
 export const insertUserTierMembershipSchema = createInsertSchema(userTierMemberships);
+
+// Password reset types
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+// Password reset schemas
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type SubscriptionPlan = 'monthly' | 'annual';
 export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';
