@@ -344,6 +344,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rate limiting for password reset (basic in-memory implementation)
+  const resetRequestCounts = new Map<string, { count: number; lastReset: number }>();
+  const RESET_RATE_LIMIT = 3; // 3 requests per hour
+  const RESET_RATE_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+
+  function checkResetRateLimit(ip: string): boolean {
+    const now = Date.now();
+    const existing = resetRequestCounts.get(ip);
+    
+    if (!existing || now - existing.lastReset > RESET_RATE_WINDOW) {
+      resetRequestCounts.set(ip, { count: 1, lastReset: now });
+      return true;
+    }
+    
+    if (existing.count >= RESET_RATE_LIMIT) {
+      return false;
+    }
+    
+    existing.count++;
+    return true;
+  }
+
+  // Password reset request endpoint
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Validate email format
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ message: "Valid email address is required" });
+      }
+
+      // Check rate limit
+      const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+      if (!checkResetRateLimit(clientIp)) {
+        return res.status(429).json({ 
+          message: "Too many password reset requests. Please try again later." 
+        });
+      }
+
+      // Create password reset request (always returns success to prevent account enumeration)
+      await storage.createPasswordResetRequest(email.toLowerCase().trim(), {
+        ip: clientIp,
+        userAgent: req.headers['user-agent']
+      });
+
+      res.json({ 
+        message: "If an account with that email exists, a password reset link has been sent." 
+      });
+    } catch (error: any) {
+      console.error('Password reset request error:', error);
+      res.status(500).json({ message: "An error occurred. Please try again later." });
+    }
+  });
+
+  // Password reset confirmation endpoint
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      
+      // Validate input
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and new password are required" });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+
+      // Hash the new password
+      const newPasswordHash = await bcrypt.hash(password, 12);
+
+      // Consume the reset token and update password
+      const result = await storage.consumePasswordResetToken(token, newPasswordHash);
+
+      res.json({ 
+        message: "Password reset successful. You can now log in with your new password.",
+        userId: result.userId 
+      });
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      // Generic error message to prevent information leakage
+      res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+  });
+
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {
       const user = await storage.getUser(req.user.id);
