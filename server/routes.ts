@@ -1748,7 +1748,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get merchant's own deals
   app.get("/api/deals/my-deals", authenticateToken, requireRole('merchant'), async (req, res) => {
     try {
-      const deals = await storage.getDealsByMerchant(req.user.id);
+      // Get or create merchant record for this user
+      let merchant = await storage.getMerchantByUserId(req.user.id);
+      if (!merchant) {
+        merchant = await storage.createMerchantFromUser(req.user);
+      }
+      
+      const deals = await storage.getDealsByMerchant(merchant.id);
       res.json(deals);
     } catch (error) {
       console.error("Error fetching merchant deals:", error);
