@@ -419,6 +419,7 @@ export default function MerchantDashboard() {
                     <Button 
                       onClick={() => setShowCreateDeal(true)}
                       className="coastal-gradient"
+                      data-testid="button-new-deal"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       New Deal
@@ -453,8 +454,12 @@ export default function MerchantDashboard() {
                       <h3 className="text-lg font-semibold text-foreground mb-2">No offers yet</h3>
                       <p className="text-muted-foreground mb-4">Create your first offer to start attracting customers</p>
                       <Button 
-                        onClick={() => setShowCreateDeal(true)}
+                        onClick={() => {
+                          console.log('Create First Deal button clicked');
+                          setShowCreateDeal(true);
+                        }}
                         className="coastal-gradient"
+                        data-testid="button-create-first-deal"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Create Your First Deal
