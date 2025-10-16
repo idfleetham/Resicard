@@ -34,12 +34,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequestWithAuth } from "@/lib/auth";
 import { formatCurrency, formatDate, formatRelativeTime, getDealCategoryColor, getStatusColor } from "@/lib/utils";
-import type { Deal, Redemption } from "@shared/schema";
+import type { Offer, Redemption } from "@shared/schema";
 import { generateCustomerAlias } from "@shared/schema";
 
 export default function MerchantDashboard() {
   const [showCreateDeal, setShowCreateDeal] = useState(false);
-  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Offer | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [lastScannedVoucher, setLastScannedVoucher] = useState<any>(null);
   const { user, logout } = useAuth();
@@ -53,7 +53,7 @@ export default function MerchantDashboard() {
     queryFn: async () => {
       if (!user) return [];
       const response = await apiRequestWithAuth('GET', `/api/offers/merchant/${user.id}`);
-      return response.json() as Promise<Deal[]>;
+      return response.json() as Promise<Offer[]>;
     },
     enabled: !!user,
   });
@@ -94,7 +94,7 @@ export default function MerchantDashboard() {
 
   // Update offer mutation
   const updateDealMutation = useMutation({
-    mutationFn: async ({ offerId, updates }: { offerId: number; updates: Partial<Deal> }) => {
+    mutationFn: async ({ offerId, updates }: { offerId: number; updates: Partial<Offer> }) => {
       const response = await apiRequestWithAuth('PUT', `/api/offers/${offerId}`, updates);
       return response.json();
     },
@@ -217,11 +217,11 @@ export default function MerchantDashboard() {
     }
   };
 
-  const handleEditDeal = (offer: Deal) => {
+  const handleEditDeal = (offer: Offer) => {
     setEditingDeal(offer);
   };
 
-  const getDealStatus = (offer: Deal) => {
+  const getDealStatus = (offer: Offer) => {
     const isExpired = new Date(offer.expiryDate) < new Date();
     const isFullyUsed = (offer.usageCount || 0) >= offer.usageLimit;
     
@@ -637,7 +637,7 @@ export default function MerchantDashboard() {
                     let totalMerchantRevenue = 0;
                     
                     offers.forEach(offer => {
-                      const offerRedemptions = redemptions.filter(r => String(r.offerId || r.offer_id) === String(offer.id));
+                      const offerRedemptions = redemptions.filter(r => String(r.dealId) === String(offer.id));
                       const vouchersRedeemed = offerRedemptions.length;
                       
                       let offerValue = 0;
@@ -706,7 +706,7 @@ export default function MerchantDashboard() {
                 <CardBody>
                   <div className="space-y-4">
                     {offers.map((offer) => {
-                      const offerRedemptions = redemptions.filter(r => String(r.offerId || r.offer_id) === String(offer.id));
+                      const offerRedemptions = redemptions.filter(r => String(r.dealId) === String(offer.id));
                       const vouchersCreated = offer.usageCount || 0;
                       const vouchersRedeemed = offerRedemptions.length;
                       
