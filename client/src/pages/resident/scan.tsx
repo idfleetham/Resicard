@@ -161,25 +161,6 @@ export default function ScanPage() {
               </button>
             );
           })}
-          {unavailable.length > 0 && (
-            <>
-              <p className="text-xs font-semibold text-slate-brand mt-2">Other offers at this outlet</p>
-              {unavailable.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="w-full bg-white/70 rounded-2xl p-5 min-h-[104px] flex items-center gap-4 opacity-75"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold leading-snug">{offer.title}</p>
-                    <p className="text-sm text-slate-brand mt-1">{offer.reason}</p>
-                  </div>
-                  <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-sea flex-none">
-                    Not available now
-                  </span>
-                </div>
-              ))}
-            </>
-          )}
         </div>
       )}
 

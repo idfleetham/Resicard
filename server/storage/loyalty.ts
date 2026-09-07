@@ -200,6 +200,27 @@ export async function listEventsForMerchant(merchantId: string, limit: number, c
     .limit(limit);
 }
 
+/** A resident's loyalty events across merchants, newest first, with merchant details. */
+export async function listEventsForUser(userId: number, limit: number, client: DbClient = db) {
+  return client
+    .select({ event: loyaltyEvents, merchant: { id: merchants.id, name: merchants.name, logoUrl: merchants.logoUrl } })
+    .from(loyaltyEvents)
+    .innerJoin(merchants, eq(merchants.id, loyaltyEvents.merchantId))
+    .where(eq(loyaltyEvents.userId, userId))
+    .orderBy(desc(loyaltyEvents.createdAt))
+    .limit(limit);
+}
+
+/** Newest event time per merchant for one resident, used to order the resident's balances. */
+export async function latestEventAtByMerchant(userId: number, client: DbClient = db): Promise<Map<string, Date>> {
+  const rows = await client
+    .select({ merchantId: loyaltyEvents.merchantId, latest: sql<Date>`max(${loyaltyEvents.createdAt})` })
+    .from(loyaltyEvents)
+    .where(eq(loyaltyEvents.userId, userId))
+    .groupBy(loyaltyEvents.merchantId);
+  return new Map(rows.map((r) => [r.merchantId, new Date(r.latest)]));
+}
+
 /** Earn events for one resident at one merchant since a given time, newest first. */
 export async function listRecentEarnEvents(merchantId: string, userId: number, since: Date, client: DbClient = db) {
   return client

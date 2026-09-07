@@ -301,7 +301,11 @@ loyaltyRouter.get(
   authenticate,
   requireRole("resident"),
   asyncHandler(async (req, res) => {
-    const rows = await loyaltyStore.listBalancesForUser(currentUser(req).id);
+    const userId = currentUser(req).id;
+    const [rows, latestEvents] = await Promise.all([
+      loyaltyStore.listBalancesForUser(userId),
+      loyaltyStore.latestEventAtByMerchant(userId),
+    ]);
     const result = [];
     for (const row of rows) {
       const [tiers, rewards] = await Promise.all([
@@ -309,17 +313,34 @@ loyaltyRouter.get(
         loyaltyStore.listRewards(row.program.id, true),
       ]);
       const points = row.balance.points ?? 0;
+      const stamps = row.balance.stamps ?? 0;
       const tier = row.tier ?? resolveTier(tiers, points);
       const next = nextTier(tiers, points);
+      const stampModel = row.program.model === "stamps";
+      const affordable = (r: (typeof rewards)[number]) =>
+        stampModel ? (r.costStamps ?? 0) <= stamps && (r.costPoints ?? 0) <= points : (r.costPoints ?? 0) <= points;
+      const claimable = rewards.filter(affordable);
+      const nextReward = rewards
+        .filter((r) => !affordable(r) && (r.costPoints ?? 0) > 0)
+        .sort((a, b) => (a.costPoints ?? 0) - (b.costPoints ?? 0))[0];
+      const eventAt = latestEvents.get(row.merchant.id)?.getTime() ?? 0;
+      const balanceAt = row.balance.updatedAt?.getTime() ?? 0;
       result.push({
         merchant: row.merchant,
         points,
-        stamps: row.balance.stamps ?? 0,
+        stamps,
         tier: tier ? { name: tier.name, color: tier.color, discountPercent: tier.discountPercent } : null,
         nextTier: next ? { name: next.name, thresholdPoints: next.thresholdPoints } : null,
+        tiers: tiers.map((t) => ({ id: t.id, name: t.name, thresholdPoints: t.thresholdPoints, color: t.color })),
         rewards,
+        claimable,
+        nextReward: nextReward
+          ? { id: nextReward.id, name: nextReward.name, costPoints: nextReward.costPoints ?? 0, pointsToGo: (nextReward.costPoints ?? 0) - points }
+          : null,
+        lastActivityAt: new Date(Math.max(eventAt, balanceAt)),
       });
     }
+    result.sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime());
     res.json(result);
   }),
 );

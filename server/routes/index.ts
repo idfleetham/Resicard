@@ -7,6 +7,7 @@ import { publicRouter } from "./public";
 import { redemptionsRouter } from "./redemptions";
 import { merchantRouter } from "./merchant";
 import { loyaltyRouter } from "./loyalty";
+import { activityRouter } from "./activity";
 import { adminRouter } from "./admin";
 
 /** Mounts every API router and returns the HTTP server for Vite's HMR and listen(). */
@@ -18,6 +19,7 @@ export function registerRoutes(app: Express): Server {
   app.use(redemptionsRouter);
   app.use(merchantRouter);
   app.use(loyaltyRouter);
+  app.use(activityRouter);
   app.use(adminRouter);
 
   // Unknown API paths get a JSON 404 rather than the client's index.html.

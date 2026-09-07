@@ -11,15 +11,23 @@ import MembershipStatus from "@/components/resident/membership-status";
 import { useMembership } from "@/components/resident/use-membership";
 import ScanButton from "@/components/resident/scan-button";
 import OffersTab from "@/components/resident/offers-tab";
-import HistoryTab from "@/components/resident/history-tab";
+import ActivityTab from "@/components/resident/activity-tab";
 
-const TABS = ["card", "offers", "history"] as const;
+const TABS = ["card", "offers", "activity"] as const;
 type Tab = (typeof TABS)[number];
 
-const TAB_LABELS: Record<Tab, string> = { card: "Card", offers: "Offers", history: "History" };
+const TAB_LABELS: Record<Tab, string> = { card: "Card", offers: "Offers", activity: "Activity" };
+
+/** Older links use ?tab=history; it opens the Activity tab. */
+const TAB_ALIASES: Record<string, Tab> = { history: "activity" };
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
+}
+
+function resolveTab(value: string | null): Tab | null {
+  if (value && value in TAB_ALIASES) return TAB_ALIASES[value];
+  return isTab(value) ? value : null;
 }
 
 const TAB_TRIGGER =
@@ -34,13 +42,13 @@ export default function ResidentDashboard() {
   const membership = useMembership({ enabled: ready });
 
   const params = new URLSearchParams(search);
-  const requestedTab = params.get("tab");
-  const [tab, setTab] = useState<Tab>(isTab(requestedTab) ? requestedTab : "card");
+  const requestedTab = resolveTab(params.get("tab"));
+  const [tab, setTab] = useState<Tab>(requestedTab ?? "card");
   const autoScan = params.get("scan") === "1";
   const checkout = params.get("checkout");
 
   useEffect(() => {
-    if (isTab(requestedTab)) setTab(requestedTab);
+    if (requestedTab) setTab(requestedTab);
   }, [requestedTab]);
 
   useEffect(() => {
@@ -111,8 +119,8 @@ export default function ResidentDashboard() {
             <OffersTab />
           </TabsContent>
 
-          <TabsContent value="history" className="mt-0">
-            <HistoryTab />
+          <TabsContent value="activity" className="mt-0">
+            <ActivityTab />
           </TabsContent>
         </Tabs>
       </main>

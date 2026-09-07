@@ -162,3 +162,27 @@ Enforcement:
 | POST | /api/household/code/rotate | resident (primary) | | new code |
 
 Effective membership (`server/lib/membership.ts`, pure): a user with `householdPrimaryId` inherits the primary's `membershipStatus` and `membershipExpiry` when the primary's plan is household; otherwise their own. `residentRedeemReasons` and `GET /api/scan` use the effective membership. Each adult still needs their own residency verification.
+
+## Activity (added Sept 2026)
+
+The resident "Activity" tab (`client/src/components/resident/activity-tab.tsx`) is built on two calls. No schema changes.
+
+`GET /api/loyalty/mine` (resident) keeps every field it had and adds, per item:
+
+| Field | Meaning |
+|---|---|
+| `lastActivityAt` | latest of `balance.updatedAt` and the newest loyalty event for that merchant and resident; the list is sorted by it, newest first |
+| `tiers` | `[{ id, name, thresholdPoints, color }]`, threshold ascending |
+| `claimable` | `LoyaltyReward[]`: active rewards the resident can afford now (`costPoints <= points`; on a stamps programme also `costStamps <= stamps`) |
+| `nextReward` | `{ id, name, costPoints, pointsToGo } \| null`: the cheapest active points reward not yet affordable |
+
+`GET /api/activity/mine` (resident, `server/routes/activity.ts`): one merged feed, newest first, at most 100 items.
+
+| `kind` | Shape |
+|---|---|
+| `redemption` | `{ kind, id, at, merchant: {id,name,logoUrl}, title: offer title, code, pointsAwarded }` |
+| `points` | `{ kind, id, at, merchant, title: "+15 points" or "+1 stamp", amount }` from `earn_points` / `earn_stamp` events |
+| `reward` | `{ kind, id, at, merchant, title: "Claimed <reward name>", amount }` from `redeem_reward` events (amount is negative points) |
+| `tier` | `{ kind, id, at, merchant, title: "Now Gold", amount: null }` from `tier_change` events |
+
+`earn_points` events written by an offer redemption (`metadata.source === "redemption"`, or `metadata.redemptionId` set) are skipped, since the redemption row already carries `pointsAwarded`. `adjust` events are not shown.

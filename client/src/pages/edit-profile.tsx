@@ -19,7 +19,6 @@ import { errorMessage } from "@/components/resident/format";
 const schema = updateProfileSchema.extend({
   firstName: z.string().min(1, "Enter your first name"),
   surname: z.string().min(1, "Enter your surname"),
-  postcode: z.union([z.string().min(5, "Enter a valid postcode"), z.literal("")]).optional(),
 });
 type Values = z.infer<typeof schema>;
 
@@ -65,16 +64,7 @@ export default function EditProfile() {
   return (
     <AuthLayout title="Your profile" subtitle={user.email}>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit, () => {
-            toast({
-              title: "Could not save",
-              description: "Check the highlighted profile fields and try again.",
-              variant: "destructive",
-            });
-          })}
-          className="space-y-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="profilePhoto"
