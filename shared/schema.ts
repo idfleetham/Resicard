@@ -1,518 +1,219 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, date, numeric, jsonb, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, uuid, date, numeric, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Resicard data model
+//
+// Three roles: resident, merchant, admin.
+// Residents pay a flat annual membership. Merchants pay a flat monthly fee.
+// A redemption is recorded when a resident scans the merchant's printed QR
+// code (merchants.scanCode) and picks an offer. There is no per-redemption
+// billing and no voucher step.
+// ---------------------------------------------------------------------------
+
+export const USER_ROLES = ["resident", "merchant", "admin"] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+export const MERCHANT_CATEGORIES = [
+  "restaurant", "bar", "cafe", "pub", "takeaway", "hotel", "retail", "services", "experience",
+] as const;
+
+export const OFFER_TYPES = [
+  "percentage_discount",
+  "fixed_amount_discount",
+  "fixed_price",
+  "free_item_with_purchase",
+  "bogo",
+  "set_menu",
+  "off_peak",
+  "loyalty_reward",
+] as const;
+export type OfferType = (typeof OFFER_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password").notNull(), // bcrypt hash
   firstName: text("first_name"),
   surname: text("surname"),
-  role: text("role").notNull(), // 'resident', 'merchant', 'admin'
-  isVerified: boolean("is_verified").default(false),
+  role: text("role").$type<UserRole>().notNull(),
   postcode: text("postcode"),
-  businessName: text("business_name"),
-  businessCategory: text("business_category"),
-  businessAddress: text("business_address"),
-  businessPhone: text("business_phone"),
-  profilePhoto: text("profile_photo"), // Base64 encoded image for membership card
-  subscriptionType: text("subscription_type"), // 'individual' or 'family'
-  subscriptionPlan: text("subscription_plan"), // 'monthly' or 'annual'
-  subscriptionStatus: text("subscription_status").default("inactive"), // 'active', 'inactive', 'cancelled'
-  membershipExpiry: timestamp("membership_expiry"),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  // Document verification fields
-  documentType: text("document_type"), // "driving_license", "bank_statement", "utility_bill", "passport"
-  documentFile: text("document_file"), // Base64 encoded document
-  documentStatus: text("document_status"), // "pending", "approved", "rejected"
+  profilePhoto: text("profile_photo"), // base64 data URL, shown on the digital card
+
+  // Residency verification (residents only)
+  documentType: text("document_type"), // driving_licence | bank_statement | utility_bill | council_tax
+  documentFile: text("document_file"), // base64 data URL
+  documentStatus: text("document_status").$type<"pending" | "approved" | "rejected">(),
   documentSubmittedAt: timestamp("document_submitted_at"),
   documentReviewedAt: timestamp("document_reviewed_at"),
   documentReviewedBy: integer("document_reviewed_by"),
+  documentRejectionReason: text("document_rejection_reason"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
-  // Merchant portal fields (removed foreign key constraint to avoid migration issues)
+
+  // Membership (residents only): one flat annual fee
+  membershipStatus: text("membership_status").$type<"inactive" | "active" | "cancelled">().default("inactive"),
+  membershipExpiry: timestamp("membership_expiry"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+
+  // Merchant users belong to a merchant record
   merchantId: uuid("merchant_id"),
   staffPin: text("staff_pin"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  tokenHash: text("token_hash").notNull().unique(), // SHA-256 hash of the actual token
+  tokenHash: text("token_hash").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
-  usedAt: timestamp("used_at"), // Null until token is used
+  usedAt: timestamp("used_at"),
   requestIp: text("request_ip"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const billingRuns = pgTable("billing_runs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
-  periodStart: date("period_start").notNull(),
-  periodEnd: date("period_end").notNull(),
-  redemptionCount: integer("redemption_count").default(0),
-  feeType: text("fee_type").$type<"per_redemption"|"percent_of_discount">().default("per_redemption"),
-  feeValue: numeric("fee_value", { precision: 10, scale: 2 }).default("0.50"),
-  totalFees: numeric("total_fees", { precision: 12, scale: 2 }).default("0.00"),
-  status: text("status").$type<"draft"|"pending_dd"|"collected">().default("draft"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// ---------------------------------------------------------------------------
+// Merchants
+// ---------------------------------------------------------------------------
 
-export const familyMembers = pgTable("family_members", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  firstName: text("first_name").notNull(),
-  surname: text("surname").notNull(),
-  age: integer("age").notNull(),
-  relationship: text("relationship").notNull(), // 'spouse', 'child', 'other'
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Merchant entities
 export const merchants = pgTable("merchants", {
   id: uuid("id").primaryKey().defaultRandom(),
+  ownerUserId: integer("owner_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  category: text("category"),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
   logoUrl: text("logo_url"),
   businessHours: text("business_hours"), // JSON string
-  apiKey: text("api_key"),
-  reservationProvider: text("reservation_provider"), // e.g., "opentable", "resy", "bookatable", "custom"
-  reservationUrl: text("reservation_url"), // URL for the reservation system
+  reservationProvider: text("reservation_provider"),
+  reservationUrl: text("reservation_url"),
+
+  // The printed QR code in the outlet encodes /scan/<scanCode>
+  scanCode: text("scan_code").notNull().unique(),
+
+  // Admin approval
+  status: text("status").$type<"pending" | "approved" | "rejected">().default("pending"),
+  approvedAt: timestamp("approved_at"),
+  approvedBy: integer("approved_by"),
+
+  // Flat monthly plan
+  planStatus: text("plan_status").$type<"trial" | "active" | "inactive">().default("trial"),
+  planStartedAt: timestamp("plan_started_at").defaultNow(),
+  planRenewsAt: timestamp("plan_renews_at"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// ---------------------------------------------------------------------------
+// Offers
+// ---------------------------------------------------------------------------
 
 export const offers = pgTable("offers", {
   id: uuid("id").primaryKey().defaultRandom(),
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
-  
-  // A) Core & pricing
+
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").$type<"percentage_discount"|"fixed_amount_discount"|"free_item_with_purchase"|"bogo"|"limited_redemptions"|"loyalty_reward"|"set_menu"|"day_time_specific"|"meal_deal"|"seasonal_rate"|"stay_dine_package"|"free_upgrade"|"spend_save"|"multi_buy_bundle"|"clearance_sale"|"introductory_offer"|"referral_discount"|"subscription_trial"|"free_ticket"|"group_discount"|"student_night"|"package_deals"|"free_consultation"|"loyalty_stamp"|"free_trial"|"class_pass_bundle"|"membership_discount"|"transfer_discount"|"day_pass"|"seasonal_ticket"|"free_taster"|"multi_lesson_package"|"student_concession"|"installation_discount"|"free_delivery"|"seasonal_service"|"accessory_bundle"|"repair_discount"|"trade_in_bonus"|"group_booking"|"off_peak_discount"|"experience_package"|"fixed_price_bundle">().default("percentage_discount"),
-  percentOff: integer("percent_off"), // For percentage discounts
-  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }), // For fixed price offers
+  shortPromo: text("short_promo"), // <= 90 chars, shown on cards
+  type: text("type").$type<OfferType>().default("percentage_discount"),
+  percentOff: integer("percent_off"),
+  fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),
-  category: text("category"), // Food & Drink, Retail, Services
-  tags: text("tags"), // JSON array: ["happy-hour", "lunch", "family"]
-  
-  // B) Visibility & eligibility
-  audience: text("audience").$type<"resident"|"student"|"both">().default("both"),
-  eligibleTiers: text("eligible_tiers"), // JSON array of tier IDs that can access this offer
-  minBasket: numeric("min_basket", { precision: 10, scale: 2 }), // Min spend requirement
-  maxDiscount: numeric("max_discount", { precision: 10, scale: 2 }), // Cap on discount value
-  stackable: boolean("stackable").default(false), // Can stack with other promos
+  category: text("category"),
+  tags: jsonb("tags").$type<string[]>(),
+
+  // Eligibility
+  eligibleTiers: jsonb("eligible_tiers").$type<string[]>(), // loyalty tier IDs; empty = everyone
+  minBasket: numeric("min_basket", { precision: 10, scale: 2 }),
+  maxDiscount: numeric("max_discount", { precision: 10, scale: 2 }),
+  stackable: boolean("stackable").default(false),
   newCustomerOnly: boolean("new_customer_only").default(false),
-  locations: text("locations"), // JSON array of location IDs
-  geofenceRadius: integer("geofence_radius"), // Meters from venue
-  
-  // C) Scheduling
+
+  // Scheduling
   validFrom: date("valid_from"),
   validTo: date("valid_to"),
-  daysOfWeek: text("days_of_week"), // JSON array: ["mon","tue","wed"]
-  timeSlots: text("time_slots"), // JSON: {mon: [{start:"12:00",end:"14:30"}]}
-  blackoutDates: text("blackout_dates"), // JSON array of date ranges
-  leadTime: integer("lead_time"), // Minutes between redemptions
-  
-  // D) Redemption rules & limits
-  maxPerTransaction: integer("max_per_transaction").default(1),
-  maxPerDay: integer("max_per_day"),
+  daysOfWeek: jsonb("days_of_week").$type<string[]>(), // ["mon","tue",...]; empty = every day
+  timeSlots: jsonb("time_slots").$type<Record<string, { start: string; end: string }[]>>(),
+  blackoutDates: jsonb("blackout_dates").$type<{ name: string; startDate: string; endDate: string }[]>(),
+
+  // Limits
+  maxPerDay: integer("max_per_day"), // per resident
   maxPerWeek: integer("max_per_week"),
   maxLifetime: integer("max_lifetime"),
   globalUsageLimit: integer("global_usage_limit"),
   usageCount: integer("usage_count").default(0),
-  usageLimit: integer("usage_limit"), // Make nullable to match database
-  voucherTimeoutHours: integer("voucher_timeout_hours").default(24), // Hours to make booking after claiming voucher
-  staffPinRequired: boolean("staff_pin_required").default(false),
-  proofType: text("proof_type").$type<"qr_only"|"code_pin"|"app_checkin">().default("qr_only"),
-  refundBehavior: text("refund_behavior").$type<"restore"|"consume">().default("consume"),
-  
-  // E) Terms & conditions
+
+  // Terms
   terms: text("terms"),
   dineInOnly: boolean("dine_in_only").default(false),
   excludesAlcohol: boolean("excludes_alcohol").default(false),
-  serviceChargeIncluded: boolean("service_charge_included").default(true),
-  validOnBankHolidays: boolean("valid_on_bank_holidays").default(true),
-  
-  // F) Media & presentation
+
+  // Media
   imageUrl: text("image_url"),
-  menuPdf: text("menu_pdf"), // Base64 encoded PDF for set menu offers
-  shortPromo: text("short_promo"), // <= 90 chars
-  priority: text("priority").$type<"standard"|"featured">().default("standard"),
-  
-  // G) Budget & billing controls
-  feeModel: text("fee_model").$type<"default"|"per_redemption"|"percent_discount">().default("default"),
-  customFee: numeric("custom_fee", { precision: 10, scale: 2 }),
-  budgetCap: numeric("budget_cap", { precision: 10, scale: 2 }),
-  autoPauseOnAbuse: boolean("auto_pause_on_abuse").default(true),
-  
-  // H) Fraud & safety
-  deviceFingerprinting: boolean("device_fingerprinting").default(true),
-  
-  // Status and metadata
+  menuPdf: text("menu_pdf"), // base64 PDF for set menus
+  priority: text("priority").$type<"standard" | "featured">().default("standard"),
+
   active: boolean("active").default(true),
   archived: boolean("archived").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// REMOVED: deals table - using offers table instead
+// ---------------------------------------------------------------------------
+// Redemptions (one row per scan-and-redeem)
+// ---------------------------------------------------------------------------
 
-// Enhanced redemptions table with comprehensive tracking
 export const redemptions = pgTable("redemptions", {
-  id: serial("id").primaryKey(), // Matches existing database
-  dealId: integer("deal_id").notNull(), // TODO: migrate to offer_id when ready
-  userId: integer("user_id").notNull(),
-  redeemedAt: timestamp("redeemed_at"),
-  value: numeric("value", { precision: 10, scale: 2 }),
-});
-
-// Analytics tracking for offers
-export const offerAnalytics = pgTable("offer_analytics", {
   id: uuid("id").primaryKey().defaultRandom(),
-  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
-  userId: integer("user_id").references(() => users.id),
-  
-  // Event tracking
-  eventType: text("event_type").$type<"impression"|"view"|"save"|"redemption">().notNull(),
-  sessionId: text("session_id"),
-  deviceId: text("device_id"),
-  
-  // Context
-  source: text("source"), // "home", "search", "category", "merchant_page"
-  position: integer("position"), // Position in list/grid
-  
-  createdAt: timestamp("created_at").defaultNow(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  code: text("code").notNull().unique(), // short code shown on the success screen
+  basketAmount: numeric("basket_amount", { precision: 10, scale: 2 }),
+  pointsAwarded: integer("points_awarded").default(0),
+  redeemedAt: timestamp("redeemed_at").defaultNow(),
 });
 
-// Blackout periods for offers
-export const offerBlackouts = pgTable("offer_blackouts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // "Graduation Week", "Christmas Period"
-  startDate: date("start_date").notNull(),
-  endDate: date("end_date").notNull(),
-  recurring: boolean("recurring").default(false), // Annual recurrence
-  active: boolean("active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// ---------------------------------------------------------------------------
+// Loyalty (per merchant)
+// ---------------------------------------------------------------------------
 
-export const vouchers = pgTable("vouchers", {
-  id: serial("id").primaryKey(),
-  dealId: integer("deal_id").notNull(), // TODO: migrate to offer_id when ready
-  userId: integer("user_id").notNull(),
-  voucherNumber: text("voucher_number").notNull().unique(),
-  isUsed: boolean("is_used").default(false),
-  usedAt: timestamp("used_at"),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  email: true,
-  password: true,
-  firstName: true,
-  surname: true,
-  role: true,
-  postcode: true,
-  businessName: true,
-  businessCategory: true,
-  businessAddress: true,
-  businessPhone: true,
-  profilePhoto: true,
-});
-
-export const insertFamilyMemberSchema = createInsertSchema(familyMembers).pick({
-  firstName: true,
-  surname: true,
-  age: true,
-  relationship: true,
-});
-
-// REMOVED: deals schema - using offers instead
-
-// Schema for new comprehensive offers
-export const insertOfferSchema = createInsertSchema(offers).pick({
-  title: true,
-  description: true,
-  type: true,
-  percentOff: true,
-  fixedPrice: true,
-  originalValue: true,
-  category: true,
-  audience: true,
-  eligibleTiers: true,
-  stackable: true,
-  newCustomerOnly: true,
-  geofenceRadius: true,
-  validFrom: true,
-  validTo: true,
-  leadTime: true,
-  maxPerTransaction: true,
-  maxPerDay: true,
-  maxPerWeek: true,
-  maxLifetime: true,
-  globalUsageLimit: true,
-  staffPinRequired: true,
-  proofType: true,
-  refundBehavior: true,
-  terms: true,
-  dineInOnly: true,
-  excludesAlcohol: true,
-  serviceChargeIncluded: true,
-  validOnBankHolidays: true,
-  imageUrl: true,
-  menuPdf: true,
-  shortPromo: true,
-  priority: true,
-  feeModel: true,
-  customFee: true,
-  budgetCap: true,
-  autoPauseOnAbuse: true,
-  deviceFingerprinting: true,
-}).extend({
-  // Override fields that need special handling for arrays/objects from frontend
-  tags: z.array(z.string()).optional(),
-  eligibleTiers: z.array(z.string()).optional(),
-  daysOfWeek: z.array(z.string()).optional(),
-  timeSlots: z.record(z.array(z.object({
-    start: z.string(),
-    end: z.string()
-  }))).optional(),
-  blackoutDates: z.array(z.object({
-    name: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
-    recurring: z.boolean().default(false)
-  })).optional(),
-  mealPeriods: z.array(z.string()).optional(),
-  locations: z.array(z.string()).optional(),
-  minBasket: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  maxDiscount: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  // Override date fields to accept strings from frontend
-  validFrom: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
-  validTo: z.union([z.date(), z.string()]).transform(val => typeof val === 'string' ? new Date(val) : val),
-  // Override numeric fields to accept strings from frontend
-  percentOff: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  fixedPrice: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  originalValue: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  leadTime: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  maxPerTransaction: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  maxPerDay: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  maxPerWeek: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  maxLifetime: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  globalUsageLimit: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  voucherTimeoutHours: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || null : val).optional(),
-  customFee: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  budgetCap: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || null : val).optional(),
-  // Override type field to use new enum values
-  type: z.enum([
-    "percentage_discount", "fixed_amount_discount", "free_item_with_purchase", "bogo", "limited_redemptions", "loyalty_reward",
-    "set_menu", "day_time_specific", "meal_deal", "seasonal_rate", "stay_dine_package", "free_upgrade", 
-    "spend_save", "multi_buy_bundle", "clearance_sale", "introductory_offer", "referral_discount", 
-    "subscription_trial", "free_ticket", "group_discount", "student_night", "package_deals", 
-    "free_consultation", "loyalty_stamp", "free_trial", "class_pass_bundle", "membership_discount", 
-    "transfer_discount", "day_pass", "seasonal_ticket", "free_taster", "multi_lesson_package", 
-    "student_concession", "installation_discount", "free_delivery", "seasonal_service", 
-    "accessory_bundle", "repair_discount", "trade_in_bonus", "group_booking", "off_peak_discount", 
-    "experience_package", "fixed_price_bundle"
-  ]),
-});
-
-export const insertEnhancedRedemptionSchema = createInsertSchema(redemptions).pick({
-  dealId: true,
-  userId: true,
-  value: true,
-});
-
-export const insertBlackoutSchema = createInsertSchema(offerBlackouts).pick({
-  offerId: true,
-  name: true,
-  startDate: true,
-  endDate: true,
-  recurring: true,
-});
-
-export const insertMerchantSchema = createInsertSchema(merchants).pick({
-  name: true,
-  email: true,
-  phone: true,
-  address: true,
-  logoUrl: true,
-  businessHours: true,
-  reservationProvider: true,
-  reservationUrl: true,
-});
-
-export const insertBillingRunSchema = createInsertSchema(billingRuns).pick({
-  merchantId: true,
-  periodStart: true,
-  periodEnd: true,
-  redemptionCount: true,
-  feeType: true,
-  feeValue: true,
-  totalFees: true,
-  status: true,
-});
-
-export const insertVoucherSchema = createInsertSchema(vouchers).pick({
-  dealId: true,
-  userId: true,
-  voucherNumber: true,
-  expiresAt: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
-export type FamilyMember = typeof familyMembers.$inferSelect;
-// REMOVED: Deal types - using Offer types instead
-export type InsertOffer = z.infer<typeof insertOfferSchema>;
-export type Offer = typeof offers.$inferSelect;
-export type InsertMerchant = z.infer<typeof insertMerchantSchema>;
-export type Merchant = typeof merchants.$inferSelect;
-export type InsertEnhancedRedemption = z.infer<typeof insertEnhancedRedemptionSchema>;
-export type InsertRedemption = InsertEnhancedRedemption;
-export type Redemption = typeof redemptions.$inferSelect;
-export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
-export type Voucher = typeof vouchers.$inferSelect;
-export type InsertBillingRun = z.infer<typeof insertBillingRunSchema>;
-export type BillingRun = typeof billingRuns.$inferSelect;
-
-// Utility function for generating customer aliases in merchant views
-export function generateCustomerAlias(user: { id: number; username?: string | null }): string {
-  if (user.username) {
-    return user.username;
-  }
-  // Generate safe alias based on user ID
-  const hash = user.id.toString(16).padStart(6, '0');
-  return `user_${hash}`;
-}
-
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  redemptions: many(redemptions),
-  vouchers: many(vouchers),
-  familyMembers: many(familyMembers),
-}));
-
-export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
-  user: one(users, {
-    fields: [familyMembers.userId],
-    references: [users.id],
-  }),
-}));
-
-export const offersRelations = relations(offers, ({ one, many }) => ({
-  merchant: one(merchants, {
-    fields: [offers.merchantId],
-    references: [merchants.id],
-  }),
-  redemptions: many(redemptions),
-  analytics: many(offerAnalytics),
-  blackouts: many(offerBlackouts),
-}));
-
-export const redemptionsRelations = relations(redemptions, ({ one }) => ({
-  user: one(users, {
-    fields: [redemptions.userId],
-    references: [users.id],
-  }),
-}));
-
-// REMOVED: dealsRelations - using offersRelations instead
-
-// REMOVED: vouchersRelations - vouchers will be updated to use offers
-
-// REMOVED: DealWithMerchant type - using OfferWithMerchant instead
-
-// REMOVED: VoucherWithDeal type - will be replaced with VoucherWithOffer
-
-export type UserRole = 'resident' | 'merchant' | 'admin';
-
-export type SubscriptionType = 'individual' | 'family';
-
-// Loyalty Program Tables  
 export const loyaltyPrograms = pgTable("loyalty_programs", {
   id: serial("id").primaryKey(),
-  merchantId: integer("merchant_id").notNull(),
-  model: text("model").$type<"points"|"stamps">().default("points"),
-  pointsPerCurrency: integer("points_per_currency").default(10), // e.g. 10 points per £1
-  minBasketEarn: text("min_basket_earn").default("0.00"),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }).unique(),
+  model: text("model").$type<"points" | "stamps">().default("points"),
+  pointsPerCurrency: integer("points_per_currency").default(10), // points per £1
+  pointsPerRedemption: integer("points_per_redemption").default(10), // awarded on a scan when no basket amount is given
+  minBasketEarn: numeric("min_basket_earn", { precision: 10, scale: 2 }).default("0.00"),
   earnCooldownMinutes: integer("earn_cooldown_minutes").default(30),
-  dailyEarnCap: integer("daily_earn_cap").default(3), // per user per day
+  dailyEarnCap: integer("daily_earn_cap").default(3),
   stackingAllowed: boolean("stacking_allowed").default(false),
-  expiryDays: integer("expiry_days"), // rewards expiry, optional
-  createdAt: timestamp("created_at").defaultNow(),
+  expiryDays: integer("expiry_days"),
   active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const loyaltyTiers = pgTable("loyalty_tiers", {
   id: uuid("id").primaryKey().defaultRandom(),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // Bronze, Silver, Gold
-  thresholdPoints: integer("threshold_points").notNull(), // or stamps
-  discountPercent: integer("discount_percent").default(0), // Simple % discount
-  pointsMultiplier: numeric("points_multiplier", { precision: 3, scale: 2 }).default("1.00"), // e.g., 1.00, 1.50, 2.00
-  color: text("color").default("#f97316"), // Tier color
+  name: text("name").notNull(),
+  thresholdPoints: integer("threshold_points").notNull(),
+  discountPercent: integer("discount_percent").default(0),
+  pointsMultiplier: numeric("points_multiplier", { precision: 3, scale: 2 }).default("1.00"),
+  color: text("color").default("#f97316"),
   sortOrder: integer("sort_order").default(0),
-});
-
-// Merchant tier pricing settings
-export const merchantTierPricing = pgTable("merchant_tier_pricing", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
-  tierId: uuid("tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
-  isAvailableForPurchase: boolean("is_available_for_purchase").default(false),
-  annualPrice: numeric("annual_price", { precision: 10, scale: 2 }), // Annual membership price
-  membershipDurationMonths: integer("membership_duration_months").default(12), // Rolling period in months
-  currency: text("currency").default("GBP"),
-  description: text("description"), // Benefits description
-  stripeProductId: text("stripe_product_id"), // Stripe subscription product ID
-  stripePriceId: text("stripe_price_id"), // Stripe subscription price ID
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Tier upgrade pricing - for direct tier-to-tier upgrades
-export const tierUpgradePricing = pgTable("tier_upgrade_pricing", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
-  fromTierId: uuid("from_tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
-  toTierId: uuid("to_tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
-  upgradePrice: numeric("upgrade_price", { precision: 10, scale: 2 }), // Price to upgrade from tier A to tier B
-  isAvailable: boolean("is_available").default(true),
-  currency: text("currency").default("GBP"),
-  stripeProductId: text("stripe_product_id"), // Stripe one-time payment product ID
-  stripePriceId: text("stripe_price_id"), // Stripe one-time payment price ID
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  // Ensure unique upgrade paths
-  uniqueUpgradePath: unique().on(table.merchantId, table.fromTierId, table.toTierId),
-}));
-
-// User tier purchases/memberships
-export const userTierMemberships = pgTable("user_tier_memberships", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
-  tierId: uuid("tier_id").notNull().references(() => loyaltyTiers.id, { onDelete: "cascade" }),
-  status: text("status").$type<"active"|"expired"|"cancelled">().default("active"),
-  purchaseDate: timestamp("purchase_date").defaultNow(),
-  expiryDate: timestamp("expiry_date").notNull(), // One year from purchase
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
-  amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }),
-  currency: text("currency").default("GBP"),
-  upgradeFromTier: uuid("upgrade_from_tier"), // Track if this was an upgrade
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const loyaltyBalances = pgTable("loyalty_balances", {
@@ -521,7 +222,7 @@ export const loyaltyBalances = pgTable("loyalty_balances", {
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   points: integer("points").default(0),
   stamps: integer("stamps").default(0),
-  tierId: uuid("tier_id").references(() => loyaltyTiers.id), // current tier
+  tierId: uuid("tier_id").references(() => loyaltyTiers.id),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -530,118 +231,200 @@ export const loyaltyEvents = pgTable("loyalty_events", {
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
   userId: integer("user_id").notNull().references(() => users.id),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id),
-  type: text("type").$type<"earn_points"|"earn_stamp"|"redeem_reward"|"adjust"|"tier_change">().notNull(),
-  amount: integer("amount"), // points or stamps change (+/-)
-  metadata: jsonb("metadata"), // {basket, staffUserId, deviceId, source:"qr|pin"}
+  type: text("type").$type<"earn_points" | "earn_stamp" | "redeem_reward" | "adjust" | "tier_change">().notNull(),
+  amount: integer("amount"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const loyaltyRewards = pgTable("loyalty_rewards", {
   id: uuid("id").primaryKey().defaultRandom(),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // e.g., Free Coffee
-  costPoints: integer("cost_points"), // for points model
-  costStamps: integer("cost_stamps"), // for stamps model
+  name: text("name").notNull(),
+  costPoints: integer("cost_points"),
+  costStamps: integer("cost_stamps"),
   terms: text("terms"),
   active: boolean("active").default(true),
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Relations for loyalty system
+// ---------------------------------------------------------------------------
+// Relations
+// ---------------------------------------------------------------------------
+
+export const merchantRelations = relations(merchants, ({ one, many }) => ({
+  owner: one(users, { fields: [merchants.ownerUserId], references: [users.id] }),
+  offers: many(offers),
+  redemptions: many(redemptions),
+  loyaltyProgram: one(loyaltyPrograms, { fields: [merchants.id], references: [loyaltyPrograms.merchantId] }),
+}));
+
+export const offerRelations = relations(offers, ({ one, many }) => ({
+  merchant: one(merchants, { fields: [offers.merchantId], references: [merchants.id] }),
+  redemptions: many(redemptions),
+}));
+
+export const redemptionRelations = relations(redemptions, ({ one }) => ({
+  offer: one(offers, { fields: [redemptions.offerId], references: [offers.id] }),
+  merchant: one(merchants, { fields: [redemptions.merchantId], references: [merchants.id] }),
+  user: one(users, { fields: [redemptions.userId], references: [users.id] }),
+}));
+
 export const loyaltyProgramRelations = relations(loyaltyPrograms, ({ one, many }) => ({
-  merchant: one(merchants, {
-    fields: [loyaltyPrograms.merchantId],
-    references: [merchants.id]
-  }),
+  merchant: one(merchants, { fields: [loyaltyPrograms.merchantId], references: [merchants.id] }),
   tiers: many(loyaltyTiers),
   rewards: many(loyaltyRewards),
   events: many(loyaltyEvents),
-  balances: many(loyaltyBalances),
 }));
 
 export const loyaltyTierRelations = relations(loyaltyTiers, ({ one, many }) => ({
-  program: one(loyaltyPrograms, {
-    fields: [loyaltyTiers.programId],
-    references: [loyaltyPrograms.id]
-  }),
+  program: one(loyaltyPrograms, { fields: [loyaltyTiers.programId], references: [loyaltyPrograms.id] }),
   balances: many(loyaltyBalances),
 }));
 
 export const loyaltyBalanceRelations = relations(loyaltyBalances, ({ one }) => ({
-  merchant: one(merchants, {
-    fields: [loyaltyBalances.merchantId],
-    references: [merchants.id]
-  }),
-  user: one(users, {
-    fields: [loyaltyBalances.userId],
-    references: [users.id]
-  }),
-  tier: one(loyaltyTiers, {
-    fields: [loyaltyBalances.tierId],
-    references: [loyaltyTiers.id]
-  }),
+  merchant: one(merchants, { fields: [loyaltyBalances.merchantId], references: [merchants.id] }),
+  user: one(users, { fields: [loyaltyBalances.userId], references: [users.id] }),
+  tier: one(loyaltyTiers, { fields: [loyaltyBalances.tierId], references: [loyaltyTiers.id] }),
 }));
 
-export const loyaltyEventRelations = relations(loyaltyEvents, ({ one }) => ({
-  merchant: one(merchants, {
-    fields: [loyaltyEvents.merchantId],
-    references: [merchants.id]
-  }),
-  user: one(users, {
-    fields: [loyaltyEvents.userId],
-    references: [users.id]
-  }),
-  program: one(loyaltyPrograms, {
-    fields: [loyaltyEvents.programId],
-    references: [loyaltyPrograms.id]
-  }),
-}));
+// ---------------------------------------------------------------------------
+// Insert schemas (zod) and types
+// ---------------------------------------------------------------------------
 
-export const loyaltyRewardRelations = relations(loyaltyRewards, ({ one }) => ({
-  program: one(loyaltyPrograms, {
-    fields: [loyaltyRewards.programId],
-    references: [loyaltyPrograms.id]
-  }),
-}));
+const optionalNumber = z
+  .union([z.number(), z.string(), z.null()])
+  .transform((v) => (typeof v === "string" ? (v.trim() === "" ? null : Number(v)) : v))
+  .optional()
+  .nullable();
 
-// Loyalty types
-export type LoyaltyProgram = typeof loyaltyPrograms.$inferSelect;
-export type InsertLoyaltyProgram = typeof loyaltyPrograms.$inferInsert;
-export type LoyaltyTier = typeof loyaltyTiers.$inferSelect;
-export type InsertLoyaltyTier = typeof loyaltyTiers.$inferInsert;
-export type LoyaltyBalance = typeof loyaltyBalances.$inferSelect;
-export type InsertLoyaltyBalance = typeof loyaltyBalances.$inferInsert;
-export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
-export type InsertLoyaltyEvent = typeof loyaltyEvents.$inferInsert;
-export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
-export type InsertLoyaltyReward = typeof loyaltyRewards.$inferInsert;
-export type MerchantTierPricing = typeof merchantTierPricing.$inferSelect;
-export type InsertMerchantTierPricing = typeof merchantTierPricing.$inferInsert;
-export type TierUpgradePricing = typeof tierUpgradePricing.$inferSelect;
-export type InsertTierUpgradePricing = typeof tierUpgradePricing.$inferInsert;
-export type UserTierMembership = typeof userTierMemberships.$inferSelect;
-export type InsertUserTierMembership = typeof userTierMemberships.$inferInsert;
-
-// Loyalty schemas
-export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms);
-export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers);
-export const insertLoyaltyBalanceSchema = createInsertSchema(loyaltyBalances);
-export const insertLoyaltyEventSchema = createInsertSchema(loyaltyEvents);
-export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards);
-export const insertMerchantTierPricingSchema = createInsertSchema(merchantTierPricing);
-export const insertTierUpgradePricingSchema = createInsertSchema(tierUpgradePricing);
-export const insertUserTierMembershipSchema = createInsertSchema(userTierMemberships);
-
-// Password reset types
-export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
-export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
-
-// Password reset schemas
-export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
-  id: true,
-  createdAt: true,
+export const registerResidentSchema = z.object({
+  role: z.literal("resident"),
+  username: z.string().min(3).max(30),
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  surname: z.string().min(1),
+  postcode: z.string().min(5),
+  profilePhoto: z.string().optional(),
 });
 
-export type SubscriptionPlan = 'monthly' | 'annual';
-export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled';
+export const registerMerchantSchema = z.object({
+  role: z.literal("merchant"),
+  username: z.string().min(3).max(30),
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  surname: z.string().min(1),
+  businessName: z.string().min(1),
+  businessCategory: z.enum(MERCHANT_CATEGORIES),
+  businessAddress: z.string().min(1),
+  businessPhone: z.string().min(5),
+});
+
+export const registerSchema = z.discriminatedUnion("role", [registerResidentSchema, registerMerchantSchema]);
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+export const updateProfileSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  surname: z.string().min(1).optional(),
+  postcode: z.string().min(5).optional(),
+  profilePhoto: z.string().optional(),
+});
+
+export const submitDocumentSchema = z.object({
+  documentType: z.enum(["driving_licence", "bank_statement", "utility_bill", "council_tax"]),
+  documentFile: z.string().min(1),
+});
+
+export const updateMerchantSchema = z.object({
+  name: z.string().min(1).optional(),
+  category: z.enum(MERCHANT_CATEGORIES).optional(),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  logoUrl: z.string().optional().nullable(),
+  businessHours: z.string().optional().nullable(),
+  reservationProvider: z.string().optional().nullable(),
+  reservationUrl: z.string().url().optional().nullable().or(z.literal("")),
+});
+
+export const insertOfferSchema = createInsertSchema(offers)
+  .pick({
+    title: true,
+    description: true,
+    shortPromo: true,
+    type: true,
+    category: true,
+    stackable: true,
+    newCustomerOnly: true,
+    terms: true,
+    dineInOnly: true,
+    excludesAlcohol: true,
+    imageUrl: true,
+    menuPdf: true,
+    priority: true,
+    active: true,
+  })
+  .extend({
+    type: z.enum(OFFER_TYPES).default("percentage_discount"),
+    percentOff: optionalNumber,
+    fixedPrice: optionalNumber,
+    originalValue: optionalNumber,
+    minBasket: optionalNumber,
+    maxDiscount: optionalNumber,
+    maxPerDay: optionalNumber,
+    maxPerWeek: optionalNumber,
+    maxLifetime: optionalNumber,
+    globalUsageLimit: optionalNumber,
+    tags: z.array(z.string()).optional(),
+    eligibleTiers: z.array(z.string()).optional(),
+    daysOfWeek: z.array(z.string()).optional(),
+    timeSlots: z.record(z.array(z.object({ start: z.string(), end: z.string() }))).optional(),
+    blackoutDates: z
+      .array(z.object({ name: z.string(), startDate: z.string(), endDate: z.string() }))
+      .optional(),
+    validFrom: z.string().optional().nullable(),
+    validTo: z.string().optional().nullable(),
+  });
+
+export const updateOfferSchema = insertOfferSchema.partial();
+
+export const scanRedeemSchema = z.object({
+  scanCode: z.string().min(4),
+  offerId: z.string().uuid(),
+  basketAmount: optionalNumber,
+});
+
+export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms).omit({
+  id: true,
+  merchantId: true,
+  createdAt: true,
+});
+export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers).omit({ id: true, programId: true });
+export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards).omit({ id: true, programId: true, createdAt: true });
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type PublicUser = Omit<User, "password" | "documentFile">;
+export type Merchant = typeof merchants.$inferSelect;
+export type InsertMerchant = typeof merchants.$inferInsert;
+export type Offer = typeof offers.$inferSelect;
+export type InsertOffer = z.infer<typeof insertOfferSchema>;
+export type Redemption = typeof redemptions.$inferSelect;
+export type LoyaltyProgram = typeof loyaltyPrograms.$inferSelect;
+export type LoyaltyTier = typeof loyaltyTiers.$inferSelect;
+export type LoyaltyBalance = typeof loyaltyBalances.$inferSelect;
+export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
+export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
+/** Alias shown to merchants instead of a resident's real name. */
+export function generateCustomerAlias(user: { id: number; username?: string | null }): string {
+  return user.username ? user.username : `member_${String(user.id).padStart(5, "0")}`;
+}

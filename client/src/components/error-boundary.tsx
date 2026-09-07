@@ -1,5 +1,5 @@
 import { Component, ReactNode } from "react";
-import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </CardTitle>
             </CardHeader>
-            <CardBody className="space-y-4 text-center">
+            <CardContent className="space-y-4 text-center">
               <p className="text-muted-foreground">
                 The application encountered an error. This might be due to a connection issue or expired session.
               </p>
@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   Go to Login
                 </Button>
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
         </div>
       );

@@ -1,358 +1,123 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/ui/Card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/hooks/use-auth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Plus, 
-  Mail, 
-  Shield, 
-  RotateCcw, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
-  Users,
-  UserCheck,
-  UserX,
-  Key
-} from "lucide-react";
-import { z } from "zod";
+import { useAuth } from "@/hooks/use-auth";
+import { apiRequest } from "@/lib/queryClient";
+import { errorMessage } from "@/components/resident/format";
 
-const inviteStaffSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  role: z.enum(["staff", "manager"], { required_error: "Please select a role" }),
-});
-
-type InviteStaffData = z.infer<typeof inviteStaffSchema>;
-
-interface StaffMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "staff" | "manager";
-  status: "active" | "pending" | "inactive";
-  staffPin: string;
-  lastActive: string;
-  invitedAt: string;
+interface TeamMember {
+  id: number;
+  username: string;
+  firstName: string | null;
+  surname: string | null;
+  hasPin: boolean;
 }
 
+const EMPTY = { firstName: "", surname: "", username: "", email: "", password: "", staffPin: "" };
+const KEY = ["/api/merchant/team"];
+
 export default function TeamManagement() {
-  const { user } = useAuth();
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [showPins, setShowPins] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY);
+  const { data: team = [], isLoading } = useQuery<TeamMember[]>({ queryKey: KEY });
+  const ownerId = user?.merchant?.ownerUserId;
 
-  // Fetch real staff members from API
-  const { data: staffData } = useQuery({
-    queryKey: ["/api/staff"],
-  });
-  
-  // Convert API data to expected format and filter only actual staff members (not the merchant owner)
-  const staffMembers: StaffMember[] = (staffData || [])
-    .filter((member: any) => member.role === 'staff' && member.id !== user?.id)
-    .map((member: any) => ({
-      id: member.id.toString(),
-      name: `${member.first_name || ''} ${member.surname || ''}`.trim() || member.username,
-      email: member.email,
-      role: member.role,
-      status: member.is_verified ? "active" : "pending",
-      staffPin: member.staff_pin || "0000",
-      lastActive: member.updated_at || member.created_at,
-      invitedAt: member.created_at,
-    }));
-
-  const form = useForm<InviteStaffData>({
-    resolver: zodResolver(inviteStaffSchema),
-    defaultValues: {
-      email: "",
-      name: "",
-      role: "staff",
+  const add = useMutation({
+    mutationFn: async () => (await apiRequest("POST", "/api/merchant/team", form)).json(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: KEY });
+      setOpen(false);
+      setForm(EMPTY);
+      toast({ title: "Staff member added" });
     },
+    onError: (err) => toast({ title: "Could not add staff member", description: errorMessage(err), variant: "destructive" }),
   });
 
-  const inviteStaffMutation = useMutation({
-    mutationFn: (data: InviteStaffData) =>
-      apiRequest("POST", "/api/staff/invite", {
-        ...data,
-        merchantId: user!.id,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
-      setIsInviteOpen(false);
-      form.reset();
-      toast({ title: "Staff invitation sent successfully" });
+  const remove = useMutation({
+    mutationFn: async (id: number) => (await apiRequest("DELETE", `/api/merchant/team/${id}`)).json(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: KEY });
+      toast({ title: "Staff member removed" });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Error sending invitation",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+    onError: (err) => toast({ title: "Could not remove", description: errorMessage(err), variant: "destructive" }),
   });
 
-  const onSubmit = (data: InviteStaffData) => {
-    inviteStaffMutation.mutate(data);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge variant="default">Active</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
-      case "inactive":
-        return <Badge variant="destructive">Inactive</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "manager":
-        return <Badge variant="default">Manager</Badge>;
-      case "staff":
-        return <Badge variant="outline">Staff</Badge>;
-      default:
-        return <Badge variant="outline">{role}</Badge>;
-    }
-  };
+  const set = (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
+  const pinOk = /^\d{4}$/.test(form.staffPin);
+  const canSubmit = form.firstName && form.surname && form.username.length >= 3 && form.email && form.password.length >= 8 && pinOk;
 
   return (
-    <div className="space-y-6 bg-bg min-h-screen p-6">
-      {/* Header */}
-      <div className="mb-5 rounded-2xl bg-gradient-to-r from-brand1/25 via-brand2/20 to-transparent border border-white/40 shadow-xl shadow-white/20 p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-fg">Team Management</h1>
-            <p className="text-slate-300 text-lg">Manage staff accounts, roles, and access permissions</p>
-          </div>
-          <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-brand1 to-brand2 text-white shadow-elev-1">
-                <Plus className="w-4 h-4 mr-2" />
-                Invite Staff
-              </Button>
-            </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Invite New Staff Member</DialogTitle>
-                  <DialogDescription>
-                    Send an invitation to a new team member to join your merchant account
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Smith" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="john@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Role</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a role" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="staff">Staff</SelectItem>
-                              <SelectItem value="manager">Manager</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex justify-end space-x-3">
-                      <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={inviteStaffMutation.isPending}>
-                        {inviteStaffMutation.isPending ? "Sending..." : "Send Invitation"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+    <Card>
+      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle className="text-lg">Team</CardTitle>
+          <p className="text-sm text-slate-500 mt-1">Staff sign in to see redemptions and use their PIN to award loyalty points.</p>
         </div>
-      </div>
+        <Button className="h-11 shrink-0" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add staff</Button>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="animate-pulse space-y-2">{[0, 1].map((i) => <div key={i} className="h-12 bg-slate-100 rounded" />)}</div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {team.map((m) => {
+              const isOwner = m.id === ownerId;
+              return (
+                <li key={m.id} className="flex items-center justify-between py-3 gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-900 truncate">
+                      {[m.firstName, m.surname].filter(Boolean).join(" ") || m.username}
+                      {isOwner && <Badge variant="secondary" className="ml-2">Owner</Badge>}
+                    </p>
+                    <p className="text-sm text-slate-500">{m.username} · {m.hasPin ? "PIN set" : "No PIN"}</p>
+                  </div>
+                  {!isOwner && (
+                    <Button variant="ghost" size="icon" className="h-11 w-11 text-red-600" aria-label="Remove" onClick={() => remove.mutate(m.id)} disabled={remove.isPending}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </CardContent>
 
-      {/* Staff Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-          <CardBody>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-300 text-base">Total Staff</p>
-                <p className="text-2xl font-semibold text-fg">{staffMembers.length}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-500" />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add a staff member</DialogTitle>
+            <DialogDescription>They get their own login for this outlet and a 4-digit PIN for the till.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); add.mutate(); }}>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label htmlFor="fn">First name</Label><Input id="fn" className="h-11" value={form.firstName} onChange={set("firstName")} /></div>
+              <div><Label htmlFor="sn">Surname</Label><Input id="sn" className="h-11" value={form.surname} onChange={set("surname")} /></div>
             </div>
-          </CardBody>
-        </Card>
-        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-          <CardBody>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-300 text-base">Active</p>
-                <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "active").length}</p>
-              </div>
-              <UserCheck className="h-8 w-8 text-green-500" />
-            </div>
-          </CardBody>
-        </Card>
-        <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-          <CardBody>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-300 text-base">Pending</p>
-                <p className="text-2xl font-semibold text-fg">{staffMembers.filter(m => m.status === "pending").length}</p>
-              </div>
-              <UserX className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Staff Table */}
-      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-        <CardHeader>
-          <div className="flex justify-between items-center">
+            <div><Label htmlFor="un">Username</Label><Input id="un" className="h-11" value={form.username} onChange={set("username")} autoComplete="off" /></div>
+            <div><Label htmlFor="em">Email</Label><Input id="em" type="email" className="h-11" value={form.email} onChange={set("email")} autoComplete="off" /></div>
+            <div><Label htmlFor="pw">Password (8+ characters)</Label><Input id="pw" type="password" className="h-11" value={form.password} onChange={set("password")} autoComplete="new-password" /></div>
             <div>
-              <CardTitle>Staff Members</CardTitle>
-              <CardDescription className="text-lg">Manage your team's access and permissions</CardDescription>
+              <Label htmlFor="pin">Staff PIN (4 digits)</Label>
+              <Input id="pin" inputMode="numeric" maxLength={4} pattern="\d{4}" className="h-11 max-w-[8rem] tracking-widest" value={form.staffPin} onChange={set("staffPin")} />
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPins(!showPins)}
-              className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white"
-            >
-              {showPins ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-              {showPins ? "Hide PINs" : "Show PINs"}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-fg text-lg">Name</TableHead>
-                <TableHead className="text-fg text-lg">Email</TableHead>
-                <TableHead className="text-fg text-lg">Role</TableHead>
-                <TableHead className="text-fg text-lg">Status</TableHead>
-                <TableHead className="text-fg text-lg">PIN</TableHead>
-                <TableHead className="text-fg text-lg">Last Active</TableHead>
-                <TableHead className="text-right text-fg text-lg">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {staffMembers.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell className="font-medium text-fg text-lg">{member.name}</TableCell>
-                  <TableCell className="text-slate-300 text-lg">{member.email}</TableCell>
-                  <TableCell>{getRoleBadge(member.role)}</TableCell>
-                  <TableCell>{getStatusBadge(member.status)}</TableCell>
-                  <TableCell className="text-slate-300 font-mono text-lg">
-                    {showPins ? member.staffPin : "••••"}
-                  </TableCell>
-                  <TableCell className="text-slate-300 text-lg">
-                    {member.lastActive 
-                      ? new Date(member.lastActive).toLocaleDateString()
-                      : "Never"
-                    }
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white">
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="border-white/40 shadow-xl shadow-white/20 hover:bg-surface/50 text-black bg-white hover:text-white">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
-
-      {/* Staff PIN Management */}
-      <Card variant="elevated" className="bg-card border border-white/40 shadow-xl shadow-white/20">
-        <CardHeader>
-          <CardTitle>Staff PIN Security</CardTitle>
-          <CardDescription className="text-lg">
-            Staff PINs are used for voucher redemption verification
-          </CardDescription>
-        </CardHeader>
-        <CardBody>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <Key className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div>
-                <h4 className="text-base font-medium text-fg">PIN Requirements</h4>
-                <p className="text-base text-slate-300 mt-1">
-                  All staff members are assigned a unique 4-digit PIN for voucher redemption.
-                  PINs can be rotated for security purposes.
-                </p>
-              </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" className="h-11" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" className="h-11" disabled={!canSubmit || add.isPending}>{add.isPending ? "Adding" : "Add"}</Button>
             </div>
-            <div className="flex items-start space-x-3">
-              <Shield className="h-5 w-5 text-green-500 mt-0.5" />
-              <div>
-                <h4 className="text-base font-medium text-fg">Security Best Practices</h4>
-                <p className="text-base text-slate-300 mt-1">
-                  Regularly rotate PINs and ensure staff don't share their access codes.
-                  Monitor redemption activity for suspicious patterns.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-    </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 }

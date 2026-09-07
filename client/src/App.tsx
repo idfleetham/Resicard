@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { RewardAnimationProvider } from "@/components/loyalty/reward-animation-provider";
+
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
@@ -13,16 +14,17 @@ import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import AdminSignup from "@/pages/admin-signup";
-import ResidentDashboard from "@/pages/resident-dashboard";
-import MerchantDashboard from "@/pages/merchant-dashboard";
-import MerchantPortal from "@/pages/merchant-portal";
-import AdminDashboard from "@/pages/admin-dashboard";
 import EditProfile from "@/pages/edit-profile";
-import OfferDetails from "@/pages/offer-details";
-import LoyaltyDashboard from "@/pages/loyalty-dashboard";
-import TierMemberships from "@/pages/tier-memberships";
-import WalletAdd from "@/pages/wallet-add";
-import VerifyVoucher from "@/pages/verify-voucher";
+
+import ResidentDashboard from "@/pages/resident/dashboard";
+import ScanPage from "@/pages/resident/scan";
+import RedemptionSuccess from "@/pages/resident/redemption-success";
+
+import MerchantPortal from "@/pages/merchant/portal";
+import OfferDetails from "@/pages/merchant/offer-details";
+import LoyaltyDashboard from "@/pages/merchant/loyalty-dashboard";
+
+import AdminDashboard from "@/pages/admin/dashboard";
 
 function Router() {
   return (
@@ -33,28 +35,26 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin-signup" component={AdminSignup} />
-      <Route path="/resident-dashboard" component={ResidentDashboard} />
-      <Route path="/merchant-dashboard" component={MerchantDashboard} />
-      <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/edit-profile" component={EditProfile} />
+
       <Route path="/resident" component={ResidentDashboard} />
-      <Route path="/resident-new" component={ResidentDashboard} />
+      <Route path="/membership" component={ResidentDashboard} />
+      <Route path="/scan/:scanCode" component={ScanPage} />
+      <Route path="/redemptions/:id" component={RedemptionSuccess} />
+
       <Route path="/merchant" component={MerchantPortal} />
-      <Route path="/merchant-portal" component={MerchantPortal} />
+      <Route path="/merchant/plan" component={MerchantPortal} />
       <Route path="/merchant/offers/:id" component={OfferDetails} />
       <Route path="/merchant/loyalty" component={LoyaltyDashboard} />
-      <Route path="/loyalty-dashboard" component={LoyaltyDashboard} />
-      <Route path="/loyalty" component={LoyaltyDashboard} />
-      <Route path="/tier-memberships" component={TierMemberships} />
+
       <Route path="/admin" component={AdminDashboard} />
-      <Route path="/wallet/add" component={WalletAdd} />
-      <Route path="/edit-profile" component={EditProfile} />
-      <Route path="/verify-voucher" component={VerifyVoucher} />
+
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -70,5 +70,3 @@ function App() {
     </ErrorBoundary>
   );
 }
-
-export default App;

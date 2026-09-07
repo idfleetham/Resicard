@@ -1,329 +1,155 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { Store, Ticket, Users, CheckCircle2 } from "lucide-react";
 import Navigation from "@/components/navigation";
-import RoleSelector from "@/components/role-selector";
-import DealCard from "@/components/deal-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardBody } from "@/ui/Card";
-import { Badge } from "@/components/ui/badge";
-import { Rocket, Users, Ticket, PiggyBank, Calendar, CheckCircle } from "lucide-react";
+import OfferCard, { type PublicOffer } from "@/components/offer-card";
+import OfferDetailsModal from "@/components/offer-details-modal";
+import { OfferGridSkeleton } from "@/components/resident/offers-tab";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequestWithAuth } from "@/lib/auth";
-import type { DealWithMerchant } from "@shared/schema";
-import heroImage from "@assets/IMG_5180_1749763959712.jpeg";
+import { homePathForRole } from "@/lib/auth";
+
+interface Stats {
+  activeOffers: number;
+  merchants: number;
+  redemptions: number;
+  members: number;
+}
+
+const STEPS = [
+  { title: "Sign up and verify your address", text: "Create an account with your postcode and upload a proof of address. We check it is in or around St Andrews." },
+  { title: "Pay the annual membership", text: "One flat fee for the year. No charge per offer, and nothing taken from the outlets when you redeem." },
+  { title: "Scan the Resicard code at the till", text: "Pick the offer you want and show the green screen to staff. That is it." },
+];
 
 export default function Home() {
-  const [showRoleSelector, setShowRoleSelector] = useState(false);
-  const { user, isAuthenticated } = useAuth();
-  const [, setLocation] = useLocation();
+  const { isAuthenticated, user } = useAuth();
+  const [selected, setSelected] = useState<PublicOffer | null>(null);
+  const stats = useQuery<Stats>({ queryKey: ["/api/stats"] });
+  const offers = useQuery<PublicOffer[]>({ queryKey: ["/api/offers"] });
 
-  // Handle Add to Wallet button clicks
-  const handleAddToWallet = (dealId: number) => {
-    if (isAuthenticated) {
-      // Redirect to user wallet page
-      setLocation('/wallet/add');
-    } else {
-      // Redirect to signup page
-      setLocation('/register');
-    }
-  };
-
-  // Fetch both legacy deals and modern offers
-  const { data: deals = [], isLoading: isLoadingDeals } = useQuery({
-    queryKey: ['/api/deals'],
-    queryFn: async () => {
-      const response = await fetch('/api/deals');
-      return response.json() as Promise<DealWithMerchant[]>;
-    },
-  });
-
-  const { data: offers = [], isLoading: isLoadingOffers } = useQuery({
-    queryKey: ['/api/offers'],
-    queryFn: async () => {
-      const response = await fetch('/api/offers');
-      return response.json() as Promise<DealWithMerchant[]>;
-    },
-  });
-
-  // Combine deals and offers for display
-  const allOffers = [...deals, ...offers];
-  const isLoading = isLoadingDeals || isLoadingOffers;
-
-  // Fetch platform statistics
-  const { data: platformStats } = useQuery({
-    queryKey: ['/api/analytics/platform/stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/analytics/platform/stats');
-      return response.json();
-    },
-  });
-
-  // Show role selector if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <>
-        <Navigation />
-        <div className="min-h-screen">
-          {/* Hero Section */}
-          <div className="relative h-96 text-white overflow-hidden">
-            <div 
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backgroundImage: `url(${heroImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            />
-            <div 
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backgroundImage: `url(${heroImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                filter: 'grayscale(100%) contrast(1.2) brightness(0.5)',
-                mixBlendMode: 'multiply',
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40"></div>
-            
-            <div className="relative flex items-center justify-center h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <div className="mb-8">
-                  <h1 className="text-5xl font-bold mb-4 text-white" style={{ textShadow: '4px 4px 12px rgba(0,0,0,0.9)' }}>
-                    Resicard©
-                  </h1>
-                  <h2 className="text-3xl font-light text-white/95 mb-6" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                    St Andrews
-                  </h2>
-                </div>
-                <p className="text-lg mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed font-light" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
-                  Your exclusive community membership for premium local offers, verified businesses, and exceptional savings in Scotland's historic town
-                </p>
-
-                <div className="space-x-6">
-                  <Button 
-                    size="lg" 
-                    className="bg-white/15 backdrop-blur-md hover:bg-white/25 text-white border-2 border-purple-400 hover:border-purple-300 rounded-xl px-12 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
-                    onClick={() => setShowRoleSelector(true)}
-                  >
-                    Begin Your Journey
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="bg-slate-50 py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                  Trusted by the Community
-                </h2>
-                <p className="text-xl text-slate-600 max-w-3xl mx-auto font-light">
-                  Join thousands of St Andrews residents experiencing exceptional savings with our curated collection of local businesses
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-blue-100 rounded-lg inline-block mb-4">
-                    <Ticket className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {allOffers.filter(deal => deal.isActive).length}
-                  </div>
-                  <div className="text-slate-600 text-base font-medium">Active Offers</div>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-green-100 rounded-lg inline-block mb-4">
-                    <Users className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {platformStats?.totalBusinesses || 0}
-                  </div>
-                  <div className="text-slate-600 text-base font-medium">Local Businesses</div>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-purple-100 rounded-lg inline-block mb-4">
-                    <CheckCircle className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {platformStats?.totalRedemptions || 0}
-                  </div>
-                  <div className="text-slate-600 text-base font-medium">Voucher Redemptions</div>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-2 bg-indigo-100 rounded-lg inline-block mb-4">
-                    <Calendar className="h-6 w-6 text-indigo-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-indigo-600 mb-2">
-                    {platformStats?.totalUsers || 0}
-                  </div>
-                  <div className="text-slate-600 text-base font-medium">Active Members</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* All Offers */}
-          <div className="bg-white py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                  Current Local Offers
-                </h2>
-                <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
-                  Discover exclusive offers from our handpicked collection of verified local businesses
-                </p>
-              </div>
-            
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <div className="h-48 bg-muted" />
-                    <CardBody className="p-6 space-y-3">
-                      <div className="h-4 bg-muted rounded w-1/4" />
-                      <div className="h-6 bg-muted rounded w-3/4" />
-                      <div className="h-4 bg-muted rounded w-full" />
-                      <div className="h-4 bg-muted rounded w-2/3" />
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allOffers.map((deal) => (
-                  <DealCard 
-                    key={deal.id} 
-                    deal={deal} 
-                    showMerchantInfo={true}
-                    onRedeem={handleAddToWallet}
-                  />
-                ))}
-              </div>
-            )}
-            
-            <div className="text-center mt-12">
-              <Button 
-                size="lg" 
-                onClick={() => setShowRoleSelector(true)}
-                className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl px-12 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-              >
-                Join to Access All Offers
-              </Button>
-            </div>
-            </div>
-          </div>
-
-          {/* How it Works */}
-          <div className="bg-slate-50 py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                  How Resicard© Works
-                </h2>
-                <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
-                  Three simple steps to unlock exclusive savings at your favorite local spots
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-blue-600">1</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">Sign Up & Verify</h3>
-                  <p className="text-slate-600 text-base leading-relaxed">
-                    Register with your postcode to verify you're within 10 miles of St Andrews and complete your residency verification
-                  </p>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-purple-600">2</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">Browse Premium Offers</h3>
-                  <p className="text-slate-600 text-base leading-relaxed">
-                    Explore exclusive offers from verified restaurants, bars, cafes, and premium local businesses
-                  </p>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center inline-block mb-6">
-                    <span className="text-xl font-bold text-green-600">3</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">Create Vouchers & Save</h3>
-                  <p className="text-slate-600 text-base leading-relaxed">
-                    Build your digital voucher wallet and redeem instantly at participating businesses with QR codes
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Footer */}
-        <footer className="bg-slate-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="text-center">
-              <h3 className="text-3xl font-bold mb-4 text-white">
-                Resicard© St Andrews
-              </h3>
-              <p className="text-slate-300 text-lg mb-6 font-light">
-                Your exclusive community membership platform
-              </p>
-              <div className="text-slate-400">
-                <p className="text-base">&copy; 2024 Resicard St Andrews. All rights reserved.</p>
-                <div className="mt-4 space-x-6">
-                  <Link href="/admin-signup" className="text-slate-300 hover:text-white transition-colors duration-300 font-medium">
-                    Admin Portal
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
-        
-        <RoleSelector 
-          isVisible={showRoleSelector} 
-          onClose={() => setShowRoleSelector(false)} 
-        />
-      </>
-    );
-  }
-
-  // Redirect authenticated users to their dashboard
-  if (user) {
-    switch (user.role) {
-      case 'resident':
-        window.location.href = '/resident';
-        break;
-      case 'merchant':
-        window.location.href = '/merchant';
-        break;
-      case 'admin':
-        window.location.href = '/admin';
-        break;
-    }
-  }
+  const statItems = [
+    { label: "Live offers", value: stats.data?.activeOffers, icon: Ticket },
+    { label: "Outlets", value: stats.data?.merchants, icon: Store },
+    { label: "Members", value: stats.data?.members, icon: Users },
+    { label: "Redemptions", value: stats.data?.redemptions, icon: CheckCircle2 },
+  ];
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-50">
       <Navigation />
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirecting to your dashboard...</p>
+
+      <section className="bg-gradient-to-br from-blue-700 via-blue-600 to-sky-600 text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+          <p className="text-sm font-semibold uppercase tracking-wide text-white/80">St Andrews</p>
+          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mt-2 max-w-2xl">
+            A fair price for the people who live here.
+          </h1>
+          <p className="text-lg text-white/90 mt-4 max-w-2xl">
+            Prices in St Andrews are set for visitors and students, and locals get priced out of their own town.
+            Resicard lets bars, restaurants and shops offer residents a better price, the same way they already
+            do for students.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 mt-8">
+            {isAuthenticated && user ? (
+              <Button asChild size="lg" className="h-12 text-base bg-white text-blue-700 hover:bg-blue-50">
+                <Link href={homePathForRole(user.role)}>Go to my Resicard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="lg" className="h-12 text-base bg-white text-blue-700 hover:bg-blue-50">
+                  <Link href="/register">Join Resicard</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="h-12 text-base border-white/60 bg-transparent text-white hover:bg-white/10 hover:text-white">
+                  <Link href="/login">Log in</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 -mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {statItems.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+              <div className="flex items-center gap-2 text-slate-500 text-sm">
+                <Icon className="h-4 w-4" />
+                {label}
+              </div>
+              <p className="text-3xl font-bold text-slate-900 mt-1">{value ?? "-"}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="flex items-end justify-between mb-5">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Current offers</h2>
+            <p className="text-slate-600">What local outlets are offering residents right now.</p>
+          </div>
+        </div>
+        {offers.isLoading ? (
+          <OfferGridSkeleton />
+        ) : !offers.data || offers.data.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-600">
+            No offers are live yet. Outlets are signing up now.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {offers.data.map((o) => (
+              <OfferCard key={o.id} offer={o} onOpen={setSelected} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="bg-white border-y border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">How it works</h2>
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {STEPS.map((step, i) => (
+              <li key={step.title} className="flex gap-4">
+                <span className="flex-none h-10 w-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="font-semibold text-slate-900">{step.title}</h3>
+                  <p className="text-slate-600 text-sm mt-1">{step.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold">For businesses</h2>
+            <p className="text-slate-300 mt-2">
+              Fill quiet hours, reward regulars and give locals a reason to come back. Set your own offers, run a
+              loyalty programme if you like, and pay one flat monthly fee. No commission on redemptions.
+            </p>
+          </div>
+          <Button asChild size="lg" className="h-12 text-base bg-white text-slate-900 hover:bg-slate-100">
+            <Link href="/register?role=merchant">Apply to join</Link>
+          </Button>
+        </div>
+      </section>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
+          <p>Resicard St Andrews, {new Date().getFullYear()}</p>
+          <Link href="/admin-signup" className="hover:text-slate-800">
+            Admin
+          </Link>
+        </div>
+      </footer>
+
+      <OfferDetailsModal offer={selected} onClose={() => setSelected(null)} />
+    </div>
   );
 }

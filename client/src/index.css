@@ -1,367 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Premium Dark Tokens */
+/* shadcn/ui colour tokens. Light theme only. */
 :root {
-  --bg: 10 12 20;        /* page */
-  --surface: 18 20 30;   /* base containers */
-  --card: 24 28 42;      /* elevated cards */
-  --muted: 148 163 184;  /* slate-400 */
-  --fg: 234 238 244;     /* near-white */
-  --ring: 120 119 198;   /* indigo-ish */
-}
-
-.bg-app { background-color: rgb(var(--bg)); }
-.bg-surface { background-color: rgb(var(--surface)); }
-.bg-card { background-color: rgb(var(--card)); }
-.text-fg { color: rgb(var(--fg)); }
-.text-muted { color: rgb(var(--muted)); }
-
-/* Card baseline */
-.card {
-  @apply rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur;
-  background-color: rgba(24, 28, 42, 0.95);
-}
-.card-hover {
-  @apply transition hover:shadow-[0_18px_60px_rgba(0,0,0,0.45)] hover:border-white/15;
-}
-
-/* Gradient headers */
-.grad-primary {
-  @apply bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500;
-}
-
-/* Input + buttons */
-.input-dark {
-  @apply rounded-lg bg-surface border border-white/10 text-fg placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none;
-}
-.btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition;
-}
-.btn-primary {
-  @apply text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 shadow-[0_8px_24px_rgba(99,102,241,0.35)];
-}
-.btn-ghost {
-  @apply border border-white/10 hover:border-white/20;
-  background-color: rgb(var(--surface));
-}
-
-/* Global styles for darker backgrounds and shadows */
-.bg-page {
-  @apply bg-slate-200;
-}
-
-.card-shadow {
-  @apply shadow-lg hover:shadow-xl transition-shadow duration-200;
-}
-
-:root {
-  --background: hsl(210, 20%, 98%);
-  --foreground: hsl(222, 84%, 5%);
-  --muted: hsl(210, 40%, 96%);
-  --muted-foreground: hsl(215, 13%, 45%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(222, 84%, 5%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(222, 84%, 5%);
-  --border: hsl(214, 32%, 91%);
-  --input: hsl(214, 32%, 91%);
-  --primary: hsl(198, 88%, 48%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222, 47%, 11%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222, 47%, 11%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(198, 88%, 48%);
+  --background: 210 20% 98%;
+  --foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 40%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 221 83% 53%;
   --radius: 0.5rem;
-  
-  /* ---- RESICARD DARK THEME (DIM) ---- */
-  --bg: 12 14 26;           /* #0C0E1A */
-  --surface: 20 25 40;      /* #141928 */
-  --surface-2: 28 33 50;    /* #1C2132 */
-  --card: 30 36 58;         /* #1E243A */
-  --fg: 226 232 240;        /* slate-200 */
-  --fg-soft: 203 213 225;   /* slate-300 */
-  --muted: 148 163 184;     /* slate-400 */
-  --border: 255 255 255 / 0.12;
-  --border-strong: 255 255 255 / 0.18;
-  --brand-1: 99 102 241;    /* indigo-500 */
-  --brand-2: 139 92 246;    /* violet-500 */
-  
-  /* Coastal theme colors */
-  --coastal-50: hsl(204, 100%, 97%);
-  --coastal-100: hsl(204, 94%, 94%);
-  --coastal-500: hsl(199, 89%, 48%);
-  --coastal-600: hsl(200, 98%, 39%);
-  --coastal-700: hsl(201, 96%, 32%);
-  --coastal-800: hsl(201, 90%, 27%);
-  --coastal-900: hsl(202, 80%, 24%);
-}
-
-[data-theme="dim"], 
-.theme-dim {
-  --bg: 12 14 26;           /* #0C0E1A */
-  --surface: 20 25 40;      /* #141928 */
-  --surface-2: 28 33 50;    /* #1C2132 */
-  --card: 30 36 58;         /* #1E243A */
-  --fg: 226 232 240;        /* slate-200 */
-  --fg-soft: 203 213 225;   /* slate-300 */
-  --muted: 148 163 184;     /* slate-400 */
-  --border: 255 255 255 / 0.12;
-  --border-strong: 255 255 255 / 0.18;
-  --brand-1: 99 102 241;    /* indigo-500 */
-  --brand-2: 139 92 246;    /* violet-500 */
-}
-
-[data-theme="high"], 
-.theme-high {
-  --bg: 0 0 0;              /* Pure black background */
-  --surface: 24 24 27;      /* Very dark zinc surface */
-  --surface-2: 39 39 42;    /* Darker zinc surface-2 */
-  --card: 24 24 27;         /* Very dark card background */
-  --fg: 255 255 255;        /* Pure white text */
-  --fg-soft: 244 244 245;   /* Almost white soft text */
-  --muted: 212 212 216;     /* Light muted text */
-  --border: 255 255 255 / 0.4;    /* Much brighter borders */
-  --border-strong: 255 255 255 / 0.6;  /* Very bright borders */
-  --brand-1: 147 197 253;   /* Bright blue */
-  --brand-2: 196 181 253;   /* Bright violet */
-}
-
-.dark {
-  --background: hsl(222, 84%, 5%);
-  --foreground: hsl(210, 40%, 98%);
-  --muted: hsl(217, 32%, 17%);
-  --muted-foreground: hsl(215, 20%, 65%);
-  --popover: hsl(222, 84%, 5%);
-  --popover-foreground: hsl(210, 40%, 98%);
-  --card: hsl(222, 84%, 5%);
-  --card-foreground: hsl(210, 40%, 98%);
-  --border: hsl(217, 32%, 17%);
-  --input: hsl(217, 32%, 17%);
-  --primary: hsl(198, 88%, 48%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(217, 32%, 17%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --accent: hsl(217, 32%, 17%);
-  --accent-foreground: hsl(210, 40%, 98%);
-  --destructive: hsl(0, 62%, 30%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(198, 88%, 48%);
+  --chart-1: 221 83% 53%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    /* Subtle background texture */
-    background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                hsl(var(--background));
   }
 }
 
-/* Define theme-aware utility classes */
-.bg-bg { background-color: rgb(var(--bg)); }
-.bg-surface { background-color: rgb(var(--surface)); }
-.bg-card { background-color: rgb(var(--card)); }
-.bg-surface2 { background-color: rgb(var(--surface-2)); }
-
-.text-fg { color: rgb(var(--fg)); }
-.text-soft { color: rgb(var(--fg-soft)); }
-.text-muted { color: rgb(var(--muted)); }
-.text-brand1 { color: rgb(var(--brand-1)); }
-.text-brand2 { color: rgb(var(--brand-2)); }
-
-.border-dim { border-color: rgba(var(--border)); }
-.border-dimStrong { border-color: rgba(var(--border-strong)); }
-
-.shadow-elev-1 { 
-  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2), 0 4px 16px -4px rgba(0, 0, 0, 0.1); 
-}
-.shadow-elev-2 { 
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3), 0 8px 32px -8px rgba(0, 0, 0, 0.2); 
-}
-
-/* Ensure buttons use proper contrast */
-.btn-brand {
-  background-color: rgb(var(--brand-1)) !important;
-  color: white !important;
-  border: none !important;
-}
-
-.btn-brand:hover {
-  background-color: rgb(var(--brand-1) / 0.9) !important;
-}
-
-/* Enhanced input styling for dark theme */
-.input-dark {
-  @apply px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
-  @apply transition-colors duration-200;
-  background-color: hsl(var(--surface) / 0.6);
-  color: hsl(var(--fg));
-  border: 1px solid hsl(var(--border));
-}
-
-.input-dark::placeholder {
-  color: hsl(var(--fg-soft));
-}
-
-.textarea-dark {
-  @apply px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
-  @apply transition-colors duration-200 min-h-[80px] resize-none;
-  background-color: hsl(var(--surface) / 0.6);
-  color: hsl(var(--fg));
-  border: 1px solid hsl(var(--border));
-}
-
-.textarea-dark::placeholder {
-  color: hsl(var(--fg-soft));
-}
-
-/* Custom coastal theme utilities */
-.coastal-gradient {
-  background: linear-gradient(135deg, var(--coastal-600) 0%, var(--coastal-800) 100%);
-}
-
-.coastal-text {
-  color: var(--coastal-600);
-}
-
-.coastal-bg {
-  background-color: var(--coastal-50);
-}
-
-.coastal-border {
-  border-color: var(--coastal-200);
-}
-
-/* Hero section background overlay */
-.hero-overlay {
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.9) 0%, rgba(7, 89, 133, 0.9) 100%);
-}
-
-/* Card hover effects */
-.deal-card {
-  transition: all 0.2s ease-in-out;
-}
-
-.deal-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary));
-}
-
-/* Theme utility helpers */
-.bg-app { background-color: rgb(var(--bg)); }
-.bg-surface { background-color: rgb(var(--surface)); }
-.bg-surface-2 { background-color: rgb(var(--surface-2)); }
-.bg-card { background-color: rgb(var(--card)); }
-.text-fg { color: rgb(var(--fg)); }
-.text-soft { color: rgb(var(--fg-soft)); }
-.border-dim { border-color: color-mix(in oklab, white 12%, transparent); }
-.border-dimStrong { border-color: color-mix(in oklab, white 18%, transparent); }
-
-/* Shadow elevation system */
-.shadow-elev-1 { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.shadow-elev-2 { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
-.shadow-elev-3 { box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35); }
-
-/* Input baseline for dark mode */
-.input-dark {
-  @apply w-full rounded-lg text-fg placeholder:text-slate-500 border border-dim focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition px-3 py-2;
-  background-color: rgb(var(--surface-2) / 0.9);
-}
-
-/* Custom styling for datetime-local calendar icons */
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(34%) sepia(100%) saturate(5000%) hue-rotate(347deg) brightness(95%) contrast(100%);
-  cursor: pointer;
-}
-
-/* Firefox support for calendar icon color */
-input[type="datetime-local"]::-moz-calendar-picker-indicator {
-  filter: invert(34%) sepia(100%) saturate(5000%) hue-rotate(347deg) brightness(95%) contrast(100%);
-  cursor: pointer;
-}
-
-/* St Andrews inspired dark background pattern */
-.st-andrews-bg {
-  background-color: rgb(var(--bg));
-  background-image: 
-    /* Stone texture pattern */
-    radial-gradient(circle at 2px 2px, rgba(71, 85, 105, 0.08) 1px, transparent 0),
-    /* Medieval architecture lines */
-    linear-gradient(45deg, transparent 49%, rgba(51, 65, 85, 0.06) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(51, 65, 85, 0.06) 50%, transparent 51%),
-    /* Castle rampart pattern */
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 300px,
-      rgba(30, 41, 59, 0.05) 300px,
-      rgba(30, 41, 59, 0.05) 302px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 200px,
-      rgba(30, 41, 59, 0.04) 200px,
-      rgba(30, 41, 59, 0.04) 202px
-    );
-  background-size: 8px 8px, 20px 20px, 20px 20px, 100% 100%, 100% 100%;
-  background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
-  position: relative;
-}
-
-.st-andrews-bg::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    /* University spire silhouettes */
-    radial-gradient(ellipse 250px 500px at 12% 100%, rgba(15, 23, 42, 0.6) 20%, transparent 21%),
-    radial-gradient(ellipse 180px 400px at 88% 100%, rgba(15, 23, 42, 0.5) 25%, transparent 26%),
-    /* Cathedral ruins outline */
-    radial-gradient(ellipse 350px 150px at 50% 100%, rgba(30, 41, 59, 0.4) 30%, transparent 31%),
-    /* Coastal horizon with subtle architectural elements */
-    linear-gradient(180deg, transparent 85%, rgba(15, 23, 42, 0.2) 90%, rgba(15, 23, 42, 0.6) 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Ensure content appears above background */
-.st-andrews-content {
-  position: relative;
-  z-index: 1;
+@media print {
+  nav, .no-print {
+    display: none !important;
+  }
 }

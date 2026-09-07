@@ -1,139 +1,106 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { InsertOffer, Offer } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { errorMessage } from "@/components/resident/format";
 
-export const useToggleOffer = () => {
+export const OFFERS_KEY = ["/api/merchant/offers"] as const;
+
+export function useMerchantOffers() {
+  return useQuery<Offer[]>({ queryKey: [...OFFERS_KEY] });
+}
+
+export function useMerchantOffer(id: string | undefined) {
+  return useQuery<Offer>({ queryKey: [`/api/merchant/offers/${id}`], enabled: !!id });
+}
+
+function useInvalidateOffers() {
+  const queryClient = useQueryClient();
+  return async (id?: string) => {
+    await queryClient.invalidateQueries({ queryKey: [...OFFERS_KEY] });
+    if (id) await queryClient.invalidateQueries({ queryKey: [`/api/merchant/offers/${id}`] });
+    await queryClient.invalidateQueries({ queryKey: ["/api/merchant/redemptions/summary"] });
+  };
+}
+
+export function useCreateOffer() {
+  const invalidate = useInvalidateOffers();
   const { toast } = useToast();
-  
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiRequest('POST', `/api/merchant/offers/${id}/toggle`);
-      return response.json();
+    mutationFn: async (data: InsertOffer) =>
+      (await apiRequest("POST", "/api/merchant/offers", data)).json() as Promise<Offer>,
+    onSuccess: async () => {
+      await invalidate();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
-      toast({
-        title: "Offer Updated",
-        description: `Offer ${data.isActive ? 'activated' : 'paused'} successfully`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update offer",
-        variant: "destructive",
-      });
-    },
+    onError: (err) => toast({ title: "Could not save offer", description: errorMessage(err), variant: "destructive" }),
   });
-};
+}
 
-export const useUpdateOffer = () => {
+export function useUpdateOffer() {
+  const invalidate = useInvalidateOffers();
   const { toast } = useToast();
-  
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await apiRequest('PUT', `/api/merchant/offers/${id}`, data);
-      return response.json();
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertOffer> }) =>
+      (await apiRequest("PUT", `/api/merchant/offers/${id}`, data)).json() as Promise<Offer>,
+    onSuccess: async (offer) => {
+      await invalidate(offer.id);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/deals/my-deals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
-      toast({
-        title: "Offer Updated",
-        description: "Offer updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update offer",
-        variant: "destructive",
-      });
-    },
+    onError: (err) => toast({ title: "Could not save offer", description: errorMessage(err), variant: "destructive" }),
   });
-};
+}
 
-export const useOffer = (id: string) => {
-  return useQuery({
-    queryKey: ["merchant", "offers", id],
-    queryFn: async () => {
-      // Check if id looks like a UUID (comprehensive offer) or integer (simple deal)
-      const isUUID = id.includes('-') && id.length === 36;
-      
-      if (isUUID) {
-        // Try comprehensive offers endpoint for UUID ids
-        const response = await apiRequest('GET', `/api/offers/${id}`);
-        return response.json();
-      } else {
-        // Use simple deals endpoint for integer ids
-        const response = await apiRequest('GET', `/api/merchant/offers/${id}`);
-        return response.json();
-      }
-    },
-    enabled: !!id,
-  });
-};
-
-export const useOffers = () => {
-  return useQuery({
-    queryKey: ["merchant", "offers"],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/deals/my-deals');
-      return response.json();
-    },
-  });
-};
-
-export const useToggleComprehensiveOffer = () => {
+export function useToggleOffer() {
+  const invalidate = useInvalidateOffers();
   const { toast } = useToast();
-  
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiRequest('POST', `/api/offers/${id}/toggle`);
-      return response.json();
+    mutationFn: async (id: string) =>
+      (await apiRequest("POST", `/api/merchant/offers/${id}/toggle`)).json() as Promise<Offer>,
+    onSuccess: async (offer) => {
+      await invalidate(offer.id);
+      toast({ title: offer.active ? "Offer is live" : "Offer paused" });
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/offers/my-offers"] });
-      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
-      toast({
-        title: "Offer Updated",
-        description: `Offer ${data.active ? 'activated' : 'paused'} successfully`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update offer",
-        variant: "destructive",
-      });
-    },
+    onError: (err) => toast({ title: "Could not update offer", description: errorMessage(err), variant: "destructive" }),
   });
-};
+}
 
-export const useUpdateComprehensiveOffer = () => {
+export function useArchiveOffer() {
+  const invalidate = useInvalidateOffers();
   const { toast } = useToast();
-  
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await apiRequest('PUT', `/api/offers/${id}`, data);
-      return response.json();
+    mutationFn: async (id: string) =>
+      (await apiRequest("POST", `/api/merchant/offers/${id}/archive`)).json() as Promise<Offer>,
+    onSuccess: async (offer) => {
+      await invalidate(offer.id);
+      toast({ title: "Offer archived" });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/offers/my-offers"] });
-      queryClient.invalidateQueries({ queryKey: ["merchant", "offers"] });
-      toast({
-        title: "Offer Updated",
-        description: "Offer updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update offer",
-        variant: "destructive",
-      });
-    },
+    onError: (err) => toast({ title: "Could not archive offer", description: errorMessage(err), variant: "destructive" }),
   });
-};
+}
+
+/** Multipart upload with the bearer token (apiRequest only sends JSON). */
+export async function uploadMerchantFile(url: string, field: string, file: File): Promise<Response> {
+  const token = localStorage.getItem("auth_token");
+  const body = new FormData();
+  body.append(field, file);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body,
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`${res.status}: ${(await res.text()) || res.statusText}`);
+  return res;
+}
+
+export function useUploadOfferImage() {
+  const invalidate = useInvalidateOffers();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) =>
+      (await uploadMerchantFile(`/api/merchant/offers/${id}/image`, "image", file)).json() as Promise<{ imageUrl: string }>,
+    onSuccess: async (_res, vars) => {
+      await invalidate(vars.id);
+    },
+    onError: (err) => toast({ title: "Image upload failed", description: errorMessage(err), variant: "destructive" }),
+  });
+}

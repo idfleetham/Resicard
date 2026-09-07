@@ -1,339 +1,157 @@
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
+import { useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2, Clock, FileText, Upload, XCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequestWithAuth } from "@/lib/auth";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import { errorMessage, formatDate } from "@/components/resident/format";
+import { readFileAsDataUrl, resizeImageFile } from "@/components/resident/image-resize";
 
-const documentTypes = [
-  { value: "driving_license", label: "Driving License" },
-  { value: "bank_statement", label: "Bank Statement" },
-  { value: "utility_bill", label: "Utility Bill" },
-  { value: "passport", label: "Passport" },
-  { value: "council_tax", label: "Council Tax Statement" },
-];
+const DOCUMENT_TYPES = [
+  { value: "driving_licence", label: "Driving licence" },
+  { value: "bank_statement", label: "Bank statement" },
+  { value: "utility_bill", label: "Utility bill" },
+  { value: "council_tax", label: "Council tax letter" },
+] as const;
+
+type DocumentType = (typeof DOCUMENT_TYPES)[number]["value"];
+
+const MAX_PDF_CHARS = 700_000; // roughly 500 KB once base64 encoded
 
 export default function DocumentVerification() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedDocumentType, setSelectedDocumentType] = useState("");
-  const [documentFile, setDocumentFile] = useState<string | null>(null);
-  const [fileName, setFileName] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [documentType, setDocumentType] = useState<DocumentType | "">("");
+  const [file, setFile] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [reading, setReading] = useState(false);
 
-  const resizeDocument = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Handle PDF files differently
-      if (file.type === 'application/pdf') {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          // Limit PDF size to 500KB base64
-          if (result.length > 500000) {
-            reject(new Error('PDF file is too large. Please ensure it\'s under 2MB.'));
-            return;
-          }
-          resolve(result);
-        };
-        reader.onerror = () => reject(new Error('Failed to read PDF file'));
-        reader.readAsDataURL(file);
-        return;
-      }
-
-      // Handle image files
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-      
-      img.onload = () => {
-        try {
-          // More aggressive resizing for smaller files
-          const maxWidth = 600;
-          const maxHeight = 600;
-          const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
-          const width = img.width * ratio;
-          const height = img.height * ratio;
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Use lower quality for smaller file size
-          const result = canvas.toDataURL('image/jpeg', 0.6);
-          
-          // Check if result is still too large
-          if (result.length > 400000) { // ~300KB limit
-            reject(new Error('Image file is too large even after compression. Please use a smaller image.'));
-            return;
-          }
-          
-          resolve(result);
-        } catch (error) {
-          reject(new Error('Failed to process image file'));
-        }
-      };
-      
-      img.onerror = () => reject(new Error('Failed to load image file'));
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setFileName(file.name);
-      
-      try {
-        const resizedDocument = await resizeDocument(file);
-        setDocumentFile(resizedDocument);
-        toast({
-          title: "File Uploaded",
-          description: `${file.name} has been processed and is ready for submission.`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "File Processing Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        setFileName("");
-        setDocumentFile(null);
-      }
-    }
-  }, [toast]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
-      'application/pdf': ['.pdf']
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (!documentType || !file) throw new Error("Choose a document type and a file");
+      await apiRequest("POST", "/api/profile/document", { documentType, documentFile: file.dataUrl });
     },
-    maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    onSuccess: async () => {
+      setFile(null);
+      setDocumentType("");
+      await refresh();
+      toast({ title: "Document sent", description: "We will check it and let you know." });
+    },
+    onError: (err) => toast({ title: "Upload failed", description: errorMessage(err), variant: "destructive" }),
   });
 
-  const handleSubmit = async () => {
-    if (!selectedDocumentType || !documentFile) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a document type and upload a file.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setReading(true);
     try {
-      setIsUploading(true);
-      console.log("Starting document submission:", {
-        documentType: selectedDocumentType,
-        documentFileLength: documentFile?.length || 0,
-        hasFile: !!documentFile
-      });
-      
-      const response = await apiRequestWithAuth("POST", "/api/documents/submit", {
-        documentType: selectedDocumentType,
-        documentFile: documentFile,
-      });
-      
-      console.log("Document submission successful:", response.status);
-      
-      // Invalidate auth cache to refresh user data
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      
-      toast({
-        title: "Document Submitted",
-        description: "Your document has been submitted for verification. You'll be notified once it's reviewed.",
-      });
-      
-      // Reset form
-      setSelectedDocumentType("");
-      setDocumentFile(null);
-      setFileName("");
-    } catch (error: any) {
-      console.error("Document submission failed:", error);
-      toast({
-        title: "Submission Failed",
-        description: error.message || "Failed to submit document",
-        variant: "destructive",
-      });
+      let dataUrl: string;
+      if (f.type === "application/pdf") {
+        dataUrl = await readFileAsDataUrl(f);
+        if (dataUrl.length > MAX_PDF_CHARS) throw new Error("That PDF is too large. Please use one under 500 KB, or take a photo instead.");
+      } else {
+        dataUrl = await resizeImageFile(f, { maxSize: 1200, quality: 0.7 });
+      }
+      setFile({ name: f.name, dataUrl });
+    } catch (err) {
+      toast({ title: "Could not read the file", description: errorMessage(err), variant: "destructive" });
     } finally {
-      setIsUploading(false);
+      setReading(false);
     }
   };
 
-  const getStatusBadge = () => {
-    if (!user?.documentStatus) {
-      return (
-        <Badge className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
-          <AlertTriangle className="h-4 w-4 mr-2" />
-          Not Submitted
-        </Badge>
-      );
-    }
+  if (!user) return null;
 
-    switch (user.documentStatus) {
-      case "pending":
-        return (
-          <Badge className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
-            <Clock className="h-4 w-4 mr-2" />
-            Under Review
-          </Badge>
-        );
-      case "approved":
-        return (
-          <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Verified
-          </Badge>
-        );
-      case "rejected":
-        return (
-          <Badge className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200 px-4 py-2 rounded-2xl text-lg font-bold shadow-sm">
-            <XCircle className="h-4 w-4 mr-2" />
-            Rejected
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
+  if (user.isResidencyVerified) {
+    return (
+      <Alert className="bg-green-50 border-green-200">
+        <CheckCircle2 className="h-5 w-5 text-green-600" />
+        <AlertTitle className="text-green-900">Address verified</AlertTitle>
+        <AlertDescription className="text-green-800">
+          Your St Andrews address was confirmed{user.documentReviewedAt ? ` on ${formatDate(user.documentReviewedAt)}` : ""}.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
-  const canSubmitNewDocument = !user?.documentStatus || user.documentStatus === "rejected";
-  const isVerified = user?.isResidencyVerified;
+  if (user.documentStatus === "pending") {
+    return (
+      <Alert className="bg-amber-50 border-amber-200">
+        <Clock className="h-5 w-5 text-amber-600" />
+        <AlertTitle className="text-amber-900">Proof of address under review</AlertTitle>
+        <AlertDescription className="text-amber-800">
+          Sent {formatDate(user.documentSubmittedAt)}. We usually check documents within two working days.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-gradient-to-r from-indigo-100 to-violet-100 rounded-2xl">
-            <FileText className="h-6 w-6 text-indigo-600" />
-          </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Residency Verification</span>
-        </div>
-        {getStatusBadge()}
-      </div>
-      <div className="space-y-6">
-        {isVerified ? (
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-8 text-center border border-emerald-200">
-            <div className="p-4 bg-emerald-100 rounded-2xl inline-block mb-6">
-              <CheckCircle className="h-12 w-12 text-emerald-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-emerald-800 mb-3">Residency Verified</h3>
-            <p className="text-emerald-700 text-lg">
-              Your residency has been verified. You can now use vouchers for redemption.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
-              <div className="flex items-start space-x-4">
-                <div className="p-2 bg-amber-100 rounded-xl">
-                  <AlertTriangle className="h-5 w-5 text-amber-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-amber-800 text-lg mb-2">Verification Required</h4>
-                  <p className="text-amber-700">
-                    To use vouchers for redemption, please upload a document proving your St Andrews residency.
-                    Your membership card and vouchers cannot be used until verification is complete.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {user?.documentStatus === "pending" ? (
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-3xl p-8 text-center border border-yellow-200">
-                <div className="p-4 bg-yellow-100 rounded-2xl inline-block mb-6">
-                  <Clock className="h-12 w-12 text-yellow-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-yellow-800 mb-3">Under Review</h3>
-                <p className="text-yellow-700 text-lg mb-4">
-                  Your document is being reviewed by our team. We'll notify you once the verification is complete.
-                </p>
-                {user.documentSubmittedAt && (
-                  <div className="inline-flex items-center px-4 py-2 bg-white/60 rounded-2xl">
-                    <span className="text-yellow-600 font-medium">
-                      Submitted on {new Date(user.documentSubmittedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : canSubmitNewDocument ? (
-              <div className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-3xl p-8 space-y-6 border border-indigo-100">
-                <div>
-                  <label className="block text-lg font-bold mb-3 text-gray-800">Document Type</label>
-                  <Select value={selectedDocumentType} onValueChange={setSelectedDocumentType}>
-                    <SelectTrigger className="h-14 rounded-2xl border-2 border-gray-200 text-lg">
-                      <SelectValue placeholder="Select document type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {documentTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-lg font-bold mb-3 text-gray-800">Upload Document</label>
-                  <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 ${
-                      isDragActive
-                        ? "border-indigo-400 bg-indigo-50 scale-105"
-                        : "border-gray-300 hover:border-indigo-400 hover:bg-indigo-50"
-                    }`}
-                  >
-                    <input {...getInputProps()} />
-                    <div className="p-4 bg-indigo-100 rounded-2xl inline-block mb-4">
-                      <Upload className="h-10 w-10 text-indigo-600" />
-                    </div>
-                    <p className="text-lg font-medium text-gray-700 mb-2">
-                      {isDragActive
-                        ? "Drop the document here..."
-                        : "Drag & drop a document here, or click to select"}
-                    </p>
-                    <p className="text-gray-500">
-                      PNG, JPG, PDF up to 10MB. Document should clearly show your name and St Andrews address.
-                    </p>
-                    {fileName && (
-                      <div className="mt-4 inline-flex items-center px-4 py-2 bg-emerald-100 rounded-2xl">
-                        <span className="text-emerald-700 font-bold">
-                          Selected: {fileName}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log("Submit button clicked:", {
-                      selectedDocumentType,
-                      hasDocumentFile: !!documentFile,
-                      documentFileLength: documentFile?.length
-                    });
-                    handleSubmit();
-                  }} 
-                  disabled={isUploading || !selectedDocumentType || !documentFile}
-                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <FileText className="h-5 w-5 mr-2" />
-                  {isUploading ? "Submitting..." : "Submit for Verification"}
-                </Button>
-              </div>
-            ) : null}
-          </>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Verify your address</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {user.documentStatus === "rejected" && (
+          <Alert variant="destructive">
+            <XCircle className="h-5 w-5" />
+            <AlertTitle>Your last document was not accepted</AlertTitle>
+            <AlertDescription>
+              {user.documentRejectionReason || "Please upload a clearer document showing your name and St Andrews address."}
+            </AlertDescription>
+          </Alert>
         )}
-      </div>
-    </div>
+        <p className="text-sm text-slate-600">
+          Upload one document showing your name and a St Andrews address. A photo taken on your phone is fine.
+        </p>
+
+        <div>
+          <label className="text-sm font-medium text-slate-700">Document type</label>
+          <Select value={documentType} onValueChange={(v) => setDocumentType(v as DocumentType)}>
+            <SelectTrigger className="h-12 mt-1 text-base">
+              <SelectValue placeholder="Choose a document" />
+            </SelectTrigger>
+            <SelectContent>
+              {DOCUMENT_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value} className="text-base">
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*,application/pdf"
+          className="hidden"
+          onChange={onFileChange}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-14 text-base justify-start"
+          disabled={reading}
+          onClick={() => fileInput.current?.click()}
+        >
+          {file ? <FileText className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+          <span className="truncate">{reading ? "Reading file" : file ? file.name : "Choose a photo or PDF"}</span>
+        </Button>
+
+        <Button
+          className="w-full h-12 text-base"
+          disabled={!documentType || !file || submit.isPending}
+          onClick={() => submit.mutate()}
+        >
+          {submit.isPending ? "Sending" : "Send for review"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,38 +1,16 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "@/lib/auth";
 import { useLocation } from "wouter";
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-  isVerified: boolean;
-  postcode?: string;
-  businessName?: string;
-  businessCategory?: string;
-  businessAddress?: string;
-  businessPhone?: string;
-  profilePhoto?: string;
-  membershipExpiry?: string;
-  documentType?: string;
-  documentFile?: string;
-  documentStatus?: string;
-  documentSubmittedAt?: string;
-  documentReviewedAt?: string;
-  documentReviewedBy?: number;
-  isResidencyVerified?: boolean;
-  createdAt: string;
-}
+import { authApi, homePathForRole, type AuthUser } from "@/lib/auth";
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
-  logout: () => void;
   isAuthenticated: boolean;
+  login: (email: string, password: string, returnTo?: string) => Promise<void>;
+  register: (data: Record<string, unknown>) => Promise<void>;
+  logout: () => void;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,34 +19,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['/api/auth/me'],
+  const { data: user, isLoading } = useQuery<AuthUser | null>({
+    queryKey: ["/api/auth/me"],
     queryFn: async () => {
-      const token = authApi.getToken();
-      if (!token) return null;
-      
+      if (!authApi.getToken()) return null;
       try {
         return await authApi.getProfile();
-      } catch (error: any) {
-        console.warn('Auth check failed:', error.message);
+      } catch {
         authApi.removeToken();
-        
-        // Only redirect if we're on a protected route
-        const currentPath = window.location.pathname;
-        const protectedRoutes = ['/resident', '/merchant', '/admin', '/edit-profile'];
-        
-        if (protectedRoutes.some(route => currentPath.startsWith(route))) {
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 1000); // Delay to prevent immediate redirect during error handling
-        }
-        
         return null;
       }
     },
     retry: false,
-    staleTime: 0,
-    refetchInterval: 30000,
+    staleTime: 60_000,
   });
 
   const loginMutation = useMutation({
@@ -77,77 +40,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authApi.setToken(response.token);
       return response.user;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(['/api/auth/me'], user);
-      
-      // Redirect based on role
-      switch (user.role) {
-        case 'resident':
-          setLocation('/resident');
-          break;
-        case 'merchant':
-          setLocation('/merchant');
-          break;
-        case 'admin':
-          setLocation('/admin');
-          break;
-        default:
-          setLocation('/');
-      }
-    },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await authApi.register(data);
       authApi.setToken(response.token);
       return response.user;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(['/api/auth/me'], user);
-      
-      // Redirect based on role
-      switch (user.role) {
-        case 'resident':
-          setLocation('/resident');
-          break;
-        case 'merchant':
-          setLocation('/merchant');
-          break;
-        case 'admin':
-          setLocation('/admin');
-          break;
-        default:
-          setLocation('/');
-      }
-    },
   });
+
+  const login = async (email: string, password: string, returnTo?: string) => {
+    const u = await loginMutation.mutateAsync({ email, password });
+    queryClient.setQueryData(["/api/auth/me"], u);
+    setLocation(returnTo && returnTo.startsWith("/") ? returnTo : homePathForRole(u.role));
+  };
+
+  const register = async (data: Record<string, unknown>) => {
+    const u = await registerMutation.mutateAsync(data);
+    queryClient.setQueryData(["/api/auth/me"], u);
+    setLocation(homePathForRole(u.role));
+  };
 
   const logout = () => {
     authApi.removeToken();
-    queryClient.setQueryData(['/api/auth/me'], null);
+    queryClient.setQueryData(["/api/auth/me"], null);
     queryClient.clear();
-    setLocation('/');
+    setLocation("/");
   };
 
-  const login = async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password });
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
   };
 
-  const register = async (data: any) => {
-    await registerMutation.mutateAsync(data);
-  };
-
-  const value: AuthContextType = {
-    user: user || null,
-    isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
-    login,
-    register,
-    logout,
-    isAuthenticated: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user: user ?? null,
+        isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
+        isAuthenticated: !!user,
+        login,
+        register,
+        logout,
+        refresh,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
@@ -156,4 +96,23 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+}
+
+/**
+ * Redirect to /login (remembering where the user was) unless signed in with
+ * one of the given roles. Returns true when the page may render.
+ */
+export function useRequireRole(...roles: string[]): { ready: boolean; user: AuthUser | null } {
+  const { user, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+  if (isLoading) return { ready: false, user: null };
+  if (!user) {
+    setLocation(`/login?returnTo=${encodeURIComponent(location)}`);
+    return { ready: false, user: null };
+  }
+  if (roles.length && !roles.includes(user.role)) {
+    setLocation(homePathForRole(user.role));
+    return { ready: false, user };
+  }
+  return { ready: true, user };
 }

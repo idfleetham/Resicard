@@ -1,81 +1,77 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import fs from "fs";
+import { config } from "./config";
+import { registerRoutes } from "./routes";
+import { registerStripeWebhook } from "./lib/stripe";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// The Stripe webhook needs the raw body for signature checks, so it is mounted before the JSON parser.
+registerStripeWebhook(app);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: false, limit: "10mb" }));
+
+// One line per API request: method, path, status and duration.
 app.use((req, res, next) => {
+  if (!req.path.startsWith("/api")) {
+    next();
+    return;
+  }
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
+  const path = req.originalUrl.split("?")[0];
   res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+    log(`${req.method} ${path} ${res.statusCode} ${Date.now() - start}ms`);
   });
-
   next();
 });
 
+interface ErrorLike {
+  status?: number;
+  statusCode?: number;
+  message?: string;
+  type?: string;
+}
+
 (async () => {
-  const server = await registerRoutes(app);
+  const server = registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const e = (err ?? {}) as ErrorLike;
+    let status = e.status ?? e.statusCode ?? 500;
+    let message = e.message ?? "Internal server error";
+    if (e.type === "entity.parse.failed") {
+      status = 400;
+      message = "Malformed JSON body";
+    } else if (e.type === "entity.too.large") {
+      status = 413;
+      message = "Request body too large";
+    }
+    if (status >= 500) {
+      console.error(err);
+      if (config.isProduction) message = "Internal server error";
+    }
+    if (res.headersSent) return;
     res.status(status).json({ message });
-    throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Vite (development) or the built client (production) is mounted last so its
+  // catch-all does not shadow the API.
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    // Serve built frontend from dist/public directory
     const builtPath = path.resolve(import.meta.dirname, "..", "dist", "public");
     if (fs.existsSync(builtPath)) {
       app.use(express.static(builtPath));
       app.use("*", (_req, res) => res.sendFile(path.join(builtPath, "index.html")));
     } else {
-      // fallback to legacy location to support local scenarios
-      log(`Warning: Built frontend not found at ${builtPath}, falling back to legacy location`);
+      log(`Built client not found at ${builtPath}; falling back to the legacy location`);
       serveStatic(app);
     }
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  server.listen({ port: config.port, host: "0.0.0.0" }, () => {
+    log(`serving on port ${config.port}`);
   });
 })();

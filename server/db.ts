@@ -1,15 +1,14 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@shared/schema";
+import { config } from "./config";
 
-neonConfig.webSocketConstructor = ws;
+// Standard Postgres driver. Works with Neon (Replit's database), any hosted
+// Postgres, and a local instance for development.
+export const pool = new pg.Pool({
+  connectionString: config.databaseUrl,
+  ssl: config.databaseUrl.includes("localhost") || config.databaseUrl.includes("127.0.0.1") || config.databaseUrl.includes("/tmp") ? undefined : { rejectUnauthorized: false },
+});
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
+export type Db = typeof db;

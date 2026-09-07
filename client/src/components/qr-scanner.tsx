@@ -1,178 +1,125 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import QrScanner from 'qr-scanner';
+import { useEffect, useRef, useState } from "react";
+import QrScanner from "qr-scanner";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardBody } from "@/ui/Card";
-import { Camera, CameraOff, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, X } from "lucide-react";
 
 interface QRScannerProps {
-  onScan: (data: string) => void;
-  isScanning: boolean;
-  onToggleScanning: () => void;
+  onResult: (text: string) => void;
+  onClose: () => void;
 }
 
-export default function QRScanner({ onScan, isScanning, onToggleScanning }: QRScannerProps) {
+/**
+ * Camera QR scanner with a manual-entry fallback. Calls onResult once with the
+ * decoded text (or the typed code) and stops the camera.
+ */
+export default function QRScanner({ onResult, onClose }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const qrScannerRef = useRef<QrScanner | null>(null);
-  const [error, setError] = useState<string>("");
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
-
-  const initializeScanner = useCallback(async () => {
-    if (!videoRef.current || qrScannerRef.current) return;
-
-    setIsInitializing(true);
-    setError("");
-
-    try {
-      // Check camera availability first
-      const hasCamera = await QrScanner.hasCamera();
-      if (!hasCamera) {
-        setError("No camera found on this device");
-        setHasPermission(false);
-        setIsInitializing(false);
-        return;
-      }
-
-      const scanner = new QrScanner(
-        videoRef.current,
-        (result: any) => {
-          try {
-            const data = result?.data || result;
-            if (data) {
-              onScan(data);
-            }
-          } catch (scanError) {
-            console.error('Scan result error:', scanError);
-            setError("Error processing scan result");
-          }
-        },
-        {
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-          preferredCamera: 'environment',
-        }
-      );
-
-      qrScannerRef.current = scanner;
-      setHasPermission(true);
-    } catch (err) {
-      console.error('Scanner initialization error:', err);
-      setError(`Unable to initialize camera: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      setHasPermission(false);
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [onScan]);
+  const scannerRef = useRef<QrScanner | null>(null);
+  const doneRef = useRef(false);
+  const [error, setError] = useState<string | null>(null);
+  const [manual, setManual] = useState("");
 
   useEffect(() => {
-    if (isScanning && !qrScannerRef.current) {
-      initializeScanner();
-    }
-    
-    return () => {
-      if (qrScannerRef.current) {
-        try {
-          qrScannerRef.current.stop();
-          qrScannerRef.current.destroy();
-        } catch (cleanupError) {
-          console.warn('Scanner cleanup error:', cleanupError);
-        } finally {
-          qrScannerRef.current = null;
-        }
-      }
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
+
+    const finish = (text: string) => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      scannerRef.current?.stop();
+      onResult(text);
     };
-  }, [isScanning, initializeScanner]);
 
-  useEffect(() => {
-    if (!qrScannerRef.current) return;
+    const scanner = new QrScanner(video, (result) => finish(result.data), {
+      preferredCamera: "environment",
+      highlightScanRegion: true,
+      highlightCodeOutline: true,
+      returnDetailedScanResult: true,
+    });
+    scannerRef.current = scanner;
 
-    if (isScanning && hasPermission) {
-      setError(""); // Clear previous errors
-      qrScannerRef.current.start().catch((err) => {
-        console.error('Failed to start camera:', err);
-        setError("Failed to start camera. Please ensure camera permissions are granted.");
-      });
-    } else {
+    (async () => {
       try {
-        qrScannerRef.current.stop();
-        if (!isScanning) {
-          setError(""); // Clear errors when manually stopping
+        if (!(await QrScanner.hasCamera())) {
+          if (!cancelled) setError("No camera was found on this device. Type the code from the poster instead.");
+          return;
         }
+        await scanner.start();
       } catch (err) {
-        console.warn('Failed to stop camera:', err);
+        if (cancelled) return;
+        const name = err instanceof Error ? err.name : "";
+        if (name === "NotAllowedError" || String(err).toLowerCase().includes("permission")) {
+          setError("Camera access was blocked. Allow the camera in your browser settings, or type the code from the poster.");
+        } else {
+          setError("The camera could not be started. Type the code from the poster instead.");
+        }
       }
-    }
-  }, [isScanning, hasPermission]);
+    })();
 
-  if (hasPermission === false) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            Camera Access Required
-          </CardTitle>
-        </CardHeader>
-        <CardBody>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error || "Camera access is required to scan QR codes. Please enable camera permissions in your browser settings."}
-            </AlertDescription>
-          </Alert>
-        </CardBody>
-      </Card>
-    );
-  }
+    return () => {
+      cancelled = true;
+      scanner.stop();
+      scanner.destroy();
+      scannerRef.current = null;
+    };
+  }, [onResult]);
+
+  const submitManual = () => {
+    const code = manual.trim();
+    if (!code) return;
+    doneRef.current = true;
+    scannerRef.current?.stop();
+    onResult(code);
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>QR Code Scanner</span>
-          <Button
-            onClick={onToggleScanning}
-            variant={isScanning ? "destructive" : "default"}
-            size="sm"
-          >
-            {isScanning ? (
-              <>
-                <CameraOff className="h-4 w-4 mr-2" />
-                Stop Scanning
-              </>
-            ) : (
-              <>
-                <Camera className="h-4 w-4 mr-2" />
-                Start Scanning
-              </>
-            )}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardBody>
-        <div className="relative">
-          <video
-            ref={videoRef}
-            className="w-full max-w-md mx-auto rounded-lg border"
-            style={{ display: isScanning ? 'block' : 'none' }}
-          />
-          {!isScanning && (
-            <div className="w-full max-w-md mx-auto h-64 bg-muted rounded-lg border flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Click "Start Scanning" to begin</p>
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-900">Scan the Resicard code</h2>
+        <Button variant="ghost" size="icon" aria-label="Close scanner" onClick={onClose}>
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <div className="relative rounded-xl overflow-hidden bg-slate-900 aspect-square">
+        <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
         {error && (
-          <Alert className="mt-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="absolute inset-0 flex items-center justify-center p-4 bg-slate-900/80">
+            <Alert className="bg-white">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
         )}
-      </CardBody>
-    </Card>
+      </div>
+
+      <p className="text-sm text-slate-600">
+        Point the camera at the Resicard QR code on the poster or at the till.
+      </p>
+
+      <div>
+        <label htmlFor="manual-code" className="text-sm font-medium text-slate-700">
+          Or type the code printed under the QR
+        </label>
+        <div className="flex gap-2 mt-1">
+          <Input
+            id="manual-code"
+            value={manual}
+            onChange={(e) => setManual(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitManual()}
+            placeholder="e.g. AB12CD"
+            autoCapitalize="characters"
+            autoComplete="off"
+            className="h-12 text-base"
+          />
+          <Button className="h-12" onClick={submitManual} disabled={!manual.trim()}>
+            Go
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
