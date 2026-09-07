@@ -1,7 +1,6 @@
 import { Component, ReactNode } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 interface Props {
   children: ReactNode;
@@ -33,33 +32,28 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center gap-2 justify-center text-destructive">
-                <AlertTriangle className="h-5 w-5" />
-                Something went wrong
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <p className="text-muted-foreground">
-                The application encountered an error. This might be due to a connection issue or expired session.
+        <div className="min-h-screen bg-foam text-sea flex items-center justify-center p-5">
+          <div className="w-full max-w-md flex flex-col items-center gap-6">
+            <Logo size={28} />
+            <div className="w-full bg-white rounded-2xl p-5 sm:p-8 text-center flex flex-col gap-4">
+              <h1 className="font-display font-bold text-2xl tracking-[-0.02em]">Something went wrong</h1>
+              <p className="text-sm text-slate-brand">
+                The app hit an error. It may be a connection problem or your session may have run out.
               </p>
-              <div className="space-y-2">
-                <Button onClick={this.handleReload} className="w-full">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Reload Page
+              <div className="flex flex-col gap-2 pt-2">
+                <Button onClick={this.handleReload} className="w-full h-12 text-base">
+                  Reload the page
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => window.location.href = '/login'}
-                  className="w-full"
+                  className="w-full h-12"
                 >
-                  Go to Login
+                  Go to log in
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       );
     }

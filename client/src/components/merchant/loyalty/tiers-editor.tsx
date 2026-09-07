@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { LoyaltyTier } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLoyaltyMutation } from "./use-loyalty";
+import { INPUT, SectionTitle } from "../portal-ui";
+
+const LABEL = "text-xs text-slate-brand";
 
 interface TierForm {
   name: string;
@@ -16,7 +18,7 @@ interface TierForm {
   color: string;
 }
 
-const EMPTY: TierForm = { name: "", thresholdPoints: "0", discountPercent: "0", pointsMultiplier: "1.00", color: "#f97316" };
+const EMPTY: TierForm = { name: "", thresholdPoints: "0", discountPercent: "0", pointsMultiplier: "1.00", color: "#E4572E" };
 
 function fromTier(t: LoyaltyTier): TierForm {
   return {
@@ -24,7 +26,7 @@ function fromTier(t: LoyaltyTier): TierForm {
     thresholdPoints: String(t.thresholdPoints),
     discountPercent: String(t.discountPercent ?? 0),
     pointsMultiplier: Number(t.pointsMultiplier ?? "1").toFixed(2),
-    color: t.color ?? "#f97316",
+    color: t.color ?? "#E4572E",
   };
 }
 
@@ -68,56 +70,54 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
   const set = (k: keyof TierForm) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
 
   return (
-    <Card>
-      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
+    <div className="bg-white rounded-2xl p-5">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <CardTitle className="text-lg">Tiers</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">Residents move up as they collect points. Offers can be limited to a tier.</p>
+          <SectionTitle>Tiers</SectionTitle>
+          <p className="text-xs text-slate-brand mt-1">Residents move up as they collect points. Offers can be limited to a tier.</p>
         </div>
-        <Button className="h-11 shrink-0" onClick={openNew} disabled={!enabled}><Plus className="h-4 w-4 mr-1" /> Add tier</Button>
-      </CardHeader>
-      <CardContent>
-        {!enabled ? (
-          <p className="text-sm text-slate-500">Create the programme first.</p>
-        ) : sorted.length === 0 ? (
-          <p className="text-sm text-slate-500">No tiers yet. Everyone earns at the base rate.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {sorted.map((t) => (
-              <li key={t.id} className="flex items-center gap-3 py-3">
-                <span className="h-4 w-4 rounded-full shrink-0" style={{ backgroundColor: t.color ?? "#f97316" }} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-900">{t.name}</p>
-                  <p className="text-sm text-slate-500">
-                    From {t.thresholdPoints} points · {t.discountPercent ?? 0}% discount · {Number(t.pointsMultiplier ?? 1).toFixed(2)}x points
-                  </p>
-                </div>
-                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Edit" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-11 w-11 text-red-600" aria-label="Remove" onClick={() => remove.mutate(t.id)} disabled={remove.isPending}><Trash2 className="h-4 w-4" /></Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
+        <Button variant="outline" className="h-11 px-4 shrink-0 bg-white" onClick={openNew} disabled={!enabled}><Plus className="h-4 w-4" /> Add tier</Button>
+      </div>
+      {!enabled ? (
+        <p className="text-sm text-slate-brand">Create the programme first.</p>
+      ) : sorted.length === 0 ? (
+        <p className="text-sm text-slate-brand">No tiers yet. Everyone earns at the base rate.</p>
+      ) : (
+        <ul className="divide-y divide-[#E6E9E8]">
+          {sorted.map((t) => (
+            <li key={t.id} className="flex items-center gap-3 py-3">
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color ?? "#E4572E" }} aria-hidden="true" />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sea">{t.name}</p>
+                <p className="text-sm text-slate-brand">
+                  From {t.thresholdPoints} points · {t.discountPercent ?? 0}% discount · {Number(t.pointsMultiplier ?? 1).toFixed(2)}x points
+                </p>
+              </div>
+              <Button variant="ghost" size="icon" className="h-11 w-11 text-slate-brand" aria-label="Edit" onClick={() => openEdit(t)}><Pencil className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" className="h-11 w-11 text-slate-brand hover:text-[#B5321A]" aria-label="Remove" onClick={() => remove.mutate(t.id)} disabled={remove.isPending}><Trash2 className="h-5 w-5" /></Button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editing ? "Edit tier" : "New tier"}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display font-bold text-2xl tracking-[-0.02em]">{editing ? "Edit tier" : "New tier"}</DialogTitle></DialogHeader>
           <form className="space-y-3" onSubmit={submit}>
-            <div><Label htmlFor="tier-name">Name</Label><Input id="tier-name" className="h-11" value={form.name} onChange={set("name")} required placeholder="Regular" /></div>
+            <div className="space-y-1"><Label htmlFor="tier-name" className={LABEL}>Name</Label><Input id="tier-name" className={INPUT} value={form.name} onChange={set("name")} required placeholder="Regular" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label htmlFor="tier-th">Threshold (points)</Label><Input id="tier-th" type="number" min={0} className="h-11" value={form.thresholdPoints} onChange={set("thresholdPoints")} required /></div>
-              <div><Label htmlFor="tier-disc">Discount (%)</Label><Input id="tier-disc" type="number" min={0} max={100} className="h-11" value={form.discountPercent} onChange={set("discountPercent")} /></div>
-              <div><Label htmlFor="tier-mult">Points multiplier</Label><Input id="tier-mult" type="number" min={0.1} step="0.05" className="h-11" value={form.pointsMultiplier} onChange={set("pointsMultiplier")} /></div>
-              <div><Label htmlFor="tier-col">Colour</Label><Input id="tier-col" type="color" className="h-11 p-1" value={form.color} onChange={set("color")} /></div>
+              <div className="space-y-1"><Label htmlFor="tier-th" className={LABEL}>Threshold (points)</Label><Input id="tier-th" type="number" min={0} className={INPUT} value={form.thresholdPoints} onChange={set("thresholdPoints")} required /></div>
+              <div className="space-y-1"><Label htmlFor="tier-disc" className={LABEL}>Discount (%)</Label><Input id="tier-disc" type="number" min={0} max={100} className={INPUT} value={form.discountPercent} onChange={set("discountPercent")} /></div>
+              <div className="space-y-1"><Label htmlFor="tier-mult" className={LABEL}>Points multiplier</Label><Input id="tier-mult" type="number" min={0.1} step="0.05" className={INPUT} value={form.pointsMultiplier} onChange={set("pointsMultiplier")} /></div>
+              <div className="space-y-1"><Label htmlFor="tier-col" className={LABEL}>Colour</Label><Input id="tier-col" type="color" className={`${INPUT} p-1`} value={form.color} onChange={set("color")} /></div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" className="h-11" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" className="h-11" disabled={save.isPending}>{save.isPending ? "Saving" : "Save"}</Button>
+              <Button type="button" variant="outline" className="h-12 px-6 bg-white" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" variant="buoy" className="h-12 px-6" disabled={save.isPending}>{save.isPending ? "Saving" : "Save"}</Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }

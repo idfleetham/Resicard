@@ -2,6 +2,7 @@ import { createServer, type Server } from "http";
 import type { Express } from "express";
 import { authRouter } from "./auth";
 import { profileRouter } from "./profile";
+import { householdRouter } from "./household";
 import { publicRouter } from "./public";
 import { redemptionsRouter } from "./redemptions";
 import { merchantRouter } from "./merchant";
@@ -12,6 +13,7 @@ import { adminRouter } from "./admin";
 export function registerRoutes(app: Express): Server {
   app.use(authRouter);
   app.use(profileRouter);
+  app.use(householdRouter);
   app.use(publicRouter);
   app.use(redemptionsRouter);
   app.use(merchantRouter);

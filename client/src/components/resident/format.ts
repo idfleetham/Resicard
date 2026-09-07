@@ -13,6 +13,17 @@ export function errorMessage(err: unknown, fallback = "Something went wrong"): s
   return raw || fallback;
 }
 
+/** The `code` field from an apiRequest error body, e.g. "plan_limit", or null. */
+export function errorCode(err: unknown): string | null {
+  if (!(err instanceof Error)) return null;
+  try {
+    const parsed = JSON.parse(err.message.replace(/^\d{3}:\s*/, "")) as { code?: unknown };
+    return typeof parsed?.code === "string" ? parsed.code : null;
+  } catch {
+    return null;
+  }
+}
+
 /** dd Mon yyyy */
 export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return "";

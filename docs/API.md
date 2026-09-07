@@ -126,3 +126,39 @@ Resident side:
 ## Server config `server/config.ts`
 
 Reads env with defaults: `JWT_SECRET` (required in production, else throw), `DATABASE_URL`, `PUBLIC_BASE_URL`, `RESIDENT_ANNUAL_FEE_GBP` (default 25), `MERCHANT_MONTHLY_FEE_GBP` (default 30), `MERCHANT_TRIAL_DAYS` (default 90), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ADMIN_SETUP_SECRET`, `LOCAL_POSTCODE_PREFIXES` (default `KY16,KY15,KY10,DD6`).
+
+## Plans (added Sept 2026)
+
+### Merchant plans: Free and Premium
+
+`merchants.planStatus` is `free` or `premium`. New merchants start on Free. Config: `MERCHANT_PREMIUM_MONTHLY_FEE_GBP` (default 30), `FREE_PLAN_LIVE_OFFER_LIMIT` (default 2). The old `MERCHANT_MONTHLY_FEE_GBP` and `MERCHANT_TRIAL_DAYS` are removed.
+
+Free includes: listing, up to `FREE_PLAN_LIVE_OFFER_LIMIT` live (active, non-archived) offers at once, day/time scheduling, the QR poster, redemption feed and counts.
+Premium adds: unlimited live offers, the loyalty programme, analytics.
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/merchant/plan | merchant | `{ planStatus, planStartedAt, planRenewsAt, premiumMonthlyFee, currency: "GBP", freeLiveOfferLimit, liveOfferCount, features: { unlimitedOffers, loyalty, analytics } }` where features are booleans for the current plan |
+| POST | /api/merchant/plan/checkout | merchant | as before: Stripe `{ url }` or dev `{ activated: true }`; activation sets planStatus premium |
+| POST | /api/merchant/plan/cancel | merchant | sets planStatus free (cancels Stripe sub if any); if the merchant then has more live offers than the free limit, the newest extras are set `active: false`; returns `{ planStatus, pausedOffers: number }` |
+
+Enforcement:
+- `POST /api/merchant/offers` with `active: true` and `POST /api/merchant/offers/:id/toggle` (turning on) return 403 `{ message: "Free plan allows N live offers. Upgrade to Premium for more.", code: "plan_limit" }` when the live count would exceed the limit on Free. Creating an offer with `active: false` is always allowed.
+- Every merchant-side `/api/loyalty/*` route and `GET /api/loyalty/analytics` return 403 `{ message: "The loyalty programme is part of Premium.", code: "plan_required" }` on Free. Resident-side loyalty routes and `POST /api/redemptions` keep working, but no points are awarded and `GET /api/scan` returns `loyalty: null` when the merchant is on Free.
+- `merchantRedeemReasons` no longer blocks on plan (Free merchants can be redeemed at); it still blocks unapproved merchants.
+
+### Resident plans: individual and household
+
+`users.membershipPlan` is `individual` or `household`. Household = two adults, children free (no card needed). Fee: `RESIDENT_ANNUAL_FEE_GBP` for individual, exactly 2x for household. Config unchanged.
+
+| Method | Path | Auth | Body | Response |
+|---|---|---|---|---|
+| GET | /api/membership | resident | | `{ plan, status, expiry, fees: { individual, household }, currency, canRedeem, reasons, household: { role: "primary" \| "member" \| null, code: string \| null (primary only), members: [{ id, firstName, surname, isResidencyVerified }] , primary: { firstName, surname } \| null (member only) } }`. For a household member, `status` and `expiry` are the primary's. |
+| POST | /api/membership/checkout | resident | `membershipCheckoutSchema` | as before, using the plan's fee; activation sets membershipPlan and, for household, generates `householdCode` (8 chars, same alphabet as scan codes) if missing. A household member (has householdPrimaryId) gets 400 "You are covered by another household" |
+| POST | /api/membership/cancel | resident | | as before; household members are left with householdPrimaryId intact but their derived status becomes inactive |
+| POST | /api/household/join | resident | `householdJoinSchema` | joins the household whose primary has this code: 404 unknown code, 400 if the primary's plan is not household or already has a second adult, or the caller has an active individual membership or is a primary themselves. Sets `householdPrimaryId`. Returns the new `/api/membership` shape |
+| POST | /api/household/leave | resident | | clears householdPrimaryId; returns `/api/membership` shape |
+| DELETE | /api/household/members/:userId | resident (primary) | | removes the second adult; returns `/api/membership` shape |
+| POST | /api/household/code/rotate | resident (primary) | | new code |
+
+Effective membership (`server/lib/membership.ts`, pure): a user with `householdPrimaryId` inherits the primary's `membershipStatus` and `membershipExpiry` when the primary's plan is household; otherwise their own. `residentRedeemReasons` and `GET /api/scan` use the effective membership. Each adult still needs their own residency verification.

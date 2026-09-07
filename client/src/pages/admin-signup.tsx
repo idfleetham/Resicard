@@ -65,14 +65,14 @@ export default function AdminSignup() {
                 <FormItem>
                   <FormLabel>{f.label}</FormLabel>
                   <FormControl>
-                    <Input type={f.type ?? "text"} autoComplete={f.autoComplete} className="h-12 text-base" {...field} />
+                    <Input type={f.type ?? "text"} autoComplete={f.autoComplete} className="h-12 rounded-xl text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           ))}
-          <Button type="submit" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
+          <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Creating" : "Create account"}
           </Button>
         </form>

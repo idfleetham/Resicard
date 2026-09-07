@@ -8,6 +8,7 @@ import ResidencyChecks from "@/components/admin/residency-checks";
 import BusinessesTable from "@/components/admin/businesses-table";
 import UsersTable from "@/components/admin/users-table";
 import RedemptionsTable from "@/components/admin/redemptions-table";
+import { TAB_LIST, TAB_TRIGGER, TabScroller } from "@/components/merchant/portal-ui";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -35,11 +36,12 @@ export default function AdminDashboard() {
 
   if (!ready || !user) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-foam">
         <Navigation />
-        <div className="max-w-6xl mx-auto p-4 animate-pulse space-y-4">
-          <div className="h-10 bg-slate-200 rounded-xl w-1/3" />
-          <div className="h-40 bg-slate-200 rounded-2xl" />
+        <div className="max-w-6xl mx-auto px-5 py-6 animate-pulse space-y-4">
+          <div className="h-10 bg-white rounded-xl w-1/3" />
+          <div className="h-12 bg-white rounded-full w-2/3" />
+          <div className="h-40 bg-white rounded-2xl" />
         </div>
       </div>
     );
@@ -52,22 +54,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-foam text-sea">
       <Navigation />
-      <main className="max-w-6xl mx-auto px-4 py-5 sm:py-8">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-slate-900">Admin</h1>
-          <p className="text-sm text-slate-500">Resicard St Andrews</p>
+      <main className="max-w-6xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
+        <div className="mb-5">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand mb-2">Resicard St Andrews</p>
+          <h1 className="font-display font-extrabold text-[42px] leading-none tracking-[-0.03em]">Admin</h1>
         </div>
 
         <Tabs value={tab} onValueChange={changeTab}>
-          <div className="overflow-x-auto -mx-4 px-4 mb-5">
-            <TabsList className="h-12 inline-flex w-auto min-w-full sm:min-w-0">
+          <TabScroller>
+            <TabsList className={TAB_LIST}>
               {TABS.map((t) => (
-                <TabsTrigger key={t.key} value={t.key} className="h-10 px-4 text-sm sm:text-base">{t.label}</TabsTrigger>
+                <TabsTrigger key={t.key} value={t.key} className={TAB_TRIGGER}>{t.label}</TabsTrigger>
               ))}
             </TabsList>
-          </div>
+          </TabScroller>
 
           <TabsContent value="overview" className="mt-0"><StatsOverview onGoTo={changeTab} /></TabsContent>
           <TabsContent value="documents" className="mt-0"><ResidencyChecks /></TabsContent>

@@ -12,7 +12,8 @@ import LoyaltyTab from "@/components/merchant/loyalty-tab";
 import QrCodeTab from "@/components/merchant/qr-code-tab";
 import TeamManagement from "@/components/merchant/team-management";
 import MerchantSettings from "@/components/merchant/merchant-settings";
-import PlanTab from "@/components/merchant/plan-tab";
+import PlanTab, { invalidatePlanGated } from "@/components/merchant/plan-tab";
+import { TAB_LIST, TAB_TRIGGER, TabScroller } from "@/components/merchant/portal-ui";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -33,14 +34,14 @@ function isTab(value: string | null): value is Tab {
 function StatusNotice({ status }: { status: "pending" | "approved" | "rejected" | null }) {
   if (status === "pending") {
     return (
-      <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+      <div className="mb-5 rounded-2xl bg-sand p-5 text-sm text-sea">
         Your application is being reviewed. You can prepare offers now; residents will see them once you are approved.
       </div>
     );
   }
   if (status === "rejected") {
     return (
-      <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+      <div className="mb-5 rounded-2xl bg-[#FBE9E7] p-5 text-sm text-[#B5321A]">
         Your application was not approved. Contact Resicard if you think this is a mistake.
       </div>
     );
@@ -70,8 +71,8 @@ export default function MerchantPortal() {
   useEffect(() => {
     if (!checkout || !ready) return;
     if (checkout === "success") {
-      toast({ title: "Payment received", description: "Your monthly plan is now active." });
-      void queryClient.invalidateQueries({ queryKey: ["/api/merchant/plan"] });
+      toast({ title: "Payment received", description: "Premium is now active." });
+      void invalidatePlanGated(queryClient);
       void queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     } else if (checkout === "cancelled") {
       toast({ title: "Payment cancelled", description: "You have not been charged.", variant: "destructive" });
@@ -81,11 +82,12 @@ export default function MerchantPortal() {
 
   if (!ready || !user) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-foam">
         <Navigation />
-        <div className="max-w-6xl mx-auto p-4 animate-pulse space-y-4">
-          <div className="h-10 bg-slate-200 rounded-xl w-1/3" />
-          <div className="h-40 bg-slate-200 rounded-2xl" />
+        <div className="max-w-6xl mx-auto px-5 py-6 animate-pulse space-y-4">
+          <div className="h-10 bg-white rounded-xl w-1/3" />
+          <div className="h-12 bg-white rounded-full w-2/3" />
+          <div className="h-40 bg-white rounded-2xl" />
         </div>
       </div>
     );
@@ -99,26 +101,26 @@ export default function MerchantPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-foam text-sea">
       <Navigation />
-      <main className="max-w-6xl mx-auto px-4 py-5 sm:py-8">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-slate-900">{merchant?.name ?? "Your outlet"}</h1>
-          <p className="text-sm text-slate-500">Merchant portal</p>
+      <main className="max-w-6xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
+        <div className="mb-5">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand mb-2">Merchant portal</p>
+          <h1 className="font-display font-extrabold text-[42px] leading-none tracking-[-0.03em]">{merchant?.name ?? "Your outlet"}</h1>
         </div>
 
         <StatusNotice status={merchant?.status ?? null} />
 
         <Tabs value={tab} onValueChange={changeTab}>
-          <div className="overflow-x-auto -mx-4 px-4 mb-5">
-            <TabsList className="h-12 inline-flex w-auto min-w-full sm:min-w-0">
+          <TabScroller>
+            <TabsList className={TAB_LIST}>
               {TABS.map((t) => (
-                <TabsTrigger key={t.key} value={t.key} className="h-10 px-4 text-sm sm:text-base">
+                <TabsTrigger key={t.key} value={t.key} className={TAB_TRIGGER}>
                   {t.label}
                 </TabsTrigger>
               ))}
             </TabsList>
-          </div>
+          </TabScroller>
 
           <TabsContent value="overview" className="mt-0"><OverviewTab onGoTo={changeTab} /></TabsContent>
           <TabsContent value="offers" className="mt-0"><OffersManager /></TabsContent>

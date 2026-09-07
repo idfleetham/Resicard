@@ -18,6 +18,8 @@ import {
   merchantRedeemReasons,
 } from "../lib/offer-rules";
 import { awardPoints } from "../lib/loyalty";
+import { effectiveMembership } from "../lib/membership";
+import { isPremium } from "../lib/plan";
 import { stripMenuPdf } from "./public";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -66,17 +68,31 @@ async function buildContext(user: User, merchant: Merchant, client: DbClient): P
   };
 }
 
-async function loyaltySnapshot(merchantId: string, userId: number, client: DbClient) {
-  const program = await loyaltyStore.getProgramByMerchant(merchantId, client);
-  if (!program || !program.active) return null;
-  const balance = await loyaltyStore.getBalance(merchantId, userId, client);
+/** The merchant's active loyalty programme, only while they are on Premium. */
+async function activeProgram(merchant: Merchant, client: DbClient) {
+  if (!isPremium(merchant.planStatus)) return null;
+  const program = await loyaltyStore.getProgramByMerchant(merchant.id, client);
+  return program && program.active ? program : null;
+}
+
+/** Loyalty details for the resident at this merchant, or null on Free or without a programme. */
+async function loyaltySnapshot(merchant: Merchant, userId: number, client: DbClient) {
+  const program = await activeProgram(merchant, client);
+  if (!program) return null;
+  const balance = await loyaltyStore.getBalance(merchant.id, userId, client);
   const tier = balance?.tierId ? await loyaltyStore.getTierById(balance.tierId, client) : null;
   return { program, balance: balance ?? null, tier: tier ?? null };
 }
 
+/** Rule 1 with the household taken into account. */
+async function residentReasons(user: User, client: DbClient): Promise<string[]> {
+  const primary = await userStore.getHouseholdPrimary(user, client);
+  return residentRedeemReasons(user, effectiveMembership(user, primary));
+}
+
 /** The success-screen payload shared by POST /api/redemptions and GET /api/redemptions/:id. */
 async function redemptionResponse(redemption: Redemption, offer: Offer, merchant: Merchant, user: User) {
-  const snapshot = await loyaltySnapshot(merchant.id, user.id, db);
+  const snapshot = await loyaltySnapshot(merchant, user.id, db);
   return {
     redemption: {
       id: redemption.id,
@@ -120,7 +136,7 @@ redemptionsRouter.get(
     const user = await userStore.getUserById(currentUser(req).id);
     if (!user) throw notFound("Account not found");
 
-    const reasons = [...residentRedeemReasons(user), ...merchantRedeemReasons(merchant)];
+    const reasons = [...(await residentReasons(user, db)), ...merchantRedeemReasons(merchant)];
     const ctx = await buildContext(user, merchant, db);
     const candidates = await offerStore.listActiveOffersForMerchant(merchant.id);
     const live: Offer[] = [];
@@ -137,7 +153,7 @@ redemptionsRouter.get(
       merchant: merchantSummary(merchant),
       offers: live.map(stripMenuPdf),
       unavailable,
-      loyalty: await loyaltySnapshot(merchant.id, user.id, db),
+      loyalty: await loyaltySnapshot(merchant, user.id, db),
       canRedeem: reasons.length === 0,
       reasons,
     });
@@ -163,8 +179,8 @@ redemptionsRouter.post(
       const offer = await offerStore.getOfferForMerchant(input.offerId, merchant.id, tx);
       if (!offer || offer.archived || !offer.active) throw notFound("Offer not found");
 
-      const residentReasons = residentRedeemReasons(user);
-      if (residentReasons.length) throw forbidden(residentReasons[0]);
+      const userReasons = await residentReasons(user, tx);
+      if (userReasons.length) throw forbidden(userReasons[0]);
       const merchantReasons = merchantRedeemReasons(merchant);
       if (merchantReasons.length) throw forbidden(merchantReasons[0]);
 
@@ -172,9 +188,9 @@ redemptionsRouter.post(
       const blocked = await offerBlockReason(offer, ctx, tx);
       if (blocked) throw new HttpError(400, blocked);
 
-      const program = await loyaltyStore.getProgramByMerchant(merchant.id, tx);
+      const program = await activeProgram(merchant, tx);
       let pointsAwarded = 0;
-      if (program && program.active) {
+      if (program) {
         const award = await awardPoints(program, merchant.id, user.id, basketAmount, { source: "redemption", offerId: offer.id }, tx);
         pointsAwarded = award.pointsAwarded;
       }

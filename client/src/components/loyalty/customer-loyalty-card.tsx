@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Crown, Gift, Star } from "lucide-react";
+import { Gift } from "lucide-react";
 import type { LoyaltyReward } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -57,94 +55,86 @@ export function CustomerLoyaltyCard({ membership }: CustomerLoyaltyCardProps) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            {merchant.logoUrl ? (
-              <img src={merchant.logoUrl} alt="" className="h-11 w-11 rounded-lg object-cover border border-slate-200" />
-            ) : (
-              <div className="h-11 w-11 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-lg">
-                {merchant.name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-lg truncate">{merchant.name}</CardTitle>
-              <p className="text-sm text-slate-500">Loyalty programme</p>
-            </div>
-            {tier && (
-              <PulsingBadge isActive={progress === 100}>
-                <Badge
-                  className="text-white border-0"
-                  style={{ backgroundColor: tier.color ?? "#f97316" }}
-                >
-                  <Crown className="h-3 w-3 mr-1" />
-                  {tier.name}
-                </Badge>
-              </PulsingBadge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-end gap-6">
-            <div>
-              <div className="text-3xl font-bold text-slate-900 flex items-center gap-1">
-                <Star className="h-6 w-6 text-amber-500" />
-                <AnimatedPointCounter currentPoints={0} targetPoints={points} />
-              </div>
-              <p className="text-xs text-slate-500">points</p>
-            </div>
-            {stamps > 0 && (
-              <div>
-                <div className="text-3xl font-bold text-slate-900">{stamps}</div>
-                <p className="text-xs text-slate-500">stamps</p>
-              </div>
-            )}
-            {tier?.discountPercent ? (
-              <p className="text-sm text-slate-600 ml-auto">{tier.discountPercent}% tier discount</p>
-            ) : null}
-          </div>
-
-          {nextTier && (
-            <div>
-              <div className="flex justify-between text-xs text-slate-600 mb-1">
-                <span>Progress to {nextTier.name}</span>
-                <span>{Math.max(0, nextTier.thresholdPoints - points)} points to go</span>
-              </div>
-              <Progress value={progress} className="h-2" />
+      <section className="bg-white rounded-2xl p-5 text-sea flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          {merchant.logoUrl ? (
+            <img src={merchant.logoUrl} alt="" className="h-11 w-11 rounded-xl object-cover" />
+          ) : (
+            <div className="h-11 w-11 rounded-xl bg-sand flex items-center justify-center font-display font-extrabold text-lg">
+              {merchant.name.charAt(0).toUpperCase()}
             </div>
           )}
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display font-bold text-lg leading-tight tracking-[-0.02em] truncate">{merchant.name}</h3>
+            <p className="text-xs text-slate-brand">Loyalty programme</p>
+          </div>
+          {tier && (
+            <PulsingBadge isActive={progress === 100}>
+              <span className="inline-block bg-sea text-foam text-[11px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full leading-none">
+                {tier.name}
+              </span>
+            </PulsingBadge>
+          )}
+        </div>
 
-          {activeRewards.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rewards</p>
-              {activeRewards.map((reward) => {
-                const cost = reward.costPoints ?? 0;
-                const canAfford = points >= cost && stamps >= (reward.costStamps ?? 0);
-                return (
-                  <div key={reward.id} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-                    <Gift className="h-5 w-5 text-slate-500 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-slate-900 text-sm">{reward.name}</p>
-                      <p className="text-xs text-slate-500">
-                        {cost > 0 ? `${cost} points` : ""}
-                        {reward.costStamps ? `${cost > 0 ? " + " : ""}${reward.costStamps} stamps` : ""}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="h-10"
-                      disabled={!canAfford || redeem.isPending}
-                      onClick={() => redeem.mutate(reward)}
-                    >
-                      {canAfford ? "Use reward" : "Not yet"}
-                    </Button>
+        <div className="flex items-end gap-6">
+          <div>
+            <div className="font-display font-extrabold text-[36px] leading-none tracking-[-0.02em] tabular-nums">
+              <AnimatedPointCounter currentPoints={0} targetPoints={points} />
+            </div>
+            <p className="text-xs text-slate-brand mt-1">points</p>
+          </div>
+          {stamps > 0 && (
+            <div>
+              <div className="font-display font-extrabold text-[36px] leading-none tracking-[-0.02em] tabular-nums">{stamps}</div>
+              <p className="text-xs text-slate-brand mt-1">stamps</p>
+            </div>
+          )}
+          {tier?.discountPercent ? (
+            <p className="text-sm text-slate-brand ml-auto">{tier.discountPercent}% tier discount</p>
+          ) : null}
+        </div>
+
+        {nextTier && (
+          <div>
+            <div className="flex justify-between text-xs text-slate-brand mb-1.5">
+              <span>Progress to {nextTier.name}</span>
+              <span>{Math.max(0, nextTier.thresholdPoints - points)} points to go</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        )}
+
+        {activeRewards.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-semibold text-slate-brand">Rewards</p>
+            {activeRewards.map((reward) => {
+              const cost = reward.costPoints ?? 0;
+              const canAfford = points >= cost && stamps >= (reward.costStamps ?? 0);
+              return (
+                <div key={reward.id} className="flex items-center gap-3 rounded-xl border border-[#E6E9E8] p-3">
+                  <Gift className="h-5 w-5 text-slate-brand shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm">{reward.name}</p>
+                    <p className="text-xs text-slate-brand">
+                      {cost > 0 ? `${cost} points` : ""}
+                      {reward.costStamps ? `${cost > 0 ? " + " : ""}${reward.costStamps} stamps` : ""}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <Button
+                    size="sm"
+                    className="h-10"
+                    disabled={!canAfford || redeem.isPending}
+                    onClick={() => redeem.mutate(reward)}
+                  >
+                    {canAfford ? "Use reward" : "Not yet"}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <RewardClaimAnimation
         isVisible={showAnimation}
@@ -153,14 +143,14 @@ export function CustomerLoyaltyCard({ membership }: CustomerLoyaltyCardProps) {
       />
 
       <Dialog open={Boolean(claimed) && !showAnimation} onOpenChange={(o) => !o && setClaimed(null)}>
-        <DialogContent className="max-w-sm text-center">
+        <DialogContent className="max-w-sm text-center rounded-2xl border-0 text-sea">
           <DialogHeader>
-            <DialogTitle className="text-center">Show this to staff</DialogTitle>
-            <DialogDescription className="text-center">
+            <DialogTitle className="text-center font-display font-bold text-2xl tracking-[-0.02em]">Show this to staff</DialogTitle>
+            <DialogDescription className="text-center text-slate-brand">
               {claimed?.name} at {merchant.name}
             </DialogDescription>
           </DialogHeader>
-          <p className="font-mono text-4xl font-bold tracking-[0.3em] text-slate-900 py-4">{claimed?.code}</p>
+          <p className="font-display font-extrabold text-[42px] tracking-[0.12em] py-4">{claimed?.code}</p>
           <Button className="w-full h-12" onClick={() => setClaimed(null)}>
             Done
           </Button>

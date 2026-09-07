@@ -45,17 +45,17 @@ export default function RedeemSheet({ scanCode, offer, hasLoyalty, onClose }: Re
 
   return (
     <Dialog open={Boolean(offer)} onOpenChange={(open) => !open && !redeem.isPending && onClose()}>
-      <DialogContent className="max-w-md p-5">
+      <DialogContent className="max-w-md p-5 rounded-2xl border-0 text-sea">
         {offer && (
           <>
-            <DialogHeader className="text-left">
-              <p className="text-2xl font-bold text-blue-700">{offerHeadline(offer)}</p>
-              <DialogTitle className="text-xl">{offer.title}</DialogTitle>
-              {offer.shortPromo && <DialogDescription className="text-base">{offer.shortPromo}</DialogDescription>}
+            <DialogHeader className="text-left space-y-1">
+              <p className="font-display font-extrabold text-[42px] leading-none tracking-[-0.03em]">{offerHeadline(offer)}</p>
+              <DialogTitle className="font-display font-bold text-xl tracking-[-0.02em]">{offer.title}</DialogTitle>
+              {offer.shortPromo && <DialogDescription className="text-base text-slate-brand">{offer.shortPromo}</DialogDescription>}
             </DialogHeader>
 
             {(conditions.length > 0 || offer.terms) && (
-              <div className="text-sm text-slate-700 space-y-1">
+              <div className="text-sm space-y-1">
                 {conditions.length > 0 && (
                   <ul className="list-disc pl-5">
                     {conditions.map((c) => (
@@ -69,28 +69,28 @@ export default function RedeemSheet({ scanCode, offer, hasLoyalty, onClose }: Re
 
             {hasLoyalty && (
               <div>
-                <label htmlFor="basket" className="text-sm font-medium text-slate-700">
+                <label htmlFor="basket" className="text-sm font-semibold">
                   Bill total (optional, for loyalty points)
                 </label>
                 <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">£</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-brand">£</span>
                   <Input
                     id="basket"
                     inputMode="decimal"
                     placeholder="0.00"
                     value={basket}
                     onChange={(e) => setBasket(e.target.value)}
-                    className="h-12 pl-7 text-base"
+                    className="h-12 pl-8 text-base rounded-xl"
                   />
                 </div>
               </div>
             )}
 
-            <p className="text-sm text-slate-600">
+            <p className="text-xs text-slate-brand">
               Only redeem when you are ready to pay. Staff will see the confirmation screen.
             </p>
 
-            <Button className="w-full h-14 text-lg" disabled={redeem.isPending} onClick={() => redeem.mutate()}>
+            <Button variant="buoy" className="w-full h-14 text-base" disabled={redeem.isPending} onClick={() => redeem.mutate()}>
               {redeem.isPending ? "Redeeming" : "Redeem now"}
             </Button>
             <Button variant="ghost" className="w-full h-11" disabled={redeem.isPending} onClick={onClose}>

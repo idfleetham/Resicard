@@ -42,16 +42,16 @@ export default function ScanButton({ autoOpen = false }: ScanButtonProps) {
 
   return (
     <>
-      <Button className="w-full h-16 text-lg font-semibold" onClick={() => { setBad(false); setOpen(true); }}>
+      <Button variant="buoy" className="w-full h-14 text-base" onClick={() => { setBad(false); setOpen(true); }}>
         <QrCode className="!h-6 !w-6" />
         Scan a Resicard code
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md p-5">
+        <DialogContent className="max-w-md p-5 rounded-2xl border-0">
           <DialogTitle className="sr-only">Scan a Resicard code</DialogTitle>
           {open && <QRScanner key={attempt} onResult={handleResult} onClose={() => setOpen(false)} />}
           {bad && (
-            <p className="text-sm text-red-600">That does not look like a Resicard code. Try again or type the code.</p>
+            <p className="text-sm font-semibold text-destructive">That does not look like a Resicard code. Try again or type the code.</p>
           )}
         </DialogContent>
       </Dialog>

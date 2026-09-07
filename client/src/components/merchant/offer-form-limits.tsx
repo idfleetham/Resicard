@@ -32,7 +32,7 @@ function NumberInput({ form, name, label, step }: { form: OfferFormHandle; name:
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-sm">{label}</FormLabel>
+          <FormLabel className="text-xs text-slate-brand">{label}</FormLabel>
           <FormControl>
             <Input
               type="number"
@@ -40,7 +40,7 @@ function NumberInput({ form, name, label, step }: { form: OfferFormHandle; name:
               step={step}
               inputMode={step ? "decimal" : "numeric"}
               placeholder="No limit"
-              className="h-11"
+              className="h-12 rounded-xl"
               {...field}
               value={String((field.value as OfferFormValues[NumberField]) ?? "")}
             />
@@ -64,7 +64,7 @@ export function OfferFormLimits({ form }: { form: OfferFormHandle }) {
 
   return (
     <section className="space-y-4">
-      <h3 className="font-semibold text-slate-900">Limits and conditions</h3>
+      <h3 className="font-display font-bold text-xl tracking-[-0.02em] text-sea">Limits and conditions</h3>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {NUMBER_FIELDS.map((f) => (
@@ -74,12 +74,12 @@ export function OfferFormLimits({ form }: { form: OfferFormHandle }) {
 
       {tiers.length > 0 && (
         <div>
-          <p className="text-sm font-medium mb-2">
-            Loyalty tiers <span className="text-slate-400 font-normal">(none ticked means everyone)</span>
+          <p className="text-xs text-slate-brand mb-2">
+            Loyalty tiers <span className="text-slate-brand font-normal">(none ticked means everyone)</span>
           </p>
           <div className="flex flex-wrap gap-3">
             {tiers.map((t) => (
-              <label key={t.id} className="flex items-center gap-2 h-11 px-3 rounded-md border border-slate-200 bg-white cursor-pointer">
+              <label key={t.id} className="flex items-center gap-2 h-12 px-4 rounded-xl border border-[#E6E9E8] bg-white cursor-pointer text-sea">
                 <Checkbox checked={eligible.includes(t.id)} onCheckedChange={() => toggleTier(t.id)} />
                 <span className="text-sm">{t.name}</span>
               </label>
@@ -96,7 +96,7 @@ export function OfferFormLimits({ form }: { form: OfferFormHandle }) {
             name={f.name}
             render={({ field }) => (
               <FormItem>
-                <label className="flex items-center gap-3 h-11 px-3 rounded-md border border-slate-200 bg-white cursor-pointer">
+                <label className="flex items-center gap-3 h-12 px-4 rounded-xl border border-[#E6E9E8] bg-white cursor-pointer text-sea">
                   <FormControl>
                     <Checkbox checked={!!field.value} onCheckedChange={(v) => field.onChange(v === true)} />
                   </FormControl>
@@ -113,9 +113,9 @@ export function OfferFormLimits({ form }: { form: OfferFormHandle }) {
         name="terms"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Terms</FormLabel>
+            <FormLabel className="text-xs text-slate-brand">Terms</FormLabel>
             <FormControl>
-              <Textarea rows={3} placeholder="Not valid on bank holidays. One offer per table." {...field} value={field.value ?? ""} />
+              <Textarea rows={3} className="rounded-xl" placeholder="Not valid on bank holidays. One offer per table." {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>

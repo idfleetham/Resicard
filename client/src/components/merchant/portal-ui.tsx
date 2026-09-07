@@ -1,0 +1,71 @@
+import type { ReactNode } from "react";
+
+/**
+ * Small shared pieces for the merchant, loyalty and admin screens so they match
+ * the resident dashboard: segmented pill tabs, white borderless cards, number
+ * tiles, status pills and the table header/row treatment.
+ */
+
+export const TAB_LIST = "h-12 p-1 rounded-full bg-white inline-flex w-auto";
+export const TAB_TRIGGER =
+  "h-10 px-4 sm:px-6 rounded-full text-[15px] font-bold text-sea whitespace-nowrap data-[state=active]:bg-sea data-[state=active]:text-foam data-[state=active]:shadow-none";
+
+/** Wraps a TabsList so it scrolls sideways on phones instead of wrapping. */
+export function TabScroller({ children }: { children: ReactNode }) {
+  return <div className="overflow-x-auto -mx-5 px-5 mb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</div>;
+}
+
+export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={`bg-white rounded-2xl p-5 ${className}`}>{children}</div>;
+}
+
+export function SectionTitle({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <h2 className={`font-display font-bold text-2xl tracking-[-0.02em] text-sea ${className}`}>{children}</h2>;
+}
+
+export function Tile({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl p-5">
+      <p className="text-xs text-slate-brand">{label}</p>
+      <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea mt-2">{value ?? "-"}</p>
+    </div>
+  );
+}
+
+export type PillTone = "live" | "sand" | "slate" | "sea" | "buoy" | "red";
+
+const PILL_TONES: Record<PillTone, string> = {
+  live: "bg-[#E4F3EB] text-[#1F8A5B]",
+  sand: "bg-sand text-sea",
+  slate: "bg-foam text-slate-brand",
+  sea: "bg-sea text-foam",
+  buoy: "bg-buoy text-white",
+  red: "bg-[#FBE9E7] text-[#B5321A]",
+};
+
+export function Pill({ tone = "slate", children, className = "" }: { tone?: PillTone; children: ReactNode; className?: string }) {
+  return (
+    <span className={`inline-flex items-center h-6 px-2.5 rounded-full text-xs font-bold whitespace-nowrap ${PILL_TONES[tone]} ${className}`}>
+      {children}
+    </span>
+  );
+}
+
+/** Table header cell: small caps in slate. */
+export const TH = "h-10 px-4 text-left align-middle text-[11px] font-bold uppercase tracking-[0.08em] text-slate-brand";
+/** Table row: 48px, hairline divider. */
+export const TR = "h-12 border-b border-[#E6E9E8] last:border-0 hover:bg-[#FAFBFB]";
+export const TD = "px-4 py-2 align-middle text-sm text-sea";
+
+/** Outline button styling for a destructive secondary action. */
+export const DESTRUCTIVE_OUTLINE = "border-[#B5321A] text-[#B5321A] bg-white hover:bg-[#FBE9E7] hover:text-[#B5321A]";
+
+export const INPUT = "h-12 rounded-xl";
+
+export function EmptyNote({ children }: { children: ReactNode }) {
+  return <div className="bg-sand rounded-2xl p-5 text-sm text-sea">{children}</div>;
+}
+
+export function Skeleton({ className = "h-28" }: { className?: string }) {
+  return <div className={`bg-white rounded-2xl animate-pulse ${className}`} />;
+}

@@ -76,19 +76,19 @@ export default function QRScanner({ onResult, onClose }: QRScannerProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 text-sea">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">Scan the Resicard code</h2>
+        <h2 className="font-display font-bold text-2xl tracking-[-0.02em]">Scan the Resicard code</h2>
         <Button variant="ghost" size="icon" aria-label="Close scanner" onClick={onClose}>
-          <X className="h-5 w-5" />
+          <X className="!h-5 !w-5" />
         </Button>
       </div>
 
-      <div className="relative rounded-xl overflow-hidden bg-slate-900 aspect-square">
+      <div className="relative rounded-2xl overflow-hidden bg-sea-deep aspect-square">
         <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center p-4 bg-slate-900/80">
-            <Alert className="bg-white">
+          <div className="absolute inset-0 flex items-center justify-center p-4 bg-[#0A2A33]/80">
+            <Alert className="bg-white rounded-xl border-0">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -96,12 +96,12 @@ export default function QRScanner({ onResult, onClose }: QRScannerProps) {
         )}
       </div>
 
-      <p className="text-sm text-slate-600">
+      <p className="text-xs text-slate-brand">
         Point the camera at the Resicard QR code on the poster or at the till.
       </p>
 
       <div>
-        <label htmlFor="manual-code" className="text-sm font-medium text-slate-700">
+        <label htmlFor="manual-code" className="text-sm font-semibold">
           Or type the code printed under the QR
         </label>
         <div className="flex gap-2 mt-1">
@@ -113,9 +113,9 @@ export default function QRScanner({ onResult, onClose }: QRScannerProps) {
             placeholder="e.g. AB12CD"
             autoCapitalize="characters"
             autoComplete="off"
-            className="h-12 text-base"
+            className="h-12 rounded-xl text-base"
           />
-          <Button className="h-12" onClick={submitManual} disabled={!manual.trim()}>
+          <Button className="h-12 px-6" onClick={submitManual} disabled={!manual.trim()}>
             Go
           </Button>
         </div>

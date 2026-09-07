@@ -1,73 +1,85 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BadgeCheck, User } from "lucide-react";
+import { Check, User } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import type { AuthUser } from "@/lib/auth";
-import { formatDate } from "@/components/resident/format";
 
 interface DigitalMembershipCardProps {
   user: AuthUser;
+  /** From /api/membership: the effective plan and status (a household member inherits the primary's). */
+  membership?: { plan: "individual" | "household"; status: "inactive" | "active" | "cancelled"; expiry: string | null } | null;
+}
+
+/** "Sep 27" style, as on the card mock-up. */
+function shortMonthYear(d: Date): string {
+  return `${d.toLocaleDateString("en-GB", { month: "short" })} ${String(d.getFullYear()).slice(-2)}`;
+}
+
+/** "0002 0417" style member number from the numeric id. */
+function memberNumber(id: number | string): string {
+  const digits = String(id).replace(/\D/g, "").padStart(8, "0").slice(-8);
+  return `${digits.slice(0, 4)} ${digits.slice(4)}`;
 }
 
 /**
  * The card a resident shows staff when scanning is not possible.
- * Kept to essentials so it reads at arm's length.
+ * Matches the brand card: sea, beach photo, name, verified line, valid-to.
  */
-export default function DigitalMembershipCard({ user }: DigitalMembershipCardProps) {
+export default function DigitalMembershipCard({ user, membership }: DigitalMembershipCardProps) {
   const name = [user.firstName, user.surname].filter(Boolean).join(" ") || user.username;
-  const expiry = user.membershipExpiry ? new Date(user.membershipExpiry) : null;
-  const membershipLive = user.membershipStatus === "active" && expiry !== null && expiry.getTime() > Date.now();
+  const status = membership?.status ?? user.membershipStatus;
+  const rawExpiry = membership ? membership.expiry : user.membershipExpiry;
+  const expiry = rawExpiry ? new Date(rawExpiry) : null;
+  const membershipLive = status === "active" && expiry !== null && expiry.getTime() > Date.now();
   const verified = Boolean(user.isResidencyVerified);
+  const plan = membership?.plan ?? user.membershipPlan ?? "individual";
+
+  const validTo = membershipLive && expiry ? shortMonthYear(expiry) : status === "cancelled" ? "Cancelled" : "Not active";
 
   return (
     <div
-      className={`rounded-2xl p-5 text-white shadow-lg ${
-        membershipLive && verified
-          ? "bg-gradient-to-br from-blue-700 via-blue-600 to-sky-600"
-          : "bg-gradient-to-br from-slate-600 to-slate-500"
-      }`}
+      className="relative w-full aspect-[1.6/1] rounded-[20px] overflow-hidden bg-sea text-foam shadow-[0_18px_40px_rgba(15,59,71,0.35)]"
+      style={{ filter: membershipLive ? undefined : "grayscale(0.35)" }}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-2xl font-bold leading-none">Resicard</p>
-          <p className="text-sm text-white/80 mt-1">St Andrews resident</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wide text-white/70">Member no.</p>
-          <p className="font-mono text-lg font-semibold">{String(user.id).padStart(6, "0")}</p>
-        </div>
+      <img
+        src="/brand/west-sands.jpg"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-55"
+        style={{ objectPosition: "60% 40%" }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundImage: "linear-gradient(180deg, rgba(15,59,71,0.15) 0%, rgba(15,59,71,0.55) 45%, #0F3B47 78%)" }}
+      />
+
+      <div className="absolute left-[22px] top-5">
+        <Logo tone="white" size={22} />
+      </div>
+      <div className="absolute right-[22px] top-[22px] text-[10px] tracking-[0.18em] uppercase font-semibold bg-[#F2F5F4]/[0.18] px-[9px] py-[5px] rounded-full leading-none">
+        {plan === "household" ? "Household" : "Resident"}
       </div>
 
-      <div className="flex items-center gap-4 mt-5">
-        <Avatar className="h-24 w-24 border-2 border-white/70 shadow">
-          <AvatarImage src={user.profilePhoto ?? undefined} alt="" className="object-cover" />
-          <AvatarFallback className="bg-white/20 text-white">
-            <User className="h-10 w-10" />
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <p className="text-2xl font-semibold leading-tight truncate">{name}</p>
+      <div className="absolute left-[22px] right-[22px] bottom-[22px] flex items-end gap-4">
+        <div className="h-[72px] w-[72px] flex-none rounded-full bg-sand border-[3px] border-foam overflow-hidden flex items-center justify-center">
+          {user.profilePhoto ? (
+            <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <User className="h-8 w-8 text-[#7A8A8F]" strokeWidth={1.5} />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 flex flex-col gap-1">
+          <p className="font-display font-bold text-[28px] leading-none tracking-[-0.02em] truncate">{name}</p>
           {verified ? (
-            <p className="inline-flex items-center gap-1 mt-1 text-sm font-medium bg-white/20 rounded-full px-2.5 py-0.5">
-              <BadgeCheck className="h-4 w-4" />
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7FE0B0]">
+              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
               Address verified
             </p>
           ) : (
-            <p className="inline-flex items-center mt-1 text-sm font-medium bg-black/20 rounded-full px-2.5 py-0.5">
-              Address not yet verified
-            </p>
+            <p className="text-xs font-semibold text-[#F2F5F4]/70">Not yet verified</p>
           )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-white/25 text-sm">
-        <div>
-          <p className="text-white/70 text-xs">Membership</p>
-          <p className="font-semibold">
-            {membershipLive ? `Valid until ${formatDate(expiry)}` : user.membershipStatus === "cancelled" ? "Cancelled" : "Not active"}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-white/70 text-xs">Member since</p>
-          <p className="font-semibold">{formatDate(user.createdAt) || "-"}</p>
+        <div className="flex-none text-right flex flex-col gap-0.5">
+          <p className="text-[9px] tracking-[0.18em] uppercase font-semibold opacity-70">Valid to</p>
+          <p className="font-display font-bold text-lg leading-none">{validTo}</p>
+          <p className="text-[10px] opacity-70 mt-1 tabular-nums">No. {memberNumber(user.id)}</p>
         </div>
       </div>
     </div>

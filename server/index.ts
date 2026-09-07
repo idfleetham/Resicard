@@ -31,6 +31,7 @@ interface ErrorLike {
   status?: number;
   statusCode?: number;
   message?: string;
+  code?: string;
   type?: string;
 }
 
@@ -53,7 +54,7 @@ interface ErrorLike {
       if (config.isProduction) message = "Internal server error";
     }
     if (res.headersSent) return;
-    res.status(status).json({ message });
+    res.status(status).json(e.code && status < 500 ? { message, code: e.code } : { message });
   });
 
   // Vite (development) or the built client (production) is mounted last so its

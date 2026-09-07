@@ -59,7 +59,7 @@ export default function EditProfile() {
     }
   };
 
-  if (!ready || !user) return <div className="min-h-screen bg-slate-50" />;
+  if (!ready || !user) return <div className="min-h-screen bg-foam" />;
 
   return (
     <AuthLayout title="Your profile" subtitle={user.email}>
@@ -83,7 +83,7 @@ export default function EditProfile() {
                 <FormItem>
                   <FormLabel>First name</FormLabel>
                   <FormControl>
-                    <Input autoComplete="given-name" className="h-12 text-base" {...field} />
+                    <Input autoComplete="given-name" className="h-12 rounded-xl text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +96,7 @@ export default function EditProfile() {
                 <FormItem>
                   <FormLabel>Surname</FormLabel>
                   <FormControl>
-                    <Input autoComplete="family-name" className="h-12 text-base" {...field} />
+                    <Input autoComplete="family-name" className="h-12 rounded-xl text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,7 +111,7 @@ export default function EditProfile() {
                 <FormItem>
                   <FormLabel>Postcode</FormLabel>
                   <FormControl>
-                    <Input autoComplete="postal-code" className="h-12 text-base" {...field} value={field.value ?? ""} />
+                    <Input autoComplete="postal-code" className="h-12 rounded-xl text-base" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +122,7 @@ export default function EditProfile() {
             <Button type="button" variant="outline" className="h-12 flex-1" onClick={() => setLocation(homePathForRole(user.role))}>
               Cancel
             </Button>
-            <Button type="submit" className="h-12 flex-1 text-base" disabled={form.formState.isSubmitting}>
+            <Button type="submit" variant="buoy" className="h-12 flex-1 text-base" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "Saving" : "Save"}
             </Button>
           </div>

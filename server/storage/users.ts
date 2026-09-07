@@ -31,6 +31,28 @@ export async function getUserByStripeSubscription(subscriptionId: string, client
   return row;
 }
 
+export async function getUserByHouseholdCode(code: string, client: DbClient = db): Promise<User | undefined> {
+  const [row] = await client.select().from(users).where(eq(users.householdCode, code)).limit(1);
+  return row;
+}
+
+/** The second adult of a household (the user whose householdPrimaryId is the primary), if any. */
+export async function getHouseholdMember(primaryId: number, client: DbClient = db): Promise<User | undefined> {
+  const [row] = await client.select().from(users).where(eq(users.householdPrimaryId, primaryId)).orderBy(users.id).limit(1);
+  return row;
+}
+
+/** Every user covered by this primary's household. */
+export async function listHouseholdMembers(primaryId: number, client: DbClient = db): Promise<User[]> {
+  return client.select().from(users).where(eq(users.householdPrimaryId, primaryId)).orderBy(users.id);
+}
+
+/** The primary this user is covered by, when they have one. */
+export async function getHouseholdPrimary(user: User, client: DbClient = db): Promise<User | null> {
+  if (!user.householdPrimaryId) return null;
+  return (await getUserById(user.householdPrimaryId, client)) ?? null;
+}
+
 export async function createUser(values: InsertUser, client: DbClient = db): Promise<User> {
   const [row] = await client.insert(users).values(values).returning();
   return row;

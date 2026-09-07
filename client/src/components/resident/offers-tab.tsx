@@ -9,14 +9,14 @@ const ALL = "all";
 
 export function OfferGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden animate-pulse">
-          <div className="aspect-[16/9] bg-slate-100" />
-          <div className="p-4 space-y-2">
-            <div className="h-3 bg-slate-100 rounded w-1/3" />
-            <div className="h-5 bg-slate-100 rounded w-3/4" />
-            <div className="h-3 bg-slate-100 rounded w-full" />
+        <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse">
+          <div className="aspect-[16/9] bg-foam" />
+          <div className="p-5 space-y-2">
+            <div className="h-3 bg-foam rounded w-1/3" />
+            <div className="h-5 bg-foam rounded w-3/4" />
+            <div className="h-3 bg-foam rounded w-full" />
           </div>
         </div>
       ))}
@@ -53,7 +53,7 @@ export default function OffersTab() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="h-12 text-base bg-white">
+          <SelectTrigger className="h-12 text-base bg-white rounded-xl border-0">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -66,7 +66,7 @@ export default function OffersTab() {
           </SelectContent>
         </Select>
         <Select value={merchantId} onValueChange={setMerchantId}>
-          <SelectTrigger className="h-12 text-base bg-white">
+          <SelectTrigger className="h-12 text-base bg-white rounded-xl border-0">
             <SelectValue placeholder="Outlet" />
           </SelectTrigger>
           <SelectContent>
@@ -83,11 +83,11 @@ export default function OffersTab() {
       {isLoading ? (
         <OfferGridSkeleton />
       ) : visible.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-600">
+        <div className="bg-sand rounded-2xl p-8 text-center text-sea">
           {offers.length === 0 ? "No offers are live yet. Check back soon." : "No offers match those filters."}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {visible.map((o) => (
             <OfferCard key={o.id} offer={o} onOpen={setSelected} />
           ))}

@@ -1,12 +1,11 @@
 import { Router } from "express";
-import { updateProfileSchema, submitDocumentSchema } from "@shared/schema";
-import { config } from "../config";
+import { updateProfileSchema, submitDocumentSchema, membershipCheckoutSchema } from "@shared/schema";
 import * as userStore from "../storage/users";
 import { authenticate, requireRole, toPublicUser, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, notFound } from "../lib/http";
 import { isLocalPostcode, normalisePostcode } from "../lib/postcode";
-import { residentRedeemReasons } from "../lib/offer-rules";
 import { isStripeConfigured, createMembershipCheckout, activateMembership, cancelSubscription } from "../lib/stripe";
+import { membershipPayload } from "./household";
 
 export const profileRouter = Router();
 
@@ -63,15 +62,7 @@ profileRouter.get(
   asyncHandler(async (req, res) => {
     const user = await userStore.getUserById(currentUser(req).id);
     if (!user) throw notFound("Account not found");
-    const reasons = residentRedeemReasons(user);
-    res.json({
-      status: user.membershipStatus ?? "inactive",
-      expiry: user.membershipExpiry,
-      annualFee: config.residentAnnualFeeGbp,
-      currency: "GBP",
-      canRedeem: reasons.length === 0,
-      reasons,
-    });
+    res.json(await membershipPayload(user));
   }),
 );
 
@@ -80,13 +71,18 @@ profileRouter.post(
   authenticate,
   requireRole("resident"),
   asyncHandler(async (req, res) => {
+    const { plan } = parseBody(membershipCheckoutSchema, req.body ?? {});
     const user = await userStore.getUserById(currentUser(req).id);
     if (!user) throw notFound("Account not found");
+    if (user.householdPrimaryId) throw badRequest("You are covered by another household");
+    if (plan === "individual" && user.membershipPlan === "household" && (await userStore.getHouseholdMember(user.id))) {
+      throw badRequest("Remove the second adult from your household before switching to an individual plan");
+    }
     if (isStripeConfigured()) {
-      res.json({ url: await createMembershipCheckout(user) });
+      res.json({ url: await createMembershipCheckout(user, plan) });
       return;
     }
-    await activateMembership(user);
+    await activateMembership(user, plan);
     res.json({ activated: true });
   }),
 );
@@ -98,7 +94,9 @@ profileRouter.post(
   asyncHandler(async (req, res) => {
     const user = await userStore.getUserById(currentUser(req).id);
     if (!user) throw notFound("Account not found");
+    if (user.householdPrimaryId) throw badRequest("Your membership is managed by your household primary");
     await cancelSubscription(user.stripeSubscriptionId);
+    // Household members keep householdPrimaryId; their derived status follows this row.
     const updated = await userStore.updateUser(user.id, { membershipStatus: "cancelled", stripeSubscriptionId: null });
     res.json({ status: updated?.membershipStatus ?? "cancelled" });
   }),

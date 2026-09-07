@@ -35,13 +35,13 @@ export function BusinessHoursEditor({ value, onChange }: { value: BusinessHours;
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">Opening hours <span className="text-slate-400 font-normal">(leave blank if closed)</span></p>
+      <p className="text-xs text-slate-brand">Leave a day blank if you are closed.</p>
       {DAYS.map((d) => (
         <div key={d.key} className="grid grid-cols-[3rem_1fr_auto_1fr] items-center gap-2">
-          <span className="text-sm text-slate-600">{d.label}</span>
-          <Input type="time" className="h-11" value={value[d.key]?.open ?? ""} onChange={(e) => set(d.key, "open", e.target.value)} />
-          <span className="text-sm text-slate-500">to</span>
-          <Input type="time" className="h-11" value={value[d.key]?.close ?? ""} onChange={(e) => set(d.key, "close", e.target.value)} />
+          <span className="text-sm font-bold text-sea">{d.label}</span>
+          <Input type="time" className="h-12 rounded-xl" value={value[d.key]?.open ?? ""} onChange={(e) => set(d.key, "open", e.target.value)} />
+          <span className="text-sm text-slate-brand">to</span>
+          <Input type="time" className="h-12 rounded-xl" value={value[d.key]?.close ?? ""} onChange={(e) => set(d.key, "close", e.target.value)} />
         </div>
       ))}
     </div>

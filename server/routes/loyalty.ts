@@ -16,7 +16,8 @@ import * as merchantStore from "../storage/merchants";
 import * as loyaltyStore from "../storage/loyalty";
 import * as redemptionStore from "../storage/redemptions";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
-import { asyncHandler, parseBody, notFound, badRequest, forbidden } from "../lib/http";
+import { asyncHandler, parseBody, notFound, badRequest, forbidden, HttpError } from "../lib/http";
+import { isPremium, PLAN_REQUIRED_MESSAGE } from "../lib/plan";
 import { awardPoints, adjustPoints, getOrCreateBalance, setPointsAndRecalculateTier } from "../lib/loyalty";
 import { generateRedemptionCode, nextTier, resolveTier } from "../lib/offer-rules";
 
@@ -54,7 +55,15 @@ export const loyaltyRouter = Router();
 
 // Merchant side ---------------------------------------------------------------
 
-const merchantOnly = [authenticate, requireRole("merchant")] as const;
+/** Every merchant-side loyalty route is part of Premium: 403 plan_required on Free. */
+const requirePremium = asyncHandler(async (req, _res, next) => {
+  const merchant = await merchantStore.getMerchantById(currentMerchantId(req));
+  if (!merchant) throw notFound("Merchant not found");
+  if (!isPremium(merchant.planStatus)) throw new HttpError(403, PLAN_REQUIRED_MESSAGE, "plan_required");
+  next();
+});
+
+const merchantOnly = [authenticate, requireRole("merchant"), requirePremium] as const;
 
 loyaltyRouter.get(
   "/api/loyalty/program",

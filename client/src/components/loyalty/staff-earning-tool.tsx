@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,41 +55,37 @@ export function StaffEarningTool() {
   const canSubmit = /^\d{4}$/.test(staffPin) && customer.trim().length > 0 && Number(basket) > 0;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Award points at the till</CardTitle>
-        <p className="text-sm text-slate-500 mt-1">
-          For purchases without an offer. Enter the code from the resident's last redemption here, or their member number.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); earn.mutate(); }}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <Label htmlFor="earn-pin">Staff PIN</Label>
-              <Input id="earn-pin" type="password" inputMode="numeric" maxLength={4} className="h-12 text-lg tracking-widest" value={staffPin} onChange={(e) => setStaffPin(e.target.value)} autoComplete="off" />
-            </div>
-            <div>
-              <Label htmlFor="earn-customer">Redemption code or member number</Label>
-              <Input id="earn-customer" className="h-12 text-lg uppercase" placeholder="ABC234" value={customer} onChange={(e) => setCustomer(e.target.value)} autoComplete="off" />
-            </div>
-            <div>
-              <Label htmlFor="earn-basket">Bill total (£)</Label>
-              <Input id="earn-basket" type="number" min={0} step="0.01" inputMode="decimal" className="h-12 text-lg" value={basket} onChange={(e) => setBasket(e.target.value)} />
-            </div>
+    <div className="bg-white rounded-2xl p-5">
+      <h2 className="font-display font-bold text-2xl tracking-[-0.02em] text-sea">Award points at the till</h2>
+      <p className="text-xs text-slate-brand mt-1 mb-4">
+        For purchases without an offer. Enter the code from the resident's last redemption here, or their member number.
+      </p>
+      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); earn.mutate(); }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="earn-pin" className="text-xs text-slate-brand">Staff PIN</Label>
+            <Input id="earn-pin" type="password" inputMode="numeric" maxLength={4} className="h-12 rounded-xl text-lg tracking-widest" value={staffPin} onChange={(e) => setStaffPin(e.target.value)} autoComplete="off" />
           </div>
-          <Button type="submit" className="h-12 w-full sm:w-auto" disabled={!canSubmit || earn.isPending}>
-            {earn.isPending ? "Awarding" : "Award points"}
-          </Button>
-        </form>
-        {last && (
-          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4">
-            <p className="text-2xl font-bold text-green-800">{last.points} points awarded</p>
-            {last.balance !== null && <p className="text-sm text-green-700">New balance: {last.balance} points</p>}
+          <div className="space-y-1">
+            <Label htmlFor="earn-customer" className="text-xs text-slate-brand">Redemption code or member number</Label>
+            <Input id="earn-customer" className="h-12 rounded-xl text-lg uppercase" placeholder="ABC234" value={customer} onChange={(e) => setCustomer(e.target.value)} autoComplete="off" />
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="space-y-1">
+            <Label htmlFor="earn-basket" className="text-xs text-slate-brand">Bill total (£)</Label>
+            <Input id="earn-basket" type="number" min={0} step="0.01" inputMode="decimal" className="h-12 rounded-xl text-lg" value={basket} onChange={(e) => setBasket(e.target.value)} />
+          </div>
+        </div>
+        <Button type="submit" className="h-12 w-full sm:w-auto sm:px-8" disabled={!canSubmit || earn.isPending}>
+          {earn.isPending ? "Awarding" : "Award points"}
+        </Button>
+      </form>
+      {last && (
+        <div className="mt-4 rounded-2xl bg-redeemed text-white p-5">
+          <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em]">{last.points} points awarded</p>
+          {last.balance !== null && <p className="text-sm mt-2 text-white/90">New balance: {last.balance} points</p>}
+        </div>
+      )}
+    </div>
   );
 }
 

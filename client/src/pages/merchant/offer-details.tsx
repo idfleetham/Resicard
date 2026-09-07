@@ -3,12 +3,12 @@ import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Pencil } from "lucide-react";
 import Navigation from "@/components/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useRequireRole } from "@/hooks/use-auth";
 import { useMerchantOffer } from "@/hooks/use-merchant-offers";
 import OfferForm from "@/components/merchant/offer-form";
+import { OfferStatusPill } from "@/components/merchant/offers-manager";
+import { Pill } from "@/components/merchant/portal-ui";
 import type { RedemptionSummary } from "@/components/merchant/overview-tab";
 import {
   OFFER_TYPE_LABELS, categoryLabel, formatDate, formatPounds, offerConditions, offerHeadline, offerWhen,
@@ -16,9 +16,9 @@ import {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[9rem_1fr] gap-2 py-2 border-b border-slate-100 last:border-0 text-sm">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-slate-900">{children}</dd>
+    <div className="grid grid-cols-[9rem_1fr] gap-2 py-3 border-b border-[#E6E9E8] last:border-0 text-sm">
+      <dt className="text-slate-brand">{label}</dt>
+      <dd className="text-sea">{children}</dd>
     </div>
   );
 }
@@ -38,42 +38,38 @@ export default function OfferDetails() {
   if (offer?.globalUsageLimit) limits.push(`${offer.globalUsageLimit} in total`);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-foam text-sea">
       <Navigation />
-      <main className="max-w-3xl mx-auto px-4 py-5 sm:py-8 space-y-4">
-        <Button asChild variant="ghost" className="h-11 -ml-3">
-          <Link href="/merchant?tab=offers"><ArrowLeft className="h-4 w-4 mr-1" /> All offers</Link>
-        </Button>
+      <main className="max-w-3xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
+        <Link href="/merchant?tab=offers" className="inline-flex items-center gap-1 text-sm font-bold text-slate-brand hover:text-sea mb-4">
+          <ArrowLeft className="h-4 w-4" strokeWidth={2} /> All offers
+        </Link>
 
         {!ready || isLoading ? (
-          <div className="h-64 bg-slate-200 rounded-2xl animate-pulse" />
+          <div className="h-64 bg-white rounded-2xl animate-pulse" />
         ) : !offer ? (
-          <Card><CardContent className="p-6 text-slate-600">{error ? "This offer could not be loaded." : "Offer not found."}</CardContent></Card>
+          <div className="bg-sand rounded-2xl p-5 text-sm text-sea">{error ? "This offer could not be loaded." : "Offer not found."}</div>
         ) : (
           <>
-            <Card>
-              {offer.imageUrl && <img src={offer.imageUrl} alt="" className="w-full h-48 object-cover rounded-t-xl" />}
-              <CardHeader className="pb-3">
+            <div className="bg-white rounded-2xl overflow-hidden">
+              {offer.imageUrl && <img src={offer.imageUrl} alt="" className="w-full h-48 object-cover" />}
+              <div className="p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <CardTitle className="text-2xl">{offer.title}</CardTitle>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge variant="secondary">{offerHeadline(offer)}</Badge>
-                      <Badge variant="outline">{OFFER_TYPE_LABELS[offer.type ?? "percentage_discount"]}</Badge>
-                      {offer.archived ? <Badge variant="outline">Archived</Badge> : offer.active
-                        ? <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Live</Badge>
-                        : <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Paused</Badge>}
+                    <h1 className="font-display font-extrabold text-[32px] sm:text-[42px] leading-none tracking-[-0.03em]">{offer.title}</h1>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <Pill tone="buoy">{offerHeadline(offer)}</Pill>
+                      <Pill tone="slate">{OFFER_TYPE_LABELS[offer.type ?? "percentage_discount"]}</Pill>
+                      <OfferStatusPill offer={offer} />
                     </div>
                   </div>
                   {!offer.archived && (
-                    <Button className="h-11 shrink-0" onClick={() => setEditing(true)}><Pencil className="h-4 w-4 mr-1" /> Edit</Button>
+                    <Button variant="buoy" className="h-12 px-6 shrink-0" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</Button>
                   )}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-xl bg-slate-50 p-4 mb-4 flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-slate-900">{count}</span>
-                  <span className="text-slate-600">redemption{count === 1 ? "" : "s"}</span>
+                <div className="rounded-2xl bg-sand p-5 my-5 flex items-baseline gap-2">
+                  <span className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em]">{count}</span>
+                  <span className="text-sm">redemption{count === 1 ? "" : "s"}</span>
                 </div>
                 <dl>
                   {offer.shortPromo && <Row label="Short promo">{offer.shortPromo}</Row>}
@@ -82,7 +78,7 @@ export default function OfferDetails() {
                   {(offer.fixedPrice || offer.originalValue) && (
                     <Row label="Price">
                       {offer.fixedPrice ? formatPounds(offer.fixedPrice) : "-"}
-                      {offer.originalValue ? <span className="text-slate-500"> (usually {formatPounds(offer.originalValue)})</span> : null}
+                      {offer.originalValue ? <span className="text-slate-brand"> (usually {formatPounds(offer.originalValue)})</span> : null}
                     </Row>
                   )}
                   <Row label="When">{offerWhen(offer).join(" / ") || "Every day, all day"}</Row>
@@ -99,8 +95,8 @@ export default function OfferDetails() {
                   {offer.menuPdf && <Row label="Menu">PDF attached</Row>}
                   <Row label="Created">{formatDate(offer.createdAt)}</Row>
                 </dl>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
             <OfferForm open={editing} onOpenChange={setEditing} offer={offer} />
           </>
         )}

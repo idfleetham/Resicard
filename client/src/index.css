@@ -1,36 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* shadcn/ui colour tokens. Light theme only. */
+/* Brand fonts, self-hosted (SIL Open Font Licence). */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin.woff2') format('woff2');
+}
+@font-face { font-family: 'Manrope'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/manrope-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/manrope-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/manrope-latin-700-normal.woff2') format('woff2'); }
+
+/*
+  Resicard colour tokens (see brand guide).
+  Sea #0F3B47, Foam #F2F5F4, Sand #E6D9BF, Buoy #E4572E, Redeemed #1F8A5B, Slate #5C6F75.
+  shadcn/ui reads the hsl triples below.
+*/
 :root {
-  --background: 210 20% 98%;
-  --foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 40%;
+  --background: 160 12% 96%;          /* foam */
+  --foreground: 194 68% 17%;          /* sea */
+  --muted: 160 10% 92%;
+  --muted-foreground: 194 12% 41%;    /* slate */
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 194 68% 17%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 84% 60%;
+  --card-foreground: 194 68% 17%;
+  --border: 160 6% 88%;
+  --input: 160 6% 85%;
+  --primary: 194 68% 17%;             /* sea: default buttons */
+  --primary-foreground: 160 12% 96%;
+  --secondary: 39 44% 83%;            /* sand */
+  --secondary-foreground: 194 68% 17%;
+  --accent: 160 10% 92%;
+  --accent-foreground: 194 68% 17%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 221 83% 53%;
-  --radius: 0.5rem;
-  --chart-1: 221 83% 53%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
+  --ring: 14 76% 54%;                 /* buoy */
+  --radius: 0.75rem;
+  --chart-1: 194 68% 17%;
+  --chart-2: 14 76% 54%;
+  --chart-3: 39 44% 83%;
+  --chart-4: 152 63% 33%;
+  --chart-5: 194 12% 41%;
+
+  --rc-sea: #0F3B47;
+  --rc-sea-deep: #0A2A33;
+  --rc-foam: #F2F5F4;
+  --rc-sand: #E6D9BF;
+  --rc-buoy: #E4572E;
+  --rc-buoy-dark: #C9451F;
+  --rc-redeemed: #1F8A5B;
+  --rc-slate: #5C6F75;
 }
 
 @layer base {
@@ -42,8 +65,31 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   }
+  h1, h2, h3, .font-display {
+    font-family: 'Bricolage Grotesque', 'Arial Black', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: 'Bricolage Grotesque', 'Arial Black', system-ui, sans-serif; }
+  .font-text { font-family: 'Manrope', system-ui, sans-serif; }
+  .tracking-display { letter-spacing: -0.03em; }
+  .bg-sea { background-color: var(--rc-sea); }
+  .bg-sea-deep { background-color: var(--rc-sea-deep); }
+  .bg-foam { background-color: var(--rc-foam); }
+  .bg-sand { background-color: var(--rc-sand); }
+  .bg-buoy { background-color: var(--rc-buoy); }
+  .bg-redeemed { background-color: var(--rc-redeemed); }
+  .text-sea { color: var(--rc-sea); }
+  .text-foam { color: var(--rc-foam); }
+  .text-sand { color: var(--rc-sand); }
+  .text-buoy { color: var(--rc-buoy); }
+  .text-slate-brand { color: var(--rc-slate); }
+  .border-sea { border-color: var(--rc-sea); }
+  .sea-gradient { background-image: linear-gradient(180deg, rgba(15,59,71,0.05) 0%, rgba(15,59,71,0.35) 45%, rgba(15,59,71,0.92) 100%); }
 }
 
 @media print {

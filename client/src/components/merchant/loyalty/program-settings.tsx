@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import type { LoyaltyProgram } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLoyaltyMutation } from "./use-loyalty";
+import { INPUT, SectionTitle } from "../portal-ui";
 
 interface FormState {
   model: "points" | "stamps";
@@ -64,49 +64,47 @@ export default function ProgramSettings({ program }: { program: LoyaltyProgram |
   );
 
   return (
-    <Card>
-      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-lg">Programme settings</CardTitle>
-        <label className="flex items-center gap-2 text-sm">
+    <div className="bg-white rounded-2xl p-5">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <SectionTitle>Programme settings</SectionTitle>
+        <label className="flex items-center gap-2 text-sm font-bold text-sea">
           <span>{form.active ? "Running" : "Paused"}</span>
           <Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} />
         </label>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}>
-          <div>
-            <Label>Model</Label>
-            <Select value={form.model} onValueChange={(v) => setForm({ ...form, model: v === "stamps" ? "stamps" : "points" })}>
-              <SelectTrigger className="h-11 max-w-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="points">Points</SelectItem>
-                <SelectItem value="stamps">Stamps</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {NUMBERS.map((n) => (
-              <div key={n.key}>
-                <Label htmlFor={`prog-${n.key}`}>{n.label}</Label>
-                <Input
-                  id={`prog-${n.key}`}
-                  type="number"
-                  min={0}
-                  step={n.step}
-                  inputMode={n.step ? "decimal" : "numeric"}
-                  className="h-11"
-                  value={form[n.key]}
-                  onChange={(e) => setForm({ ...form, [n.key]: e.target.value })}
-                />
-                <p className="text-xs text-slate-500 mt-1">{n.hint}</p>
-              </div>
-            ))}
-          </div>
-          <Button type="submit" className="h-11" disabled={save.isPending}>
-            {save.isPending ? "Saving" : program ? "Save settings" : "Create programme"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      </div>
+      <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}>
+        <div className="space-y-1">
+          <Label className="text-xs text-slate-brand">Model</Label>
+          <Select value={form.model} onValueChange={(v) => setForm({ ...form, model: v === "stamps" ? "stamps" : "points" })}>
+            <SelectTrigger className={`${INPUT} max-w-xs`}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="points">Points</SelectItem>
+              <SelectItem value="stamps">Stamps</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {NUMBERS.map((n) => (
+            <div key={n.key} className="space-y-1">
+              <Label htmlFor={`prog-${n.key}`} className="text-xs text-slate-brand">{n.label}</Label>
+              <Input
+                id={`prog-${n.key}`}
+                type="number"
+                min={0}
+                step={n.step}
+                inputMode={n.step ? "decimal" : "numeric"}
+                className={INPUT}
+                value={form[n.key]}
+                onChange={(e) => setForm({ ...form, [n.key]: e.target.value })}
+              />
+              <p className="text-xs text-slate-brand">{n.hint}</p>
+            </div>
+          ))}
+        </div>
+        <Button type="submit" variant="buoy" className="h-12 px-8 w-full sm:w-auto" disabled={save.isPending}>
+          {save.isPending ? "Saving" : program ? "Save" : "Create programme"}
+        </Button>
+      </form>
+    </div>
   );
 }

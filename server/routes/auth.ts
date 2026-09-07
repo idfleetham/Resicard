@@ -74,7 +74,6 @@ authRouter.post(
         },
         tx,
       );
-      const now = new Date();
       const merchant = await merchantStore.createMerchant(
         {
           ownerUserId: owner.id,
@@ -85,9 +84,7 @@ authRouter.post(
           email: input.email.toLowerCase(),
           scanCode: await uniqueScanCode(tx),
           status: "pending",
-          planStatus: "trial",
-          planStartedAt: now,
-          planRenewsAt: new Date(now.getTime() + config.merchantTrialDays * 24 * 60 * 60 * 1000),
+          planStatus: "free",
         },
         tx,
       );

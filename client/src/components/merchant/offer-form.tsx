@@ -116,10 +116,10 @@ export default function OfferForm({ open, onOpenChange, offer, onSaved }: OfferF
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-5 sm:p-8 rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{offer ? "Edit offer" : "New offer"}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea">{offer ? "Edit offer" : "New offer"}</DialogTitle>
+          <DialogDescription className="text-slate-brand">
             Residents see the headline and short promo on their card; the rest applies when they redeem.
           </DialogDescription>
         </DialogHeader>
@@ -133,12 +133,12 @@ export default function OfferForm({ open, onOpenChange, offer, onSaved }: OfferF
             />
             <OfferFormSchedule form={form} />
             <OfferFormLimits form={form} />
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-slate-100">
-              <Button type="button" variant="outline" className="h-11" onClick={() => onOpenChange(false)} disabled={saving}>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" className="h-12 px-6 bg-white" onClick={() => onOpenChange(false)} disabled={saving}>
                 Cancel
               </Button>
-              <Button type="submit" className="h-11" disabled={saving}>
-                {saving ? "Saving" : offer ? "Save changes" : "Create offer"}
+              <Button type="submit" variant="buoy" className="h-12 px-8" disabled={saving}>
+                {saving ? "Saving" : "Save"}
               </Button>
             </div>
           </form>

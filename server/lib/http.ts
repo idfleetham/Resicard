@@ -1,12 +1,14 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import type { ZodSchema, ZodTypeDef } from "zod";
 
-/** An error carrying an HTTP status, rendered as { message } by the error handler. */
+/** An error carrying an HTTP status, rendered as { message, code? } by the error handler. */
 export class HttpError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  code?: string;
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.status = status;
+    if (code) this.code = code;
   }
 }
 

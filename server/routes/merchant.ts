@@ -7,11 +7,12 @@ import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
-import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumericString } from "../lib/http";
+import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumericString, HttpError } from "../lib/http";
 import { scanUrl, qrDataUrl, posterHtml } from "../lib/qr";
 import { uniqueScanCode } from "../lib/scan-code";
 import { imageUpload, fileToDataUrl, uploadErrorHandler } from "../lib/uploads";
-import { isStripeConfigured, createMerchantPlanCheckout, activateMerchantPlan } from "../lib/stripe";
+import { isStripeConfigured, createMerchantPlanCheckout, activateMerchantPlan, deactivateMerchantPlan, cancelSubscription } from "../lib/stripe";
+import { canGoLive, planFeatures, planLimitMessage } from "../lib/plan";
 import { assertIdentityAvailable } from "./auth";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -59,6 +60,13 @@ async function loadMerchant(merchantId: string): Promise<Merchant> {
   const merchant = await merchantStore.getMerchantById(merchantId);
   if (!merchant) throw notFound("Merchant not found");
   return merchant;
+}
+
+/** Throws 403 plan_limit when one more live offer would exceed the merchant's plan. */
+async function assertCanGoLive(merchant: Merchant): Promise<void> {
+  const liveCount = await offerStore.countLiveOffersForMerchant(merchant.id);
+  if (canGoLive(merchant.planStatus, liveCount, config.freePlanLiveOfferLimit)) return;
+  throw new HttpError(403, planLimitMessage(config.freePlanLiveOfferLimit), "plan_limit");
 }
 
 async function scanCodePayload(merchant: Merchant) {
@@ -140,7 +148,9 @@ merchantRouter.post(
   asyncHandler(async (req, res) => {
     const input = parseBody(insertOfferSchema, req.body);
     const row = toOfferRow(input);
-    const offer = await offerStore.createOffer({ ...row, title: input.title, merchantId: currentMerchantId(req) });
+    const merchant = await loadMerchant(currentMerchantId(req));
+    if (row.active !== false) await assertCanGoLive(merchant);
+    const offer = await offerStore.createOffer({ ...row, title: input.title, merchantId: merchant.id });
     res.status(201).json(offer);
   }),
 );
@@ -164,7 +174,9 @@ merchantRouter.put(
   asyncHandler(async (req, res) => {
     const offer = await ownOffer(req);
     const input = parseBody(updateOfferSchema, req.body);
-    const updated = await offerStore.updateOffer(offer.id, toOfferRow(input));
+    const row = toOfferRow(input);
+    if (row.active === true && !offer.active) await assertCanGoLive(await loadMerchant(currentMerchantId(req)));
+    const updated = await offerStore.updateOffer(offer.id, row);
     res.json(updated ?? offer);
   }),
 );
@@ -174,6 +186,7 @@ merchantRouter.post(
   asyncHandler(async (req, res) => {
     const offer = await ownOffer(req);
     if (offer.archived) throw badRequest("Archived offers cannot be toggled");
+    if (!offer.active) await assertCanGoLive(await loadMerchant(currentMerchantId(req)));
     res.json((await offerStore.updateOffer(offer.id, { active: !offer.active })) ?? offer);
   }),
 );
@@ -201,18 +214,23 @@ merchantRouter.post(
 
 // Plan
 
+async function planPayload(merchant: Merchant) {
+  return {
+    planStatus: merchant.planStatus ?? "free",
+    planStartedAt: merchant.planStartedAt,
+    planRenewsAt: merchant.planRenewsAt,
+    premiumMonthlyFee: config.merchantPremiumMonthlyFeeGbp,
+    currency: "GBP",
+    freeLiveOfferLimit: config.freePlanLiveOfferLimit,
+    liveOfferCount: await offerStore.countLiveOffersForMerchant(merchant.id),
+    features: planFeatures(merchant.planStatus),
+  };
+}
+
 merchantRouter.get(
   "/api/merchant/plan",
   asyncHandler(async (req, res) => {
-    const merchant = await loadMerchant(currentMerchantId(req));
-    res.json({
-      planStatus: merchant.planStatus,
-      planStartedAt: merchant.planStartedAt,
-      planRenewsAt: merchant.planRenewsAt,
-      monthlyFee: config.merchantMonthlyFeeGbp,
-      currency: "GBP",
-      trialDays: config.merchantTrialDays,
-    });
+    res.json(await planPayload(await loadMerchant(currentMerchantId(req))));
   }),
 );
 
@@ -220,6 +238,7 @@ merchantRouter.post(
   "/api/merchant/plan/checkout",
   asyncHandler(async (req, res) => {
     const merchant = await loadMerchant(currentMerchantId(req));
+    if (merchant.planStatus === "premium") throw badRequest("You are already on Premium");
     if (isStripeConfigured()) {
       const owner = await userStore.getUserById(merchant.ownerUserId);
       res.json({ url: await createMerchantPlanCheckout(merchant, owner?.email ?? merchant.email ?? "") });
@@ -227,6 +246,16 @@ merchantRouter.post(
     }
     await activateMerchantPlan(merchant);
     res.json({ activated: true });
+  }),
+);
+
+merchantRouter.post(
+  "/api/merchant/plan/cancel",
+  asyncHandler(async (req, res) => {
+    const merchant = await loadMerchant(currentMerchantId(req));
+    await cancelSubscription(merchant.stripeSubscriptionId);
+    const result = await deactivateMerchantPlan(merchant);
+    res.json({ planStatus: result.merchant.planStatus ?? "free", pausedOffers: result.pausedOffers });
   }),
 );
 

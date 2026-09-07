@@ -42,21 +42,21 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
 
   return (
     <section className="space-y-4">
-      <h3 className="font-semibold text-slate-900">The offer</h3>
+      <h3 className="font-display font-bold text-xl tracking-[-0.02em] text-sea">The offer</h3>
 
       <FormField control={form.control} name="title" render={({ field }) => (
         <FormItem>
-          <FormLabel>Title</FormLabel>
-          <FormControl><Input placeholder="Lunch for locals" className="h-11" {...field} /></FormControl>
+          <FormLabel className="text-xs text-slate-brand">Title</FormLabel>
+          <FormControl><Input placeholder="Lunch for locals" className="h-12 rounded-xl" {...field} /></FormControl>
           <FormMessage />
         </FormItem>
       )} />
 
       <FormField control={form.control} name="shortPromo" render={({ field }) => (
         <FormItem>
-          <FormLabel>Short promo <span className="text-slate-400 font-normal">({shortPromo.length}/90)</span></FormLabel>
+          <FormLabel className="text-xs text-slate-brand">Short promo <span className="text-slate-brand font-normal">({shortPromo.length}/90)</span></FormLabel>
           <FormControl>
-            <Input maxLength={90} placeholder="20% off food, Monday to Thursday" className="h-11" {...field} value={field.value ?? ""} />
+            <Input maxLength={90} placeholder="20% off food, Monday to Thursday" className="h-12 rounded-xl" {...field} value={field.value ?? ""} />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -65,9 +65,9 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField control={form.control} name="type" render={({ field }) => (
           <FormItem>
-            <FormLabel>Type</FormLabel>
+            <FormLabel className="text-xs text-slate-brand">Type</FormLabel>
             <Select value={field.value ?? "percentage_discount"} onValueChange={field.onChange}>
-              <FormControl><SelectTrigger className="h-11"><SelectValue /></SelectTrigger></FormControl>
+              <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
               <SelectContent>
                 {OFFER_TYPES.map((t) => <SelectItem key={t} value={t}>{OFFER_TYPE_LABELS[t]}</SelectItem>)}
               </SelectContent>
@@ -78,9 +78,9 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
 
         <FormField control={form.control} name="category" render={({ field }) => (
           <FormItem>
-            <FormLabel>Category</FormLabel>
+            <FormLabel className="text-xs text-slate-brand">Category</FormLabel>
             <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Choose" /></SelectTrigger></FormControl>
+              <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Choose" /></SelectTrigger></FormControl>
               <SelectContent>
                 {MERCHANT_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>)}
               </SelectContent>
@@ -93,9 +93,9 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
       {showPercent && (
         <FormField control={form.control} name="percentOff" render={({ field }) => (
           <FormItem>
-            <FormLabel>Percent off</FormLabel>
+            <FormLabel className="text-xs text-slate-brand">Percent off</FormLabel>
             <FormControl>
-              <Input type="number" min={1} max={100} inputMode="numeric" className="h-11 max-w-[10rem]" {...field} value={String(field.value ?? "")} />
+              <Input type="number" min={1} max={100} inputMode="numeric" className="h-12 rounded-xl max-w-[10rem]" {...field} value={String(field.value ?? "")} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -106,9 +106,9 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="fixedPrice" render={({ field }) => (
             <FormItem>
-              <FormLabel>{type === "fixed_amount_discount" ? "Amount off (£)" : "Price (£)"}</FormLabel>
+              <FormLabel className="text-xs text-slate-brand">{type === "fixed_amount_discount" ? "Amount off (£)" : "Price (£)"}</FormLabel>
               <FormControl>
-                <Input type="number" min={0} step="0.01" inputMode="decimal" className="h-11" {...field} value={String(field.value ?? "")} />
+                <Input type="number" min={0} step="0.01" inputMode="decimal" className="h-12 rounded-xl" {...field} value={String(field.value ?? "")} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,9 +116,9 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
           {type !== "fixed_amount_discount" && (
             <FormField control={form.control} name="originalValue" render={({ field }) => (
               <FormItem>
-                <FormLabel>Usual price (£)</FormLabel>
+                <FormLabel className="text-xs text-slate-brand">Usual price (£)</FormLabel>
                 <FormControl>
-                  <Input type="number" min={0} step="0.01" inputMode="decimal" className="h-11" {...field} value={String(field.value ?? "")} />
+                  <Input type="number" min={0} step="0.01" inputMode="decimal" className="h-12 rounded-xl" {...field} value={String(field.value ?? "")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -129,19 +129,19 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
 
       <FormField control={form.control} name="description" render={({ field }) => (
         <FormItem>
-          <FormLabel>Description</FormLabel>
+          <FormLabel className="text-xs text-slate-brand">Description</FormLabel>
           <FormControl>
-            <Textarea rows={3} placeholder="What the resident gets and anything staff need to know." {...field} value={field.value ?? ""} />
+            <Textarea rows={3} className="rounded-xl" placeholder="What the resident gets and anything staff need to know." {...field} value={field.value ?? ""} />
           </FormControl>
           <FormMessage />
         </FormItem>
       )} />
 
       <FormItem>
-        <FormLabel>Tags <span className="text-slate-400 font-normal">(comma separated)</span></FormLabel>
+        <FormLabel className="text-xs text-slate-brand">Tags <span className="text-slate-brand font-normal">(comma separated)</span></FormLabel>
         <FormControl>
           <Input
-            className="h-11"
+            className="h-12 rounded-xl"
             placeholder="lunch, vegetarian, families"
             defaultValue={tags.join(", ")}
             onBlur={(e) =>
@@ -156,34 +156,34 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
       </FormItem>
 
       <FormItem>
-        <FormLabel>Image</FormLabel>
+        <FormLabel className="text-xs text-slate-brand">Image</FormLabel>
         <FormControl>
           <Input
             type="file"
             accept="image/*"
-            className="h-11 pt-2"
+            className="h-12 rounded-xl pt-3"
             onChange={(e) => onImageChange(e.target.files?.[0] ?? null)}
           />
         </FormControl>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-brand">
           {imageFile ? `Selected: ${imageFile.name}` : existingImageUrl ? "An image is already attached; choose a file to replace it." : "Optional. Uploaded after the offer is saved."}
         </p>
       </FormItem>
 
       {type === "set_menu" && (
         <FormItem>
-          <FormLabel>Menu PDF <span className="text-slate-400 font-normal">(5 MB max)</span></FormLabel>
+          <FormLabel className="text-xs text-slate-brand">Menu PDF <span className="text-slate-brand font-normal">(5 MB max)</span></FormLabel>
           <div className="flex items-center gap-3">
             <input ref={pdfInput} type="file" accept="application/pdf" className="hidden" onChange={(e) => onPdf(e.target.files?.[0] ?? null)} />
-            <Button type="button" variant="outline" className="h-11" onClick={() => pdfInput.current?.click()}>
+            <Button type="button" variant="outline" className="h-11 px-4 bg-white" onClick={() => pdfInput.current?.click()}>
               {menuPdf ? "Replace PDF" : "Choose PDF"}
             </Button>
             {menuPdf && (
-              <Button type="button" variant="ghost" className="h-11 text-red-600" onClick={() => form.setValue("menuPdf", null, { shouldDirty: true })}>
+              <Button type="button" variant="ghost" className="h-11 px-4 text-[#B5321A]" onClick={() => form.setValue("menuPdf", null, { shouldDirty: true })}>
                 Remove
               </Button>
             )}
-            <span className="text-sm text-slate-500">{menuPdf ? "PDF attached" : "No PDF"}</span>
+            <span className="text-sm text-slate-brand">{menuPdf ? "PDF attached" : "No PDF"}</span>
           </div>
         </FormItem>
       )}

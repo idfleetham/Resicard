@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Printer, Download, RefreshCw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -10,6 +9,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { errorMessage } from "@/components/resident/format";
+import { DESTRUCTIVE_OUTLINE, SectionTitle } from "./portal-ui";
 
 interface ScanCode {
   scanCode: string;
@@ -54,51 +54,48 @@ export default function QrCodeTab({ merchantName }: { merchantName: string }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-lg">Your Resicard code</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-slate-600">Residents scan this at the till with their phone, pick an offer and show staff the green screen.</p>
-          {isLoading || !data ? (
-            <div className="aspect-square max-w-xs bg-slate-100 rounded-xl animate-pulse" />
-          ) : (
-            <img src={data.qrDataUrl} alt="Your Resicard QR code" className="w-full max-w-xs rounded-xl border border-slate-200 bg-white" />
-          )}
-          {data && (
-            <p className="text-xs text-slate-500 break-all">
-              <span className="font-medium text-slate-700">Link: </span>{data.url}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="bg-white rounded-2xl p-5 space-y-4">
+        <SectionTitle>Your Resicard code</SectionTitle>
+        <p className="text-sm text-slate-brand">Residents scan this at the till with their phone, pick an offer and show staff the green screen.</p>
+        {isLoading || !data ? (
+          <div className="aspect-square max-w-xs bg-foam rounded-2xl animate-pulse" />
+        ) : (
+          <img src={data.qrDataUrl} alt="Your Resicard QR code" className="w-full max-w-xs rounded-2xl bg-white" />
+        )}
+        {data && (
+          <p className="font-mono text-xs text-slate-brand break-all">{data.url}</p>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-lg">Put it on show</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <Button className="h-12 w-full justify-start" onClick={printPoster} disabled={!data}>
-            <Printer className="h-5 w-5 mr-2" /> Print poster (A4)
+      <div className="bg-white rounded-2xl p-5 space-y-3">
+        <SectionTitle>Put it on show</SectionTitle>
+        <p className="text-sm text-slate-brand">Print the A4 poster for the till or the window. The PNG is for menus and your own signage.</p>
+        <Button variant="buoy" className="h-12 w-full" onClick={printPoster} disabled={!data}>
+          <Printer className="h-5 w-5" /> Print poster
+        </Button>
+        <Button variant="outline" className="h-12 w-full bg-white" onClick={downloadPng} disabled={!data}>
+          <Download className="h-5 w-5" /> Download PNG
+        </Button>
+        <div className="pt-4 mt-4 border-t border-[#E6E9E8] space-y-3">
+          <Button variant="outline" className={`h-12 w-full ${DESTRUCTIVE_OUTLINE}`} onClick={() => setConfirmOpen(true)} disabled={!data || rotate.isPending}>
+            <RefreshCw className="h-5 w-5" /> Generate a new code
           </Button>
-          <Button variant="outline" className="h-12 w-full justify-start" onClick={downloadPng} disabled={!data}>
-            <Download className="h-5 w-5 mr-2" /> Download PNG
-          </Button>
-          <Button variant="outline" className="h-12 w-full justify-start text-red-600" onClick={() => setConfirmOpen(true)} disabled={!data || rotate.isPending}>
-            <RefreshCw className="h-5 w-5 mr-2" /> Generate a new code
-          </Button>
-          <p className="text-xs text-slate-500">Generate a new code only if a poster has gone missing. Old printed codes stop working straight away.</p>
-        </CardContent>
-      </Card>
+          <p className="text-xs text-slate-brand">Only if a poster has gone missing. Old printed codes stop working straight away.</p>
+        </div>
+      </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Generate a new code?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display font-bold text-2xl tracking-[-0.02em]">Generate a new code?</AlertDialogTitle>
             <AlertDialogDescription>
               Every poster and sticker you have printed will stop working. You will need to print and put up the new code.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-11">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="h-11 bg-red-600 hover:bg-red-700" onClick={() => rotate.mutate()}>
+            <AlertDialogCancel className="h-11 rounded-full">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="h-11 rounded-full bg-[#B5321A] text-white hover:bg-[#93290F]" onClick={() => rotate.mutate()}>
               Generate new code
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,10 +1,32 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import type { InsertOffer, Offer } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { errorMessage } from "@/components/resident/format";
+import { upgradeToastAction } from "@/components/merchant/plan-limit-toast";
+import { errorCode, errorMessage } from "@/components/resident/format";
 
 export const OFFERS_KEY = ["/api/merchant/offers"] as const;
+
+/**
+ * Toast an offer error. A 403 with code `plan_limit` (Free plan cap) gets an
+ * "Upgrade" action that opens the Plan tab; everything else is a plain error.
+ */
+function useOfferErrorToast() {
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  return (title: string, err: unknown) => {
+    if (errorCode(err) === "plan_limit") {
+      toast({
+        title: "Free plan limit reached",
+        description: errorMessage(err),
+        action: upgradeToastAction(() => setLocation("/merchant?tab=plan")),
+      });
+      return;
+    }
+    toast({ title, description: errorMessage(err), variant: "destructive" });
+  };
+}
 
 export function useMerchantOffers() {
   return useQuery<Offer[]>({ queryKey: [...OFFERS_KEY] });
@@ -20,38 +42,40 @@ function useInvalidateOffers() {
     await queryClient.invalidateQueries({ queryKey: [...OFFERS_KEY] });
     if (id) await queryClient.invalidateQueries({ queryKey: [`/api/merchant/offers/${id}`] });
     await queryClient.invalidateQueries({ queryKey: ["/api/merchant/redemptions/summary"] });
+    await queryClient.invalidateQueries({ queryKey: ["/api/merchant/plan"] }); // liveOfferCount
   };
 }
 
 export function useCreateOffer() {
   const invalidate = useInvalidateOffers();
-  const { toast } = useToast();
+  const toastError = useOfferErrorToast();
   return useMutation({
     mutationFn: async (data: InsertOffer) =>
       (await apiRequest("POST", "/api/merchant/offers", data)).json() as Promise<Offer>,
     onSuccess: async () => {
       await invalidate();
     },
-    onError: (err) => toast({ title: "Could not save offer", description: errorMessage(err), variant: "destructive" }),
+    onError: (err) => toastError("Could not save offer", err),
   });
 }
 
 export function useUpdateOffer() {
   const invalidate = useInvalidateOffers();
-  const { toast } = useToast();
+  const toastError = useOfferErrorToast();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertOffer> }) =>
       (await apiRequest("PUT", `/api/merchant/offers/${id}`, data)).json() as Promise<Offer>,
     onSuccess: async (offer) => {
       await invalidate(offer.id);
     },
-    onError: (err) => toast({ title: "Could not save offer", description: errorMessage(err), variant: "destructive" }),
+    onError: (err) => toastError("Could not save offer", err),
   });
 }
 
 export function useToggleOffer() {
   const invalidate = useInvalidateOffers();
   const { toast } = useToast();
+  const toastError = useOfferErrorToast();
   return useMutation({
     mutationFn: async (id: string) =>
       (await apiRequest("POST", `/api/merchant/offers/${id}/toggle`)).json() as Promise<Offer>,
@@ -59,7 +83,7 @@ export function useToggleOffer() {
       await invalidate(offer.id);
       toast({ title: offer.active ? "Offer is live" : "Offer paused" });
     },
-    onError: (err) => toast({ title: "Could not update offer", description: errorMessage(err), variant: "destructive" }),
+    onError: (err) => toastError("Could not update offer", err),
   });
 }
 

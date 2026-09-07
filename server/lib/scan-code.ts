@@ -1,18 +1,12 @@
-import { randomBytes } from "crypto";
 import * as merchantStore from "../storage/merchants";
 import type { DbClient } from "../storage/types";
 import { db } from "../db";
+import { randomCode } from "./codes";
 
-const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 export const SCAN_CODE_LENGTH = 8;
 
 export function randomScanCode(): string {
-  const bytes = randomBytes(SCAN_CODE_LENGTH);
-  let code = "";
-  for (let i = 0; i < SCAN_CODE_LENGTH; i++) {
-    code += ALPHABET[bytes[i] % ALPHABET.length];
-  }
-  return code;
+  return randomCode(SCAN_CODE_LENGTH);
 }
 
 /** Generates a scan code not already used by another merchant. */

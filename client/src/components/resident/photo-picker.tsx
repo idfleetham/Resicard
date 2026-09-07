@@ -34,15 +34,15 @@ export default function PhotoPicker({ value, onChange, label = "Profile photo" }
 
   return (
     <div className="flex items-center gap-4">
-      <Avatar className="h-20 w-20 border border-slate-200">
+      <Avatar className="h-20 w-20">
         <AvatarImage src={value ?? undefined} alt="" className="object-cover" />
-        <AvatarFallback className="bg-slate-100 text-slate-400">
-          <User className="h-8 w-8" />
+        <AvatarFallback className="bg-sand text-[#7A8A8F]">
+          <User className="h-8 w-8" strokeWidth={1.5} />
         </AvatarFallback>
       </Avatar>
       <div>
-        <p className="text-sm font-medium text-slate-700">{label}</p>
-        <p className="text-xs text-slate-500 mb-2">Shown to staff when you redeem, so use a clear photo of your face.</p>
+        <p className="text-sm font-semibold text-sea">{label}</p>
+        <p className="text-xs text-slate-brand mb-2">Shown to staff when you redeem, so use a clear photo of your face.</p>
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={onFile} />
         <Button type="button" variant="outline" size="sm" className="h-10" disabled={busy} onClick={() => input.current?.click()}>
           <Camera className="h-4 w-4" />

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MERCHANT_CATEGORIES, type Merchant } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +11,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { uploadMerchantFile } from "@/hooks/use-merchant-offers";
 import { categoryLabel, errorMessage } from "@/components/resident/format";
 import { BusinessHoursEditor, parseBusinessHours, serialiseBusinessHours, type BusinessHours } from "./business-hours-editor";
+import { INPUT, SectionTitle } from "./portal-ui";
+
+const LABEL = "text-xs text-slate-brand";
 
 const RESERVATION_PROVIDERS = [
   { value: "none", label: "No online booking" },
@@ -92,7 +94,7 @@ export default function MerchantSettings() {
   });
 
   if (!form || !merchant) {
-    return <Card><CardContent className="p-6 animate-pulse h-64 bg-slate-100 rounded-xl" /></Card>;
+    return <div className="h-64 bg-white rounded-2xl animate-pulse" />;
   }
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm({ ...form, [k]: v });
@@ -100,60 +102,56 @@ export default function MerchantSettings() {
 
   return (
     <form
-      className="grid grid-cols-1 lg:grid-cols-2 gap-5"
+      className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start"
       onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}
     >
-      <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-lg">Business details</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-              {merchant.logoUrl ? <img src={merchant.logoUrl} alt="" className="h-full w-full object-cover" /> : <span className="text-xs text-slate-400">No logo</span>}
-            </div>
-            <div>
-              <input ref={logoInput} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo.mutate(f); }} />
-              <Button type="button" variant="outline" className="h-11" onClick={() => logoInput.current?.click()} disabled={uploadLogo.isPending}>
-                {uploadLogo.isPending ? "Uploading" : "Change logo"}
-              </Button>
-            </div>
-          </div>
-          <div><Label htmlFor="name">Name</Label><Input id="name" className="h-11" value={form.name} onChange={text("name")} required /></div>
-          <div>
-            <Label>Category</Label>
-            <Select value={form.category} onValueChange={(v) => set("category", v)}>
-              <SelectTrigger className="h-11"><SelectValue placeholder="Choose" /></SelectTrigger>
-              <SelectContent>
-                {MERCHANT_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div><Label htmlFor="address">Address</Label><Input id="address" className="h-11" value={form.address} onChange={text("address")} /></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><Label htmlFor="phone">Phone</Label><Input id="phone" type="tel" className="h-11" value={form.phone} onChange={text("phone")} /></div>
-            <div><Label htmlFor="email">Email</Label><Input id="email" type="email" className="h-11" value={form.email} onChange={text("email")} /></div>
+      <div className="bg-white rounded-2xl p-5 space-y-4">
+        <SectionTitle>Business details</SectionTitle>
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-xl bg-sand overflow-hidden flex items-center justify-center shrink-0">
+            {merchant.logoUrl ? <img src={merchant.logoUrl} alt="" className="h-full w-full object-cover" /> : <span className="text-xs text-sea">No logo</span>}
           </div>
           <div>
-            <Label>Online booking</Label>
-            <Select value={form.reservationProvider} onValueChange={(v) => set("reservationProvider", v)}>
-              <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {RESERVATION_PROVIDERS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <input ref={logoInput} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo.mutate(f); }} />
+            <Button type="button" variant="outline" className="h-11 px-4 bg-white" onClick={() => logoInput.current?.click()} disabled={uploadLogo.isPending}>
+              {uploadLogo.isPending ? "Uploading" : "Change logo"}
+            </Button>
           </div>
-          {form.reservationProvider !== "none" && (
-            <div><Label htmlFor="rurl">Booking link</Label><Input id="rurl" type="url" placeholder="https://" className="h-11" value={form.reservationUrl} onChange={text("reservationUrl")} /></div>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+        <div className="space-y-1"><Label htmlFor="name" className={LABEL}>Name</Label><Input id="name" className={INPUT} value={form.name} onChange={text("name")} required /></div>
+        <div className="space-y-1">
+          <Label className={LABEL}>Category</Label>
+          <Select value={form.category} onValueChange={(v) => set("category", v)}>
+            <SelectTrigger className={INPUT}><SelectValue placeholder="Choose" /></SelectTrigger>
+            <SelectContent>
+              {MERCHANT_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1"><Label htmlFor="address" className={LABEL}>Address</Label><Input id="address" className={INPUT} value={form.address} onChange={text("address")} /></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1"><Label htmlFor="phone" className={LABEL}>Phone</Label><Input id="phone" type="tel" className={INPUT} value={form.phone} onChange={text("phone")} /></div>
+          <div className="space-y-1"><Label htmlFor="email" className={LABEL}>Email</Label><Input id="email" type="email" className={INPUT} value={form.email} onChange={text("email")} /></div>
+        </div>
+        <div className="space-y-1">
+          <Label className={LABEL}>Online booking</Label>
+          <Select value={form.reservationProvider} onValueChange={(v) => set("reservationProvider", v)}>
+            <SelectTrigger className={INPUT}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {RESERVATION_PROVIDERS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        {form.reservationProvider !== "none" && (
+          <div className="space-y-1"><Label htmlFor="rurl" className={LABEL}>Booking link</Label><Input id="rurl" type="url" placeholder="https://" className={INPUT} value={form.reservationUrl} onChange={text("reservationUrl")} /></div>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-lg">Opening hours</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <BusinessHoursEditor value={form.hours} onChange={(hours) => set("hours", hours)} />
-          <Button type="submit" className="h-12 w-full" disabled={save.isPending}>{save.isPending ? "Saving" : "Save settings"}</Button>
-        </CardContent>
-      </Card>
+      <div className="bg-white rounded-2xl p-5 space-y-4">
+        <SectionTitle>Opening hours</SectionTitle>
+        <BusinessHoursEditor value={form.hours} onChange={(hours) => set("hours", hours)} />
+        <Button type="submit" variant="buoy" className="h-12 w-full" disabled={save.isPending}>{save.isPending ? "Saving" : "Save"}</Button>
+      </div>
     </form>
   );
 }

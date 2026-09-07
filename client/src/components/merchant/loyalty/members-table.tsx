@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { formatDate } from "@/components/resident/format";
 import { useLoyaltyMutation } from "./use-loyalty";
 import type { LoyaltyMember } from "./types";
+import { INPUT, SectionTitle, TD, TH, TR } from "../portal-ui";
 
 const MEMBERS_KEY = "/api/loyalty/members";
 
@@ -36,67 +36,65 @@ export default function MembersTable() {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0 gap-3">
-        <CardTitle className="text-lg">Members ({members.length})</CardTitle>
-        <Input placeholder="Search by alias" className="h-11 max-w-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
-      </CardHeader>
-      <CardContent className="p-0 sm:p-4 sm:pt-0">
-        {isLoading ? (
-          <div className="p-4 animate-pulse space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-10 bg-slate-100 rounded" />)}</div>
-        ) : shown.length === 0 ? (
-          <p className="p-6 text-center text-slate-500">No members yet. Residents join automatically when they redeem an offer.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead className="text-right">Points</TableHead>
-                  <TableHead className="text-right">Stamps</TableHead>
-                  <TableHead>Last activity</TableHead>
-                  <TableHead />
+    <div className="bg-white rounded-2xl p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <SectionTitle>Members ({members.length})</SectionTitle>
+        <Input placeholder="Search by alias" className={`${INPUT} sm:max-w-xs`} value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+      {isLoading ? (
+        <div className="animate-pulse space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-12 bg-foam rounded-xl" />)}</div>
+      ) : shown.length === 0 ? (
+        <p className="py-8 text-center text-sm text-slate-brand">No members yet. Residents join automatically when they redeem an offer.</p>
+      ) : (
+        <div className="overflow-x-auto -mx-5 px-5">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-[#E6E9E8] hover:bg-transparent">
+                <TableHead className={TH}>Member</TableHead>
+                <TableHead className={TH}>Tier</TableHead>
+                <TableHead className={`${TH} text-right`}>Points</TableHead>
+                <TableHead className={`${TH} text-right`}>Stamps</TableHead>
+                <TableHead className={TH}>Last activity</TableHead>
+                <TableHead className={TH} />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shown.map((m) => (
+                <TableRow key={m.userId} className={TR}>
+                  <TableCell className={TD}>
+                    <span className="font-bold">{m.customerAlias}</span>
+                    <span className="text-xs text-slate-brand ml-2">#{m.userId}</span>
+                  </TableCell>
+                  <TableCell className={TD}>{m.tierName ?? "-"}</TableCell>
+                  <TableCell className={`${TD} text-right font-bold`}>{m.points}</TableCell>
+                  <TableCell className={`${TD} text-right`}>{m.stamps}</TableCell>
+                  <TableCell className={`${TD} whitespace-nowrap`}>{m.lastActivity ? formatDate(m.lastActivity) : "-"}</TableCell>
+                  <TableCell className={`${TD} text-right`}>
+                    <Button variant="outline" size="sm" className="h-9 px-4 bg-white" onClick={() => setTarget(m)}>Adjust</Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shown.map((m) => (
-                  <TableRow key={m.userId}>
-                    <TableCell>
-                      <div className="font-medium">{m.customerAlias}</div>
-                      <div className="text-xs text-slate-500">#{m.userId}</div>
-                    </TableCell>
-                    <TableCell>{m.tierName ?? "-"}</TableCell>
-                    <TableCell className="text-right font-medium">{m.points}</TableCell>
-                    <TableCell className="text-right">{m.stamps}</TableCell>
-                    <TableCell className="whitespace-nowrap">{m.lastActivity ? formatDate(m.lastActivity) : "-"}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" className="h-10" onClick={() => setTarget(m)}>Adjust</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       <Dialog open={!!target} onOpenChange={(open) => !open && setTarget(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Adjust points for {target?.customerAlias}</DialogTitle>
+            <DialogTitle className="font-display font-bold text-2xl tracking-[-0.02em]">Adjust points for {target?.customerAlias}</DialogTitle>
             <DialogDescription>Current balance: {target?.points ?? 0} points. Use a negative number to deduct.</DialogDescription>
           </DialogHeader>
           <form className="space-y-3" onSubmit={submit}>
-            <div><Label htmlFor="adj-amount">Amount</Label><Input id="adj-amount" type="number" className="h-11" value={amount} onChange={(e) => setAmount(e.target.value)} required /></div>
-            <div><Label htmlFor="adj-reason">Reason</Label><Input id="adj-reason" className="h-11" value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="Goodwill after a mix-up" /></div>
+            <div className="space-y-1"><Label htmlFor="adj-amount" className="text-xs text-slate-brand">Amount</Label><Input id="adj-amount" type="number" className={INPUT} value={amount} onChange={(e) => setAmount(e.target.value)} required /></div>
+            <div className="space-y-1"><Label htmlFor="adj-reason" className="text-xs text-slate-brand">Reason</Label><Input id="adj-reason" className={INPUT} value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="Goodwill after a mix-up" /></div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" className="h-11" onClick={() => setTarget(null)}>Cancel</Button>
-              <Button type="submit" className="h-11" disabled={adjust.isPending || !amount || !reason}>{adjust.isPending ? "Saving" : "Apply"}</Button>
+              <Button type="button" variant="outline" className="h-12 px-6 bg-white" onClick={() => setTarget(null)}>Cancel</Button>
+              <Button type="submit" variant="buoy" className="h-12 px-6" disabled={adjust.isPending || !amount || !reason}>{adjust.isPending ? "Saving" : "Apply"}</Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }

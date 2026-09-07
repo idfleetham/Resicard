@@ -60,9 +60,9 @@ Create the first admin with `npm run admin:create -- <username> <email> <passwor
 | DATABASE_URL | Postgres connection string | required |
 | JWT_SECRET | signs login tokens | required in production |
 | PUBLIC_BASE_URL | used in QR codes, emails and Stripe redirects | http://localhost:5000 |
-| RESIDENT_ANNUAL_FEE_GBP | resident membership | 25 |
-| MERCHANT_MONTHLY_FEE_GBP | merchant plan | 30 |
-| MERCHANT_TRIAL_DAYS | free period for new outlets | 90 |
+| RESIDENT_ANNUAL_FEE_GBP | individual resident membership (household is 2x) | 25 |
+| MERCHANT_PREMIUM_MONTHLY_FEE_GBP | merchant Premium plan (Free is capped) | 30 |
+| FREE_PLAN_LIVE_OFFER_LIMIT | live offers allowed on the Free plan | 2 |
 | LOCAL_POSTCODE_PREFIXES | who counts as local at sign-up | KY16,KY15,KY10,DD6 |
 | ADMIN_SETUP_SECRET | enables `POST /api/auth/register-admin`; leave unset to disable | unset |
 | STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET | enable real payments | unset |

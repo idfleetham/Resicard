@@ -30,7 +30,7 @@ function TextField<T extends FieldValues>({ control, name, label, type = "text",
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input type={type} autoComplete={autoComplete} placeholder={placeholder} className="h-12 text-base" {...field} />
+            <Input type={type} autoComplete={autoComplete} placeholder={placeholder} className="h-12 rounded-xl text-base" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -79,10 +79,10 @@ export function ResidentRegisterForm({ onSubmit }: FormProps<ResidentValues>) {
             </FormItem>
           )}
         />
-        <p className="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
+        <p className="text-sm text-sea bg-sand rounded-xl p-4">
           Next: upload a proof of your St Andrews address, then pay the annual membership. You can browse offers straight away.
         </p>
-        <Button type="submit" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
+        <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Creating your account" : "Join Resicard"}
         </Button>
       </form>
@@ -103,7 +103,7 @@ export function MerchantRegisterForm({ onSubmit }: FormProps<MerchantValues>) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <AccountFields control={form.control} />
-        <div className="border-t border-slate-200 pt-4 space-y-4">
+        <div className="border-t border-[#E6E9E8] pt-4 space-y-4">
           <TextField control={form.control} name="businessName" label="Business name" autoComplete="organization" />
           <FormField
             control={form.control}
@@ -113,7 +113,7 @@ export function MerchantRegisterForm({ onSubmit }: FormProps<MerchantValues>) {
                 <FormLabel>Category</FormLabel>
                 <Select value={field.value ?? ""} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-12 rounded-xl text-base">
                       <SelectValue placeholder="Choose a category" />
                     </SelectTrigger>
                   </FormControl>
@@ -132,10 +132,10 @@ export function MerchantRegisterForm({ onSubmit }: FormProps<MerchantValues>) {
           <TextField control={form.control} name="businessAddress" label="Address" autoComplete="street-address" />
           <TextField control={form.control} name="businessPhone" label="Phone" type="tel" autoComplete="tel" />
         </div>
-        <p className="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
-          Next: Resicard reviews your application. Once approved you can add offers and print your scan code. The first months are free.
+        <p className="text-sm text-sea bg-sand rounded-xl p-4">
+          Next: Resicard reviews your application. Once approved you can add offers and print your scan code. Listing is free.
         </p>
-        <Button type="submit" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
+        <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Sending application" : "Apply to join"}
         </Button>
       </form>

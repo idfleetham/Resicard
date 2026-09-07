@@ -57,9 +57,15 @@ export const users = pgTable("users", {
   documentRejectionReason: text("document_rejection_reason"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
 
-  // Membership (residents only): one flat annual fee
+  // Membership (residents only): one flat annual fee, individual or household.
+  // A household is two adults (children need no card). The paying adult is the
+  // household's primary; the second adult joins with the primary's householdCode
+  // and their membership follows the primary's.
+  membershipPlan: text("membership_plan").$type<"individual" | "household">().default("individual"),
   membershipStatus: text("membership_status").$type<"inactive" | "active" | "cancelled">().default("inactive"),
   membershipExpiry: timestamp("membership_expiry"),
+  householdCode: text("household_code").unique(), // set on the primary of a household plan
+  householdPrimaryId: integer("household_primary_id"), // set on the second adult
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
 
@@ -106,8 +112,9 @@ export const merchants = pgTable("merchants", {
   approvedAt: timestamp("approved_at"),
   approvedBy: integer("approved_by"),
 
-  // Flat monthly plan
-  planStatus: text("plan_status").$type<"trial" | "active" | "inactive">().default("trial"),
+  // Plan: Free (capped) or Premium (monthly fee; unlocks loyalty, analytics,
+  // unlimited live offers).
+  planStatus: text("plan_status").$type<"free" | "premium">().default("free"),
   planStartedAt: timestamp("plan_started_at").defaultNow(),
   planRenewsAt: timestamp("plan_renews_at"),
   stripeCustomerId: text("stripe_customer_id"),
@@ -394,6 +401,14 @@ export const insertOfferSchema = createInsertSchema(offers)
   });
 
 export const updateOfferSchema = insertOfferSchema.partial();
+
+export const membershipCheckoutSchema = z.object({
+  plan: z.enum(["individual", "household"]).default("individual"),
+});
+
+export const householdJoinSchema = z.object({
+  code: z.string().min(4).max(20),
+});
 
 export const scanRedeemSchema = z.object({
   scanCode: z.string().min(4),

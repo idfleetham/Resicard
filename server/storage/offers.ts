@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "../db";
 import { offers, merchants, type Offer } from "@shared/schema";
 import type { DbClient } from "./types";
@@ -83,6 +83,28 @@ export async function incrementOfferUsage(id: string, client: DbClient = db): Pr
     .update(offers)
     .set({ usageCount: sql`coalesce(${offers.usageCount}, 0) + 1` })
     .where(eq(offers.id, id));
+}
+
+/** Number of live (active, non-archived) offers for one merchant. */
+export async function countLiveOffersForMerchant(merchantId: string, client: DbClient = db): Promise<number> {
+  return countOffersWhere(and(eq(offers.merchantId, merchantId), eq(offers.active, true), eq(offers.archived, false)), client);
+}
+
+/** Sets the newest `count` live offers inactive (used when a merchant drops to Free). Returns how many were paused. */
+export async function pauseNewestLiveOffers(merchantId: string, count: number, client: DbClient = db): Promise<number> {
+  if (count <= 0) return 0;
+  const newest = await client
+    .select({ id: offers.id })
+    .from(offers)
+    .where(and(eq(offers.merchantId, merchantId), eq(offers.active, true), eq(offers.archived, false)))
+    .orderBy(desc(offers.createdAt), desc(offers.id))
+    .limit(count);
+  if (newest.length === 0) return 0;
+  await client
+    .update(offers)
+    .set({ active: false, updatedAt: new Date() })
+    .where(inArray(offers.id, newest.map((o) => o.id)));
+  return newest.length;
 }
 
 export async function countOffersWhere(condition: SQL | undefined, client: DbClient = db): Promise<number> {

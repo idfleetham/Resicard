@@ -10,7 +10,8 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "test": "vitest run",
-    "admin:create": "tsx server/scripts/create-admin.ts"
+    "admin:create": "tsx server/scripts/create-admin.ts",
+    "db:reset": "tsx server/scripts/reset-db.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.0",

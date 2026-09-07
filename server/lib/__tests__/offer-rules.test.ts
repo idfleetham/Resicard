@@ -191,26 +191,28 @@ describe("tiers", () => {
 describe("redeem eligibility reasons", () => {
   it("lists what is missing for a resident", () => {
     const now = new Date("2026-07-10T12:00:00Z");
-    expect(residentRedeemReasons({ role: "resident", isResidencyVerified: false, membershipStatus: "inactive" }, now)).toEqual([
+    expect(residentRedeemReasons({ role: "resident", isResidencyVerified: false }, { status: "inactive", expiry: null }, now)).toEqual([
       "Residency not yet verified",
       "Membership not active",
     ]);
     expect(
-      residentRedeemReasons(
-        { role: "resident", isResidencyVerified: true, membershipStatus: "active", membershipExpiry: new Date("2026-01-01") },
-        now,
-      ),
+      residentRedeemReasons({ role: "resident", isResidencyVerified: true }, { status: "active", expiry: new Date("2026-01-01") }, now),
     ).toEqual(["Membership has expired"]);
     expect(
-      residentRedeemReasons(
-        { role: "resident", isResidencyVerified: true, membershipStatus: "active", membershipExpiry: new Date("2027-01-01") },
-        now,
-      ),
+      residentRedeemReasons({ role: "resident", isResidencyVerified: true }, { status: "active", expiry: new Date("2027-01-01") }, now),
     ).toEqual([]);
   });
 
-  it("lists what is wrong with a merchant", () => {
-    expect(merchantRedeemReasons({ status: "approved", planStatus: "trial" })).toEqual([]);
-    expect(merchantRedeemReasons({ status: "pending", planStatus: "inactive" })).toHaveLength(2);
+  it("uses the effective membership, not the user's own columns", () => {
+    const now = new Date("2026-07-10T12:00:00Z");
+    // A household member whose own row is inactive but whose primary is active.
+    const user = { role: "resident", isResidencyVerified: true, membershipStatus: "inactive" };
+    expect(residentRedeemReasons(user, { status: "active", expiry: new Date("2027-01-01") }, now)).toEqual([]);
+  });
+
+  it("blocks unapproved merchants only; the plan does not matter", () => {
+    expect(merchantRedeemReasons({ status: "approved", planStatus: "free" })).toEqual([]);
+    expect(merchantRedeemReasons({ status: "approved", planStatus: "premium" })).toEqual([]);
+    expect(merchantRedeemReasons({ status: "pending", planStatus: "premium" })).toEqual(["This outlet has not been approved yet"]);
   });
 });

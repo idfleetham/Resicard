@@ -7,6 +7,9 @@ import AuthLayout from "@/components/resident/auth-layout";
 import { MerchantRegisterForm, ResidentRegisterForm } from "@/components/resident/register-forms";
 import { errorMessage } from "@/components/resident/format";
 
+const TAB_TRIGGER =
+  "h-10 rounded-full text-[15px] font-bold text-sea data-[state=active]:bg-sea data-[state=active]:text-foam data-[state=active]:shadow-none";
+
 export default function Register() {
   const { register } = useAuth();
   const { toast } = useToast();
@@ -27,9 +30,9 @@ export default function Register() {
       subtitle={tab === "merchant" ? "Offer St Andrews residents a fair price." : "For people who live in and around St Andrews."}
     >
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid grid-cols-2 w-full h-12 mb-5">
-          <TabsTrigger value="resident" className="h-10 text-base">Resident</TabsTrigger>
-          <TabsTrigger value="merchant" className="h-10 text-base">Business</TabsTrigger>
+        <TabsList className="grid grid-cols-2 w-full h-12 p-1 mb-5 rounded-full bg-foam">
+          <TabsTrigger value="resident" className={TAB_TRIGGER}>Resident</TabsTrigger>
+          <TabsTrigger value="merchant" className={TAB_TRIGGER}>Business</TabsTrigger>
         </TabsList>
         <TabsContent value="resident">
           <ResidentRegisterForm onSubmit={submit} />
@@ -38,9 +41,9 @@ export default function Register() {
           <MerchantRegisterForm onSubmit={submit} />
         </TabsContent>
       </Tabs>
-      <p className="mt-6 text-sm text-slate-600 text-center">
+      <p className="mt-6 text-sm text-slate-brand text-center">
         Already have an account?{" "}
-        <Link href="/login" className="text-blue-700 font-medium hover:underline">
+        <Link href="/login" className="text-sea font-semibold underline underline-offset-[3px]">
           Log in
         </Link>
       </p>

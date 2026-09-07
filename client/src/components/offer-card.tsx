@@ -1,6 +1,4 @@
 import type { Offer } from "@shared/schema";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Star } from "lucide-react";
 import { categoryLabel, offerHeadline, offerWhen } from "@/components/resident/format";
 
 /** Shape returned by GET /api/offers (menuPdf removed, hasMenuPdf added, merchant attached). */
@@ -28,39 +26,35 @@ export default function OfferCard({ offer, onOpen }: OfferCardProps) {
     <button
       type="button"
       onClick={() => onOpen(offer)}
-      className="text-left w-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition overflow-hidden flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      className="text-left w-full bg-white rounded-2xl overflow-hidden flex flex-col transition-colors hover:bg-[#FAFBFB] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-foam"
     >
-      <div className="relative aspect-[16/9] bg-slate-100">
+      <div className="relative aspect-[16/9] bg-sand">
         {image ? (
           <img src={image} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-            {offer.merchant.name}
+          <div className="w-full h-full flex items-center justify-center font-display font-extrabold text-[56px] leading-none text-[#0F3B47]/70 tracking-[-0.03em]">
+            {offer.merchant.name.charAt(0).toUpperCase()}
           </div>
         )}
-        <div className="absolute top-2 left-2 flex gap-1">
-          <Badge className="bg-white/90 text-slate-800 border-0 shadow-sm hover:bg-white">
-            {categoryLabel(offer.category ?? offer.merchant.category)}
-          </Badge>
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="bg-buoy text-white font-bold text-[13px] leading-none px-3 py-2 rounded-full">
+            {offerHeadline(offer)}
+          </span>
           {offer.priority === "featured" && (
-            <Badge className="bg-amber-400 text-amber-950 border-0 shadow-sm hover:bg-amber-400">
-              <Star className="h-3 w-3 mr-1" />
+            <span className="bg-white/90 text-sea font-semibold text-[11px] leading-none px-2.5 py-2 rounded-full">
               Featured
-            </Badge>
+            </span>
           )}
         </div>
-        <div className="absolute bottom-2 right-2 bg-blue-600 text-white font-bold text-lg px-3 py-1 rounded-lg shadow">
-          {offerHeadline(offer)}
-        </div>
       </div>
-      <div className="p-4 flex-1 flex flex-col gap-1">
-        <p className="text-sm font-medium text-slate-600 flex items-center gap-1">
-          <MapPin className="h-3.5 w-3.5 text-slate-400" />
+      <div className="p-5 flex-1 flex flex-col gap-1">
+        <p className="text-xs font-semibold text-slate-brand">
           {offer.merchant.name}
+          <span className="font-normal"> · {categoryLabel(offer.category ?? offer.merchant.category)}</span>
         </p>
-        <h3 className="text-lg font-semibold text-slate-900 leading-snug">{offer.title}</h3>
-        {offer.shortPromo && <p className="text-sm text-slate-600">{offer.shortPromo}</p>}
-        {when.length > 0 && <p className="text-xs text-slate-500 mt-auto pt-2">{when.join(" · ")}</p>}
+        <h3 className="font-display font-bold text-lg leading-snug tracking-[-0.02em] text-sea">{offer.title}</h3>
+        {offer.shortPromo && <p className="text-sm text-slate-brand">{offer.shortPromo}</p>}
+        {when.length > 0 && <p className="text-xs text-slate-brand mt-auto pt-2">{when.join(" · ")}</p>}
       </div>
     </button>
   );

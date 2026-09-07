@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { LoyaltyBalance, LoyaltyProgram, LoyaltyTier } from "@shared/schema";
-import { AlertCircle, ChevronRight, Crown, Star } from "lucide-react";
+import { AlertCircle, ChevronRight } from "lucide-react";
 import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -38,18 +38,19 @@ export default function ScanPage() {
   });
 
   const shell = (children: React.ReactNode) => (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-foam text-sea">
       <Navigation />
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-4">{children}</main>
+      <main className="max-w-lg mx-auto px-5 py-6 flex flex-col gap-3">{children}</main>
     </div>
   );
 
   if (!ready || scan.isLoading) {
     return shell(
-      <div className="animate-pulse space-y-3">
-        <div className="h-16 bg-slate-200 rounded-xl" />
-        <div className="h-20 bg-slate-200 rounded-xl" />
-        <div className="h-20 bg-slate-200 rounded-xl" />
+      <div className="animate-pulse flex flex-col gap-3">
+        <div className="h-20 bg-white rounded-2xl" />
+        <div className="h-14 bg-sand rounded-2xl" />
+        <div className="h-24 bg-white rounded-2xl" />
+        <div className="h-24 bg-white rounded-2xl" />
       </div>,
     );
   }
@@ -57,12 +58,12 @@ export default function ScanPage() {
   if (scan.isError || !scan.data) {
     return shell(
       <>
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-2xl bg-white">
           <AlertCircle className="h-5 w-5" />
-          <AlertTitle>That code did not work</AlertTitle>
+          <AlertTitle className="font-bold">That code did not work</AlertTitle>
           <AlertDescription>{scan.error ? errorMessage(scan.error) : "Unknown scan code."}</AlertDescription>
         </Alert>
-        <Button asChild className="w-full h-12">
+        <Button asChild className="w-full h-12 text-base">
           <Link href="/resident">Back to my card</Link>
         </Button>
       </>,
@@ -73,54 +74,43 @@ export default function ScanPage() {
 
   return shell(
     <>
-      <div className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-4">
+      <div className="flex items-center gap-4 bg-white rounded-2xl p-5">
         {merchant.logoUrl ? (
-          <img src={merchant.logoUrl} alt="" className="h-14 w-14 rounded-lg object-cover border border-slate-200" />
+          <img src={merchant.logoUrl} alt="" className="h-14 w-14 rounded-xl object-cover flex-none" />
         ) : (
-          <div className="h-14 w-14 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-2xl font-bold">
+          <div className="h-14 w-14 rounded-xl bg-sand text-sea flex items-center justify-center font-display font-extrabold text-2xl flex-none">
             {merchant.name.charAt(0).toUpperCase()}
           </div>
         )}
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wide text-slate-500">You are at</p>
-          <h1 className="text-xl font-bold text-slate-900 leading-tight truncate">{merchant.name}</h1>
-          {merchant.address && <p className="text-sm text-slate-600 truncate">{merchant.address}</p>}
+          <p className="text-xs font-semibold text-slate-brand">You are at</p>
+          <h1 className="font-display font-bold text-2xl leading-tight tracking-[-0.02em] truncate">{merchant.name}</h1>
+          {merchant.address && <p className="text-sm text-slate-brand truncate">{merchant.address}</p>}
         </div>
       </div>
 
       {loyalty && (
-        <div className="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-1 text-amber-900">
-            <Star className="h-5 w-5 text-amber-500" />
-            <span className="text-xl font-bold">{loyalty.balance?.points ?? 0}</span>
-            <span className="text-sm">points here</span>
-          </div>
-          {loyalty.tier && (
-            <span className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-amber-900">
-              <Crown className="h-4 w-4" />
-              {loyalty.tier.name}
-            </span>
-          )}
+        <div className="flex items-baseline gap-2 bg-sand rounded-2xl px-5 py-3">
+          <span className="font-display font-extrabold text-2xl leading-none tabular-nums">{loyalty.balance?.points ?? 0}</span>
+          <span className="text-sm">points here</span>
+          {loyalty.tier && <span className="ml-auto text-sm font-bold">{loyalty.tier.name}</span>}
         </div>
       )}
 
       {!canRedeem ? (
-        <div className="space-y-3">
-          <Alert className="bg-amber-50 border-amber-200">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
-            <AlertTitle className="text-amber-900">You cannot redeem here yet</AlertTitle>
-            <AlertDescription className="text-amber-900">
-              <ul className="list-disc pl-5 mt-1 space-y-1">
-                {reasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-          {reasons.map((r) => {
+        <div className="flex flex-col gap-3">
+          <div className="bg-sand rounded-2xl p-5">
+            <p className="font-display font-bold text-xl tracking-[-0.02em]">You cannot redeem here yet</p>
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              {reasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          </div>
+          {reasons.map((r, i) => {
             const fix = fixLinkFor(r);
             return fix ? (
-              <Button key={r} asChild className="w-full h-12 text-base">
+              <Button key={r} asChild variant={i === 0 ? "buoy" : "default"} className="w-full h-12 text-base">
                 <Link href={fix.href}>{fix.label}</Link>
               </Button>
             ) : null;
@@ -130,26 +120,26 @@ export default function ScanPage() {
           </Button>
         </div>
       ) : offers.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 text-center text-slate-700">
-          <p className="font-medium">No offers you can use right now at {merchant.name}.</p>
+        <div className="bg-sand rounded-2xl p-6 text-center">
+          <p className="font-bold">No offers you can use right now at {merchant.name}.</p>
           {unavailable.length > 0 ? (
-            <ul className="mt-3 text-sm text-slate-600 space-y-1 text-left">
+            <ul className="mt-3 text-sm text-slate-brand space-y-1 text-left">
               {unavailable.map((u) => (
                 <li key={u.id}>
-                  <span className="font-medium text-slate-800">{u.title}</span>: {u.reason}
+                  <span className="font-semibold text-sea">{u.title}</span>: {u.reason}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500 mt-1">Some offers only run on certain days or times.</p>
+            <p className="text-sm text-slate-brand mt-1">Some offers only run on certain days or times.</p>
           )}
-          <Button asChild variant="outline" className="mt-4 h-11">
+          <Button asChild variant="outline" className="mt-4 h-11 bg-transparent border-[#0F3B47]/30">
             <Link href="/resident?tab=offers">See all offers</Link>
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-slate-700">Choose an offer to redeem</p>
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold text-slate-brand mt-2">Choose an offer to redeem</p>
           {offers.map((offer) => {
             const when = offerWhen(offer);
             return (
@@ -157,15 +147,17 @@ export default function ScanPage() {
                 key={offer.id}
                 type="button"
                 onClick={() => setSelected(offer)}
-                className="w-full text-left bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3 active:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="w-full text-left bg-white rounded-2xl p-5 min-h-[104px] flex items-center gap-4 transition-colors hover:bg-[#FAFBFB] active:bg-foam focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-foam"
               >
+                <p className="font-display font-extrabold text-[28px] leading-[0.95] tracking-[-0.03em] w-[104px] flex-none">
+                  {offerHeadline(offer)}
+                </p>
                 <div className="min-w-0 flex-1">
-                  <p className="text-lg font-bold text-blue-700">{offerHeadline(offer)}</p>
-                  <p className="text-base font-semibold text-slate-900 leading-snug">{offer.title}</p>
-                  {offer.shortPromo && <p className="text-sm text-slate-600">{offer.shortPromo}</p>}
-                  {when.length > 0 && <p className="text-xs text-slate-500 mt-1">{when.join(" · ")}</p>}
+                  <p className="font-bold leading-snug">{offer.title}</p>
+                  {offer.shortPromo && <p className="text-sm text-slate-brand">{offer.shortPromo}</p>}
+                  {when.length > 0 && <p className="text-xs text-slate-brand mt-1">{when.join(" · ")}</p>}
                 </div>
-                <ChevronRight className="h-6 w-6 text-slate-400 shrink-0" />
+                <ChevronRight className="h-6 w-6 text-slate-brand shrink-0" />
               </button>
             );
           })}

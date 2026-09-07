@@ -1,22 +1,21 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { PublicUser } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate } from "@/components/resident/format";
 import { fullName } from "./types";
+import { INPUT, Pill, SectionTitle, TD, TH, TR } from "@/components/merchant/portal-ui";
 
 const ROLES = ["all", "resident", "merchant", "admin"] as const;
 
 function residencyBadge(u: PublicUser) {
   if (u.role !== "resident") return null;
-  if (u.isResidencyVerified) return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Verified</Badge>;
-  if (u.documentStatus === "pending") return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Checking</Badge>;
-  if (u.documentStatus === "rejected") return <Badge variant="destructive">Rejected</Badge>;
-  return <Badge variant="outline">Not verified</Badge>;
+  if (u.isResidencyVerified) return <Pill tone="live">Verified</Pill>;
+  if (u.documentStatus === "pending") return <Pill tone="sand">Checking</Pill>;
+  if (u.documentStatus === "rejected") return <Pill tone="red">Rejected</Pill>;
+  return <Pill tone="slate">Not verified</Pill>;
 }
 
 function membershipLabel(u: PublicUser): string {
@@ -37,58 +36,54 @@ export default function UsersTable() {
     : users;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <CardTitle className="text-lg">Users ({shown.length})</CardTitle>
-          <div className="flex gap-2">
-            <Input placeholder="Search name or email" className="h-11 sm:w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <Select value={role} onValueChange={(v) => setRole(v as (typeof ROLES)[number])}>
-              <SelectTrigger className="h-11 w-36"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ROLES.map((r) => <SelectItem key={r} value={r}>{r === "all" ? "All roles" : r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="bg-white rounded-2xl p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <SectionTitle>Users ({shown.length})</SectionTitle>
+        <div className="flex gap-2">
+          <Input placeholder="Search name or email" className={`${INPUT} sm:w-64`} value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Select value={role} onValueChange={(v) => setRole(v as (typeof ROLES)[number])}>
+            <SelectTrigger className={`${INPUT} w-36`}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ROLES.map((r) => <SelectItem key={r} value={r}>{r === "all" ? "All roles" : r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
-      </CardHeader>
-      <CardContent className="p-0 sm:p-4 sm:pt-0">
-        {isLoading ? (
-          <div className="p-4 animate-pulse space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-10 bg-slate-100 rounded" />)}</div>
-        ) : shown.length === 0 ? (
-          <p className="p-6 text-center text-slate-500">No users match.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Postcode</TableHead>
-                  <TableHead>Residency</TableHead>
-                  <TableHead>Membership</TableHead>
-                  <TableHead>Joined</TableHead>
+      </div>
+      {isLoading ? (
+        <div className="animate-pulse space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-12 bg-foam rounded-xl" />)}</div>
+      ) : shown.length === 0 ? (
+        <p className="py-8 text-center text-sm text-slate-brand">No users match.</p>
+      ) : (
+        <div className="overflow-x-auto -mx-5 px-5">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-[#E6E9E8] hover:bg-transparent">
+                <TableHead className={TH}>Name</TableHead>
+                <TableHead className={TH}>Role</TableHead>
+                <TableHead className={TH}>Postcode</TableHead>
+                <TableHead className={TH}>Residency</TableHead>
+                <TableHead className={TH}>Membership</TableHead>
+                <TableHead className={TH}>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shown.map((u) => (
+                <TableRow key={u.id} className={TR}>
+                  <TableCell className={TD}>
+                    <div className="font-bold">{fullName(u)}</div>
+                    <div className="text-xs text-slate-brand">{u.email} · {u.username}</div>
+                  </TableCell>
+                  <TableCell className={`${TD} capitalize`}>{u.role}</TableCell>
+                  <TableCell className={TD}>{u.postcode ?? "-"}</TableCell>
+                  <TableCell className={TD}>{residencyBadge(u) ?? "-"}</TableCell>
+                  <TableCell className={`${TD} capitalize whitespace-nowrap`}>{membershipLabel(u)}</TableCell>
+                  <TableCell className={`${TD} whitespace-nowrap`}>{formatDate(u.createdAt)}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shown.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell>
-                      <div className="font-medium">{fullName(u)}</div>
-                      <div className="text-xs text-slate-500">{u.email} · {u.username}</div>
-                    </TableCell>
-                    <TableCell className="capitalize">{u.role}</TableCell>
-                    <TableCell>{u.postcode ?? "-"}</TableCell>
-                    <TableCell>{residencyBadge(u) ?? "-"}</TableCell>
-                    <TableCell className="capitalize whitespace-nowrap">{membershipLabel(u)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatDate(u.createdAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
   );
 }

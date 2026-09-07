@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, MapPin } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/brand/logo";
 import { useAuth } from "@/hooks/use-auth";
 import { homePathForRole } from "@/lib/auth";
 
@@ -18,13 +19,11 @@ export default function Navigation() {
   const homeLabel = user?.role === "merchant" ? "Portal" : user?.role === "admin" ? "Admin" : "My card";
 
   return (
-    <nav className="bg-white border-b border-slate-200">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <nav className="bg-white border-b border-[#E6E9E8]">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6">
         <div className="flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2 text-slate-900" onClick={() => setOpen(false)}>
-            <MapPin className="h-5 w-5 text-blue-600" />
-            <span className="text-lg font-bold">Resicard</span>
-            <span className="text-sm text-slate-500 hidden sm:inline">St Andrews</span>
+          <Link href="/" className="inline-flex items-center" aria-label="Resicard home" onClick={() => setOpen(false)}>
+            <Logo size={26} />
           </Link>
 
           <div className="hidden sm:flex items-center gap-1">
@@ -55,16 +54,16 @@ export default function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="sm:hidden"
+            className="sm:hidden text-sea"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {open ? <X className="!h-5 !w-5" /> : <Menu className="!h-5 !w-5" />}
           </Button>
         </div>
 
         {open && (
-          <div className="sm:hidden border-t border-slate-200 py-2 flex flex-col gap-1">
+          <div className="sm:hidden border-t border-[#E6E9E8] py-2 flex flex-col gap-1">
             {isAuthenticated && user ? (
               <>
                 <Button variant="ghost" className="justify-start h-12 text-base" onClick={() => go(homePathForRole(user.role))}>
@@ -75,7 +74,7 @@ export default function Navigation() {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="justify-start h-12 text-base text-red-600"
+                  className="justify-start h-12 text-base text-destructive hover:text-destructive"
                   onClick={() => {
                     setOpen(false);
                     logout();

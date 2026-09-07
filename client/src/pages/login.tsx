@@ -43,7 +43,7 @@ export default function Login() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" autoComplete="email" inputMode="email" className="h-12 text-base" {...field} />
+                  <Input type="email" autoComplete="email" inputMode="email" className="h-12 rounded-xl text-base" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -56,26 +56,26 @@ export default function Login() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" autoComplete="current-password" className="h-12 text-base" {...field} />
+                  <Input type="password" autoComplete="current-password" className="h-12 rounded-xl text-base" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
+          <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Logging in" : "Log in"}
           </Button>
         </form>
       </Form>
-      <div className="mt-6 text-sm text-slate-600 space-y-2">
+      <div className="mt-6 text-sm text-slate-brand space-y-2">
         <p>
-          <Link href="/forgot-password" className="text-blue-700 font-medium hover:underline">
+          <Link href="/forgot-password" className="text-sea font-semibold underline underline-offset-[3px]">
             Forgotten your password?
           </Link>
         </p>
         <p>
           New to Resicard?{" "}
-          <Link href="/register" className="text-blue-700 font-medium hover:underline">
+          <Link href="/register" className="text-sea font-semibold underline underline-offset-[3px]">
             Join now
           </Link>
         </p>

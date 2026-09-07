@@ -276,17 +276,24 @@ export function nextTier<T extends TierLike>(tiers: T[], points: number): T | nu
 export interface ResidentLike {
   role?: string | null;
   isResidencyVerified?: boolean | null;
-  membershipStatus?: string | null;
-  membershipExpiry?: Date | string | null;
 }
 
-/** Rule 1: reasons the resident cannot redeem right now (empty when they can). */
-export function residentRedeemReasons(user: ResidentLike, now: Date = new Date()): string[] {
+/** The membership that applies to the resident (their own, or the household primary's). */
+export interface MembershipSnapshot {
+  status?: string | null;
+  expiry?: Date | string | null;
+}
+
+/**
+ * Rule 1: reasons the resident cannot redeem right now (empty when they can). The
+ * membership is the effective one from `effectiveMembership()` in lib/membership.ts.
+ */
+export function residentRedeemReasons(user: ResidentLike, membership: MembershipSnapshot, now: Date = new Date()): string[] {
   const reasons: string[] = [];
   if (user.role && user.role !== "resident") reasons.push("Only residents can redeem offers");
   if (!user.isResidencyVerified) reasons.push("Residency not yet verified");
-  const expiry = user.membershipExpiry ? new Date(user.membershipExpiry) : null;
-  if (user.membershipStatus !== "active") {
+  const expiry = membership.expiry ? new Date(membership.expiry) : null;
+  if (membership.status !== "active") {
     reasons.push("Membership not active");
   } else if (!expiry || expiry.getTime() <= now.getTime()) {
     reasons.push("Membership has expired");
@@ -296,15 +303,11 @@ export function residentRedeemReasons(user: ResidentLike, now: Date = new Date()
 
 export interface MerchantLike {
   status?: string | null;
-  planStatus?: string | null;
 }
 
-/** Rule 2: reasons the merchant cannot accept redemptions (empty when it can). */
+/** Rule 2: reasons the merchant cannot accept redemptions (empty when it can). Plan does not matter. */
 export function merchantRedeemReasons(merchant: MerchantLike): string[] {
   const reasons: string[] = [];
   if (merchant.status !== "approved") reasons.push("This outlet has not been approved yet");
-  if (merchant.planStatus !== "trial" && merchant.planStatus !== "active") {
-    reasons.push("This outlet's plan is not active");
-  }
   return reasons;
 }

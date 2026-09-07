@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "@/components/resident/auth-layout";
@@ -39,12 +39,12 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <AuthLayout title="Reset link missing">
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-xl">
           <AlertCircle className="h-5 w-5" />
-          <AlertTitle>This link is not valid</AlertTitle>
+          <AlertTitle className="font-bold">This link is not valid</AlertTitle>
           <AlertDescription>Open the link from the email we sent you, or request a new one.</AlertDescription>
         </Alert>
-        <Button asChild className="w-full h-12 mt-4">
+        <Button asChild variant="buoy" className="w-full h-12 mt-4 text-base">
           <Link href="/forgot-password">Request a new link</Link>
         </Button>
       </AuthLayout>
@@ -55,12 +55,14 @@ export default function ResetPassword() {
     <AuthLayout title="Choose a new password">
       {done ? (
         <div className="space-y-4">
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <AlertTitle className="text-green-900">Password changed</AlertTitle>
-            <AlertDescription className="text-green-800">You can log in with your new password now.</AlertDescription>
-          </Alert>
-          <Button asChild className="w-full h-12">
+          <div className="bg-sand rounded-xl p-4 flex gap-3">
+            <Check className="h-5 w-5 flex-none text-[#1F8A5B]" strokeWidth={2.5} />
+            <div>
+              <p className="font-bold text-[#1F8A5B]">Password changed</p>
+              <p className="text-sm text-sea mt-1">You can log in with your new password now.</p>
+            </div>
+          </div>
+          <Button asChild variant="buoy" className="w-full h-12 text-base">
             <Link href="/login">Log in</Link>
           </Button>
         </div>
@@ -74,7 +76,7 @@ export default function ResetPassword() {
                 <FormItem>
                   <FormLabel>New password</FormLabel>
                   <FormControl>
-                    <Input type="password" autoComplete="new-password" className="h-12 text-base" {...field} />
+                    <Input type="password" autoComplete="new-password" className="h-12 rounded-xl text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -87,13 +89,13 @@ export default function ResetPassword() {
                 <FormItem>
                   <FormLabel>Confirm new password</FormLabel>
                   <FormControl>
-                    <Input type="password" autoComplete="new-password" className="h-12 text-base" {...field} />
+                    <Input type="password" autoComplete="new-password" className="h-12 rounded-xl text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
+            <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "Saving" : "Save new password"}
             </Button>
           </form>

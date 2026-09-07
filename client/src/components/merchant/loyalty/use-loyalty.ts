@@ -4,8 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { errorMessage } from "@/components/resident/format";
 import { PROGRAM_KEY, type LoyaltyProgramData } from "./types";
 
-export function useLoyaltyProgram() {
-  return useQuery<LoyaltyProgramData | null>({ queryKey: [...PROGRAM_KEY] });
+export function useLoyaltyProgram(opts: { enabled?: boolean } = {}) {
+  return useQuery<LoyaltyProgramData | null>({ queryKey: [...PROGRAM_KEY], enabled: opts.enabled ?? true });
 }
 
 /** Generic JSON mutation against a loyalty endpoint that refreshes the programme afterwards. */
