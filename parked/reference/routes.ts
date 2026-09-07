@@ -3408,8 +3408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Device registration for pass updates:', {
       deviceId: req.params.deviceLibraryIdentifier,
       passType: req.params.passTypeIdentifier,
-      serialNumber: req.params.serialNumber,
-      authToken: req.headers.authorization
+      serialNumber: req.params.serialNumber
     });
     res.status(201).send();
   });
@@ -3444,8 +3443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Get updated pass
     console.log('Request for updated pass:', {
       passType: req.params.passTypeIdentifier,
-      serialNumber: req.params.serialNumber,
-      authToken: req.headers.authorization
+      serialNumber: req.params.serialNumber
     });
     
     // For now, return 304 Not Modified
