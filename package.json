@@ -14,7 +14,7 @@
     "db:reset": "tsx server/scripts/reset-db.ts"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.17.0",
+    "@google-cloud/storage": "^7.22.0",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -70,23 +70,23 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
-    "drizzle-orm": "^0.39.1",
+    "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "express-session": "^1.18.1",
     "framer-motion": "^11.18.2",
     "google-auth-library": "^10.3.0",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^3.0.2",
+    "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",
-    "multer": "^2.0.2",
+    "multer": "^2.3.0",
     "next-themes": "^0.4.6",
-    "node-forge": "^1.3.1",
+    "node-forge": "^1.4.0",
     "openid-client": "^6.7.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
@@ -109,7 +109,7 @@
     "use-places-autocomplete": "^4.0.1",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
-    "ws": "^8.18.0",
+    "ws": "^8.21.3",
     "zod": "^3.24.2",
     "zod-validation-error": "^3.4.0"
   },
@@ -121,23 +121,52 @@
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "4.17.21",
     "@types/express-session": "^1.18.0",
-    "@types/node": "20.16.11",
+    "@types/node": "^20.19.43",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/ws": "^8.5.13",
-    "@vitejs/plugin-react": "^4.3.2",
-    "autoprefixer": "^10.4.20",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.5.5",
     "drizzle-kit": "^0.30.4",
     "esbuild": "^0.25.0",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.17",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
-    "vite": "^5.4.14"
+    "vite": "^6.4.3"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "overrides": {
+    "@google-cloud/storage": {
+      "jws": "4.0.1"
+    },
+    "anymatch": {
+      "picomatch": "2.3.2"
+    },
+    "brace-expansion": "2.1.4",
+    "form-data": "2.5.6",
+    "glob": "10.5.0",
+    "google-auth-library": {
+      "jws": "4.0.1"
+    },
+    "jsonwebtoken": {
+      "jws": "3.2.3"
+    },
+    "lodash": "4.18.1",
+    "micromatch": {
+      "picomatch": "2.3.2"
+    },
+    "minimatch": "9.0.7",
+    "nanoid": "5.1.16",
+    "path-to-regexp": "0.1.13",
+    "preact": "10.27.3",
+    "readdirp": {
+      "picomatch": "2.3.2"
+    },
+    "tar-fs": "2.1.4"
   }
 }
