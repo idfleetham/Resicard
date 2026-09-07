@@ -4,9 +4,12 @@ import { pool } from "../db";
 import * as userStore from "../storage/users";
 
 async function main(): Promise<void> {
-  const [username, email, password] = process.argv.slice(2);
+  const [username, email, passwordArgument] = process.argv.slice(2);
+  const password = passwordArgument || process.env.ADMIN_ACCOUNT_PASSWORD;
   if (!username || !email || !password) {
-    console.error("Usage: npm run admin:create -- <username> <email> <password>");
+    console.error(
+      "Usage: npm run admin:create -- <username> <email> [password] (or set ADMIN_ACCOUNT_PASSWORD)",
+    );
     process.exit(1);
   }
   if (password.length < 8) {
