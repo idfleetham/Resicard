@@ -8,6 +8,15 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { errorMessage, formatDate } from "./format";
 import CodeInput from "./code-input";
+import VerifyChoices from "./verify-choices";
+import { usePricing } from "@/components/pricing/use-pricing";
+
+/** What each route involves, from the server so no number or place is typed here. */
+export interface VerificationOptions {
+  postcardCodeDays: number;
+  postcardMaxAttempts: number;
+  inPersonDetails: string;
+}
 
 export interface VerificationInfo {
   verified: boolean;
@@ -21,6 +30,7 @@ export interface VerificationInfo {
     expiresAt: string | null;
     attemptsLeft: number | null;
   } | null;
+  options: VerificationOptions;
   canRequestPostcard: boolean;
   reason?: string;
 }
@@ -40,13 +50,22 @@ function AddressBlock({ address }: { address: VerificationInfo["address"] }) {
   );
 }
 
-const IN_PERSON = "Or get verified in person at a Resicard event. Bring anything with your address on it.";
+/** The other route stays visible while a card is in the post; nothing is kept either way. */
+function InPersonNote({ details }: { details: string }) {
+  return (
+    <p className="text-xs text-[#5C6F75] mt-2">
+      You can still be verified in person instead: show anything with your address on it and nothing is scanned, copied or
+      kept. {details}
+    </p>
+  );
+}
 
 export default function VerificationPanel() {
   const { user, refresh } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery<VerificationInfo>({ queryKey: KEY, enabled: Boolean(user) });
+  const { data: pricing } = usePricing();
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
 
@@ -95,7 +114,7 @@ export default function VerificationPanel() {
         <div>
           <p className="font-bold">Your card is being prepared</p>
           <p className="text-sm mt-1">Requested {formatDate(card.requestedAt)}. It will be posted to your address and usually arrives in 2 to 4 days.</p>
-          <p className="text-xs text-slate-brand mt-2">{IN_PERSON}</p>
+          <InPersonNote details={data.options.inPersonDetails} />
         </div>
       </div>
     );
@@ -111,13 +130,13 @@ export default function VerificationPanel() {
         </p>
         <CodeInput value={code} onChange={(v) => { setCode(v); setCodeError(null); }} disabled={confirm.isPending} />
         {codeError && <p className="text-sm font-semibold text-[#B5321A]">{codeError}</p>}
-        {!codeError && card.attemptsLeft !== null && card.attemptsLeft < 5 && (
+        {!codeError && card.attemptsLeft !== null && card.attemptsLeft < data.options.postcardMaxAttempts && (
           <p className="text-xs text-slate-brand">{card.attemptsLeft} attempt{card.attemptsLeft === 1 ? "" : "s"} left.</p>
         )}
         <Button className="w-full h-12 text-base" disabled={code.length !== 6 || confirm.isPending} onClick={() => confirm.mutate()}>
           {confirm.isPending ? "Checking" : "Confirm"}
         </Button>
-        <p className="text-xs text-slate-brand">{IN_PERSON}</p>
+        <InPersonNote details={data.options.inPersonDetails} />
       </section>
     );
   }
@@ -129,12 +148,15 @@ export default function VerificationPanel() {
       <h2 className="font-display font-bold text-2xl tracking-[-0.02em]">Verify your address</h2>
       {ended && <p className="text-sm font-semibold">{ended} You can request another.</p>}
       <AddressBlock address={data.address} />
-      <p className="text-sm text-slate-brand">We post a card with a code to your address. Enter the code when it arrives. Usually 2 to 4 days.</p>
-      {!data.canRequestPostcard && data.reason && <p className="text-sm text-slate-brand">{data.reason}</p>}
-      <Button className="w-full h-12 text-base" disabled={!data.canRequestPostcard || request.isPending} onClick={() => request.mutate()}>
-        {request.isPending ? "Requesting" : "Post me a code"}
-      </Button>
-      <p className="text-xs text-slate-brand">{IN_PERSON}</p>
+      <p className="text-sm text-[#0F3B47]/70">There are two ways to confirm you live here. Pick whichever suits you.</p>
+      <VerifyChoices
+        options={data.options}
+        contactEmail={pricing?.contactEmail ?? "hello@resicard.co.uk"}
+        canRequestPostcard={data.canRequestPostcard}
+        reason={data.reason}
+        requesting={request.isPending}
+        onRequestPostcard={() => request.mutate()}
+      />
     </section>
   );
 }

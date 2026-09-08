@@ -53,7 +53,6 @@ export default function MembersTable() {
                 <TableHead className={TH}>Member</TableHead>
                 <TableHead className={TH}>Tier</TableHead>
                 <TableHead className={`${TH} text-right`}>Points</TableHead>
-                <TableHead className={`${TH} text-right`}>Stamps</TableHead>
                 <TableHead className={TH}>Last activity</TableHead>
                 <TableHead className={TH} />
               </TableRow>
@@ -70,7 +69,6 @@ export default function MembersTable() {
                     {m.tierName && <span className="text-xs text-slate-brand ml-2 tabular-nums">{m.statusPoints} pts</span>}
                   </TableCell>
                   <TableCell className={`${TD} text-right font-bold`}>{m.points}</TableCell>
-                  <TableCell className={`${TD} text-right`}>{m.stamps}</TableCell>
                   <TableCell className={`${TD} whitespace-nowrap`}>{m.lastActivity ? formatDate(m.lastActivity) : "-"}</TableCell>
                   <TableCell className={`${TD} text-right`}>
                     <Button variant="outline" size="sm" className="h-9 px-4 bg-white" onClick={() => setTarget(m)}>Adjust</Button>

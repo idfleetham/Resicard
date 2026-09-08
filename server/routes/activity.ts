@@ -58,9 +58,6 @@ activityRouter.get(
           if (belongsToRedemption(meta)) break;
           feed.push({ kind: "points", id: event.id, at, merchant, title: `+${event.amount ?? 0} points`, amount: event.amount });
           break;
-        case "earn_stamp":
-          feed.push({ kind: "points", id: event.id, at, merchant, title: `+${event.amount ?? 1} stamp`, amount: event.amount });
-          break;
         case "redeem_reward": {
           const name = typeof meta?.rewardName === "string" ? meta.rewardName : "reward";
           const claimId = typeof meta?.claimId === "string" ? meta.claimId : null;

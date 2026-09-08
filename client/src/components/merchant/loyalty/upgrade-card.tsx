@@ -14,7 +14,7 @@ export function LoyaltyUpgradeCard() {
     <div className="bg-white rounded-2xl p-5 space-y-4 max-w-xl">
       <SectionTitle>Loyalty programme</SectionTitle>
       <p className="text-sm text-slate-brand">
-        The loyalty programme is part of Standard and Insight. Residents earn points or stamps each time they redeem with
+        The loyalty programme is part of Standard and Insight. Residents earn points each time they redeem with
         you, and you can add tiers and rewards to bring them back. Both plans also lift the live offer limit.
       </p>
       <Button asChild variant="buoy" className="h-12 px-6">

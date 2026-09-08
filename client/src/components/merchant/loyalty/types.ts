@@ -16,7 +16,6 @@ export interface LoyaltyMember {
   userId: number;
   customerAlias: string;
   points: number;
-  stamps: number;
   statusPoints: number;
   tierWindowDays: number;
   tierName: string | null;
@@ -28,7 +27,7 @@ export interface LoyaltyEventRow {
   id: string;
   userId: number;
   customerAlias: string;
-  type: "earn_points" | "earn_stamp" | "redeem_reward" | "adjust" | "tier_change";
+  type: "earn_points" | "redeem_reward" | "adjust" | "tier_change";
   amount: number | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
@@ -45,7 +44,6 @@ export interface LoyaltyAnalytics {
 
 export const EVENT_LABELS: Record<LoyaltyEventRow["type"], string> = {
   earn_points: "Points earned",
-  earn_stamp: "Stamp earned",
   redeem_reward: "Reward redeemed",
   adjust: "Adjustment",
   tier_change: "Tier change",

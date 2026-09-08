@@ -95,7 +95,7 @@ Merchant side (merchant resolved from token):
 | POST | /api/loyalty/rewards | `insertLoyaltyRewardSchema` | reward |
 | PUT | /api/loyalty/rewards/:rewardId | partial | reward |
 | DELETE | /api/loyalty/rewards/:rewardId | | `{ ok }` |
-| GET | /api/loyalty/members | | `[{ userId, customerAlias, points, stamps, tierName, lastActivity }]` |
+| GET | /api/loyalty/members | | `[{ userId, customerAlias, points, tierName, lastActivity }]` |
 | POST | /api/loyalty/members/:userId/adjust | `{ amount, reason }` | balance |
 | GET | /api/loyalty/events | `?limit=` | recent events with customerAlias |
 | GET | /api/loyalty/analytics | | `{ members, activeMembers30d, pointsIssued30d, rewardsRedeemed30d, redemptions30d, byWeek: [{ weekStart, redemptions, pointsIssued }] }` |
@@ -105,7 +105,7 @@ Resident side:
 
 | Method | Path | Response |
 |---|---|---|
-| GET | /api/loyalty/mine | `[{ merchant: {id,name,logoUrl}, points, stamps, tier: {name,color,discountPercent} \| null, nextTier: {name, thresholdPoints} \| null, rewards: LoyaltyReward[] }]` |
+| GET | /api/loyalty/mine | `[{ merchant: {id,name,logoUrl}, points, tier: {name,color,discountPercent} \| null, nextTier: {name, thresholdPoints} \| null, rewards: LoyaltyReward[] }]` |
 | POST | /api/loyalty/redeem-reward | `{ merchantId, rewardId }` → deducts points, writes event, returns `{ balance, code }` |
 
 ## Admin `server/routes/admin.ts` (role admin)
@@ -172,7 +172,7 @@ The resident "Activity" tab (`client/src/components/resident/activity-tab.tsx`) 
 |---|---|
 | `lastActivityAt` | latest of `balance.updatedAt` and the newest loyalty event for that merchant and resident; the list is sorted by it, newest first |
 | `tiers` | `[{ id, name, thresholdPoints, color }]`, threshold ascending |
-| `claimable` | `LoyaltyReward[]`: active rewards the resident can afford now (`costPoints <= points`; on a stamps programme also `costStamps <= stamps`) |
+| `claimable` | `LoyaltyReward[]`: active rewards the resident can afford now (`costPoints <= points`) |
 | `nextReward` | `{ id, name, costPoints, pointsToGo } \| null`: the cheapest active points reward not yet affordable |
 
 `GET /api/activity/mine` (resident, `server/routes/activity.ts`): one merged feed, newest first, at most 100 items.
@@ -180,7 +180,7 @@ The resident "Activity" tab (`client/src/components/resident/activity-tab.tsx`) 
 | `kind` | Shape |
 |---|---|
 | `redemption` | `{ kind, id, at, merchant: {id,name,logoUrl}, title: offer title, code, pointsAwarded }` |
-| `points` | `{ kind, id, at, merchant, title: "+15 points" or "+1 stamp", amount }` from `earn_points` / `earn_stamp` events |
+| `points` | `{ kind, id, at, merchant, title: "+15 points", amount }` from `earn_points` events |
 | `reward` | `{ kind, id, at, merchant, title: "Claimed <reward name>", amount }` from `redeem_reward` events (amount is negative points) |
 | `tier` | `{ kind, id, at, merchant, title: "Now Gold", amount: null }` from `tier_change` events |
 
@@ -194,7 +194,7 @@ Claiming a reward now creates a `reward_claims` row and is shown to staff on the
 
 | Method | Path | Auth | Body | Response |
 |---|---|---|---|---|
-| POST | /api/loyalty/redeem-reward | resident | `{ merchantId, rewardId }` | `{ claim: { id, code, claimedAt, pointsSpent, stampsSpent }, reward: { id, name, terms }, merchant: { id, name, logoUrl }, resident: { firstName, surname, profilePhoto }, loyalty: { points, tierName, tierBenefits: string[], tierDiscountPercent: number \| null } }` (deducts points/stamps, writes a `redeem_reward` event with `metadata.claimId`) |
+| POST | /api/loyalty/redeem-reward | resident | `{ merchantId, rewardId }` | `{ claim: { id, code, claimedAt, pointsSpent }, reward: { id, name, terms }, merchant: { id, name, logoUrl }, resident: { firstName, surname, profilePhoto }, loyalty: { points, tierName, tierBenefits: string[], tierDiscountPercent: number \| null } }` (deducts points, writes a `redeem_reward` event with `metadata.claimId`) |
 | GET | /api/reward-claims/:id | resident (own) | | same shape, for re-showing the screen |
 | GET | /api/redemptions/:id | resident (own) | | now also includes `loyalty.tierBenefits` and `loyalty.tierDiscountPercent` (both from the resident's current tier at that merchant, empty/null if none) |
 | POST | /api/redemptions | resident | | response `loyalty` gains the same two fields |
@@ -1061,3 +1061,94 @@ method, so campaign email sends through the same provider and the same templates
 as everything else. Campaign sends are deliberately **not** written to
 `email_log`: that table exists to stop a deduped reminder going twice, and a
 campaign is a fan-out with its own `campaigns` row.
+
+## Stamps model removed (8 September 2026)
+
+A loyalty programme used to carry a `model` column, `"points"` or `"stamps"`,
+and the stamps half of that choice has been removed. This section records the
+reversal rather than pretending the feature never shipped: the columns were in
+the schema, the merchant settings form offered the choice, and the API returned
+the fields, so anyone reading an older client or an older row needs to know what
+happened to them.
+
+Why it went: nothing on the server ever awarded a stamp. `awardPoints` in
+`server/lib/loyalty.ts` was the only earn path, and it wrote `earn_points`
+events and incremented `loyalty_balances.points` and nothing else. A merchant
+who picked stamps configured a card that could never fill — their residents'
+balances would sit at zero for ever, and only the rewards priced in points would
+ever be claimable. Building the earn path was the alternative; the owner decided
+one earn model is enough and dropped it.
+
+What went, in the migration that drops them:
+
+- `loyalty_programs.model` — the whole column, since points is now the only
+  model and a column with one possible value is noise
+- `loyalty_balances.stamps`
+- `loyalty_rewards.cost_stamps`
+- `reward_claims.stamps_spent`
+- the `earn_stamp` value of the `loyalty_events.type` union (no rows ever used
+  it)
+
+Everything above that mentions points is unchanged. Points is the only model:
+residents earn on `pointsPerCurrency` per pound or `pointsPerRedemption` on a
+scan with no bill, rewards cost points, and a tier benefit is a reward with a
+`tierId` and no points cost.
+
+## Postcode check at sign-up, and choosing how to verify (added Sept 2026)
+
+### The catchment, now by sector as well as district
+
+`LOCAL_POSTCODE_PREFIXES` accepts a whole district (`KY16`) or a single sector
+(`KY15 4`, or written without the space, `KY154`). Eligibility is not always a
+whole postal district: KY15 is Cupar and reaches a long way into the countryside,
+so only the sectors nearest the town belong in the catchment.
+
+The split is unambiguous because the outward code is matched greedily. `KY154`
+takes `KY15` as the district and `4` as the sector; `KY16` is a district with no
+sector. A district must match in full, so a listed `KY1` never admits `KY16`.
+
+Default: `KY16,KY9,KY10,KY15 4,KY15 5`.
+
+### Check the postcode before anything else is typed
+
+Today the postcode is rejected at submit, after someone has filled in a whole
+form. That is a poor way to tell a person they cannot join, and worse, it makes
+the check feel like a rejection rather than a fact about where they live.
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/postcode-check?postcode= | none | `{ valid, eligible, normalised, town }` |
+
+`valid` is false when the string cannot be a postcode at all; `eligible` says
+whether it is in the catchment. Both false is "that does not look like a
+postcode"; valid and not eligible is "we are not in your area yet".
+
+Registration asks for the postcode **first**, on its own, and answers
+immediately: a green tick and the normalised postcode, or a plain explanation.
+The rest of the form appears only once it passes. Nobody types a password to be
+told no.
+
+Being turned down is not a dead end. An ineligible postcode gets a short, honest
+note that Resicard covers a defined area around the town, and an invitation to
+leave an email address so they hear if it widens. **Do not** pretend a decision
+is pending, and do not let them register anyway.
+
+### Choosing how to prove residency
+
+After registering, a resident picks between the two routes rather than being put
+down one. Both are offered together with what each involves:
+
+**A card in the post.** We post a card with a six-character code to the address
+given. It arrives in a few days and the code is entered in the app. The code
+lasts `postcardCodeDays` (60) and allows `postcardMaxAttempts` (5) tries.
+
+**In person.** Meet an admin, show something with the address on it, and they
+verify on the spot. Nothing is scanned, copied or kept: a person looks and marks
+the account verified. Where and when this can be done comes from
+`VERIFY_IN_PERSON_DETAILS`, so it is configuration rather than a hard-coded
+address, and it can say "get in touch and we will arrange it" before there is a
+regular time and place.
+
+The in-person route is the honest advantage: it is free, immediate, and stores
+nothing. The postcard costs real postage and takes days. Present them as equals
+with their trade-offs stated, rather than pushing the cheaper one.

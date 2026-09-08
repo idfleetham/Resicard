@@ -67,8 +67,7 @@ export default function CardsTab() {
                 pattern={m.cardPattern}
                 tier={m.tier}
                 discountPercent={m.tierDiscountPercent}
-                points={m.stamps > 0 && !m.points ? m.stamps : m.points}
-                unit={m.stamps > 0 && !m.points ? "stamps" : "points"}
+                points={m.points}
                 size={i === 0 ? "compact" : "peek"}
               />
             </Link>

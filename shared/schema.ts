@@ -306,7 +306,6 @@ export type CardPattern = (typeof CARD_PATTERNS)[number];
 export const loyaltyPrograms = pgTable("loyalty_programs", {
   id: serial("id").primaryKey(),
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }).unique(),
-  model: text("model").$type<"points" | "stamps">().default("points"),
   pointsPerCurrency: integer("points_per_currency").default(10), // points per £1
   pointsPerRedemption: integer("points_per_redemption").default(10), // awarded on a scan when no basket amount is given
   minBasketEarn: numeric("min_basket_earn", { precision: 10, scale: 2 }).default("0.00"),
@@ -339,7 +338,6 @@ export const loyaltyBalances = pgTable("loyalty_balances", {
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   points: integer("points").default(0),
-  stamps: integer("stamps").default(0),
   tierId: uuid("tier_id").references(() => loyaltyTiers.id),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -349,7 +347,7 @@ export const loyaltyEvents = pgTable("loyalty_events", {
   merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
   userId: integer("user_id").notNull().references(() => users.id),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id),
-  type: text("type").$type<"earn_points" | "earn_stamp" | "redeem_reward" | "adjust" | "tier_change">().notNull(),
+  type: text("type").$type<"earn_points" | "redeem_reward" | "adjust" | "tier_change">().notNull(),
   amount: integer("amount"),
   metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -360,7 +358,6 @@ export const loyaltyRewards = pgTable("loyalty_rewards", {
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   costPoints: integer("cost_points"), // null or 0 with a tierId = a tier benefit
-  costStamps: integer("cost_stamps"),
   tierId: uuid("tier_id").references(() => loyaltyTiers.id, { onDelete: "cascade" }), // only members of this tier (or above) can claim
   claimRule: text("claim_rule").$type<"once" | "weekly" | "monthly" | "unlimited">().default("unlimited"),
   terms: text("terms"),
@@ -378,7 +375,6 @@ export const rewardClaims = pgTable("reward_claims", {
   userId: integer("user_id").notNull().references(() => users.id),
   code: text("code").notNull().unique(),
   pointsSpent: integer("points_spent").default(0),
-  stampsSpent: integer("stamps_spent").default(0),
   claimedAt: timestamp("claimed_at").defaultNow(),
 });
 
@@ -693,7 +689,6 @@ export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards)
   .omit({ id: true, programId: true, createdAt: true })
   .extend({
     costPoints: z.number().int().min(0).nullable().optional(),
-    costStamps: z.number().int().min(0).nullable().optional(),
     tierId: z.string().uuid().nullable().optional(),
     claimRule: z.enum(["once", "weekly", "monthly", "unlimited"]).default("unlimited"),
   });

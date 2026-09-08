@@ -166,8 +166,8 @@ export function canClaim<T extends TierLike>(
 }
 
 /** A tier benefit is a reward limited to a tier that costs nothing. */
-export function isTierBenefit(reward: Pick<LoyaltyReward, "tierId" | "costPoints" | "costStamps">): boolean {
-  return Boolean(reward.tierId) && !(reward.costPoints ?? 0) && !(reward.costStamps ?? 0);
+export function isTierBenefit(reward: Pick<LoyaltyReward, "tierId" | "costPoints">): boolean {
+  return Boolean(reward.tierId) && !(reward.costPoints ?? 0);
 }
 
 // Status (rolling tier) --------------------------------------------------------
@@ -239,7 +239,7 @@ export async function residentStatus(
 export async function getOrCreateBalance(merchantId: string, userId: number, client: DbClient): Promise<LoyaltyBalance> {
   const existing = await loyaltyStore.getBalance(merchantId, userId, client);
   if (existing) return existing;
-  return loyaltyStore.createBalance({ merchantId, userId, points: 0, stamps: 0 }, client);
+  return loyaltyStore.createBalance({ merchantId, userId, points: 0 }, client);
 }
 
 export interface BalanceWithTier extends ResidentStatus {

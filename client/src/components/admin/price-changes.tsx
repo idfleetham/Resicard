@@ -84,13 +84,13 @@ export default function PriceChanges() {
             <SectionTitle>Price changes</SectionTitle>
             <p className="text-xs text-slate-brand mt-1">Figures merchants changed on their offers in the last {WINDOW_DAYS} days.</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
             <label className="flex items-center gap-2 text-sm font-bold text-sea whitespace-nowrap">
               <Switch checked={flaggedOnly} onCheckedChange={setFlaggedOnly} />
               Increases stated saving only
             </label>
             <Select value={merchantId} onValueChange={setMerchantId}>
-              <SelectTrigger className={`${INPUT} w-48`}><SelectValue /></SelectTrigger>
+              <SelectTrigger className={`${INPUT} w-full sm:w-48`}><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All outlets</SelectItem>
                 {merchants.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}

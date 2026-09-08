@@ -126,9 +126,9 @@ describe("canClaim rules", () => {
 
 describe("isTierBenefit", () => {
   it("is a tier-limited reward that costs nothing", () => {
-    expect(isTierBenefit({ tierId: "gold", costPoints: 0, costStamps: null })).toBe(true);
-    expect(isTierBenefit({ tierId: "gold", costPoints: null, costStamps: null })).toBe(true);
-    expect(isTierBenefit({ tierId: "gold", costPoints: 50, costStamps: null })).toBe(false);
-    expect(isTierBenefit({ tierId: null, costPoints: 0, costStamps: null })).toBe(false);
+    expect(isTierBenefit({ tierId: "gold", costPoints: 0 })).toBe(true);
+    expect(isTierBenefit({ tierId: "gold", costPoints: null })).toBe(true);
+    expect(isTierBenefit({ tierId: "gold", costPoints: 50 })).toBe(false);
+    expect(isTierBenefit({ tierId: null, costPoints: 0 })).toBe(false);
   });
 });

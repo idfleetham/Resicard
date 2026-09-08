@@ -5,6 +5,90 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Postcode by sector, checked before anything else is typed
+
+The catchment is not always a whole postal district. KY15 is Cupar and
+reaches a long way into the countryside, so LOCAL_POSTCODE_PREFIXES now
+takes a sector as well: KY16 is a district, KY15 4 is one sector of KY15.
+The split is unambiguous because the outward code is matched greedily, so
+a listed KY1 still never admits KY16. The catchment is now KY16, KY9,
+KY10, KY15 4 and KY15 5.
+
+Registration asks for the postcode first, on its own, and answers
+straight away. Rejecting someone at submit, after they have filled in a
+form and chosen a password, is a poor way to tell them where they live is
+not covered, and it makes a fact about coverage feel like a judgement. A
+postcode outside the area gets a sand panel, no red and no exclamation,
+and an offer to hear if the area widens. It does not pretend a decision
+is pending and it does not let them register anyway. The server check is
+unchanged: the client one is a courtesy, not the control.
+
+Verification now offers both routes side by side with their trade-offs
+stated rather than putting everyone down the postcard route. In person is
+free, immediate and stores nothing; the postcard costs postage and takes
+days. Neither is the screen's primary action. Where and when in-person
+verification happens is configuration, so it can say "get in touch" until
+there is a regular time and place.
+
+## Remove the stamps loyalty model
+
+Programmes could be configured as points or stamps, but nothing on the
+server ever awarded a stamp: awardPoints was the only earn path and it
+wrote earn_points events and incremented loyalty_balances.points. A
+merchant who picked stamps configured a card that could never fill.
+
+Points is now the only model. Drops loyalty_programs.model,
+loyalty_balances.stamps, loyalty_rewards.cost_stamps and
+reward_claims.stamps_spent, and the earn_stamp event type. The Blue
+Kettle and Harbour Fry demo outlets become points programmes. docs/API.md
+records the reversal rather than pretending the feature never shipped.
+
+## Regenerate the changelog
+
+## Tidy the resident card page and the plan tables on a phone
+
+The card page put the membership card and the scan button in one column
+and everything else in the other, so on a laptop the left half emptied
+out while the right became a tower. Verification, the referral panel and
+the install prompt move left; the right column is the membership decision
+and nothing else.
+
+That panel was doing four jobs under two headings that said the same
+thing. It now has one heading, and it says "Become a member" rather than
+"Free membership", because selling membership is what it is for; the
+resident's current plan is on the pill beside it. The two-column
+comparison inside it is gone, since it repeated the pricing page and was
+the heaviest thing on the panel. Joining someone else's household is a
+different job and now has its own card.
+
+The membership card showed the plan twice, once on the pill and once in
+the corner. The corner now carries the member number alone unless there
+is a renewal date to show.
+
+On the pricing page both comparison tables become one card per plan below
+sm. Three plans plus a feature column could only scroll sideways on a
+phone, which hid which column a tick belonged to; the paid cards now read
+"Everything in Free, plus" and list what they add. The admin price filter
+had its outlet dropdown running off the card and now stacks.
+
+## Regenerate the changelog
+
+## Say plainly when the site is showing demo data
+
+The landing page lists offers to anyone, so seeding a demo town onto a
+public site puts two dozen outlets in front of passers-by that do not
+exist and have not agreed to be there. A resident could join on the
+strength of an offer they cannot use, and a real outlet could see a
+competitor apparently signed up.
+
+PREVIEW_MODE=true puts a plain notice on the public pages: Resicard is
+not open yet, the outlets shown are examples, no business listed has
+signed up. It costs nothing when demonstrating to a prospective merchant,
+because what is being shown is how the card works rather than who is on
+it. Remove it before the first real member joins.
+
+## Regenerate the changelog
+
 ## Stop the brief carrying a version number
 
 The brief's title said V20 while V27 shipped, because a find-and-replace

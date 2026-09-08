@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLoyaltyMutation } from "./use-loyalty";
 import CardDesign from "./card-design";
 import { INPUT, SectionTitle } from "../portal-ui";
 
 interface FormState {
-  model: "points" | "stamps";
   pointsPerCurrency: string;
   pointsPerRedemption: string;
   minBasketEarn: string;
@@ -25,7 +23,6 @@ interface FormState {
 
 function fromProgram(p: LoyaltyProgram | null | undefined): FormState {
   return {
-    model: p?.model ?? "points",
     pointsPerCurrency: String(p?.pointsPerCurrency ?? 10),
     pointsPerRedemption: String(p?.pointsPerRedemption ?? 10),
     minBasketEarn: p?.minBasketEarn ? String(Number(p.minBasketEarn)) : "0",
@@ -39,7 +36,7 @@ function fromProgram(p: LoyaltyProgram | null | undefined): FormState {
   };
 }
 
-const NUMBERS: { key: keyof Omit<FormState, "model" | "active" | "cardTheme" | "cardPattern">; label: string; hint: string; step?: string }[] = [
+const NUMBERS: { key: keyof Omit<FormState, "active" | "cardTheme" | "cardPattern">; label: string; hint: string; step?: string }[] = [
   { key: "pointsPerCurrency", label: "Points per £1", hint: "When a bill total is entered" },
   { key: "pointsPerRedemption", label: "Points per scan", hint: "When no bill total is entered" },
   { key: "minBasketEarn", label: "Minimum spend to earn (£)", hint: "0 for none", step: "0.01" },
@@ -71,7 +68,6 @@ export default function ProgramSettings({
       method: "PUT",
       url: "/api/loyalty/program",
       body: {
-        model: f.model,
         pointsPerCurrency: Number(f.pointsPerCurrency),
         pointsPerRedemption: Number(f.pointsPerRedemption),
         minBasketEarn: Number(f.minBasketEarn || 0).toFixed(2),
@@ -97,16 +93,6 @@ export default function ProgramSettings({
         </label>
       </div>
       <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}>
-        <div className="space-y-1">
-          <Label className="text-xs text-slate-brand">Model</Label>
-          <Select value={form.model} onValueChange={(v) => setForm({ ...form, model: v === "stamps" ? "stamps" : "points" })}>
-            <SelectTrigger className={`${INPUT} max-w-xs`}><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="points">Points</SelectItem>
-              <SelectItem value="stamps">Stamps</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {NUMBERS.map((n) => (
             <div key={n.key} className="space-y-1">

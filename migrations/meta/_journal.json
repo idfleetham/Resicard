@@ -29,6 +29,13 @@
       "when": 1788864986296,
       "tag": "0003_normal_northstar",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788877679989,
+      "tag": "0004_red_rattler",
+      "breakpoints": true
     }
   ]
 }

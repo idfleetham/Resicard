@@ -6,19 +6,16 @@ import { GreenScreen, GreenScreenLoading, GreenScreenNotFound, type GreenScreenL
 
 /** Response of POST /api/loyalty/redeem-reward and GET /api/reward-claims/:id. */
 export interface RewardClaimDetails {
-  claim: { id: string; code: string; claimedAt: string; pointsSpent: number; stampsSpent: number };
+  claim: { id: string; code: string; claimedAt: string; pointsSpent: number };
   reward: { id: string; name: string; terms: string | null };
   merchant: { id: string; name: string; logoUrl: string | null };
   resident: { firstName: string | null; surname: string | null; profilePhoto: string | null };
   loyalty: GreenScreenLoyalty;
 }
 
-/** "Paid with 100 points", "Paid with 5 stamps", or both. */
+/** "Paid with 100 points", or "Free reward" for a tier benefit. */
 function paidWith(claim: RewardClaimDetails["claim"]): string {
-  const parts: string[] = [];
-  if (claim.pointsSpent > 0) parts.push(`${claim.pointsSpent} points`);
-  if (claim.stampsSpent > 0) parts.push(`${claim.stampsSpent} stamps`);
-  return parts.length ? `Paid with ${parts.join(" and ")}` : "Free reward";
+  return claim.pointsSpent > 0 ? `Paid with ${claim.pointsSpent} points` : "Free reward";
 }
 
 /** The reward name over at most two lines; longer names split at the middle word. */

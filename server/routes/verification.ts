@@ -47,6 +47,13 @@ export async function verificationPayload(user: User, reason?: string) {
       postcode: user.postcode,
     },
     postcard: postcardPayload(latest),
+    // What each route involves, so the chooser never hard-codes 60 days, 5 tries
+    // or a meeting place that only exists in this deployment's configuration.
+    options: {
+      postcardCodeDays: config.postcardCodeDays,
+      postcardMaxAttempts: config.postcardMaxAttempts,
+      inPersonDetails: config.verifyInPersonDetails,
+    },
     canRequestPostcard: !blocked,
     ...(blocked ? { reason: blocked } : {}),
   };

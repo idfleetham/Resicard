@@ -74,9 +74,9 @@ adminRevenueRouter.get(
   "/api/admin/revenue/export.csv",
   asyncHandler(async (req, res) => {
     const rows = await ledgerStore.listSubscriptionEvents(parseLimit(req.query.limit ?? 1000));
-    const stamp = new Date().toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="resicard-revenue-${stamp}.csv"`);
+    res.setHeader("Content-Disposition", `attachment; filename="resicard-revenue-${today}.csv"`);
     res.send(eventsToCsv(rows));
   }),
 );

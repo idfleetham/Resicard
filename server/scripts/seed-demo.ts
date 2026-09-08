@@ -143,14 +143,11 @@ interface SeededOutlet {
   programId: number | null;
   tiers: { id: string; thresholdPoints: number; sortOrder: number | null; pointsMultiplier: string | null }[];
   program: {
-    model: string | null;
     pointsPerCurrency: number | null;
     pointsPerRedemption: number | null;
     minBasketEarn: string | null;
   } | null;
-  /** A stamp card: one stamp a visit, held in `loyalty_balances.stamps`. */
-  stampModel: boolean;
-  rewards: { id: string; costPoints: number | null; costStamps: number | null }[];
+  rewards: { id: string; costPoints: number | null }[];
 }
 
 async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
@@ -193,7 +190,7 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
     const loyalty = outlet.plan === "free" ? undefined : outlet.loyalty;
     if (loyalty) {
       const p = await loyaltyStore.createProgram({
-        merchantId: merchant.id, model: loyalty.model,
+        merchantId: merchant.id,
         pointsPerCurrency: loyalty.pointsPerCurrency, pointsPerRedemption: loyalty.pointsPerRedemption,
         minBasketEarn: loyalty.minBasketEarn.toFixed(2), earnCooldownMinutes: loyalty.earnCooldownMinutes,
         dailyEarnCap: loyalty.dailyEarnCap, tierWindowDays: loyalty.tierWindowDays,
@@ -201,7 +198,7 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
       });
       programId = p.id;
       program = {
-        model: p.model, pointsPerCurrency: p.pointsPerCurrency,
+        pointsPerCurrency: p.pointsPerCurrency,
         pointsPerRedemption: p.pointsPerRedemption, minBasketEarn: p.minBasketEarn,
       };
       for (let i = 0; i < loyalty.tiers.length; i++) {
@@ -214,7 +211,7 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
       }
       for (const r of loyalty.rewards) {
         rewards.push(await loyaltyStore.createReward({
-          programId: p.id, name: r.name, costPoints: r.costPoints ?? null, costStamps: r.costStamps ?? null,
+          programId: p.id, name: r.name, costPoints: r.costPoints ?? null,
           tierId: r.tier === undefined ? null : tiers[r.tier].id, claimRule: r.claimRule,
           terms: r.terms ?? "Ask staff to apply it before you pay.", active: true,
         }));
@@ -252,7 +249,6 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
       id: merchant.id, slug: outlet.slug, category: outlet.category, plan: outlet.plan,
       planStartedAt: inTrial ? trialStart : planStartedAt, inTrial,
       name: outlet.name, offers: created, programId, program, tiers, rewards,
-      stampModel: loyalty?.model === "stamps",
     });
   }
   return seeded;
@@ -343,10 +339,9 @@ function buildVisit(resident: SeededResident, outlets: SeededOutlet[], now: Date
 /**
  * What the till rang up. Staff key in a real bill perhaps half the time; the rest
  * fall back to the merchant's indicative figure, which is what savedEstimated
- * records. A stamp card never takes a bill: one visit is one stamp.
+ * records.
  */
 function basketFor(outlet: SeededOutlet, offer: Offer): number | null {
-  if (outlet.stampModel) return null;
   const typical = Number(offer.typicalSpend ?? offer.originalValue ?? offer.itemValue ?? 0);
   if (typical <= 0 || !chance(0.45)) return null;
   return Math.round(typical * (0.7 + rand() * 0.7) * 100) / 100;
@@ -456,19 +451,19 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
     await db.update(offers).set({ usageCount: count }).where(sql`${offers.id} = ${offerId}`);
   }
 
-  // A few reward claims, from the members who have the points or stamps for them.
+  // A few reward claims, from the members who have the points for them.
   const claimRows: Record<string, unknown>[] = [];
   const claimEvents: Record<string, unknown>[] = [];
   for (const outlet of outlets) {
     const reward = outlet.rewards[0];
     if (!outlet.programId || !reward) continue;
-    const cost = (outlet.stampModel ? reward.costStamps : reward.costPoints) ?? 0;
+    const cost = reward.costPoints ?? 0;
     for (const resident of residents.filter((r) => (spendable.get(`${outlet.id}:${r.id}`) ?? 0) >= cost).slice(0, 2)) {
       const at = new Date(now.getTime() - randInt(1, 45) * DAY_MS);
       const who = { merchantId: outlet.id, userId: resident.id };
       claimRows.push({
         ...who, rewardId: reward.id, code: uniqueCode(codes), claimedAt: at,
-        pointsSpent: outlet.stampModel ? 0 : cost, stampsSpent: outlet.stampModel ? cost : 0,
+        pointsSpent: cost,
       });
       claimEvents.push({ ...who, programId: outlet.programId, type: "redeem_reward", amount: -cost, metadata: { rewardId: reward.id }, createdAt: at });
       spendable.set(`${outlet.id}:${resident.id}`, (spendable.get(`${outlet.id}:${resident.id}`) ?? 0) - cost);
@@ -477,8 +472,7 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
   await insertMany(rewardClaims, claimRows);
   await insertMany(loyaltyEvents, claimEvents);
 
-  // Balances last, so the stored tier matches the events already written. On a
-  // stamp card the earned total is the stamp count and there are no points.
+  // Balances last, so the stored tier matches the events already written.
   const balanceRows: Record<string, unknown>[] = [];
   for (const [key, points] of Array.from(spendable)) {
     const [merchantId, userId] = key.split(":");
@@ -488,7 +482,7 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
     const held = Math.max(0, points);
     balanceRows.push({
       merchantId, userId: Number(userId),
-      points: outlet.stampModel ? 0 : held, stamps: outlet.stampModel ? held : 0,
+      points: held,
       tierId: tier?.id ?? null,
     });
   }
@@ -584,8 +578,8 @@ async function main(): Promise<void> {
   const sum = (f: (o: (typeof outlets)[number]) => number) => outlets.reduce((n, o) => n + f(o), 0);
   console.log([
     `Seeded ${outlets.length} approved outlets: ${count("free")} free, ${count("standard")} standard, ${count("insight")} insight.`,
-    `  ${sum((o) => o.offers.length)} offers; ${programmes} loyalty programmes ` +
-      `(${outlets.filter((o) => o.stampModel).length} on stamps), ${sum((o) => o.tiers.length)} tiers, ${sum((o) => o.rewards.length)} rewards.`,
+    `  ${sum((o) => o.offers.length)} offers; ${programmes} loyalty programmes, ` +
+      `${sum((o) => o.tiers.length)} tiers, ${sum((o) => o.rewards.length)} rewards.`,
     `  ${residents.length} residents: ${members("active")} active (${residents.filter((r) => r.inTrial).length} still in their free trial), ${members("cancelled")} lapsed, ${members("inactive")} never paid.`,
     `  ${outlets.filter((o) => o.inTrial).length} outlets are inside their three months free.`,
     `  ${history.redemptions} redemptions over ${HISTORY_DAYS} days, ${history.events} loyalty events, ${history.balances} balances,`,

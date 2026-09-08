@@ -6,6 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import OfferCard, { type PublicOffer } from "@/components/offer-card";
 import OfferDetailsModal from "@/components/offer-details-modal";
 import PublicCounter from "@/components/public-counter";
+import PreviewNotice from "@/components/preview-notice";
 import { OfferGridSkeleton } from "@/components/resident/offers-tab";
 import { useAuth } from "@/hooks/use-auth";
 import { homePathForRole } from "@/lib/auth";
@@ -83,6 +84,7 @@ export default function Home() {
         </div>
       </section>
 
+      <PreviewNotice className="max-w-6xl mx-auto px-5 sm:px-6 pt-7 sm:pt-10" />
       <PublicCounter className="max-w-6xl mx-auto px-5 sm:px-6 pt-7 sm:pt-10" />
 
       <section className="max-w-6xl mx-auto px-5 sm:px-6 pt-7 sm:pt-12">

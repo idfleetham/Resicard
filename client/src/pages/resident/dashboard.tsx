@@ -7,7 +7,7 @@ import { useRequireRole } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import DigitalMembershipCard from "@/components/digital-membership-card";
 import VerificationPanel from "@/components/resident/verification-panel";
-import MembershipStatus from "@/components/resident/membership-status";
+import MembershipStatus, { HouseholdJoin } from "@/components/resident/membership-status";
 import ReferralPanel from "@/components/resident/referral-panel";
 import { InstallPrompt } from "@/components/resident/install-prompt";
 import { useMembership } from "@/components/resident/use-membership";
@@ -112,12 +112,13 @@ export default function ResidentDashboard() {
                 <p className="text-xs text-slate-brand text-center px-4">
                   At the outlet, scan the Resicard code at the till and pick an offer. Show the green screen to staff.
                 </p>
-              </div>
-              <div className="flex flex-col gap-3">
                 <VerificationPanel />
-                <MembershipStatus />
                 <ReferralPanel />
                 <InstallPrompt />
+              </div>
+              <div className="flex flex-col gap-3">
+                <MembershipStatus />
+                <HouseholdJoin />
               </div>
             </div>
           </TabsContent>

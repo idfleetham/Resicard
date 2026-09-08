@@ -5,6 +5,8 @@ import { trialLengthLabel } from "@/components/resident/format";
 export interface Pricing {
   townName: string;
   currency: string;
+  /** Where a visitor writes to us, e.g. to ask about an area we do not cover yet. */
+  contactEmail: string;
   freeTrialDays: number;
   resident: { individual: number; household: number };
   merchant: {

@@ -26,7 +26,6 @@ const CLAIM_RULES: { value: ClaimRule; label: string; short: string }[] = [
 interface RewardForm {
   name: string;
   costPoints: string;
-  costStamps: string;
   /** A tier id, or EVERYONE. */
   tierId: string;
   claimRule: ClaimRule;
@@ -34,13 +33,12 @@ interface RewardForm {
   active: boolean;
 }
 
-const EMPTY: RewardForm = { name: "", costPoints: "", costStamps: "", tierId: EVERYONE, claimRule: "unlimited", terms: "", active: true };
+const EMPTY: RewardForm = { name: "", costPoints: "", tierId: EVERYONE, claimRule: "unlimited", terms: "", active: true };
 
 function fromReward(r: LoyaltyReward): RewardForm {
   return {
     name: r.name,
     costPoints: r.costPoints ? String(r.costPoints) : "",
-    costStamps: r.costStamps ? String(r.costStamps) : "",
     tierId: r.tierId ?? EVERYONE,
     claimRule: r.claimRule ?? "unlimited",
     terms: r.terms ?? "",
@@ -49,7 +47,7 @@ function fromReward(r: LoyaltyReward): RewardForm {
 }
 
 function isTierBenefit(r: LoyaltyReward): boolean {
-  return Boolean(r.tierId) && !r.costPoints && !r.costStamps;
+  return Boolean(r.tierId) && !r.costPoints;
 }
 
 function ruleShort(rule: LoyaltyReward["claimRule"]): string {
@@ -59,11 +57,10 @@ function ruleShort(rule: LoyaltyReward["claimRule"]): string {
 interface Props {
   rewards: LoyaltyReward[];
   tiers: LoyaltyTier[];
-  model: "points" | "stamps";
   enabled: boolean;
 }
 
-export default function RewardsEditor({ rewards, tiers, model, enabled }: Props) {
+export default function RewardsEditor({ rewards, tiers, enabled }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<LoyaltyReward | null>(null);
   const [form, setForm] = useState<RewardForm>(EMPTY);
@@ -77,7 +74,6 @@ export default function RewardsEditor({ rewards, tiers, model, enabled }: Props)
       body: {
         name: f.name,
         costPoints: f.costPoints ? Number(f.costPoints) : null,
-        costStamps: f.costStamps ? Number(f.costStamps) : null,
         tierId: f.tierId === EVERYONE ? null : f.tierId,
         claimRule: f.claimRule,
         terms: f.terms || null,
@@ -104,7 +100,7 @@ export default function RewardsEditor({ rewards, tiers, model, enabled }: Props)
 
   const summary = (r: LoyaltyReward) => {
     if (isTierBenefit(r)) return `Tier benefit · ${tierName(r.tierId)} · ${ruleShort(r.claimRule)}`;
-    const cost = [r.costPoints ? `${r.costPoints} points` : null, r.costStamps ? `${r.costStamps} stamps` : null].filter(Boolean).join(" or ") || "Free";
+    const cost = r.costPoints ? `${r.costPoints} points` : "Free";
     const parts = [cost];
     if (r.tierId) parts.push(`${tierName(r.tierId)} and above`);
     if (r.claimRule && r.claimRule !== "unlimited") parts.push(ruleShort(r.claimRule));
@@ -137,7 +133,7 @@ export default function RewardsEditor({ rewards, tiers, model, enabled }: Props)
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <SectionTitle>Rewards</SectionTitle>
-          <p className="text-xs text-slate-brand mt-1">What residents can spend their {model} on, and what each tier can claim.</p>
+          <p className="text-xs text-slate-brand mt-1">What residents can spend their points on, and what each tier can claim.</p>
         </div>
         <Button variant="outline" className="h-11 px-4 shrink-0 bg-white" onClick={openNew} disabled={!enabled}><Plus className="h-4 w-4" /> Add reward</Button>
       </div>
@@ -192,10 +188,7 @@ export default function RewardsEditor({ rewards, tiers, model, enabled }: Props)
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label htmlFor="rw-pts" className={LABEL}>Cost (points)</Label><Input id="rw-pts" type="number" min={needsCost ? 1 : 0} className={INPUT} value={form.costPoints} onChange={(e) => setForm({ ...form, costPoints: e.target.value })} required={needsCost && !form.costStamps} placeholder={forTier ? "0" : ""} /></div>
-              <div className="space-y-1"><Label htmlFor="rw-st" className={LABEL}>Cost (stamps)</Label><Input id="rw-st" type="number" min={0} className={INPUT} value={form.costStamps} onChange={(e) => setForm({ ...form, costStamps: e.target.value })} /></div>
-            </div>
+            <div className="space-y-1"><Label htmlFor="rw-pts" className={LABEL}>Cost (points)</Label><Input id="rw-pts" type="number" min={needsCost ? 1 : 0} className={INPUT} value={form.costPoints} onChange={(e) => setForm({ ...form, costPoints: e.target.value })} required={needsCost} placeholder={forTier ? "0" : ""} /></div>
             <p className="text-xs text-slate-brand">
               {forTier
                 ? `Leave the cost at 0 to make this a free benefit for ${tierName(form.tierId)} members and above.`

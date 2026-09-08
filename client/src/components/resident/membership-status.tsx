@@ -64,14 +64,12 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
 
   return (
     <>
-      <p className="text-sm">Free lets you browse every offer and see what it is worth. Membership is the card itself.</p>
+      <p className="text-sm">
+        {expired
+          ? "Your membership has run out. Renew to redeem offers again."
+          : "Free lets you look. Membership is the card itself: redeeming, points and tier status. One flat fee, billed once a year, with nothing charged per offer."}
+      </p>
       <FreePlanCompare />
-      <div>
-        <h3 className="font-display font-bold text-xl tracking-[-0.02em]">Become a member to redeem offers</h3>
-        <p className="text-sm text-slate-brand mt-1">
-          {expired ? "Your membership has run out. Renew to redeem offers again." : "One flat fee, billed once a year. No per-offer charges."}
-        </p>
-      </div>
       <div className="grid grid-cols-2 gap-3">
         <PlanOption
           selected={plan === "individual"}
@@ -100,6 +98,14 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
   );
 }
 
+/** Joining someone else's household: shown only to a resident who is not already in one. */
+export function HouseholdJoin() {
+  const { data } = useMembership();
+  if (!data || data.household.role === "primary" || data.household.role === "member") return null;
+  if (data.status === "active") return null;
+  return <HouseholdJoinPanel />;
+}
+
 export default function MembershipStatus() {
   const { data, isLoading } = useMembership();
 
@@ -117,7 +123,7 @@ export default function MembershipStatus() {
   const member = data.tier === "premium" && live;
   const expired = data.status === "active" && !live;
   const role = data.household.role;
-  const title = member ? "Member" : "Free membership";
+  const title = member ? "Member" : "Become a member";
 
   return (
     <section className="bg-sand rounded-2xl p-5 text-sea flex flex-col gap-4">
@@ -131,7 +137,9 @@ export default function MembershipStatus() {
           <StatusPill tone="muted">Cancelled</StatusPill>
         ) : expired ? (
           <StatusPill tone="buoy">Expired</StatusPill>
-        ) : null}
+        ) : (
+          <StatusPill tone="muted">On Free</StatusPill>
+        )}
       </div>
 
       {role === "member" ? (
@@ -164,10 +172,7 @@ export default function MembershipStatus() {
           <KeepMembershipButton />
         </>
       ) : (
-        <>
-          <ChoosePlan data={data} expired={expired} />
-          {role !== "primary" && <HouseholdJoinPanel />}
-        </>
+        <ChoosePlan data={data} expired={expired} />
       )}
     </section>
   );

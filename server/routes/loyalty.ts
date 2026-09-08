@@ -56,7 +56,6 @@ const earnSchema = z
 const redeemRewardSchema = z.object({ merchantId: z.string().uuid(), rewardId: z.string().uuid() });
 // drizzle-zod types these as plain strings; narrow them to the allowed values.
 const programUpdateSchema = insertLoyaltyProgramSchema.partial().extend({
-  model: z.enum(["points", "stamps"]).optional().nullable(),
   cardTheme: z.enum(CARD_THEMES).optional().nullable(),
   cardPattern: z.enum(CARD_PATTERNS).optional().nullable(),
 });
@@ -211,7 +210,6 @@ loyaltyRouter.get(
         userId: r.balance.userId,
         customerAlias: generateCustomerAlias({ id: r.balance.userId, username: r.username }),
         points: r.balance.points ?? 0,
-        stamps: r.balance.stamps ?? 0,
         statusPoints,
         tierWindowDays,
         tierName: tier?.name ?? null,
@@ -368,8 +366,6 @@ loyaltyRouter.get(
       ]);
       const { tiers, tier, nextTier: next, statusPoints, tierWindowDays } = status;
       const points = row.balance.points ?? 0;
-      const stamps = row.balance.stamps ?? 0;
-      const stampModel = row.program.model === "stamps";
       const check = (r: LoyaltyReward) => canClaim(r, tier, tiers, lastClaims.get(r.id) ?? null, now);
       const benefits = allRewards
         .filter(isTierBenefit)
@@ -379,8 +375,7 @@ loyaltyRouter.get(
           return { ...r, claimable: c.ok, nextClaimAt: c.nextClaimAt ? c.nextClaimAt.toISOString() : null };
         });
       const rewards = allRewards.filter((r) => !isTierBenefit(r));
-      const affordable = (r: LoyaltyReward) =>
-        stampModel ? (r.costStamps ?? 0) <= stamps && (r.costPoints ?? 0) <= points : (r.costPoints ?? 0) <= points;
+const affordable = (r: LoyaltyReward) => (r.costPoints ?? 0) <= points;
       const claimable = rewards.filter((r) => affordable(r) && check(r).ok);
       const nextReward = rewards
         .filter((r) => !affordable(r) && (r.costPoints ?? 0) > 0)
@@ -391,7 +386,6 @@ loyaltyRouter.get(
         merchant: row.merchant,
         ...cardDesign(row.program),
         points,
-        stamps,
         statusPoints,
         tierWindowDays,
         tier: tier ? { name: tier.name, color: tier.color, discountPercent: tier.discountPercent || null } : null,
@@ -456,7 +450,6 @@ async function claimResponse(claim: RewardClaim, reward: LoyaltyReward, merchant
       code: claim.code,
       claimedAt: claim.claimedAt,
       pointsSpent: claim.pointsSpent ?? 0,
-      stampsSpent: claim.stampsSpent ?? 0,
     },
     reward: { id: reward.id, name: reward.name, terms: reward.terms },
     merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
@@ -499,13 +492,7 @@ loyaltyRouter.post(
 
       // Tier benefits cost nothing; points rewards are paid from the spendable balance.
       const costPoints = isTierBenefit(reward) ? 0 : reward.costPoints ?? 0;
-      const costStamps = isTierBenefit(reward) ? 0 : reward.costStamps ?? 0;
       if ((balance.points ?? 0) < costPoints) throw badRequest("Not enough points for this reward");
-      if ((balance.stamps ?? 0) < costStamps) throw badRequest("Not enough stamps for this reward");
-
-      if (costStamps > 0) {
-        await loyaltyStore.updateBalance(balance.id, { stamps: (balance.stamps ?? 0) - costStamps }, tx);
-      }
       if (costPoints > 0) {
         await setPointsAndRefreshStatus(program, balance, (balance.points ?? 0) - costPoints, tx);
       }
@@ -517,7 +504,6 @@ loyaltyRouter.post(
           userId: user.id,
           code: await uniqueClaimCode(tx),
           pointsSpent: costPoints,
-          stampsSpent: costStamps,
         },
         tx,
       );

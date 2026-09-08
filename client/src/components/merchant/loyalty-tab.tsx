@@ -41,7 +41,6 @@ export default function LoyaltyTab() {
           </p>
         ) : (
           <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Fact label="Model" value={program.model} />
             <Fact label="Points per £1" value={program.pointsPerCurrency} />
             <Fact label="Points per scan" value={program.pointsPerRedemption} />
             <Fact label="Minimum spend to earn" value={formatPounds(program.minBasketEarn)} />

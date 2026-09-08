@@ -100,8 +100,12 @@ export default function DigitalMembershipCard({ user, membership }: DigitalMembe
           )}
         </div>
         <div className="flex-none text-right flex flex-col gap-0.5">
-          <p className="text-[9px] tracking-[0.18em] uppercase font-semibold opacity-70">{dateLabel}</p>
-          <p className="font-display font-bold text-lg leading-none">{dateValue}</p>
+          {member && expiry && (
+            <>
+              <p className="text-[9px] tracking-[0.18em] uppercase font-semibold opacity-70">{dateLabel}</p>
+              <p className="font-display font-bold text-lg leading-none">{dateValue}</p>
+            </>
+          )}
           <p className="text-[10px] opacity-70 mt-1 tabular-nums">No. {memberNumber(user.id)}</p>
         </div>
       </div>

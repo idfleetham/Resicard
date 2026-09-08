@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm, type Control, type FieldValues, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PhotoPicker from "@/components/resident/photo-picker";
 import { categoryLabel } from "@/components/resident/format";
+import PostcodeGate, { type PostcodeCheck } from "@/components/resident/postcode-gate";
+import { usePricing } from "@/components/pricing/use-pricing";
 
 type ResidentValues = z.infer<typeof registerResidentSchema>;
 type MerchantValues = z.infer<typeof registerMerchantSchema>;
@@ -71,6 +74,9 @@ interface FormProps<T> {
 }
 
 export function ResidentRegisterForm({ onSubmit, referralCode }: FormProps<ResidentValues> & { referralCode?: string }) {
+  const { data: pricing } = usePricing();
+  const [postcode, setPostcode] = useState("");
+  const [check, setCheck] = useState<PostcodeCheck | null>(null);
   const form = useForm<ResidentValues>({
     resolver: zodResolver(registerResidentSchema),
     defaultValues: {
@@ -80,10 +86,29 @@ export function ResidentRegisterForm({ onSubmit, referralCode }: FormProps<Resid
     },
   });
 
+  // The rest of the form only exists once the postcode passes, so the tidied
+  // postcode is the one that gets submitted.
+  const eligible = Boolean(check?.eligible && check.normalised);
+  const handleResult = (result: PostcodeCheck | null) => {
+    setCheck(result);
+    form.setValue("postcode", result?.eligible && result.normalised ? result.normalised : "");
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <AccountFields control={form.control} />
+        <PostcodeGate
+          value={postcode}
+          onChange={setPostcode}
+          onResult={handleResult}
+          result={check}
+          contactEmail={pricing?.contactEmail ?? "hello@resicard.co.uk"}
+        />
+        {!eligible ? null : (
+        <>
+        <div className="border-t border-[#E6E9E8] pt-4 space-y-4">
+          <AccountFields control={form.control} />
+        </div>
         <div className="border-t border-[#E6E9E8] pt-4 space-y-4">
           <TextField control={form.control} name="addressLine1" label="Address line 1" autoComplete="address-line1" placeholder="House number and street" />
           <FormField
@@ -99,10 +124,7 @@ export function ResidentRegisterForm({ onSubmit, referralCode }: FormProps<Resid
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <TextField control={form.control} name="town" label="Town" autoComplete="address-level2" />
-            <TextField control={form.control} name="postcode" label="Postcode" autoComplete="postal-code" placeholder="e.g. KY16 9AA" />
-          </div>
+          <TextField control={form.control} name="town" label="Town" autoComplete="address-level2" />
         </div>
         <FormField
           control={form.control}
@@ -135,11 +157,13 @@ export function ResidentRegisterForm({ onSubmit, referralCode }: FormProps<Resid
           )}
         />
         <p className="text-sm text-sea bg-sand rounded-xl p-4">
-          Next: we post a card with a code to your address to confirm you live here, then you pay the annual membership. You can browse offers straight away.
+          Next: you choose how to confirm you live here, by post or in person, then you pay the annual membership. You can browse offers straight away.
         </p>
         <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Creating your account" : "Join Resicard"}
         </Button>
+        </>
+        )}
       </form>
     </Form>
   );

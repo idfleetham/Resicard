@@ -218,6 +218,7 @@ RESEND_API_KEY=             # email; without it messages print to the log
 EMAIL_FROM=                 # e.g. Resicard <hello@resicard.co.uk>
 EMAIL_REPLY_TO=
 JOBS_SECRET=                # bearer token for POST /api/jobs/daily
+PREVIEW_MODE=true           # while the site carries demo data; remove before real members
 VAPID_PUBLIC_KEY=           # web push; without these, campaigns email only
 VAPID_PRIVATE_KEY=
 VAPID_SUBJECT=              # mailto:hello@resicard.co.uk

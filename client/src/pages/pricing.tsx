@@ -6,6 +6,7 @@ import ComparisonTable from "@/components/pricing/comparison-table";
 import AnalyticsPreview from "@/components/pricing/analytics-preview";
 import PricingFaq from "@/components/pricing/pricing-faq";
 import PublicCounter from "@/components/public-counter";
+import PreviewNotice from "@/components/preview-notice";
 import { merchantRows, residentRows } from "@/components/pricing/plan-features";
 import { trialPhrase, usePricing } from "@/components/pricing/use-pricing";
 import { useAuth } from "@/hooks/use-auth";
@@ -54,6 +55,7 @@ export default function PricingPage() {
       <Header />
 
       <main className="max-w-5xl mx-auto px-5 sm:px-6 py-8 sm:py-12 flex flex-col gap-10">
+        <PreviewNotice />
         <PublicCounter />
 
         {isLoading || !data ? (

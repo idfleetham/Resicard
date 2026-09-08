@@ -17,10 +17,7 @@ interface ClaimTarget {
 }
 
 function costLabel(r: LoyaltyReward): string {
-  const parts: string[] = [];
-  if (r.costPoints) parts.push(`${r.costPoints} points`);
-  if (r.costStamps) parts.push(`${r.costStamps} stamps`);
-  return parts.join(" + ") || "Free";
+  return r.costPoints ? `${r.costPoints} points` : "Free";
 }
 
 /** Sand panel listing every reward and tier benefit the resident can claim right now, one buoy button per row. */

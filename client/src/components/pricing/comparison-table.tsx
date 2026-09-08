@@ -55,11 +55,61 @@ function PriceHead({ column, width }: { column: ComparisonColumn; width: string 
   );
 }
 
+/**
+ * On a phone the table is the wrong shape: three plans plus a feature column
+ * either scroll sideways, which hides which column a tick belongs to, or squeeze
+ * the price note into a column two words wide. So below sm each plan becomes a
+ * card, and the paid ones list only what they add, which is how a person reads a
+ * price list anyway.
+ */
+function PlanCards({ columns, rows }: { columns: ComparisonColumn[]; rows: ComparisonRow[] }) {
+  return (
+    <div className="sm:hidden flex flex-col gap-3">
+      {columns.map((column, i) => {
+        const previous = i > 0 ? columns[i - 1] : null;
+        const included = rows.filter((r) => r.values[i] === true);
+        const inherited = previous ? rows.filter((r) => r.values[i - 1] === true) : [];
+        const added = included.filter((r) => !inherited.includes(r));
+        const figures = rows.filter((r) => typeof r.values[i] === "string");
+        const listed = previous ? added : included;
+
+        return (
+          <div key={column.plan} className="bg-white rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand">{column.plan}</p>
+            <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.02em] text-sea mt-1">
+              {column.price}
+            </p>
+            <p className="text-sm text-slate-brand mt-1">{column.note}</p>
+
+            {previous && (
+              <p className="text-[15px] text-sea mt-4 font-bold">Everything in {previous.plan}, plus</p>
+            )}
+
+            <ul className="mt-3 flex flex-col gap-2">
+              {figures.map((row) => (
+                <li key={row.feature} className="flex gap-2.5 text-[15px] leading-snug text-sea">
+                  <span className="font-bold shrink-0 tabular-nums">{String(row.values[i])}</span>
+                  <span>{row.feature.toLowerCase()}</span>
+                </li>
+              ))}
+              {listed.map((row) => (
+                <li key={row.feature} className="flex gap-2.5 text-[15px] leading-snug text-sea">
+                  <Check className="h-5 w-5 text-sea shrink-0" strokeWidth={2} aria-hidden="true" />
+                  <span>{row.feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            {column.footnote && <p className="text-xs text-slate-brand mt-4">{column.footnote}</p>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ComparisonTable({ title, intro, columns, rows }: ComparisonTableProps) {
   const width = columns.length > 2 ? "w-[20%]" : "w-[22%]";
-  // Three columns plus a feature label do not fit on a phone, so the table keeps its
-  // real type sizes and scrolls sideways inside the card instead.
-  const minWidth = columns.length > 2 ? "min-w-[520px]" : "";
   const hasFootnotes = columns.some((c) => c.footnote);
   const planNames = columns.map((c) => c.plan).join(", ");
 
@@ -70,8 +120,10 @@ export default function ComparisonTable({ title, intro, columns, rows }: Compari
         <p className="text-sm text-slate-brand mt-1">{intro}</p>
       </div>
 
-      <div className="bg-white rounded-2xl p-2 sm:p-4 overflow-x-auto">
-        <table className={`w-full border-collapse text-sea ${minWidth}`}>
+      <PlanCards columns={columns} rows={rows} />
+
+      <div className="hidden sm:block bg-white rounded-2xl p-4">
+        <table className="w-full border-collapse text-sea">
           <caption className="sr-only">{title}: what the {planNames} plans include</caption>
           <thead>
             <tr className="border-b border-[#E6E9E8]">

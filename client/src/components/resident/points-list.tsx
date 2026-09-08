@@ -16,7 +16,6 @@ export interface LoyaltyMembership {
   cardTheme: string;
   cardPattern: string;
   points: number;
-  stamps: number;
   statusPoints: number;
   tierWindowDays: number;
   tier: { name: string; color: string | null; discountPercent: number | null } | null;
@@ -68,10 +67,7 @@ function hintFor(m: LoyaltyMembership): string {
 }
 
 function costLabel(r: LoyaltyReward): string {
-  const parts: string[] = [];
-  if (r.costPoints) parts.push(`${r.costPoints} points`);
-  if (r.costStamps) parts.push(`${r.costStamps} stamps`);
-  return parts.join(" + ") || "Free";
+  return r.costPoints ? `${r.costPoints} points` : "Free";
 }
 
 /** "dd Mon" for a next-claim date. */
@@ -94,7 +90,7 @@ const PILL_OFF = "text-[11px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 
 
 function PointsRow({ membership }: { membership: LoyaltyMembership }) {
   const [open, setOpen] = useState(false);
-  const { merchant, points, stamps, tier, tiers, benefits, rewards, claimable } = membership;
+  const { merchant, points, tier, tiers, benefits, rewards, claimable } = membership;
   const claimableIds = new Set(claimable.map((r) => r.id));
 
   return (
@@ -118,9 +114,9 @@ function PointsRow({ membership }: { membership: LoyaltyMembership }) {
         <div className="shrink-0 flex flex-col items-end gap-1">
           <div className="bg-sea text-foam rounded-xl px-3 py-1.5 min-w-[64px] text-center">
             <p className="font-display font-extrabold text-2xl leading-none tracking-[-0.02em] tabular-nums">
-              {stamps > 0 && !points ? stamps : points}
+              {points}
             </p>
-            <p className="text-[10px] uppercase tracking-[0.12em] font-bold opacity-80 mt-0.5">{stamps > 0 && !points ? "stamps" : "points"}</p>
+            <p className="text-[10px] uppercase tracking-[0.12em] font-bold opacity-80 mt-0.5">points</p>
           </div>
           {tier && (
             <p className="text-xs font-bold text-sea flex items-center gap-1.5">

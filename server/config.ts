@@ -96,7 +96,7 @@ export const config = {
   // early numbers argue against joining and there is no honest way to dress them up.
   publicCounterMinimum: readNumber("PUBLIC_COUNTER_MIN", 40),
   townName: process.env.TOWN_NAME ?? "St Andrews", // the town this instance serves; shown on the card and the landing page
-  localPostcodePrefixes: (process.env.LOCAL_POSTCODE_PREFIXES ?? "KY16,KY15,KY10,DD6")
+  localPostcodePrefixes: (process.env.LOCAL_POSTCODE_PREFIXES ?? "KY16,KY9,KY10,KY15 4,KY15 5")
     .split(",")
     .map((p) => p.trim().toUpperCase())
     .filter((p) => p.length > 0),
@@ -106,6 +106,10 @@ export const config = {
   // set in the host's secrets and picked up on a restart. A VITE_ variable is
   // baked into the bundle at build time, which means a rebuild every time it
   // changes and a map that silently stays a list until someone works that out.
+  // A demo dataset on a public site shows outlets that do not exist, and someone
+  // could join expecting to use them. This puts an honest notice on every public
+  // page rather than letting the site quietly imply partnerships it does not have.
+  previewMode: (process.env.PREVIEW_MODE ?? "").trim().toLowerCase() === "true",
   mapTileUrl: (process.env.MAP_TILE_URL ?? process.env.VITE_MAP_TILE_URL ?? "").trim(),
   mapTileAttribution: (process.env.MAP_TILE_ATTRIBUTION ?? process.env.VITE_MAP_TILE_ATTRIBUTION ?? "").trim(),
   mapMaxZoom: readNumber("MAP_MAX_ZOOM", 18),
@@ -128,6 +132,12 @@ export const config = {
   jobsSecret: process.env.JOBS_SECRET ?? "",
   postcardCodeDays: readNumber("POSTCARD_CODE_DAYS", 60),
   postcardMaxAttempts: readNumber("POSTCARD_MAX_ATTEMPTS", 5),
+  // Where and when a resident can be verified in person. Configuration rather than
+  // a hard-coded address, so it can say "get in touch and we will arrange it"
+  // before there is a regular time and place, and change without a deploy.
+  verifyInPersonDetails:
+    process.env.VERIFY_IN_PERSON_DETAILS?.trim() ||
+    "Get in touch and we will arrange a time and place that suits you.",
   port: readNumber("PORT", 5000),
 } as const;
 

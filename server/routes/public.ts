@@ -8,6 +8,7 @@ import * as userStore from "../storage/users";
 import { asyncHandler, notFound, badRequest } from "../lib/http";
 import { householdFeeGbp } from "../lib/membership";
 import { dataUrlToBuffer } from "../lib/uploads";
+import { describePostcode } from "../lib/postcode";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -24,6 +25,10 @@ export const publicRouter = Router();
  * browser either way), so serving it here costs nothing and buys the ability to
  * change providers without a rebuild.
  */
+publicRouter.get("/api/preview-mode", (_req, res) => {
+  res.json({ preview: config.previewMode, town: config.townName });
+});
+
 publicRouter.get("/api/map-config", (_req, res) => {
   res.json({
     tileUrl: config.mapTileUrl,
@@ -31,6 +36,17 @@ publicRouter.get("/api/map-config", (_req, res) => {
     maxZoom: config.mapMaxZoom,
     centre: { lat: config.mapCentreLat, lng: config.mapCentreLng },
   });
+});
+
+/**
+ * Answer one postcode before anything else is typed, so nobody fills in a whole
+ * form to be told they cannot join. The configured prefix list is never in the
+ * response: the answer is about this postcode, not the rule behind it.
+ */
+publicRouter.get("/api/postcode-check", (req, res) => {
+  const raw = typeof req.query.postcode === "string" ? req.query.postcode : "";
+  const { valid, eligible, normalised } = describePostcode(raw);
+  res.json({ valid, eligible, normalised, town: config.townName });
 });
 
 publicRouter.get(
@@ -98,6 +114,9 @@ publicRouter.get("/api/pricing", (_req, res) => {
   res.json({
     townName: config.townName,
     currency: "GBP",
+    // Where a visitor writes to us: used by the pricing page and by sign-up, so
+    // the address is never typed into the client twice.
+    contactEmail: config.emailReplyTo,
     freeTrialDays: config.freeTrialDays,
     resident: {
       individual: config.residentAnnualFeeGbp,

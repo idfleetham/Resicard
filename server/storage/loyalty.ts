@@ -198,7 +198,6 @@ export async function listRewardClaimsForMerchant(
       code: rewardClaims.code,
       claimedAt: rewardClaims.claimedAt,
       pointsSpent: rewardClaims.pointsSpent,
-      stampsSpent: rewardClaims.stampsSpent,
       rewardId: rewardClaims.rewardId,
       rewardName: loyaltyRewards.name,
       userId: rewardClaims.userId,
@@ -235,7 +234,7 @@ export async function getBalance(merchantId: string, userId: number, client: DbC
 }
 
 export async function createBalance(
-  values: { merchantId: string; userId: number; points?: number; stamps?: number; tierId?: string | null },
+  values: { merchantId: string; userId: number; points?: number; tierId?: string | null },
   client: DbClient = db,
 ): Promise<LoyaltyBalance> {
   const [row] = await client.insert(loyaltyBalances).values(values).returning();
@@ -244,7 +243,7 @@ export async function createBalance(
 
 export async function updateBalance(
   id: string,
-  values: { points?: number; stamps?: number; tierId?: string | null },
+  values: { points?: number; tierId?: string | null },
   client: DbClient = db,
 ): Promise<LoyaltyBalance | undefined> {
   const [row] = await client

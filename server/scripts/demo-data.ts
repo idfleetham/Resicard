@@ -213,7 +213,6 @@ export interface DemoTier {
 export interface DemoReward {
   name: string;
   costPoints?: number;
-  costStamps?: number;
   claimRule: "once" | "weekly" | "monthly" | "unlimited";
   /** Index into `tiers`: members of this tier and above only. Costless entries are tier benefits. */
   tier?: number;
@@ -221,7 +220,6 @@ export interface DemoReward {
 }
 
 export interface DemoLoyalty {
-  model: "points" | "stamps";
   pointsPerCurrency: number;
   pointsPerRedemption: number;
   minBasketEarn: number;
@@ -260,7 +258,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.restaurant,
     reservation: { provider: "opentable", url: "https://book.harrow-herring.test/reserve" },
     loyalty: {
-      model: "points", pointsPerCurrency: 8, pointsPerRedemption: 350, minBasketEarn: 15,
+      pointsPerCurrency: 8, pointsPerRedemption: 350, minBasketEarn: 15,
       earnCooldownMinutes: 45, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Deckhand", threshold: 0, multiplier: 1 },
@@ -310,7 +308,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.restaurant,
     reservation: { provider: "resdiary", url: "https://reservations.kinnaird-table.test/book" },
     loyalty: {
-      model: "points", pointsPerCurrency: 10, pointsPerRedemption: 450, minBasketEarn: 20,
+      pointsPerCurrency: 10, pointsPerRedemption: 450, minBasketEarn: 20,
       earnCooldownMinutes: 60, dailyEarnCap: 1, tierWindowDays: 730,
       tiers: [
         { name: "Regular", threshold: 0, multiplier: 1 },
@@ -350,7 +348,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.restaurantSeven,
     reservation: { provider: "sevenrooms", url: "https://tables.saltgrass-kitchen.test" },
     loyalty: {
-      model: "points", pointsPerCurrency: 12, pointsPerRedemption: 430, minBasketEarn: 10,
+      pointsPerCurrency: 12, pointsPerRedemption: 430, minBasketEarn: 10,
       earnCooldownMinutes: 30, dailyEarnCap: 3, tierWindowDays: 180,
       tiers: [
         { name: "Sprout", threshold: 0, multiplier: 1 },
@@ -409,7 +407,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.restaurant,
     reservation: { provider: "quandoo", url: "https://booking.braeburn-dining.test" },
     loyalty: {
-      model: "points", pointsPerCurrency: 6, pointsPerRedemption: 250, minBasketEarn: 25,
+      pointsPerCurrency: 6, pointsPerRedemption: 250, minBasketEarn: 25,
       earnCooldownMinutes: 120, dailyEarnCap: 1, tierWindowDays: 365,
       tiers: [
         { name: "Orchard", threshold: 0, multiplier: 1 },
@@ -444,7 +442,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.pub,
     reservation: { provider: "website", url: "https://gowfers-rest.test/tables" },
     loyalty: {
-      model: "points", pointsPerCurrency: 15, pointsPerRedemption: 360, minBasketEarn: 0,
+      pointsPerCurrency: 15, pointsPerRedemption: 360, minBasketEarn: 0,
       earnCooldownMinutes: 20, dailyEarnCap: 4, tierWindowDays: 365,
       tiers: [
         { name: "Caddie", threshold: 0, multiplier: 1 },
@@ -488,7 +486,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.pub,
     reservation: { provider: "website", url: "https://bell-brambles.test/book" },
     loyalty: {
-      model: "points", pointsPerCurrency: 12, pointsPerRedemption: 310, minBasketEarn: 6,
+      pointsPerCurrency: 12, pointsPerRedemption: 310, minBasketEarn: 6,
       earnCooldownMinutes: 30, dailyEarnCap: 3, tierWindowDays: 365,
       tiers: [
         { name: "Snug", threshold: 0, multiplier: 1 },
@@ -536,7 +534,7 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "22", phone: "01334 471438", plan: "standard", theme: "rust", pattern: "wave",
     hours: HOURS.pubLate,
     loyalty: {
-      model: "points", pointsPerCurrency: 10, pointsPerRedemption: 180, minBasketEarn: 0,
+      pointsPerCurrency: 10, pointsPerRedemption: 180, minBasketEarn: 0,
       earnCooldownMinutes: 15, dailyEarnCap: 5, tierWindowDays: 180,
       tiers: [
         { name: "Newcomer", threshold: 0, multiplier: 1 },
@@ -573,7 +571,7 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "11", phone: "01334 471540", plan: "standard", theme: "sea", pattern: "plain",
     hours: HOURS.pub,
     loyalty: {
-      model: "points", pointsPerCurrency: 14, pointsPerRedemption: 290, minBasketEarn: 5,
+      pointsPerCurrency: 14, pointsPerRedemption: 290, minBasketEarn: 5,
       earnCooldownMinutes: 45, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Float", threshold: 0, multiplier: 1 },
@@ -606,7 +604,7 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "55", phone: "01334 472101", plan: "insight", theme: "sand", pattern: "wave",
     hours: HOURS.cafe,
     loyalty: {
-      model: "points", pointsPerCurrency: 20, pointsPerRedemption: 170, minBasketEarn: 0,
+      pointsPerCurrency: 20, pointsPerRedemption: 170, minBasketEarn: 0,
       earnCooldownMinutes: 30, dailyEarnCap: 3, tierWindowDays: 365,
       tiers: [
         { name: "First Cup", threshold: 0, multiplier: 1 },
@@ -650,17 +648,16 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "8", phone: "01334 472213", plan: "standard", theme: "sea", pattern: "stripe",
     hours: HOURS.cafe,
     loyalty: {
-      // A stamp card: one stamp a visit, no per-pound earning.
-      model: "stamps", pointsPerCurrency: 0, pointsPerRedemption: 1, minBasketEarn: 0,
-      earnCooldownMinutes: 240, dailyEarnCap: 1, tierWindowDays: 365,
+      pointsPerCurrency: 15, pointsPerRedemption: 70, minBasketEarn: 3,
+      earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Kettle On", threshold: 0, multiplier: 1 },
-        { name: "Second Pot", threshold: 3, multiplier: 1 },
-        { name: "Kettle Club", threshold: 9, multiplier: 1 },
+        { name: "Second Pot", threshold: 300, multiplier: 1.1 },
+        { name: "Kettle Club", threshold: 900, multiplier: 1.25 },
       ],
       rewards: [
-        { name: "Pot of tea", costStamps: 6, claimRule: "monthly" },
-        { name: "Scone and jam", costStamps: 10, claimRule: "unlimited" },
+        { name: "Pot of tea", costPoints: 450, claimRule: "monthly" },
+        { name: "Scone and jam", costPoints: 800, claimRule: "unlimited" },
         { name: "Kettle Club refill", claimRule: "weekly", tier: 2 },
       ],
     },
@@ -699,7 +696,7 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "17", phone: "01334 472437", plan: "standard", theme: "ink", pattern: "wave",
     hours: HOURS.cafe,
     loyalty: {
-      model: "points", pointsPerCurrency: 15, pointsPerRedemption: 220, minBasketEarn: 3,
+      pointsPerCurrency: 15, pointsPerRedemption: 220, minBasketEarn: 3,
       earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Sea Air", threshold: 0, multiplier: 1 },
@@ -757,7 +754,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.bar,
     reservation: { provider: "resdiary", url: "https://book.lamplight-wine.test" },
     loyalty: {
-      model: "points", pointsPerCurrency: 8, pointsPerRedemption: 260, minBasketEarn: 15,
+      pointsPerCurrency: 8, pointsPerRedemption: 260, minBasketEarn: 15,
       earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Glass", threshold: 0, multiplier: 1 },
@@ -809,17 +806,16 @@ export const OUTLETS: DemoOutlet[] = [
     houseNumber: "5", phone: "01334 474104", plan: "standard", theme: "sea", pattern: "stripe",
     hours: HOURS.takeaway,
     loyalty: {
-      // A stamp card, the way a chip shop actually runs one.
-      model: "stamps", pointsPerCurrency: 0, pointsPerRedemption: 1, minBasketEarn: 0,
-      earnCooldownMinutes: 90, dailyEarnCap: 1, tierWindowDays: 180,
+      pointsPerCurrency: 10, pointsPerRedemption: 90, minBasketEarn: 5,
+      earnCooldownMinutes: 90, dailyEarnCap: 2, tierWindowDays: 180,
       tiers: [
         { name: "Single Fish", threshold: 0, multiplier: 1 },
-        { name: "Regular Order", threshold: 3, multiplier: 1 },
-        { name: "Friday Usual", threshold: 8, multiplier: 1 },
+        { name: "Regular Order", threshold: 350, multiplier: 1.1 },
+        { name: "Friday Usual", threshold: 900, multiplier: 1.25 },
       ],
       rewards: [
-        { name: "Portion of chips", costStamps: 5, claimRule: "monthly" },
-        { name: "Fish supper", costStamps: 10, claimRule: "unlimited" },
+        { name: "Portion of chips", costPoints: 450, claimRule: "monthly" },
+        { name: "Fish supper", costPoints: 1000, claimRule: "unlimited" },
         { name: "Friday Usual free can", claimRule: "weekly", tier: 2 },
       ],
     },
@@ -875,7 +871,7 @@ export const OUTLETS: DemoOutlet[] = [
     hours: HOURS.hotel,
     reservation: { provider: "website", url: "https://windward-house.test/reservations" },
     loyalty: {
-      model: "points", pointsPerCurrency: 6, pointsPerRedemption: 170, minBasketEarn: 10,
+      pointsPerCurrency: 6, pointsPerRedemption: 170, minBasketEarn: 10,
       earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 730,
       tiers: [
         { name: "Day Guest", threshold: 0, multiplier: 1 },

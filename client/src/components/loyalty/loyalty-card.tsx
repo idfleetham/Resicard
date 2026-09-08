@@ -16,7 +16,7 @@ export interface LoyaltyCardProps {
   pattern?: string | null;
   tier?: LoyaltyCardTier | null;
   points: number;
-  /** "points" for a points programme, "stamps" for a stamp one. */
+  /** The unit label under the number. Defaults to "points". */
   unit?: string;
   /** The flat tier discount, the number that matters at the bar. Null when the tier has none. */
   discountPercent?: number | null;
