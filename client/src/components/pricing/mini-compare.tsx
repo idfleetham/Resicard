@@ -24,10 +24,10 @@ export function FeatureList({ items }: { items: string[] }) {
 }
 
 /**
- * The compact Free-against-Premium reminder used inside the app. It is a summary,
+ * The compact Free-against-Member reminder used inside the app. It is a summary,
  * not a copy of the pricing page; the link goes to the full comparison.
  */
-export default function MiniCompare({ free, premium }: { free: string[]; premium: string[] }) {
+export default function MiniCompare({ free, member }: { free: string[]; member: string[] }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="bg-white/70 rounded-2xl p-4 flex flex-col gap-2">
@@ -35,8 +35,8 @@ export default function MiniCompare({ free, premium }: { free: string[]; premium
         <FeatureList items={free} />
       </div>
       <div className="bg-white rounded-2xl p-4 flex flex-col gap-2">
-        <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand">Premium</span>
-        <FeatureList items={premium} />
+        <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand">Member</span>
+        <FeatureList items={member} />
       </div>
     </div>
   );

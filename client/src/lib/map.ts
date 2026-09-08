@@ -4,13 +4,30 @@ import "leaflet/dist/leaflet.css";
 // Leaflet setup shared by the resident map and the merchant pin picker.
 //
 // Tiles are a running cost and a licensing decision, so the source is configured
-// rather than hard-coded. Setting VITE_MAP_TILE_URL to an empty string turns the
-// map off entirely and every view that uses it falls back to a plain list.
+// rather than hard-coded. The intended provider is the Ordnance Survey OS Maps API
+// (ZXY endpoint), which suits a UK-only product: authoritative UK detail, a generous
+// free allowance and no international data transfer.
+//
+//   VITE_MAP_TILE_URL=https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=YOUR_KEY
+//
+// Light_3857 is the OS style closest to the Resicard palette. OS require their
+// attribution to stay visible, so VITE_MAP_TILE_ATTRIBUTION must be set alongside
+// the URL. The key ships in the client bundle and so is public: restrict it by
+// referrer in the OS Data Hub console rather than treating it as a secret.
+//
+// There is deliberately no built-in default. An unconfigured deployment gets no
+// tiles at all, so the app cannot quietly ship on someone else's public tile
+// server; every view that uses the map falls back to a plain list instead.
 
-export const TILE_URL = (import.meta.env.VITE_MAP_TILE_URL ?? "https://tile.openstreetmap.org/{z}/{x}/{y}.png").trim();
+export const TILE_URL = (import.meta.env.VITE_MAP_TILE_URL ?? "").trim();
 
-export const TILE_ATTRIBUTION =
-  import.meta.env.VITE_MAP_TILE_ATTRIBUTION ?? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+export const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION ?? "";
+
+/**
+ * OS raster styles stop at a style-specific zoom, and asking for a tile past it
+ * returns an error rather than a picture, so the ceiling is configurable.
+ */
+export const TILE_MAX_ZOOM = Number(import.meta.env.VITE_MAP_MAX_ZOOM ?? 18) || 18;
 
 /**
  * Where a map opens before it has anything to show. The resident map uses the
@@ -18,6 +35,31 @@ export const TILE_ATTRIBUTION =
  * call, and mirrors the MAP_CENTRE_LAT / MAP_CENTRE_LNG defaults on the server.
  */
 export const FALLBACK_CENTRE: [number, number] = [56.339, -2.795];
+
+/**
+ * How the pins are framed the first time they are drawn. The padding is small because
+ * on a phone the map is only a few hundred pixels tall and generous padding leaves the
+ * pins as a dot in the middle; the zoom ceiling stops a lone outlet dropping to street
+ * level, where the town around it is no longer recognisable.
+ */
+export const FIT_OPTIONS: L.FitBoundsOptions = { padding: [24, 24], maxZoom: 15 };
+
+/** The smallest area the map will frame, so a tight cluster of outlets fills it. */
+const MIN_SPAN_METRES = 700;
+
+/**
+ * Widens bounds that are tighter than MIN_SPAN_METRES. Four outlets a few hundred
+ * metres apart otherwise fit into a sliver of the frame and float in the middle of it.
+ */
+export function framedBounds(bounds: L.LatLngBounds): L.LatLngBounds {
+  const centre = bounds.getCenter();
+  const halfLat = MIN_SPAN_METRES / 2 / 111_320;
+  const halfLng = halfLat / Math.max(Math.cos((centre.lat * Math.PI) / 180), 0.01);
+  return L.latLngBounds(
+    [Math.min(bounds.getSouth(), centre.lat - halfLat), Math.min(bounds.getWest(), centre.lng - halfLng)],
+    [Math.max(bounds.getNorth(), centre.lat + halfLat), Math.max(bounds.getEast(), centre.lng + halfLng)],
+  );
+}
 
 /** False when this deployment has deliberately no tile source; callers show the list instead. */
 export const MAP_ENABLED = TILE_URL.length > 0;
@@ -107,7 +149,7 @@ export const MOBILE_SAFE_OPTIONS: L.MapOptions = {
 /** Adds the configured tile layer, calling back if the tiles cannot be fetched. */
 export function addTiles(map: L.Map, onError: () => void): void {
   if (!MAP_ENABLED) return;
-  const layer = L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 });
+  const layer = L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: TILE_MAX_ZOOM });
   layer.on("tileerror", onError);
   layer.addTo(map);
 }

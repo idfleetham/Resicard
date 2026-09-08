@@ -5,8 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { errorMessage, formatDate, formatPounds, monthlyFromAnnual, trialLengthLabel } from "./format";
 import { HouseholdJoinPanel, HouseholdMemberPanel, HouseholdPrimaryPanel } from "./household-panel";
-import { CancelNowLink, DowngradeButton, DowngradeScheduledNote, KeepPremiumButton } from "./membership-actions";
-import { FreePlanCompare, PremiumIncludes } from "./plan-reminder";
+import { CancelNowLink, DowngradeButton, DowngradeScheduledNote, KeepMembershipButton } from "./membership-actions";
+import { FreePlanCompare, MembershipIncludes } from "./plan-reminder";
 import { isMembershipLive, useMembership, useRefreshMembership, type MembershipInfo, type MembershipPlan } from "./use-membership";
 
 export type { MembershipInfo } from "./use-membership";
@@ -64,12 +64,12 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
 
   return (
     <>
-      <p className="text-sm">Free lets you browse every offer and see what it is worth. Premium is the card itself.</p>
+      <p className="text-sm">Free lets you browse every offer and see what it is worth. Membership is the card itself.</p>
       <FreePlanCompare />
       <div>
-        <h3 className="font-display font-bold text-xl tracking-[-0.02em]">Go Premium to redeem offers</h3>
+        <h3 className="font-display font-bold text-xl tracking-[-0.02em]">Become a member to redeem offers</h3>
         <p className="text-sm text-slate-brand mt-1">
-          {expired ? "Your Premium membership has run out. Renew to redeem offers again." : "One flat fee, billed once a year. No per-offer charges."}
+          {expired ? "Your membership has run out. Renew to redeem offers again." : "One flat fee, billed once a year. No per-offer charges."}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -94,7 +94,7 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
         </p>
       )}
       <Button variant="default" className="w-full h-12 text-base" disabled={checkout.isPending} onClick={() => checkout.mutate()}>
-        {checkout.isPending ? "Starting payment" : trial ? `Start ${trial} free` : expired ? "Renew Premium" : "Go Premium"}
+        {checkout.isPending ? "Starting payment" : trial ? `Start ${trial} free` : expired ? "Renew my membership" : "Become a member"}
       </Button>
     </>
   );
@@ -114,18 +114,18 @@ export default function MembershipStatus() {
   }
 
   const live = isMembershipLive(data);
-  const premium = data.tier === "premium" && live;
+  const member = data.tier === "premium" && live;
   const expired = data.status === "active" && !live;
   const role = data.household.role;
-  const title = premium ? "Premium membership" : "Free membership";
+  const title = member ? "Member" : "Free membership";
 
   return (
     <section className="bg-sand rounded-2xl p-5 text-sea flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="font-display font-bold text-2xl tracking-[-0.02em]">{title}</h2>
-        {premium && data.inTrial && data.renews ? (
+        {member && data.inTrial && data.renews ? (
           <StatusPill tone="sand">Free trial</StatusPill>
-        ) : premium ? (
+        ) : member ? (
           <StatusPill tone={data.renews ? "green" : "muted"}>{data.renews ? "Active" : "Ending"}</StatusPill>
         ) : data.status === "cancelled" ? (
           <StatusPill tone="muted">Cancelled</StatusPill>
@@ -136,10 +136,10 @@ export default function MembershipStatus() {
 
       {role === "member" ? (
         <>
-          {premium && !data.renews && <DowngradeScheduledNote data={data} />}
+          {member && !data.renews && <DowngradeScheduledNote data={data} />}
           <HouseholdMemberPanel data={data} />
         </>
-      ) : premium && data.renews ? (
+      ) : member && data.renews ? (
         <>
           {data.inTrial ? (
             <p className="text-sm">
@@ -151,17 +151,17 @@ export default function MembershipStatus() {
               Renews on <span className="font-bold">{formatDate(data.expiry)}</span>.
             </p>
           )}
-          <PremiumIncludes />
+          <MembershipIncludes />
           {role === "primary" && <HouseholdPrimaryPanel data={data} />}
           <DowngradeButton data={data} />
           <CancelNowLink />
         </>
-      ) : premium ? (
+      ) : member ? (
         <>
           <DowngradeScheduledNote data={data} />
-          <PremiumIncludes />
+          <MembershipIncludes />
           {role === "primary" && <HouseholdPrimaryPanel data={data} />}
-          <KeepPremiumButton />
+          <KeepMembershipButton />
         </>
       ) : (
         <>

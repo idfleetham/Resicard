@@ -12,7 +12,7 @@ export default function OfferPerformance({ byOffer }: { byOffer: OfferPoint[] })
   return (
     <div className="bg-white rounded-2xl p-5">
       <SectionTitle>Offer performance</SectionTitle>
-      <p className="text-xs text-slate-brand mt-1 mb-4">Which offers residents actually used, over the 90 days.</p>
+      <p className="text-xs text-slate-brand mt-1 mb-4">Which offers residents actually used, over the last 90 days.</p>
 
       {byOffer.length === 0 ? (
         <p className="text-sm text-slate-brand">No offers have been redeemed yet.</p>

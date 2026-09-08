@@ -70,7 +70,7 @@ export default function TimingCharts({ byDay, byHour }: { byDay: DayPoint[]; byH
   const quiet = byDay.every((d) => d.redemptions === 0);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <Card title="Busiest days" note="Redemptions by day of the week, over the 90 days.">
+      <Card title="Busiest days" note="Redemptions by day of the week, over the last 90 days.">
         {quiet ? <p className="text-sm text-slate-brand">No redemptions yet.</p> : <DayChart byDay={byDay} />}
       </Card>
       <Card title="Busiest hours" note="Redemptions by hour, in local time.">

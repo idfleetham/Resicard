@@ -193,7 +193,7 @@ describe("redeem eligibility reasons", () => {
     const now = new Date("2026-07-10T12:00:00Z");
     expect(residentRedeemReasons({ role: "resident", isResidencyVerified: false }, { status: "inactive", expiry: null }, now)).toEqual([
       "Residency not yet verified",
-      "Premium membership needed to redeem offers",
+      "Membership needed to redeem offers",
     ]);
     expect(
       residentRedeemReasons({ role: "resident", isResidencyVerified: true }, { status: "active", expiry: new Date("2026-01-01") }, now),

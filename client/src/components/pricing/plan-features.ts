@@ -38,7 +38,7 @@ export const RESIDENT_FREE_FEATURES = [
 ];
 
 /** What paying adds. Everything below depends on being able to redeem, which is why it sits here. */
-export const RESIDENT_PREMIUM_FEATURES = [
+export const RESIDENT_MEMBER_FEATURES = [
   "The verified Resicard",
   "Redeem offers",
   "Earn points and tier status",
@@ -51,7 +51,7 @@ export const RESIDENT_PREMIUM_FEATURES = [
 export function residentRows(): ComparisonRow[] {
   return [
     ...RESIDENT_FREE_FEATURES.map((feature) => ({ feature, values: [true, true] })),
-    ...RESIDENT_PREMIUM_FEATURES.map((feature) => ({ feature, values: [false, true] })),
+    ...RESIDENT_MEMBER_FEATURES.map((feature) => ({ feature, values: [false, true] })),
   ];
 }
 

@@ -19,18 +19,18 @@ interface ScanResponse {
   reasons: string[];
 }
 
-const PREMIUM_REASON = "premium membership";
+const MEMBERSHIP_REASON = "membership needed";
 
 function fixLinkFor(reason: string): { href: string; label: string } | null {
   const r = reason.toLowerCase();
   if (r.includes("residency") || r.includes("verified")) return { href: "/resident", label: "Verify your address" };
-  if (r.includes("membership")) return { href: "/resident?tab=resicard", label: "Go Premium" };
+  if (r.includes("membership")) return { href: "/resident?tab=resicard", label: "Become a member" };
   return null;
 }
 
 /** True when the only thing stopping a redemption is that the resident is on Free. */
-function premiumOnly(canRedeem: boolean, reasons: string[]): boolean {
-  return !canRedeem && reasons.length > 0 && reasons.every((r) => r.toLowerCase().includes(PREMIUM_REASON));
+function membershipOnly(canRedeem: boolean, reasons: string[]): boolean {
+  return !canRedeem && reasons.length > 0 && reasons.every((r) => r.toLowerCase().includes(MEMBERSHIP_REASON));
 }
 
 function OfferList({ offers, disabled, onSelect }: { offers: ScanOffer[]; disabled: boolean; onSelect: (offer: ScanOffer) => void }) {
@@ -108,7 +108,7 @@ export default function ScanPage() {
   }
 
   const { merchant, offers, unavailable = [], loyalty, canRedeem, reasons } = scan.data;
-  const needsPremium = premiumOnly(canRedeem, reasons);
+  const needsMembership = membershipOnly(canRedeem, reasons);
 
   return shell(
     <>
@@ -135,15 +135,15 @@ export default function ScanPage() {
         </div>
       )}
 
-      {needsPremium ? (
+      {needsMembership ? (
         <div className="flex flex-col gap-3">
           <div className="bg-sand rounded-2xl p-5 flex flex-col gap-3">
             <div>
-              <p className="font-display font-bold text-xl tracking-[-0.02em]">Go Premium to redeem offers</p>
+              <p className="font-display font-bold text-xl tracking-[-0.02em]">Become a member to redeem offers</p>
               {loyalty && <p className="text-sm text-slate-brand mt-1">Points and tier benefits work on Free.</p>}
             </div>
             <Button asChild variant="buoy" className="w-full h-12 text-base">
-              <Link href="/resident?tab=resicard">Go Premium</Link>
+              <Link href="/resident?tab=resicard">Become a member</Link>
             </Button>
           </div>
           {offers.length > 0 && <OfferList offers={offers} disabled onSelect={() => undefined} />}

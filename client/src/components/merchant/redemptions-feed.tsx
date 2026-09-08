@@ -50,14 +50,14 @@ export default function RedemptionsFeed() {
             {dataUpdatedAt ? ` Last updated ${formatTime(new Date(dataUpdatedAt))}.` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
-          <div>
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-3 shrink-0">
+          <div className="min-w-0">
             <Label htmlFor="from" className="text-xs text-slate-brand">From</Label>
-            <Input id="from" type="date" className={`${INPUT} mt-1`} value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input id="from" type="date" className={`${INPUT} mt-1 w-full`} value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
-          <div>
+          <div className="min-w-0">
             <Label htmlFor="to" className="text-xs text-slate-brand">To</Label>
-            <Input id="to" type="date" className={`${INPUT} mt-1`} value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input id="to" type="date" className={`${INPUT} mt-1 w-full`} value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </div>
       </div>

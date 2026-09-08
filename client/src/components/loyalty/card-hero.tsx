@@ -7,7 +7,7 @@ import { themeStyle, type CardStyle } from "@/components/loyalty/card-themes";
 /** Response of GET /api/loyalty/card/:merchantId. */
 export interface LoyaltyCardData {
   merchant: { id: string; name: string; logoUrl: string | null };
-  resident: { firstName: string | null; surname: string | null; profilePhoto: string | null; alias: string };
+  resident: { firstName: string | null; surname: string | null; profilePhoto: string | null };
   cardTheme: string;
   cardPattern: string;
   points: number;
@@ -145,10 +145,10 @@ export default function CardHero({ card }: { card: LoyaltyCardData }) {
         <div className="flex items-center gap-4">
           <ResidentPhoto photo={resident.profilePhoto} ink={style.foreground} />
           <div className="min-w-0 flex-1">
+            {/* The name is enough for staff. The alias exists so merchants never
+                see a person in their data; printing it here would only tell the
+                resident we keep one. */}
             <p className="font-display font-bold text-[24px] leading-none tracking-[-0.02em] truncate">{name}</p>
-            <p className="text-xs font-semibold mt-1 truncate" style={{ color: style.mutedForeground }}>
-              {resident.alias}
-            </p>
           </div>
           <span
             className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-right leading-tight"

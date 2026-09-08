@@ -17,8 +17,8 @@ function steps(monthly: string | null) {
   return [
     { title: "Prove you live here.", text: "We post a card with a code to your address, or an admin verifies you in person. No documents are stored." },
     {
-      title: "Free or Premium.",
-      text: `Free lets you browse every offer and see what it is worth. Premium${monthly ? `, ${monthly} a month billed yearly,` : ","} gets you the card itself: redeeming, points and tiers. The first three months are free.`,
+      title: "Free or member.",
+      text: `Free lets you browse every offer and see what it is worth. Membership${monthly ? `, ${monthly} a month billed yearly,` : ","} gets you the card itself: redeeming, points and tiers. The first three months are free.`,
     },
     { title: "Scan the code at the till.", text: "Pick the offer, show the green screen." },
   ];
@@ -128,7 +128,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col gap-2">
             <h2 className="font-display font-bold text-xl sm:text-2xl tracking-[-0.02em] text-foam">Run a bar, cafe or shop?</h2>
             <p className="text-sm sm:text-base leading-relaxed text-foam/90">
-              Listing is free: offers for residents on the days you choose, a QR poster and a redemption feed. Premium adds a loyalty programme and analytics, and the first three months are free.
+              Listing is free: offers for residents on the days you choose, a QR poster and a redemption feed. Standard adds a loyalty programme, Insight adds analytics, and the first three months are free.
             </p>
           </div>
           <div className="flex items-center gap-5 mt-1 md:mt-0">

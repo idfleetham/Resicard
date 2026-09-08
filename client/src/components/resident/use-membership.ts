@@ -17,11 +17,11 @@ export interface MembershipInfo {
   plan: MembershipPlan;
   status: "inactive" | "active" | "cancelled";
   expiry: string | null;
-  /** Premium = active paid membership; Free = everything else. */
+  /** "premium" on the wire = an active paid membership, shown as Member; Free = everything else. */
   tier: "free" | "premium";
   /** False once a move to Free at the end of the paid period is scheduled. */
   renews: boolean;
-  /** The date Premium ends when a downgrade is scheduled. */
+  /** The date the paid membership ends when a downgrade is scheduled. */
   endsAt: string | null;
   /** True while the membership is running on the free trial (nothing paid yet). */
   inTrial: boolean;

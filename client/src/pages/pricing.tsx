@@ -8,6 +8,7 @@ import PricingFaq from "@/components/pricing/pricing-faq";
 import PublicCounter from "@/components/public-counter";
 import { merchantRows, residentRows } from "@/components/pricing/plan-features";
 import { trialPhrase, usePricing } from "@/components/pricing/use-pricing";
+import { useAuth } from "@/hooks/use-auth";
 
 function Header() {
   return (
@@ -38,7 +39,15 @@ function TablesSkeleton() {
 
 export default function PricingPage() {
   const { data, isLoading } = usePricing();
+  const { isAuthenticated, user } = useAuth();
   const trial = data ? trialPhrase(data.freeTrialDays) : null;
+
+  // Someone signed in only needs their own side of the scheme. A resident has no
+  // use for what an outlet pays, and showing a merchant the resident fee invites
+  // the wrong conversation about where the money comes from.
+  const role = isAuthenticated ? user?.role : null;
+  const showResidents = role !== "merchant";
+  const showMerchants = role !== "resident";
 
   return (
     <div className="min-h-screen bg-foam text-sea">
@@ -51,13 +60,14 @@ export default function PricingPage() {
           <TablesSkeleton />
         ) : (
           <>
+            {showResidents && (
             <ComparisonTable
               title="For residents"
-              intro="Free lets you look. Premium is the card itself: redeeming, points and tiers."
+              intro="Free lets you look. Membership is the card itself: redeeming, points and tiers."
               columns={[
                 { plan: "Free", price: "£0", note: "always free" },
                 {
-                  plan: "Premium",
+                  plan: "Member",
                   price: monthlyFromAnnual(data.resident.individual),
                   note: trial
                     ? `a month, billed yearly at ${formatPounds(data.resident.individual)}, first ${trial} free`
@@ -67,7 +77,10 @@ export default function PricingPage() {
               ]}
               rows={residentRows()}
             />
+            )}
 
+            {showMerchants && (
+            <>
             <ComparisonTable
               title="For businesses"
               intro="Free is a listing with offers on the days you choose. Standard adds the loyalty programme. Insight adds analytics and town benchmarks."
@@ -88,19 +101,32 @@ export default function PricingPage() {
             />
 
             <AnalyticsPreview />
+            </>
+            )}
           </>
         )}
 
         <PricingFaq />
 
-        <section className="flex flex-col sm:flex-row gap-3">
-          <Button asChild variant="buoy" className="h-[52px] flex-1 text-base">
-            <Link href="/register">Join Resicard</Link>
-          </Button>
-          <Button asChild variant="outline" className="h-[52px] flex-1 text-base bg-white">
-            <Link href="/register?role=merchant">List your business</Link>
-          </Button>
-        </section>
+        {!isAuthenticated && (
+          <section className="flex flex-col sm:flex-row gap-3">
+            <Button asChild variant="buoy" className="h-[52px] flex-1 text-base">
+              <Link href="/register">Join Resicard</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-[52px] flex-1 text-base bg-white">
+              <Link href="/register?role=merchant">List your business</Link>
+            </Button>
+          </section>
+        )}
+        {isAuthenticated && (
+          <section>
+            <Button asChild variant="buoy" className="h-[52px] w-full sm:w-auto sm:px-10 text-base">
+              <Link href={role === "merchant" ? "/merchant/plan" : "/resident"}>
+                {role === "merchant" ? "Your plan" : "Back to your card"}
+              </Link>
+            </Button>
+          </section>
+        )}
       </main>
 
       <footer className="max-w-5xl mx-auto px-5 sm:px-6 py-8 flex items-center gap-3 text-xs text-slate-brand">

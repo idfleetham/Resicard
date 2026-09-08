@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import L from "leaflet";
 import { X } from "lucide-react";
-import { addTiles, categoryPin, IS_TOUCH, MAP_ENABLED, MOBILE_SAFE_OPTIONS } from "@/lib/map";
+import { addTiles, categoryPin, FIT_OPTIONS, framedBounds, IS_TOUCH, MAP_ENABLED, MOBILE_SAFE_OPTIONS } from "@/lib/map";
 import { CATEGORY_LABELS, categoryLabel, formatTime } from "@/components/resident/format";
 
 /** GET /api/outlets/map. */
@@ -208,7 +208,7 @@ export default function MapView({ fallback }: { fallback: ReactNode }) {
     // Frame every pin the first time they are drawn; after that the resident is
     // in charge of where the map is looking.
     if (!framedRef.current && bounds.isValid()) {
-      mapRef.current?.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+      mapRef.current?.fitBounds(framedBounds(bounds), FIT_OPTIONS);
       framedRef.current = true;
     }
   }, [visible]);
@@ -216,7 +216,7 @@ export default function MapView({ fallback }: { fallback: ReactNode }) {
   const selected = visible.find((o) => o.id === selectedId) ?? null;
 
   if (isLoading) {
-    return <div className="h-[60vh] min-h-[320px] bg-white rounded-2xl animate-pulse" />;
+    return <div className="h-[46vh] min-h-[300px] max-h-[560px] sm:h-[60vh] bg-white rounded-2xl animate-pulse" />;
   }
 
   const chips = (
@@ -248,7 +248,7 @@ export default function MapView({ fallback }: { fallback: ReactNode }) {
       {chips}
 
       <div className="relative rounded-2xl overflow-hidden bg-white">
-        <div ref={containerRef} className="h-[60vh] min-h-[320px] w-full" role="application" aria-label="Map of outlets" />
+        <div ref={containerRef} className="h-[46vh] min-h-[300px] max-h-[560px] sm:h-[60vh] w-full" role="application" aria-label="Map of outlets" />
         {panLocked && (
           <button
             type="button"

@@ -24,7 +24,7 @@ function useMembershipAction(path: string, success: { title: string; description
   });
 }
 
-/** Premium and renewing: schedule the move to Free at the end of the paid period. */
+/** A renewing member: schedule the move to Free at the end of the paid period. */
 export function DowngradeButton({ data }: { data: MembershipInfo }) {
   const downgrade = useMembershipAction(
     "/api/membership/downgrade",
@@ -52,19 +52,19 @@ export function DowngradeButton({ data }: { data: MembershipInfo }) {
   );
 }
 
-/** Premium with a downgrade scheduled: undo it. */
-export function KeepPremiumButton() {
-  const resume = useMembershipAction("/api/membership/resume", { title: "Premium kept", description: "Your membership will renew as normal." }, "Could not keep Premium");
+/** A member with a downgrade scheduled: undo it. */
+export function KeepMembershipButton() {
+  const resume = useMembershipAction("/api/membership/resume", { title: "Membership kept", description: "Your membership will renew as normal." }, "Could not keep your membership");
   return (
     <Button variant="default" className="w-full h-12 text-base" disabled={resume.isPending} onClick={() => resume.mutate()}>
-      Keep Premium
+      Keep my membership
     </Button>
   );
 }
 
 /** Ends the membership today. Offered only after "Move to Free at renewal". */
 export function CancelNowLink() {
-  const cancel = useMembershipAction("/api/membership/cancel", { title: "Membership cancelled", description: "You can go Premium again at any time." }, "Could not cancel");
+  const cancel = useMembershipAction("/api/membership/cancel", { title: "Membership cancelled", description: "You can become a member again at any time." }, "Could not cancel");
   return (
     <button
       type="button"

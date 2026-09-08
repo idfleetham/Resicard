@@ -111,7 +111,7 @@ profileRouter.post(
   requireRole("resident"),
   asyncHandler(async (req, res) => {
     const user = await ownMembershipUser(req);
-    if (!isMembershipCurrent(effectiveMembership(user, null))) throw badRequest("You do not have a Premium membership to move from");
+    if (!isMembershipCurrent(effectiveMembership(user, null))) throw badRequest("You do not have a membership to move from");
     if (user.membershipRenews !== false) {
       await setCancelAtPeriodEnd(user.stripeSubscriptionId, true);
       await userStore.updateUser(user.id, { membershipRenews: false });

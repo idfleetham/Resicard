@@ -39,16 +39,16 @@ export default function DigitalMembershipCard({ user, membership }: DigitalMembe
   const rawExpiry = membership ? membership.expiry : user.membershipExpiry;
   const expiry = rawExpiry ? new Date(rawExpiry) : null;
   const renews = (membership ? membership.renews : user.membershipRenews) !== false;
-  const premium = status === "active" && expiry !== null && expiry.getTime() > Date.now();
+  const member = status === "active" && expiry !== null && expiry.getTime() > Date.now();
   const verified = Boolean(user.isResidencyVerified);
   const plan = membership?.plan ?? user.membershipPlan ?? "individual";
 
-  const inTrial = premium && Boolean(membership?.inTrial) && renews;
+  const inTrial = member && Boolean(membership?.inTrial) && renews;
 
-  // Premium: "Renews Sep 27" or "Ends Sep 27" with a downgrade scheduled, where the
+  // A paying member: "Renews Sep 27" or "Ends Sep 27" with a downgrade scheduled, where the
   // month is enough. A trial ends within weeks, so that one shows the day: "6 Dec".
-  const dateLabel = premium && expiry ? (inTrial ? "Free until" : renews ? "Renews" : "Ends") : "Membership";
-  const dateValue = !premium || !expiry
+  const dateLabel = member && expiry ? (inTrial ? "Free until" : renews ? "Renews" : "Ends") : "Membership";
+  const dateValue = !member || !expiry
     ? "Free"
     : inTrial
       ? new Date(expiry).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
@@ -76,8 +76,8 @@ export default function DigitalMembershipCard({ user, membership }: DigitalMembe
         <p className="mt-1.5 pl-[3px] text-[10px] uppercase tracking-[0.22em] font-semibold text-[#F2F5F4]/75">{townName}</p>
       </div>
       <div className="absolute right-[22px] top-[22px] flex items-center gap-1.5">
-        {premium && plan === "household" && <span className={`${pill} bg-[#F2F5F4]/[0.18] text-foam`}>Household</span>}
-        <span className={`${pill} bg-foam ${premium ? "text-sea" : "text-slate-brand"}`}>{premium ? "Premium" : "Free"}</span>
+        {member && plan === "household" && <span className={`${pill} bg-[#F2F5F4]/[0.18] text-foam`}>Household</span>}
+        <span className={`${pill} bg-foam ${member ? "text-sea" : "text-slate-brand"}`}>{member ? "Member" : "Free"}</span>
       </div>
 
       <div className="absolute left-[22px] right-[22px] bottom-[22px] flex items-end gap-4">

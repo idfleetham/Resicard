@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * Small shared pieces for the merchant, loyalty and admin screens so they match
@@ -10,9 +10,48 @@ export const TAB_LIST = "h-12 p-1 rounded-full bg-white inline-flex w-auto";
 export const TAB_TRIGGER =
   "h-10 px-4 sm:px-6 rounded-full text-[15px] font-bold text-sea whitespace-nowrap data-[state=active]:bg-sea data-[state=active]:text-foam data-[state=active]:shadow-none";
 
-/** Wraps a TabsList so it scrolls sideways on phones instead of wrapping. */
+/**
+ * Wraps a TabsList so it scrolls sideways on phones instead of wrapping. The
+ * right-hand fade matters: a pill sliced off by the screen edge reads as a broken
+ * layout, while a fade reads as "there is more this way".
+ */
 export function TabScroller({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto -mx-5 px-5 mb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</div>;
+  const scroller = useRef<HTMLDivElement>(null);
+  const [atEnd, setAtEnd] = useState(true);
+
+  const check = () => {
+    const el = scroller.current;
+    if (!el) return;
+    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
+  };
+
+  useEffect(() => {
+    check();
+    // The active pill can start off screen, so bring it into view on first paint.
+    const active = scroller.current?.querySelector('[data-state="active"]');
+    active?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  return (
+    <div className="relative -mx-5 mb-5">
+      <div
+        ref={scroller}
+        onScroll={check}
+        className="overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {children}
+      </div>
+      {!atEnd && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-10"
+          style={{ background: "linear-gradient(90deg, rgba(242,245,244,0) 0%, #F2F5F4 70%)" }}
+        />
+      )}
+    </div>
+  );
 }
 
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
