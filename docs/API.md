@@ -1262,3 +1262,68 @@ Stripe default could flip back.
 Setting a tax code does not on its own charge tax. That needs Stripe Tax turned
 on, and it is a decision to take with an accountant — which is why both codes are
 environment variables rather than constants.
+
+### Correction, same day: Managed Payments is turned off instead
+
+The tax codes above were necessary but not sufficient. Stripe accepted
+`txcd_20030000` as a tax code and then refused it as *ineligible for Managed
+Payments*, which is the more useful error, because it says what Managed Payments
+actually is.
+
+Managed Payments makes Stripe the seller of record and takes on the indirect tax
+that follows. It covers **digital products only**: software, digital media,
+online courses, electronically supplied services. Stripe's eligibility page
+excludes physical goods, professional services and live in-person events by name.
+
+A Resicard membership buys a discount at a pub in St Andrews. It is not a digital
+product, and every tax code that would have passed the check describes one. Using
+one to get past a validation would misdescribe what is being sold to the party
+that computes the tax on it, and Stripe says plainly that an ineligible product
+leaves the seller carrying the indirect tax liability.
+
+So both Checkout Sessions now pass `managed_payments: { enabled: false }`, via
+`withoutManagedPayments()` in `server/lib/stripe.ts`. The tax codes stay: they are
+correct, they cost nothing, and they are what Stripe Tax would use if it is ever
+switched on. `managed_payments` is not in the Node types at v18.5.0, so the
+helper casts; it is a documented API field.
+
+Turning it off in the dashboard would also work today and was again rejected for
+the same reason as before: it fails silently and remotely the day someone toggles
+it back, and the failure lands on a resident trying to pay.
+
+**If Resicard is ever VAT registered**, the tax question comes back and the answer
+is Stripe Tax, not Managed Payments.
+
+---
+
+## Offer artwork now illustrates the offer (8 September 2026)
+
+The demo seed's offer images were abstract compositions: a horizon, some arcs, a
+bar chart. They were a decent ground for a title and they were, correctly, not
+photographs of businesses that do not exist. But nothing connected the picture to
+the card it sat on, so a list of them read as random.
+
+`server/scripts/demo-art.ts` now draws a flat cartoon subject on a disc: a pint
+for a pint, an open book for the bookshop, scissors for the barber, a kayak for
+the sea trips.
+
+**How the subject is chosen.** `motifFor()` reads the offer's title, short promo
+and tags against an ordered keyword list, specific first, so "breakfast roll" is
+a breakfast rather than a bread roll and "two-course menu" is a set menu rather
+than a plate. When nothing matches, the outlet's category picks from a rota of
+three, stepped by the offer's index, so eight restaurant offers with no keyword
+between them do not draw eight identical plates.
+
+**Why the disc.** Everything is dark ink on a light body. The disc is what makes
+that safe on all five grounds without checking contrast case by case, and sitting
+it right of centre keeps the subject clear of the discount badge in the top-left
+corner of the card.
+
+Three things were drawn twice because the first attempt read as something else at
+card size, which is only visible in a contact sheet: a fried egg centred on a
+round plate reads as an eye, two sandwich triangles side by side read as
+mountains, and a navy pint reads as a glass of cola. The accent is now always the
+buoy orange for that last reason.
+
+Nothing else changed. The outlet logos are still monograms, the set menus are
+still real PDFs, and no image depicts a real place.

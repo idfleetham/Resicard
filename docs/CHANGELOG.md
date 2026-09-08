@@ -5,6 +5,31 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Draw the offer, not a pattern
+
+The demo offer images were abstract: horizons, arcs, a bar chart. Fine
+as a ground for a title, and correctly not photographs of businesses
+that do not exist, but nothing tied the picture to the card, so a list
+of them read as random. They now draw what the offer is - a pint for a
+pint, a book for the bookshop, scissors for the barber.
+
+The subject comes from the offer's own words, read against an ordered
+keyword list so the specific beats the general, and falls back to a
+three-deep rota per category so eight restaurant offers with no keyword
+between them do not all draw a plate.
+
+Everything is dark ink on a light body sitting on a disc, which is what
+makes one ink safe on all five grounds, and the disc sits right of
+centre to stay clear of the discount badge.
+
+Three subjects were drawn twice. A fried egg centred on a round plate
+reads as an eye, two sandwich triangles side by side read as mountains,
+and a navy pint reads as cola. None of that is visible in the code; all
+of it is obvious in a contact sheet of all 58 cards, which is how each
+was caught.
+
+## Regenerate changelog
+
 ## Set product tax codes on Stripe checkout line items
 
 New Stripe accounts have Managed Payments on by default, and such an
@@ -518,8 +543,4 @@ installs to the home screen, with an install prompt on the resident card tab.
 ## Apply the Coast brand across the app and the till poster
 
 ## Brand foundation: fonts, tokens, logo component, favicons
-
-## Light theme only, README, env example, parked notes
-
-## Rebuild client against the new API
 

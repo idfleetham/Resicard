@@ -239,7 +239,9 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
           newCustomerOnly: Boolean(o.newCustomerOnly), blackoutDates: o.blackout ?? [],
           // A tier-only offer is a Standard feature, so it can only exist where a tier does.
           eligibleTiers: o.topTierOnly && topTierId ? [topTierId] : [],
-          imageUrl: offerArt(outlet.slug, o.title, oi),
+          // The picture is chosen from the offer's own words, so the short promo and
+          // the tags go in too: "breakfast roll" draws a breakfast, not a bread roll.
+          imageUrl: offerArt(outlet.slug, o.title, oi, outlet.category, `${o.shortPromo} ${(o.tags ?? []).join(" ")}`),
           menuPdf: o.menu ? menuPdf(outlet.name, o.menu.heading, o.menu.lines) : null,
           priority: chance(0.25) ? "featured" : "standard", active: true,
         }),

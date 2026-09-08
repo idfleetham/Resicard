@@ -237,6 +237,29 @@ export async function deactivateMerchantPlan(
   return { merchant: updated ?? merchant, pausedOffers };
 }
 
+/**
+ * Turns Managed Payments off for one Checkout Session.
+ *
+ * Managed Payments makes Stripe the seller of record and handles the indirect tax
+ * that follows, and Stripe now switches it on by default for new accounts. It
+ * only covers **digital** products: software, digital media, online courses. A
+ * Resicard membership is none of those. It buys a discount at a pub in St Andrews,
+ * which is about as physical as a purchase gets, and Stripe's own eligibility page
+ * excludes exactly that. So the session says so rather than reaching for whichever
+ * tax code happens to pass the check: the codes that pass all describe digital
+ * goods, and using one to get through a validation would misdescribe what is being
+ * sold to the party that works out the tax on it.
+ *
+ * The parameter is not in the Node types at this version, hence the cast. It is a
+ * documented API field, and the alternative - relying on the account setting
+ * staying off - fails silently and remotely the day someone toggles it back.
+ */
+function withoutManagedPayments(
+  params: Stripe.Checkout.SessionCreateParams,
+): Stripe.Checkout.SessionCreateParams {
+  return { ...params, managed_payments: { enabled: false } } as Stripe.Checkout.SessionCreateParams;
+}
+
 /** `subscription_data` with a trial when one is due, and the card always collected up front. */
 function subscriptionData(metadata: Record<string, string>, trialDays: number): Stripe.Checkout.SessionCreateParams.SubscriptionData {
   const data: Stripe.Checkout.SessionCreateParams.SubscriptionData = { metadata };
@@ -249,7 +272,7 @@ export async function createMembershipCheckout(user: User, plan: MembershipPlan)
   if (!stripe) throw new Error("Stripe is not configured");
   const trialDays = await trialDaysFor("resident_membership", String(user.id));
   const metadata = { kind: "membership", userId: String(user.id), plan };
-  const session = await stripe.checkout.sessions.create({
+  const session = await stripe.checkout.sessions.create(withoutManagedPayments({
     mode: "subscription",
     // Taken during a trial too, so the trial converts on its own.
     payment_method_collection: "always",
@@ -273,7 +296,7 @@ export async function createMembershipCheckout(user: User, plan: MembershipPlan)
     subscription_data: subscriptionData(metadata, trialDays),
     success_url: `${config.publicBaseUrl}/membership?checkout=success`,
     cancel_url: `${config.publicBaseUrl}/membership?checkout=cancelled`,
-  });
+  }));
   if (!session.url) throw new Error("Stripe did not return a checkout URL");
   return session.url;
 }
@@ -283,7 +306,7 @@ export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail:
   if (!stripe) throw new Error("Stripe is not configured");
   const trialDays = await trialDaysFor("merchant_premium", merchant.id);
   const metadata = { kind: "merchant_plan", merchantId: merchant.id, plan };
-  const session = await stripe.checkout.sessions.create({
+  const session = await stripe.checkout.sessions.create(withoutManagedPayments({
     mode: "subscription",
     payment_method_collection: "always",
     customer: merchant.stripeCustomerId ?? undefined,
@@ -303,7 +326,7 @@ export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail:
     subscription_data: subscriptionData(metadata, trialDays),
     success_url: `${config.publicBaseUrl}/merchant/plan?checkout=success`,
     cancel_url: `${config.publicBaseUrl}/merchant/plan?checkout=cancelled`,
-  });
+  }));
   if (!session.url) throw new Error("Stripe did not return a checkout URL");
   return session.url;
 }

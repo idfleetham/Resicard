@@ -156,10 +156,13 @@ Comments explain reasoning, not mechanics. Do not write `// loop over offers`.
 
 Do not "fix" any of these.
 
-- **Checkout line items carry a `tax_code`.** Stripe accounts with Managed
-  Payments on reject an inline product without one. Do not remove them, and do not
-  replace them with `managed_payments: { enabled: false }`: the codes are correct
-  regardless of that setting, and they are configurable for a reason.
+- **Checkout Sessions pass `managed_payments: { enabled: false }`, and line items
+  still carry a `tax_code`.** Managed Payments covers digital products only, and a
+  membership that buys a discount in a pub is not one, so it is turned off per
+  session rather than left to an account setting. The tax codes are correct in
+  their own right and are what Stripe Tax would use. Do not remove either, and do
+  not swap the tax codes for a digital-goods code to make Managed Payments accept
+  them: that would misdescribe what is being sold.
 - **The service worker deliberately does not cache.** A stale cached bundle after a
   deploy is a far worse problem than a slightly slower load.
 - **Merchants never see a resident's name.** They see an alias from
