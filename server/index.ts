@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
-import { config } from "./config";
+import { assertProductionConfig, config } from "./config";
 import { registerRoutes } from "./routes";
 import { registerStripeWebhook } from "./lib/stripe";
 import { startCampaignDispatcher } from "./lib/campaign-dispatch";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Fail with an instruction rather than a stack trace when the deployment is
+// missing something it cannot run without.
+assertProductionConfig();
 
 const app = express();
 

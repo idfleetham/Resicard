@@ -7,7 +7,6 @@
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
-    "start:migrate": "npm run db:migrate && npm start",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "test": "vitest run",
@@ -17,7 +16,8 @@
     "ledger:backfill": "tsx server/scripts/ledger-backfill.ts",
     "db:migrate": "tsx server/scripts/migrate.ts",
     "jobs:daily": "tsx server/scripts/jobs-daily.ts",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "docs:changelog": "node scripts/changelog.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -57,6 +57,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/web-push": "^3.6.4",
     "bcrypt": "^6.0.0",
+    "browserslist": "^4.28.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -110,7 +111,7 @@
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
     "vite": "^6.4.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.7"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
@@ -127,7 +128,6 @@
     "path-to-regexp": "^0.1.13",
     "on-headers": "^1.1.0",
     "body-parser": "^1.20.4",
-    "browserslist": "4.28.7",
     "glob": "^10.5.0",
     "tar-fs": "^2.1.4",
     "ws": "^8.19.0"

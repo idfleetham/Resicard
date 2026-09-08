@@ -9,7 +9,7 @@ packages = ["rsync"]
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "run", "start:migrate"]
+run = ["npm", "run", "start"]
 
 [workflows]
 runButton = "Project"

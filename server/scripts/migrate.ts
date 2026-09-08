@@ -88,7 +88,30 @@ async function main() {
         count += 1;
       } catch (err) {
         await client.query("rollback");
-        throw new Error(`${migration.file} failed and was rolled back: ${(err as Error).message}`);
+        const message = (err as Error).message;
+        // A database whose tables were built by `drizzle-kit push` has the schema
+        // but an empty ledger, so the baseline tries to create what is already
+        // there. Say what that means and what to run, rather than repeating an
+        // error that reads like a broken migration.
+        if (applied.size === 0 && /already exists/i.test(message)) {
+          throw new Error(
+            [
+              "",
+              `${migration.file} could not run: ${message}`,
+              "",
+              "This database already has the tables but no migration ledger, which is",
+              "what `drizzle-kit push` leaves behind. Record the migrations as applied",
+              "once, without running them:",
+              "",
+              "    npm run db:migrate -- --baseline",
+              "",
+              "Then normal migrations will apply. Run it against THIS database: a",
+              "baseline recorded against a different one does not carry over.",
+              "",
+            ].join("\n"),
+          );
+        }
+        throw new Error(`${migration.file} failed and was rolled back: ${message}`);
       }
     }
 

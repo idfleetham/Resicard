@@ -1,4 +1,4 @@
-# Brief for the Replit agent: deploying resicard-v20
+# Brief for the Replit agent
 
 Paste this whole document to the agent before it touches anything.
 
@@ -6,19 +6,24 @@ Paste this whole document to the agent before it touches anything.
 
 ## What this is
 
-`resicard-v20.zip` is the current Resicard codebase. It is **not** an increment on
-what is in the Replit project today. The application was rebuilt from scratch and
-this zip replaces the working tree entirely.
+The attached archive is the current Resicard codebase. It is **not** an increment
+on what is in the Replit project today. The application was rebuilt from scratch
+and the archive replaces the working tree entirely.
+
+**This document is version-agnostic on purpose.** It describes how the codebase
+works and how to deploy it, and it stays true from one archive to the next. For
+what changed since the last one, read `docs/CHANGELOG.md`, which is generated
+from the commit history and is the only place with version-specific detail.
 
 Read `docs/API.md` before writing any code. It is the written contract for every
 endpoint and every behaviour, written before the code and kept in step with it. If
 something in the code and something in `docs/API.md` disagree, that is a bug worth
 reporting, not a licence to pick one.
 
-## Fixed at source since the last upload
+## Work you no longer have to repeat
 
-You listed the work you repeat after every zip. Most of it should not have been
-yours to do, and it is now handled here rather than by you:
+You listed the things you redo after every archive. Most of it should not have
+been yours to do, and it is handled in the codebase now:
 
 - **`parked/` is deleted.** That was the original MVP kept for reference. It was
   imported by nothing, and it contained the two lines that logged
@@ -36,7 +41,7 @@ yours to do, and it is now handled here rather than by you:
   do not remove the `overrides` block; it exists so this stops being your job.
 - **Migrations now ship with the code.** See the install steps below. You should
   not have to write DDL by hand again.
-- **Email, offer campaigns and referrals are new in v20.** See the environment
+- **Email, offer campaigns and referrals.** See the environment
   block for the keys they need. All three degrade safely: with no `RESEND_API_KEY`
   email prints to the log, and with no VAPID keys campaigns fall back to email
   only and the composer says so rather than pretending to send.
@@ -62,6 +67,9 @@ looked at properly rather than rushed.
 any Replit runtime or cache directories, and the secrets configuration. Everything
 else in the working tree is replaced.
 
+0. Read `docs/CHANGELOG.md` first. It says what changed since the last archive,
+   and it is generated from the commit history rather than written by hand, so it
+   does not go stale.
 1. Take a copy of the current project first, and export the database.
 2. Unpack the zip over the working tree, preserving the list above.
 3. `npm install`
@@ -82,6 +90,26 @@ else in the working tree is replaced.
 6. `npm run build` then `npm start`.
 7. Create the first admin account, then unset `ADMIN_SETUP_SECRET` and redeploy.
 8. Delete the uploaded zip from the project so it is not deployed.
+
+## Do not run migrations from the deploy command
+
+`npm run db:migrate` belongs in a one-off shell command, not in the deployment's
+run command. Two reasons, and the first has already bitten this project:
+
+- If the migration fails, the process exits, the healthcheck fails, and the
+  platform restarts it, which fails identically. That is a crash loop with the
+  real error buried in a repeating log, and the app never serves a page even
+  though the failure has nothing to do with serving pages.
+- Autoscale runs more than one instance. Several of them racing to apply the same
+  migration is a good way to corrupt a schema.
+
+The deployment run command should be **`npm start`** and nothing else. Apply
+migrations deliberately, from the shell, against the database the deployment
+actually uses, before deploying the version that needs them.
+
+**A baseline is recorded per database.** Running `--baseline` against the
+development database does nothing for the deployment's. If they are separate
+databases, each needs it once.
 
 ## Schema changes from here on
 
@@ -168,12 +196,17 @@ Do not "fix" any of these.
 
 ## Environment
 
+**Replit keeps workspace secrets and deployment secrets separately.** A variable
+set only in the workspace does not reach a deployed app. The three marked required
+below must exist on the **deployment**, or it will crash-loop on start with a
+message naming exactly what is missing.
+
 Must be set before this works properly:
 
 ```
-JWT_SECRET=                 # the server refuses to start in production without it
-DATABASE_URL=
-PUBLIC_BASE_URL=https://resicard.co.uk   # NOT the .replit.app host
+JWT_SECRET=                 # REQUIRED. Production refuses to start without it
+DATABASE_URL=               # REQUIRED
+PUBLIC_BASE_URL=https://resicard.co.uk   # REQUIRED. NOT the .replit.app host
 ADMIN_SETUP_SECRET=         # set once to create the admin, then remove
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=      # webhook must send invoice.paid,

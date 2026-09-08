@@ -15,10 +15,7 @@ function readNumber(name: string, fallback: number): number {
 function readJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (secret && secret.trim() !== "") return secret;
-  if (isProduction) {
-    throw new Error("JWT_SECRET must be set in production");
-  }
-  return "resicard-dev-secret-change-me";
+  return isProduction ? "" : "resicard-dev-secret-change-me";
 }
 
 /**
@@ -30,16 +27,58 @@ function readJwtSecret(): string {
 function readPublicBaseUrl(): string {
   const raw = process.env.PUBLIC_BASE_URL?.trim();
   if (raw) return raw.replace(/\/+$/, "");
-  if (isProduction) {
-    throw new Error("PUBLIC_BASE_URL must be set in production, e.g. https://resicard.co.uk");
+  return isProduction ? "" : "http://localhost:5000";
+}
+
+/**
+ * Hosts name the connection string differently: Replit's Postgres integration
+ * sets DATABASE_URL, its Neon integration NEON_DATABASE_URL, and some platforms
+ * POSTGRES_URL. Reading all three saves a crash loop over a variable that is in
+ * fact present under another name.
+ */
+function readDatabaseUrl(): string {
+  for (const name of ["DATABASE_URL", "NEON_DATABASE_URL", "POSTGRES_URL"]) {
+    const value = process.env[name]?.trim();
+    if (value) return value;
   }
-  return "http://localhost:5000";
+  return "";
+}
+
+/**
+ * Everything production cannot run without, checked in one pass.
+ *
+ * Throwing on the first missing variable means discovering them one crash-loop
+ * at a time, with a stack trace rather than an instruction. This says what is
+ * missing, what it is for, and where to put it, all at once.
+ */
+export function assertProductionConfig(): void {
+  if (!isProduction) return;
+  const required: { name: string; value: string; why: string }[] = [
+    { name: "DATABASE_URL", value: config.databaseUrl, why: "where the data lives; NEON_DATABASE_URL or POSTGRES_URL are accepted too" },
+    { name: "JWT_SECRET", value: config.jwtSecret, why: "signs login tokens; a random 32+ character string" },
+    { name: "PUBLIC_BASE_URL", value: config.publicBaseUrl, why: "every outgoing link is built from it, e.g. https://resicard.co.uk" },
+  ];
+  const missing = required.filter((r) => r.value.trim() === "");
+  if (missing.length === 0) return;
+
+  const lines = [
+    "",
+    "Resicard cannot start. These environment variables are not set:",
+    "",
+    ...missing.map((m) => `  ${m.name}  -  ${m.why}`),
+    "",
+    "Set them where the deployment reads its environment. On Replit that is the",
+    "deployment's own secrets, which are separate from the workspace secrets: a",
+    "variable set only in the workspace will not reach a deployed app.",
+    "",
+  ];
+  throw new Error(lines.join("\n"));
 }
 
 export const config = {
   isProduction,
   jwtSecret: readJwtSecret(),
-  databaseUrl: process.env.DATABASE_URL ?? "",
+  databaseUrl: readDatabaseUrl(),
   publicBaseUrl: readPublicBaseUrl(),
   // Billed once a year, but quoted monthly: £3 a month reads as nothing, £36 reads as a decision.
   residentAnnualFeeGbp: readNumber("RESIDENT_ANNUAL_FEE_GBP", 36),
