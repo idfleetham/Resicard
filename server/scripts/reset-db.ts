@@ -21,6 +21,11 @@ async function main() {
     await pool.end();
   }
   execSync("npx drizzle-kit push --force", { stdio: "inherit" });
+  // push builds the tables straight from the schema, which leaves the migration
+  // ledger empty while every table already exists. db:migrate would then try to
+  // replay the baseline and fail on "relation already exists", so record the
+  // migrations as applied here instead.
+  execSync("npx tsx server/scripts/migrate.ts --baseline", { stdio: "inherit" });
   console.log("Tables recreated.");
 }
 

@@ -1,4 +1,4 @@
-# Brief for the Replit agent: deploying resicard-v17
+# Brief for the Replit agent: deploying resicard-v20
 
 Paste this whole document to the agent before it touches anything.
 
@@ -36,11 +36,18 @@ yours to do, and it is now handled here rather than by you:
   do not remove the `overrides` block; it exists so this stops being your job.
 - **Migrations now ship with the code.** See the install steps below. You should
   not have to write DDL by hand again.
+- **Email, offer campaigns and referrals are new in v20.** See the environment
+  block for the keys they need. All three degrade safely: with no `RESEND_API_KEY`
+  email prints to the log, and with no VAPID keys campaigns fall back to email
+  only and the composer says so rather than pretending to send.
 - **A demo dataset ships too.** `npm run seed:demo -- --yes` fills a development
   database with 24 invented outlets at real St Andrews addresses, 60 residents and
-  six months of realistic trade. It refuses to run in production, refuses without
-  `--yes`, and refuses over any user whose email is not a `.test` address. Never
-  run it against a database with real members.
+  six months of realistic trade, including members and outlets inside their free
+  trial so every plan state has something to show. **Existing admin accounts are
+  kept**; every other account and all outlet data is replaced. It refuses to run
+  in production, refuses without `--yes`, and refuses over any user whose email is
+  not a `.test` address unless `--force` is given as well. Never run it against a
+  database with real members.
 
 Deliberately **not** done: vite and vitest are held at their current majors. They
 are build tooling and never run in production, so their advisories do not reach
@@ -105,7 +112,7 @@ rename as a drop plus a create, and on real data that loses it.
 `price-changes.ts`, `trial.ts`, `analytics.ts`. They take arguments and return
 values, with no database access and no clock of their own. If you need to change a
 rule, change it there and update its test. **Do not duplicate a rule into a route
-handler.** There are 176 tests; they all pass; keep it that way.
+handler.** There are 217 tests; they all pass; keep it that way.
 
 **Routes are thin.** `server/routes/` validates input, calls `server/storage/` for
 data and `server/lib/` for decisions, and returns JSON. No SQL in a route, no
@@ -141,9 +148,23 @@ Do not "fix" any of these.
   still `membershipStatus` and the wire value is still `premium`. Only the words a
   person reads changed. Do not rename the column to match the label.
 - **The map falls back to a list when no tile provider is configured.** That is
-  correct behaviour, not a bug.
+  correct behaviour, not a bug. It stays a list until `VITE_MAP_TILE_URL` is set
+  to an Ordnance Survey key, and because it is a `VITE_` variable it is baked in
+  at build time: setting it requires a rebuild, not just a restart.
 - **`residentAnnualFeeGbp` is 36 but the app quotes £3 a month.** Billing is annual,
   the quote is monthly. Both are intentional.
+- **Campaign limits are the feature, not a setting.** One send per merchant per 7
+  days, 4 a calendar month, nothing outside 08:00 to 20:00 London, no free text,
+  140 characters. A merchant cannot change any of them and neither should you. The
+  quickest way to lose every resident is a scheme that spams them.
+- **Campaign email is opt-in and default off**, separately from push. Push consent
+  is the browser permission prompt; email is direct marketing under PECR and needs
+  its own explicit tick. Do not merge the two into one switch.
+- **Referrals credit only when the referred member actually pays**, not on sign-up
+  and not during the trial. Crediting earlier would let one person with ten email
+  addresses farm free membership in an afternoon.
+- **`email_log` has a unique dedupe key** so the daily job can be run as often as
+  you like without sending anything twice. Do not remove the constraint.
 
 ## Environment
 
@@ -152,14 +173,14 @@ Must be set before this works properly:
 ```
 JWT_SECRET=                 # the server refuses to start in production without it
 DATABASE_URL=
-PUBLIC_BASE_URL=            # e.g. https://resicard.co.uk
+PUBLIC_BASE_URL=https://resicard.co.uk   # NOT the .replit.app host
 ADMIN_SETUP_SECRET=         # set once to create the admin, then remove
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=      # webhook must send invoice.paid,
                             # checkout.session.completed,
                             # customer.subscription.deleted
-VITE_MAP_TILE_URL=          # Ordnance Survey, see below
-VITE_MAP_TILE_ATTRIBUTION=
+MAP_TILE_URL=               # Ordnance Survey, see below
+MAP_TILE_ATTRIBUTION=
 RESEND_API_KEY=             # email; without it messages print to the log
 EMAIL_FROM=                 # e.g. Resicard <hello@resicard.co.uk>
 EMAIL_REPLY_TO=
@@ -182,8 +203,8 @@ so running it more often is harmless and missing a day loses nothing.
 Ordnance Survey OS Maps API is the chosen tile provider:
 
 ```
-VITE_MAP_TILE_URL=https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=YOUR_KEY
-VITE_MAP_TILE_ATTRIBUTION=Contains OS data © Crown copyright and database right 2026
+MAP_TILE_URL=https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=YOUR_KEY
+MAP_TILE_ATTRIBUTION=Contains OS data © Crown copyright and database right 2026
 ```
 
 The key is public in the browser bundle, so it must be restricted by referrer in
@@ -278,7 +299,7 @@ These are real and worth fixing when convenient, but they are not urgent:
 
 ```
 npx tsc --noEmit     # must be clean
-npx vitest run       # 176 tests, all must pass
+npx vitest run       # 217 tests, all must pass
 npx vite build       # must succeed
 ```
 

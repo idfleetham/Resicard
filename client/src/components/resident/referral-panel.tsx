@@ -69,20 +69,22 @@ export default function ReferralPanel() {
           {data.monthsPerReferral === 1 ? "a month" : `${data.monthsPerReferral} months`} added. Up to {data.capMonths} months a year.
         </p>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <p className="font-display font-extrabold text-[28px] leading-none tracking-[0.08em] text-sea tabular-nums select-all">
+      {/* The code and two buttons will not sit on one line on a phone, so the
+          code gets its own row and reads as something to be copied. */}
+      <div className="bg-foam rounded-xl px-4 py-3 text-center">
+        <p className="font-display font-extrabold text-[26px] sm:text-[28px] leading-none tracking-[0.08em] text-sea tabular-nums select-all break-all">
           {data.code}
         </p>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" className="h-11 px-4 bg-white" onClick={copy} aria-label="Copy your referral code">
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-          <Button variant="outline" className="h-11 px-4 bg-white" onClick={share}>
-            <Share2 className="h-4 w-4" />
-            Share
-          </Button>
-        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Button variant="outline" className="h-11 bg-white" onClick={copy} aria-label="Copy your referral code">
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button variant="outline" className="h-11 bg-white" onClick={share}>
+          <Share2 className="h-4 w-4" />
+          Share
+        </Button>
       </div>
       <p className="text-xs text-slate-brand">{progressLine(data)}</p>
     </div>

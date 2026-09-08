@@ -37,9 +37,10 @@ import { estimateSaving } from "../lib/savings";
 import { planFeeGbp as residentFeeGbp, randomHouseholdCode } from "../lib/membership";
 import { planFeeGbp as merchantFeeGbp } from "../lib/plan";
 import {
-  BUSINESS_HOURS, DAY_WEIGHTS, HOURS_BY_CATEGORY, OUTLETS, RESIDENT_NAMES, RESIDENT_POSTCODES, RESIDENT_STREETS,
-  STREET_NAMES, STREETS, TIER_COLOURS, TIER_THRESHOLDS, VISITS_BY_BAND, pointOn,
+  DAY_WEIGHTS, HOURS_BY_CATEGORY, OUTLETS, RESIDENT_NAMES, RESIDENT_POSTCODES, RESIDENT_STREETS,
+  STREET_NAMES, STREETS, TIER_COLOURS, VISITS_BY_BAND, pointOn,
 } from "./demo-data";
+import { menuPdf, offerArt, outletLogo } from "./demo-art";
 
 const PASSWORD = "demo1234";
 const HISTORY_DAYS = 182;
@@ -136,11 +137,20 @@ async function wipe(): Promise<void> {
 
 interface SeededOutlet {
   id: string; slug: string; category: string; plan: string; planStartedAt: Date; name: string;
+  /** Paying tier, but still inside the three months free: nothing charged yet. */
+  inTrial: boolean;
   offers: Offer[];
   programId: number | null;
   tiers: { id: string; thresholdPoints: number; sortOrder: number | null; pointsMultiplier: string | null }[];
-  program: { pointsPerCurrency: number | null; pointsPerRedemption: number | null; minBasketEarn: string | null } | null;
-  rewards: { id: string; costPoints: number | null }[];
+  program: {
+    model: string | null;
+    pointsPerCurrency: number | null;
+    pointsPerRedemption: number | null;
+    minBasketEarn: string | null;
+  } | null;
+  /** A stamp card: one stamp a visit, held in `loyalty_balances.stamps`. */
+  stampModel: boolean;
+  rewards: { id: string; costPoints: number | null; costStamps: number | null }[];
 }
 
 async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
@@ -148,24 +158,73 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
   const validTo = iso(addMonths(now, 12));
   const seeded: SeededOutlet[] = [];
 
-  for (const outlet of OUTLETS) {
+  for (let index = 0; index < OUTLETS.length; index++) {
+    const outlet = OUTLETS[index];
     const owner = await userStore.createUser({
       username: `owner_${outlet.slug.replace(/-/g, "_")}`, email: `owner@${outlet.slug}.test`, password: hash,
       firstName: outlet.name.replace(/^The /, "").split(/[ &]/)[0], surname: "Demo", role: "merchant",
     });
     const point = pointOn(outlet.street, outlet.t, outlet.side);
     const planStartedAt = new Date(now.getTime() - randInt(120, HISTORY_DAYS + 40) * DAY_MS);
+    // Two paying outlets are still inside the three months free, so the plan tab
+    // and the merchant cliffs both have a trial to show.
+    const inTrial = outlet.plan !== "free" && index % 9 === 2 && config.freeTrialDays > 0;
+    const trialStart = new Date(now.getTime() - randInt(5, config.freeTrialDays - 5) * DAY_MS);
+    const trialEnd = new Date(trialStart.getTime() + config.freeTrialDays * DAY_MS);
     const merchant = await merchantStore.createMerchant({
       ownerUserId: owner.id, name: outlet.name, category: outlet.category, email: `hello@${outlet.slug}.test`,
-      phone: outlet.phone, businessHours: BUSINESS_HOURS, latitude: point.lat, longitude: point.lng,
+      phone: outlet.phone, businessHours: outlet.hours, latitude: point.lat, longitude: point.lng,
+      logoUrl: outletLogo(outlet.name, outlet.slug),
+      reservationProvider: outlet.reservation?.provider ?? null, reservationUrl: outlet.reservation?.url ?? null,
       address: `${outlet.houseNumber} ${STREET_NAMES[outlet.street]}, St Andrews, ${STREETS[outlet.street].postcode}`,
       scanCode: await uniqueScanCode(), status: "approved", approvedAt: planStartedAt,
-      planStatus: outlet.plan, planStartedAt, planRenewsAt: outlet.plan === "free" ? null : addMonths(now, 1),
+      planStatus: outlet.plan, planStartedAt: inTrial ? trialStart : planStartedAt,
+      planRenewsAt: outlet.plan === "free" ? null : inTrial ? trialEnd : addMonths(now, 1),
     });
     await userStore.updateUser(owner.id, { merchantId: merchant.id });
 
+    // Loyalty is a Standard and Insight feature, so only those outlets get a
+    // programme. It is built before the offers so that a tier-restricted offer
+    // can name a tier that already exists.
+    let programId: number | null = null;
+    let program: SeededOutlet["program"] = null;
+    const tiers: SeededOutlet["tiers"] = [];
+    const rewards: SeededOutlet["rewards"] = [];
+    const loyalty = outlet.plan === "free" ? undefined : outlet.loyalty;
+    if (loyalty) {
+      const p = await loyaltyStore.createProgram({
+        merchantId: merchant.id, model: loyalty.model,
+        pointsPerCurrency: loyalty.pointsPerCurrency, pointsPerRedemption: loyalty.pointsPerRedemption,
+        minBasketEarn: loyalty.minBasketEarn.toFixed(2), earnCooldownMinutes: loyalty.earnCooldownMinutes,
+        dailyEarnCap: loyalty.dailyEarnCap, tierWindowDays: loyalty.tierWindowDays,
+        cardTheme: outlet.theme, cardPattern: outlet.pattern, active: true,
+      });
+      programId = p.id;
+      program = {
+        model: p.model, pointsPerCurrency: p.pointsPerCurrency,
+        pointsPerRedemption: p.pointsPerRedemption, minBasketEarn: p.minBasketEarn,
+      };
+      for (let i = 0; i < loyalty.tiers.length; i++) {
+        const t = loyalty.tiers[i];
+        tiers.push(await loyaltyStore.createTier({
+          programId: p.id, name: t.name, thresholdPoints: t.threshold, sortOrder: i,
+          discountPercent: t.discountPercent ?? null, pointsMultiplier: t.multiplier.toFixed(2),
+          color: TIER_COLOURS[Math.min(i, TIER_COLOURS.length - 1)],
+        }));
+      }
+      for (const r of loyalty.rewards) {
+        rewards.push(await loyaltyStore.createReward({
+          programId: p.id, name: r.name, costPoints: r.costPoints ?? null, costStamps: r.costStamps ?? null,
+          tierId: r.tier === undefined ? null : tiers[r.tier].id, claimRule: r.claimRule,
+          terms: r.terms ?? "Ask staff to apply it before you pay.", active: true,
+        }));
+      }
+    }
+    const topTierId = tiers.length > 0 ? tiers[tiers.length - 1].id : null;
+
     const created: Offer[] = [];
-    for (const o of outlet.offers) {
+    for (let oi = 0; oi < outlet.offers.length; oi++) {
+      const o = outlet.offers[oi];
       created.push(
         await offerStore.createOffer({
           merchantId: merchant.id, title: o.title, shortPromo: o.shortPromo, type: o.type, category: outlet.category,
@@ -174,42 +233,26 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
           typicalSpend: money(o.typicalSpend ?? null), itemValue: money(o.itemValue ?? null),
           daysOfWeek: o.daysOfWeek ?? [], timeSlots: o.timeSlots ?? {}, validFrom, validTo,
           terms: o.terms ?? "One offer per visit. Not with any other discount.",
+          tags: o.tags ?? [],
+          minBasket: money(o.minBasket ?? null), maxDiscount: money(o.maxDiscount ?? null),
+          maxPerDay: o.maxPerDay ?? null, maxPerWeek: o.maxPerWeek ?? null, maxLifetime: o.maxLifetime ?? null,
+          globalUsageLimit: o.globalUsageLimit ?? null,
+          dineInOnly: Boolean(o.dineInOnly), excludesAlcohol: Boolean(o.excludesAlcohol),
+          newCustomerOnly: Boolean(o.newCustomerOnly), blackoutDates: o.blackout ?? [],
+          // A tier-only offer is a Standard feature, so it can only exist where a tier does.
+          eligibleTiers: o.topTierOnly && topTierId ? [topTierId] : [],
+          imageUrl: offerArt(outlet.slug, o.title, oi),
+          menuPdf: o.menu ? menuPdf(outlet.name, o.menu.heading, o.menu.lines) : null,
           priority: chance(0.25) ? "featured" : "standard", active: true,
         }),
       );
     }
 
-    // Loyalty is a Standard and Insight feature, so only those outlets get a programme.
-    let programId: number | null = null;
-    let program: SeededOutlet["program"] = null;
-    const tiers: SeededOutlet["tiers"] = [];
-    const rewards: SeededOutlet["rewards"] = [];
-    if (outlet.plan !== "free" && outlet.tiers) {
-      const p = await loyaltyStore.createProgram({
-        merchantId: merchant.id, model: "points", pointsPerCurrency: 10, pointsPerRedemption: randInt(8, 15),
-        cardTheme: outlet.theme, cardPattern: outlet.pattern, tierWindowDays: 365, active: true,
-      });
-      programId = p.id;
-      program = { pointsPerCurrency: p.pointsPerCurrency, pointsPerRedemption: p.pointsPerRedemption, minBasketEarn: p.minBasketEarn };
-      for (let i = 0; i < 3; i++) {
-        tiers.push(await loyaltyStore.createTier({
-          programId: p.id, name: outlet.tiers[i], thresholdPoints: TIER_THRESHOLDS[i], sortOrder: i,
-          discountPercent: i === 2 ? outlet.topTierDiscount ?? null : null,
-          pointsMultiplier: ["1.00", "1.25", "1.50"][i], color: TIER_COLOURS[i],
-        }));
-      }
-      const names = outlet.rewards ?? ["House reward", "Members' treat"];
-      for (let i = 0; i < 2; i++) {
-        rewards.push(await loyaltyStore.createReward({
-          programId: p.id, name: names[i], costPoints: i === 0 ? 250 : 600,
-          claimRule: i === 0 ? "monthly" : "unlimited", terms: "Ask staff to apply it before you pay.", active: true,
-        }));
-      }
-    }
-
     seeded.push({
-      id: merchant.id, slug: outlet.slug, category: outlet.category, plan: outlet.plan, planStartedAt,
+      id: merchant.id, slug: outlet.slug, category: outlet.category, plan: outlet.plan,
+      planStartedAt: inTrial ? trialStart : planStartedAt, inTrial,
       name: outlet.name, offers: created, programId, program, tiers, rewards,
+      stampModel: loyalty?.model === "stamps",
     });
   }
   return seeded;
@@ -217,6 +260,8 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
 
 interface SeededResident {
   id: number; name: string; plan: "individual" | "household"; status: "active" | "cancelled" | "inactive";
+  /** Active, but inside the free trial: nothing has been charged yet. */
+  inTrial: boolean;
   expiry: Date | null;
   /** How often they use the card: 0 heavy, 1 middling, 2 occasional. */
   band: number;
@@ -231,9 +276,13 @@ async function seedResidents(hash: string, now: Date, outlets: SeededOutlet[]): 
     // Most members are current; a handful lapsed or never paid, so the revenue
     // screens show cancellations and the free tier rather than one flat block.
     const status: SeededResident["status"] = i % 10 === 7 ? "cancelled" : i % 10 === 4 ? "inactive" : "active";
+    // Every tenth active member is still inside the free trial, so the card, the
+    // membership panel and the revenue cliffs all have a trial state to show.
+    const inTrial = status === "active" && i % 10 === 1 && config.freeTrialDays > 0;
     const plan: SeededResident["plan"] = i % 7 === 3 ? "household" : "individual";
     const expiry =
-      status === "active" ? addMonths(now, randInt(1, 12))
+      inTrial ? new Date(now.getTime() + randInt(4, config.freeTrialDays) * DAY_MS)
+      : status === "active" ? addMonths(now, randInt(1, 12))
       : status === "cancelled" ? new Date(now.getTime() - randInt(10, 90) * DAY_MS)
       : null;
     const joined = new Date(now.getTime() - randInt(30, HISTORY_DAYS + 60) * DAY_MS);
@@ -253,7 +302,7 @@ async function seedResidents(hash: string, now: Date, outlets: SeededOutlet[]): 
     // Regulars are dealt round-robin rather than drawn at random: random draws
     // leave some outlets with almost no trade, which reads as a broken demo.
     const regulars = Array.from({ length: randInt(4, 6) }, (_, k) => outlets[(i * 5 + k) % outlets.length]);
-    seeded.push({ id: user.id, name: `${firstName} ${surname}`, plan, status, expiry, band, regulars });
+    seeded.push({ id: user.id, name: `${firstName} ${surname}`, plan, status, inTrial, expiry, band, regulars });
   }
   return seeded;
 }
@@ -288,12 +337,60 @@ function buildVisit(resident: SeededResident, outlets: SeededOutlet[], now: Date
 
   const live = outlet.offers.filter((o) => isOfferLiveNow(o, at));
   if (live.length === 0) return null;
-  const offer = pick(live);
-  // Staff key in a real bill perhaps half the time; the rest fall back to the
-  // merchant's indicative figure, which is what savedEstimated records.
+  return { at, resident, outlet, offer: pick(live), basket: null };
+}
+
+/**
+ * What the till rang up. Staff key in a real bill perhaps half the time; the rest
+ * fall back to the merchant's indicative figure, which is what savedEstimated
+ * records. A stamp card never takes a bill: one visit is one stamp.
+ */
+function basketFor(outlet: SeededOutlet, offer: Offer): number | null {
+  if (outlet.stampModel) return null;
   const typical = Number(offer.typicalSpend ?? offer.originalValue ?? offer.itemValue ?? 0);
-  const basket = typical > 0 && chance(0.45) ? Math.round(typical * (0.7 + rand() * 0.7) * 100) / 100 : null;
-  return { at, resident, outlet, offer, basket };
+  if (typical <= 0 || !chance(0.45)) return null;
+  return Math.round(typical * (0.7 + rand() * 0.7) * 100) / 100;
+}
+
+/**
+ * The rules a real redemption would have had to pass, applied to the history so
+ * the seeded past is a past the running app could have produced: per-resident
+ * and global usage limits, the new-customer flag, and tier-restricted offers.
+ */
+interface RuleState {
+  /** Redemption instants per offer and resident, for the day, week and lifetime caps. */
+  taken: Map<string, number[]>;
+  /** Redemptions of an offer by everyone, for the global cap. */
+  global: Map<string, number>;
+  /** Merchants each resident has already redeemed at, for the new-customer flag. */
+  visited: Set<string>;
+}
+
+function visitAllowed(visit: Visit, state: RuleState, currentTierId: string | null): boolean {
+  const offer = visit.offer;
+  const eligible = offer.eligibleTiers ?? [];
+  if (eligible.length > 0 && (currentTierId === null || !eligible.includes(currentTierId))) return false;
+  if (offer.newCustomerOnly && state.visited.has(`${visit.outlet.id}:${visit.resident.id}`)) return false;
+  if ((offer.globalUsageLimit ?? 0) > 0 && (state.global.get(offer.id) ?? 0) >= (offer.globalUsageLimit as number)) {
+    return false;
+  }
+  const at = visit.at.getTime();
+  const mine = state.taken.get(`${offer.id}:${visit.resident.id}`) ?? [];
+  if ((offer.maxLifetime ?? 0) > 0 && mine.length >= (offer.maxLifetime as number)) return false;
+  if ((offer.maxPerWeek ?? 0) > 0 && mine.filter((t) => at - t < 7 * DAY_MS).length >= (offer.maxPerWeek as number)) {
+    return false;
+  }
+  if ((offer.maxPerDay ?? 0) > 0 && mine.filter((t) => at - t < DAY_MS).length >= (offer.maxPerDay as number)) {
+    return false;
+  }
+  return true;
+}
+
+function recordVisit(visit: Visit, state: RuleState): void {
+  const key = `${visit.offer.id}:${visit.resident.id}`;
+  state.taken.set(key, [...(state.taken.get(key) ?? []), visit.at.getTime()]);
+  state.global.set(visit.offer.id, (state.global.get(visit.offer.id) ?? 0) + 1);
+  state.visited.add(`${visit.outlet.id}:${visit.resident.id}`);
 }
 
 async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[], now: Date) {
@@ -316,13 +413,27 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
   // order: a balance written without matching events resolves to the base tier.
   const statusPoints = new Map<string, number>();
   const spendable = new Map<string, number>();
+  const state: RuleState = { taken: new Map(), global: new Map(), visited: new Set() };
 
-  for (const visit of visits) {
-    const key = `${visit.outlet.id}:${visit.resident.id}`;
+  for (const chosen of visits) {
+    const key = `${chosen.outlet.id}:${chosen.resident.id}`;
+    const held = chosen.outlet.program
+      ? resolveStatus(chosen.outlet.tiers, statusPoints.get(key) ?? 0).tier
+      : null;
+    // The offer picked at random may be one this resident cannot have right now
+    // (a tier-only offer, a daily cap already used). They would have picked
+    // another from the same board rather than walked out, so the visit stands and
+    // the offer changes; only a visit with nothing available at all is dropped.
+    const live = chosen.outlet.offers.filter((o) => isOfferLiveNow(o, chosen.at));
+    const allowed = live.filter((o) => visitAllowed({ ...chosen, offer: o }, state, held?.id ?? null));
+    if (allowed.length === 0) continue;
+    const offer = allowed.some((o) => o.id === chosen.offer.id) ? chosen.offer : pick(allowed);
+    const visit: Visit = { ...chosen, offer, basket: basketFor(chosen.outlet, offer) };
+    recordVisit(visit, state);
+
     let points = 0;
     if (visit.outlet.program) {
-      const { tier } = resolveStatus(visit.outlet.tiers, statusPoints.get(key) ?? 0);
-      points = pointsForRedemption(visit.outlet.program, tier?.pointsMultiplier ?? 1, visit.basket);
+      points = pointsForRedemption(visit.outlet.program, held?.pointsMultiplier ?? 1, visit.basket);
       statusPoints.set(key, (statusPoints.get(key) ?? 0) + points);
       spendable.set(key, (spendable.get(key) ?? 0) + points);
       eventRows.push({
@@ -345,17 +456,20 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
     await db.update(offers).set({ usageCount: count }).where(sql`${offers.id} = ${offerId}`);
   }
 
-  // A few reward claims, from the members who have the points for them.
+  // A few reward claims, from the members who have the points or stamps for them.
   const claimRows: Record<string, unknown>[] = [];
   const claimEvents: Record<string, unknown>[] = [];
   for (const outlet of outlets) {
     const reward = outlet.rewards[0];
     if (!outlet.programId || !reward) continue;
-    const cost = reward.costPoints ?? 0;
+    const cost = (outlet.stampModel ? reward.costStamps : reward.costPoints) ?? 0;
     for (const resident of residents.filter((r) => (spendable.get(`${outlet.id}:${r.id}`) ?? 0) >= cost).slice(0, 2)) {
       const at = new Date(now.getTime() - randInt(1, 45) * DAY_MS);
       const who = { merchantId: outlet.id, userId: resident.id };
-      claimRows.push({ ...who, rewardId: reward.id, code: uniqueCode(codes), pointsSpent: cost, claimedAt: at });
+      claimRows.push({
+        ...who, rewardId: reward.id, code: uniqueCode(codes), claimedAt: at,
+        pointsSpent: outlet.stampModel ? 0 : cost, stampsSpent: outlet.stampModel ? cost : 0,
+      });
       claimEvents.push({ ...who, programId: outlet.programId, type: "redeem_reward", amount: -cost, metadata: { rewardId: reward.id }, createdAt: at });
       spendable.set(`${outlet.id}:${resident.id}`, (spendable.get(`${outlet.id}:${resident.id}`) ?? 0) - cost);
     }
@@ -363,14 +477,20 @@ async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[],
   await insertMany(rewardClaims, claimRows);
   await insertMany(loyaltyEvents, claimEvents);
 
-  // Balances last, so the stored tier matches the events already written.
+  // Balances last, so the stored tier matches the events already written. On a
+  // stamp card the earned total is the stamp count and there are no points.
   const balanceRows: Record<string, unknown>[] = [];
   for (const [key, points] of Array.from(spendable)) {
     const [merchantId, userId] = key.split(":");
     const outlet = outlets.find((o) => o.id === merchantId);
     if (!outlet) continue;
     const { tier } = resolveStatus(outlet.tiers, statusPoints.get(key) ?? 0);
-    balanceRows.push({ merchantId, userId: Number(userId), points: Math.max(0, points), stamps: 0, tierId: tier?.id ?? null });
+    const held = Math.max(0, points);
+    balanceRows.push({
+      merchantId, userId: Number(userId),
+      points: outlet.stampModel ? 0 : held, stamps: outlet.stampModel ? held : 0,
+      tierId: tier?.id ?? null,
+    });
   }
   await insertMany(loyaltyBalances, balanceRows);
 
@@ -389,14 +509,16 @@ async function seedLedger(residents: SeededResident[], outlets: SeededOutlet[], 
   const rows: Record<string, unknown>[] = [];
   for (const resident of residents) {
     if (resident.status === "inactive" || !resident.expiry) continue;
-    const periodStart = addMonths(resident.expiry, -12);
+    const periodStart = resident.inTrial
+      ? new Date(resident.expiry.getTime() - config.freeTrialDays * DAY_MS)
+      : addMonths(resident.expiry, -12);
     const base = {
       kind: "resident_membership", subjectId: String(resident.id), subjectName: resident.name, plan: resident.plan,
       periodStart, periodEnd: resident.expiry, source: "dev",
     };
     rows.push({ ...base, createdAt: periodStart,
       action: periodStart.getTime() < now.getTime() - 330 * DAY_MS ? "renewed" : "started",
-      amountGbp: residentFeeGbp(resident.plan, config.residentAnnualFeeGbp).toFixed(2) });
+      amountGbp: resident.inTrial ? "0.00" : residentFeeGbp(resident.plan, config.residentAnnualFeeGbp).toFixed(2) });
     // A lapse is written at nil, so the forecast drops the member without double-counting the fee.
     if (resident.status === "cancelled") {
       rows.push({ ...base, action: "lapsed", amountGbp: "0.00", createdAt: resident.expiry });
@@ -408,6 +530,16 @@ async function seedLedger(residents: SeededResident[], outlets: SeededOutlet[], 
     if (outlet.plan === "free") continue;
     const amount = merchantFeeGbp(outlet.plan, fees);
     // One row a month from sign-up to now, so the revenue history has a curve.
+    if (outlet.inTrial) {
+      rows.push({
+        kind: "merchant_premium", subjectId: outlet.id, subjectName: outlet.name, plan: outlet.plan,
+        action: "started", amountGbp: "0.00",
+        periodStart: outlet.planStartedAt,
+        periodEnd: new Date(outlet.planStartedAt.getTime() + config.freeTrialDays * DAY_MS),
+        source: "dev", createdAt: outlet.planStartedAt,
+      });
+      continue;
+    }
     for (let period = outlet.planStartedAt, n = 0; period.getTime() < now.getTime(); period = addMonths(period, 1), n++) {
       rows.push({
         kind: "merchant_premium", subjectId: outlet.id, subjectName: outlet.name, plan: outlet.plan,
@@ -449,10 +581,13 @@ async function main(): Promise<void> {
   const count = (plan: string) => outlets.filter((o) => o.plan === plan).length;
   const members = (status: string) => residents.filter((r) => r.status === status).length;
   const programmes = outlets.filter((o) => o.programId).length;
+  const sum = (f: (o: (typeof outlets)[number]) => number) => outlets.reduce((n, o) => n + f(o), 0);
   console.log([
     `Seeded ${outlets.length} approved outlets: ${count("free")} free, ${count("standard")} standard, ${count("insight")} insight.`,
-    `  ${outlets.reduce((n, o) => n + o.offers.length, 0)} offers; ${programmes} loyalty programmes, ${programmes * 3} tiers, ${programmes * 2} rewards.`,
-    `  ${residents.length} residents: ${members("active")} active, ${members("cancelled")} lapsed, ${members("inactive")} never paid.`,
+    `  ${sum((o) => o.offers.length)} offers; ${programmes} loyalty programmes ` +
+      `(${outlets.filter((o) => o.stampModel).length} on stamps), ${sum((o) => o.tiers.length)} tiers, ${sum((o) => o.rewards.length)} rewards.`,
+    `  ${residents.length} residents: ${members("active")} active (${residents.filter((r) => r.inTrial).length} still in their free trial), ${members("cancelled")} lapsed, ${members("inactive")} never paid.`,
+    `  ${outlets.filter((o) => o.inTrial).length} outlets are inside their three months free.`,
     `  ${history.redemptions} redemptions over ${HISTORY_DAYS} days, ${history.events} loyalty events, ${history.balances} balances,`,
     `  ${history.claims} reward claims, ${history.favourites} favourites, ${ledgerRows} subscription ledger rows.`,
     `Password for everyone: ${PASSWORD}. admin@resicard.test, resident01..60@resicard.test, owner@<outlet>.test.`,

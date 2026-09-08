@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SectionTitle } from "../portal-ui";
-import { AXIS_TICK, DAY_LABELS, FOAM, LINE, SEA, hourLabel, type DayPoint, type HourPoint } from "./types";
+import { AXIS_TICK, DAY_LABELS, FOAM, LINE, SEA, hourLabel, yAxisLabel, type DayPoint, type HourPoint } from "./types";
 
 /**
  * When people redeem: day of the week and hour of the day. One series each, so
@@ -33,10 +33,10 @@ function DayChart({ byDay }: { byDay: DayPoint[] }) {
   return (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="30%">
+        <BarChart data={rows} margin={{ top: 8, right: 8, left: 4, bottom: 0 }} barCategoryGap="30%">
           <CartesianGrid stroke={LINE} vertical={false} />
           <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} />
-          <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
+          <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
           <Tooltip cursor={{ fill: FOAM }} content={<CountTooltip />} />
           <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
@@ -54,10 +54,10 @@ function HourChart({ byHour }: { byHour: HourPoint[] }) {
   return (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="18%">
+        <BarChart data={rows} margin={{ top: 8, right: 8, left: 4, bottom: 0 }} barCategoryGap="18%">
           <CartesianGrid stroke={LINE} vertical={false} />
           <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} interval="preserveStartEnd" minTickGap={12} />
-          <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
+          <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
           <Tooltip cursor={{ fill: FOAM }} content={<CountTooltip />} />
           <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
@@ -70,10 +70,10 @@ export default function TimingCharts({ byDay, byHour }: { byDay: DayPoint[]; byH
   const quiet = byDay.every((d) => d.redemptions === 0);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <Card title="Busiest days" note="Redemptions by day of the week, over the last 90 days.">
+      <Card title="Busiest days" note="How many redemptions fell on each weekday. Totals across the last 90 days, not a daily average.">
         {quiet ? <p className="text-sm text-slate-brand">No redemptions yet.</p> : <DayChart byDay={byDay} />}
       </Card>
-      <Card title="Busiest hours" note="Redemptions by hour, in local time.">
+      <Card title="Busiest hours" note="How many redemptions fell in each hour. Totals across the last 90 days, local time.">
         {quiet ? <p className="text-sm text-slate-brand">No redemptions yet.</p> : <HourChart byHour={byHour} />}
       </Card>
     </div>

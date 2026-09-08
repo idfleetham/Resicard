@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import L from "leaflet";
 import { X } from "lucide-react";
-import { addTiles, categoryPin, FIT_OPTIONS, framedBounds, IS_TOUCH, MAP_ENABLED, MOBILE_SAFE_OPTIONS } from "@/lib/map";
+import { addTiles, categoryPin, FIT_OPTIONS, framedBounds, IS_TOUCH, useMapConfig, MOBILE_SAFE_OPTIONS } from "@/lib/map";
 import { CATEGORY_LABELS, categoryLabel, formatTime } from "@/components/resident/format";
 
 /** GET /api/outlets/map. */
@@ -167,14 +167,17 @@ export default function MapView({ fallback }: { fallback: ReactNode }) {
     [unplaced, category],
   );
 
-  const usable = MAP_ENABLED && !tilesFailed;
+  const mapCfg = useMapConfig();
+  // null means the config has not arrived yet; treat that as usable so the map
+  // does not flash the list fallback on every load.
+  const usable = (mapCfg === null || mapCfg.tileUrl.length > 0) && !tilesFailed;
   const centre = data?.centre;
 
   // Create the map once the container exists and the centre is known.
   useEffect(() => {
     if (!usable || !centre || !containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, MOBILE_SAFE_OPTIONS).setView([centre.lat, centre.lng], 15);
-    addTiles(map, () => setTilesFailed(true));
+    if (mapCfg) addTiles(map, () => setTilesFailed(true), mapCfg);
     markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     return () => {
@@ -182,7 +185,7 @@ export default function MapView({ fallback }: { fallback: ReactNode }) {
       mapRef.current = null;
       markersRef.current = null;
     };
-  }, [usable, centre]);
+  }, [usable, centre, mapCfg]);
 
   // Redraw the pins whenever the filter or the data changes.
   useEffect(() => {

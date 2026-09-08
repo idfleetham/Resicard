@@ -81,3 +81,17 @@ export function monthLabel(month: string): string {
 export function weekLabel(weekStart: string): string {
   return new Date(`${weekStart}T00:00:00Z`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" });
 }
+
+/**
+ * A y axis with no name reads as a count of whatever the x axis is showing: a
+ * merchant seeing 107 above "Sun" reasonably asks how there were 107 Sundays.
+ */
+export function yAxisLabel(value: string) {
+  return {
+    value,
+    angle: -90,
+    position: "insideLeft" as const,
+    offset: 22,
+    style: { fill: "#5C6F75", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textAnchor: "middle" as const },
+  };
+}

@@ -3,7 +3,7 @@ import L from "leaflet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { addTiles, draggablePin, FALLBACK_CENTRE, MAP_ENABLED } from "@/lib/map";
+import { addTiles, draggablePin, FALLBACK_CENTRE, useMapConfig } from "@/lib/map";
 import { INPUT } from "./portal-ui";
 
 const LABEL = "text-xs text-slate-brand";
@@ -41,7 +41,10 @@ export function LocationPicker({
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const [tilesFailed, setTilesFailed] = useState(false);
-  const usable = MAP_ENABLED && !tilesFailed;
+  const mapCfg = useMapConfig();
+  // null means the config has not arrived yet; treat that as usable so the map
+  // does not flash the list fallback on every load.
+  const usable = (mapCfg === null || mapCfg.tileUrl.length > 0) && !tilesFailed;
 
   // Leaflet handlers are bound once, so they read the newest onChange through a ref.
   const onChangeRef = useRef(onChange);
@@ -52,7 +55,7 @@ export function LocationPicker({
   useEffect(() => {
     if (!usable || !containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { scrollWheelZoom: false }).setView(point ?? FALLBACK_CENTRE, point ? 17 : 14);
-    addTiles(map, () => setTilesFailed(true));
+    if (mapCfg) addTiles(map, () => setTilesFailed(true), mapCfg);
     // Tapping anywhere places the pin, which is quicker than dragging it across town.
     map.on("click", (e: L.LeafletMouseEvent) =>
       onChangeRef.current({ latitude: round(e.latlng.lat), longitude: round(e.latlng.lng) }),
@@ -63,7 +66,7 @@ export function LocationPicker({
       mapRef.current = null;
       markerRef.current = null;
     };
-  }, [usable]);
+  }, [usable, mapCfg]);
 
   // Keep the pin on whatever the fields currently say.
   useEffect(() => {

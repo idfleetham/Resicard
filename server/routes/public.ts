@@ -19,6 +19,20 @@ export function stripMenuPdf(offer: Offer): Omit<Offer, "menuPdf"> & { hasMenuPd
 
 export const publicRouter = Router();
 
+/**
+ * Map settings, read at runtime. The tile key is public by design (it ships to the
+ * browser either way), so serving it here costs nothing and buys the ability to
+ * change providers without a rebuild.
+ */
+publicRouter.get("/api/map-config", (_req, res) => {
+  res.json({
+    tileUrl: config.mapTileUrl,
+    attribution: config.mapTileAttribution,
+    maxZoom: config.mapMaxZoom,
+    centre: { lat: config.mapCentreLat, lng: config.mapCentreLng },
+  });
+});
+
 publicRouter.get(
   "/api/merchants",
   asyncHandler(async (_req, res) => {

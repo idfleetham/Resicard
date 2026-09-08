@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SectionTitle } from "../portal-ui";
-import { AXIS_TICK, FOAM, LINE, SAND, SAND_EDGE, SEA, weekLabel, type WeekPoint } from "./types";
+import { AXIS_TICK, FOAM, LINE, SAND, SAND_EDGE, SEA, weekLabel, yAxisLabel, type WeekPoint } from "./types";
 
 /**
  * Thirteen weeks of redemptions with new residents alongside. Two grouped columns
@@ -61,7 +61,7 @@ export default function WeeklyChart({ byWeek }: { byWeek: WeekPoint[] }) {
             <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="26%" barGap={2}>
               <CartesianGrid stroke={LINE} vertical={false} />
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} interval={1} />
-              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
               <Tooltip cursor={{ fill: FOAM }} content={<WeekTooltip />} />
               <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
               <Bar dataKey="newResidents" fill={SAND} stroke={SAND_EDGE} radius={[4, 4, 0, 0]} isAnimationActive={false} />

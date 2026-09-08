@@ -21,11 +21,26 @@ function readJwtSecret(): string {
   return "resicard-dev-secret-change-me";
 }
 
+/**
+ * Every link that leaves the building is built from this: referral share links,
+ * password resets, campaign unsubscribes, the QR poster. Getting it wrong sends
+ * people to the deployment host instead of resicard.co.uk, and it fails silently,
+ * so production refuses to start without it.
+ */
+function readPublicBaseUrl(): string {
+  const raw = process.env.PUBLIC_BASE_URL?.trim();
+  if (raw) return raw.replace(/\/+$/, "");
+  if (isProduction) {
+    throw new Error("PUBLIC_BASE_URL must be set in production, e.g. https://resicard.co.uk");
+  }
+  return "http://localhost:5000";
+}
+
 export const config = {
   isProduction,
   jwtSecret: readJwtSecret(),
   databaseUrl: process.env.DATABASE_URL ?? "",
-  publicBaseUrl: (process.env.PUBLIC_BASE_URL ?? "http://localhost:5000").replace(/\/+$/, ""),
+  publicBaseUrl: readPublicBaseUrl(),
   // Billed once a year, but quoted monthly: £3 a month reads as nothing, £36 reads as a decision.
   residentAnnualFeeGbp: readNumber("RESIDENT_ANNUAL_FEE_GBP", 36),
   merchantPremiumMonthlyFeeGbp: readNumber("MERCHANT_PREMIUM_MONTHLY_FEE_GBP", 30),
@@ -48,6 +63,13 @@ export const config = {
     .filter((p) => p.length > 0),
   // Where the resident map opens. Defaults to the middle of St Andrews, near the
   // top of Market Street, which puts almost every outlet in the town on screen.
+  // Served to the client at runtime rather than compiled in, so the key can be
+  // set in the host's secrets and picked up on a restart. A VITE_ variable is
+  // baked into the bundle at build time, which means a rebuild every time it
+  // changes and a map that silently stays a list until someone works that out.
+  mapTileUrl: (process.env.MAP_TILE_URL ?? process.env.VITE_MAP_TILE_URL ?? "").trim(),
+  mapTileAttribution: (process.env.MAP_TILE_ATTRIBUTION ?? process.env.VITE_MAP_TILE_ATTRIBUTION ?? "").trim(),
+  mapMaxZoom: readNumber("MAP_MAX_ZOOM", 18),
   mapCentreLat: readNumber("MAP_CENTRE_LAT", 56.339),
   mapCentreLng: readNumber("MAP_CENTRE_LNG", -2.795),
   // Web push. Without a key pair the feature is simply off: no subscription is

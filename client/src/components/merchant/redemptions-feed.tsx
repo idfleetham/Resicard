@@ -50,7 +50,7 @@ export default function RedemptionsFeed() {
             {dataUpdatedAt ? ` Last updated ${formatTime(new Date(dataUpdatedAt))}.` : ""}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-3 shrink-0">
+        <div className="grid grid-cols-2 gap-3 w-full min-w-0 sm:w-auto sm:flex sm:shrink-0">
           <div className="min-w-0">
             <Label htmlFor="from" className="text-xs text-slate-brand">From</Label>
             <Input id="from" type="date" className={`${INPUT} mt-1 w-full`} value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -68,7 +68,32 @@ export default function RedemptionsFeed() {
       ) : rows.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-brand">No redemptions in this period.</p>
       ) : (
-        <div className="overflow-x-auto -mx-5 px-5">
+        <>
+        {/* A seven-column table is unreadable on a phone: the offer title wraps
+            to three lines and the code falls off the edge. Below sm each
+            redemption is a card instead. */}
+        <ul className="sm:hidden divide-y divide-[#E6E9E8]">
+          {rows.map((r) => (
+            <li key={r.id} className="py-3 flex items-start gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-bold text-sea leading-tight">{r.offerTitle}</p>
+                <p className="text-xs text-slate-brand mt-1">
+                  {formatTime(r.redeemedAt)} · {formatDate(r.redeemedAt)} · {r.customerAlias}
+                </p>
+                <p className="text-xs text-slate-brand mt-1">
+                  {r.kind === "reward"
+                    ? `${r.pointsSpent ?? 0} points spent`
+                    : `${r.basketAmount ? formatPounds(r.basketAmount) : "No bill entered"}${r.pointsAwarded ? ` · +${r.pointsAwarded} points` : ""}`}
+                </p>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                {r.kind === "reward" ? <Pill tone="sand">Reward</Pill> : <Pill tone="sea">Offer</Pill>}
+                <span className="font-mono text-xs tracking-wider text-sea">{r.code}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden sm:block overflow-x-auto -mx-5 px-5">
           <Table>
             <TableHeader>
               <TableRow className="border-[#E6E9E8] hover:bg-transparent">
@@ -103,6 +128,7 @@ export default function RedemptionsFeed() {
             </TableBody>
           </Table>
         </div>
+        </>
       )}
     </div>
   );

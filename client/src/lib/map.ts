@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -19,15 +20,29 @@ import "leaflet/dist/leaflet.css";
 // tiles at all, so the app cannot quietly ship on someone else's public tile
 // server; every view that uses the map falls back to a plain list instead.
 
-export const TILE_URL = (import.meta.env.VITE_MAP_TILE_URL ?? "").trim();
-
-export const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION ?? "";
-
 /**
- * OS raster styles stop at a style-specific zoom, and asking for a tile past it
- * returns an error rather than a picture, so the ceiling is configurable.
+ * Fetched from the server rather than compiled in. A VITE_ variable is baked into
+ * the bundle at build time, so changing the tile key would mean a rebuild, and
+ * until someone realised that the map would sit there as a list looking broken.
+ * The key is public either way: it reaches the browser on every tile request.
  */
-export const TILE_MAX_ZOOM = Number(import.meta.env.VITE_MAP_MAX_ZOOM ?? 18) || 18;
+export interface MapConfig {
+  tileUrl: string;
+  attribution: string;
+  maxZoom: number;
+  centre: { lat: number; lng: number };
+}
+
+let cached: Promise<MapConfig> | null = null;
+
+export function mapConfig(): Promise<MapConfig> {
+  if (!cached) {
+    cached = fetch("/api/map-config")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("map config unavailable"))))
+      .catch(() => ({ tileUrl: "", attribution: "", maxZoom: 18, centre: { lat: FALLBACK_CENTRE[0], lng: FALLBACK_CENTRE[1] } }));
+  }
+  return cached;
+}
 
 /**
  * Where a map opens before it has anything to show. The resident map uses the
@@ -62,7 +77,6 @@ export function framedBounds(bounds: L.LatLngBounds): L.LatLngBounds {
 }
 
 /** False when this deployment has deliberately no tile source; callers show the list instead. */
-export const MAP_ENABLED = TILE_URL.length > 0;
 
 // Brand palette, repeated here because pins are built as HTML strings for
 // Leaflet and so cannot use the Tailwind utilities.
@@ -147,9 +161,20 @@ export const MOBILE_SAFE_OPTIONS: L.MapOptions = {
 };
 
 /** Adds the configured tile layer, calling back if the tiles cannot be fetched. */
-export function addTiles(map: L.Map, onError: () => void): void {
-  if (!MAP_ENABLED) return;
-  const layer = L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: TILE_MAX_ZOOM });
+/** null while loading, so a view can wait rather than flashing the fallback. */
+export function useMapConfig(): MapConfig | null {
+  const [cfg, setCfg] = useState<MapConfig | null>(null);
+  useEffect(() => {
+    let live = true;
+    mapConfig().then((c) => { if (live) setCfg(c); });
+    return () => { live = false; };
+  }, []);
+  return cfg;
+}
+
+export function addTiles(map: L.Map, onError: () => void, cfg: MapConfig): void {
+  if (!cfg.tileUrl) return;
+  const layer = L.tileLayer(cfg.tileUrl, { attribution: cfg.attribution, maxZoom: cfg.maxZoom || 18 });
   layer.on("tileerror", onError);
   layer.addTo(map);
 }

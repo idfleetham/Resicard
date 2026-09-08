@@ -9,7 +9,7 @@ packages = ["rsync"]
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+run = ["npm", "run", "start:migrate"]
 
 [workflows]
 runButton = "Project"
@@ -39,7 +39,7 @@ externalPort = 80
 [userenv]
 
 [userenv.shared]
-PUBLIC_BASE_URL = "https://local-card-mvp-ianfleetham.replit.app"
+PUBLIC_BASE_URL = "https://resicard.co.uk"
 
 [postMerge]
 path = "scripts/post-merge.sh"
