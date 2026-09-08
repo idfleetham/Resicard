@@ -4,6 +4,7 @@ import {
   campaignEmail,
   membershipLapsedEmail,
   merchantApprovedEmail,
+  pointsExpiringEmail,
   passwordResetEmail,
   postcardPostedEmail,
   renewalReminderEmail,
@@ -30,6 +31,7 @@ export interface EmailService {
   sendRenewalReminder(email: string, days: number, expiry: Date | string, firstName?: string | null): Promise<void>;
   sendMembershipLapsed(email: string, expiry: Date | string, firstName?: string | null): Promise<void>;
   sendMerchantApproved(email: string, businessName: string, firstName?: string | null): Promise<void>;
+  sendPointsExpiring(email: string, outletName: string, points: number, expiresAt: Date | string, firstName?: string | null): Promise<void>;
 }
 
 export const emailBrand: EmailBrand = {
@@ -83,6 +85,9 @@ abstract class TemplatedEmailService implements EmailService {
   }
   sendMerchantApproved(email: string, businessName: string, firstName?: string | null): Promise<void> {
     return this.deliver(email, merchantApprovedEmail(emailBrand, businessName, firstName));
+  }
+  sendPointsExpiring(email: string, outletName: string, points: number, expiresAt: Date | string, firstName?: string | null): Promise<void> {
+    return this.deliver(email, pointsExpiringEmail(emailBrand, outletName, points, expiresAt, firstName));
   }
 }
 

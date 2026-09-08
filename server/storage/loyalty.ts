@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lte, sql, count, type SQL } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, isNotNull, lte, sql, count, type SQL } from "drizzle-orm";
 import { db } from "../db";
 import {
   loyaltyPrograms,
@@ -280,6 +280,39 @@ export async function listBalancesForUser(userId: number, client: DbClient = db)
     .innerJoin(loyaltyPrograms, eq(loyaltyPrograms.merchantId, merchants.id))
     .where(eq(loyaltyBalances.userId, userId))
     .orderBy(desc(loyaltyBalances.updatedAt));
+}
+
+/**
+ * Every non-empty balance whose programme expires points, with the date of that
+ * resident's last loyalty event at that outlet and the address to warn.
+ *
+ * One query rather than one per balance: the daily job has to consider the whole
+ * town, and the alternative is a request per member per outlet. The date is a
+ * correlated max over `loyalty_events` because activity is any event, earning or
+ * spending, and there is no "last seen" column to drift out of step with them.
+ */
+export async function listBalancesWithExpiry(client: DbClient = db) {
+  return client
+    .select({
+      balanceId: loyaltyBalances.id,
+      merchantId: loyaltyBalances.merchantId,
+      merchantName: merchants.name,
+      userId: loyaltyBalances.userId,
+      email: users.email,
+      firstName: users.firstName,
+      points: loyaltyBalances.points,
+      programId: loyaltyPrograms.id,
+      expiryDays: loyaltyPrograms.expiryDays,
+      lastActivityAt: sql<Date | null>`(
+        select max(e.created_at) from loyalty_events e
+        where e.merchant_id = ${loyaltyBalances.merchantId} and e.user_id = ${loyaltyBalances.userId}
+      )`,
+    })
+    .from(loyaltyBalances)
+    .innerJoin(loyaltyPrograms, eq(loyaltyPrograms.merchantId, loyaltyBalances.merchantId))
+    .innerJoin(merchants, eq(merchants.id, loyaltyBalances.merchantId))
+    .innerJoin(users, eq(users.id, loyaltyBalances.userId))
+    .where(and(gt(loyaltyBalances.points, 0), isNotNull(loyaltyPrograms.expiryDays)));
 }
 
 export async function countBalances(merchantId: string, client: DbClient = db): Promise<number> {

@@ -136,6 +136,7 @@ export const EMAIL_KINDS = [
   "renewal_7",
   "membership_lapsed",
   "merchant_approved",
+  "points_expiring",
 ] as const;
 export type EmailKind = (typeof EMAIL_KINDS)[number];
 
@@ -716,7 +717,13 @@ export const scanRedeemSchema = z.object({
 
 export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms)
   .omit({ id: true, merchantId: true, createdAt: true })
-  .extend({ tierWindowDays: z.number().int().min(30).max(1095).optional() });
+  .extend({
+    tierWindowDays: z.number().int().min(30).max(1095).optional(),
+    // Points lapse after this long without a visit; null is never. The floor is
+    // the same MIN_EXPIRY_DAYS the job enforces, stated here so a merchant is
+    // told at the point of setting it rather than finding it quietly overridden.
+    expiryDays: z.number().int().min(90).max(3650).nullable().optional(),
+  });
 export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers)
   .omit({ id: true, programId: true })
   .extend({

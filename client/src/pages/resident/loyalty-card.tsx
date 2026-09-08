@@ -117,6 +117,16 @@ export default function LoyaltyCardPage() {
 
         <p className="text-xs text-slate-brand text-center px-4">
           Points are separate from your tier at {data.merchant.name}.
+          {data.pointsExpiresAt && (
+            <>
+              {" "}
+              They run out on{" "}
+              <span className="font-semibold text-sea">
+                {new Date(data.pointsExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+              </span>{" "}
+              if you do not use the card here before then. Any visit resets it.
+            </>
+          )}
         </p>
 
         <section className="bg-white rounded-2xl p-5 space-y-3">

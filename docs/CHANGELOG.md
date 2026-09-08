@@ -5,6 +5,105 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Brand assets from one script; the app icon goes on sand
+
+Every SVG in client/public/brand is now written by scripts/brand-assets.mjs
+rather than hand-edited. The mark changed twice and the palette once, and
+each time a lockup or a favicon was missed and shipped stale. Colours,
+geometry and the buoy-once rule live in one file now.
+
+The home screen tile is sand rather than sea. It is the one surface where
+the app competes with every other icon on the phone rather than sitting
+inside its own interface, and a dark tile disappears into a row of dark
+tiles. The seal in sea on sand is 8.5:1 and holds at the size a phone
+actually renders. The mark sits at 62% of the tile, 60% on the maskable so
+Android's circular crop does not clip it.
+
+The buoy appears exactly once in any lockup. If the seal is present the
+buoy lives in the seal and the word beside it is plain; if the word stands
+alone the buoy moves to the dot on the i. Two orange dots an inch apart
+compete rather than compound. Hence one component with two states, and
+wordmark-dotted-*.svg alongside the plain files.
+
+In the outlined files the dotted state removes the i's tittle and draws the
+disc in its place rather than laying one over the top, because an overlay
+leaves a dark crescent the moment anything is scaled. In live text it has to
+be an overlay, so the word is split only in that state: an inline-block
+boundary either side of the i drops the kerning pairs across it.
+
+## Adopt the seal as the Resicard mark
+
+The mark is now an 18-point scalloped seal drawn as a single path with
+fill-rule=evenodd: the ring is a real knockout, so the mark sits on the
+sand panel, the card photograph and the buoy orange without a separate
+file per ground.
+
+Residency here is proved by a code posted to a door, so a stamp of
+approval is honest rather than decorative. The horizon-and-buoy circle it
+replaces said coastal rather than the people who live here, and it did not
+survive a 56px home-screen tile.
+
+## The seal, final: inverted centre, no town in the mark
+
+An 18-point scallop, a ring knocked out at r=15.5 and the buoy at the
+centre. Drawn as one path with fill-rule evenodd rather than a
+white-filled circle, so the ring picks up whatever is behind it: the
+sand panel, the card photograph, even the buoy orange. A white fill
+would have pinned the mark to a white page.
+
+No ST ANDREWS in the mark. Two reasons: it reads as a strapline, which
+was asked for and then rejected twice, and the way this product scales
+is licensing the platform to other towns. A logo with the town baked in
+needs redrawing for every one of them.
+
+Every asset in client/public/brand regenerated: the twelve lockup and
+mark SVGs, the favicons, the app icons and the maskable pair, which sit
+at 60% inside the safe zone because Android crops them to a circle.
+
+## Regenerate changelog
+
+## Make points actually expire, on inactivity
+
+loyalty_programs.expiry_days has existed since the first schema and the
+merchant settings form has always offered it as "Points expire after
+(days)". Nothing enforced it. A merchant could set 365, believe their
+liability was bounded, and it never was. Tier status already decayed on
+a rolling window; the spendable balance never did.
+
+The clock runs from the resident's last activity at that outlet, not
+from when each point was earned. Per-point ageing is the obvious
+reading of the field and it is the wrong rule: a regular would watch
+their balance fall every month, in a scheme built to reward regulars.
+Inactivity costs an active customer nothing, ever, and still clears the
+balance of someone who has gone.
+
+Clearing writes a negative adjust event carrying the reason, so the
+balance and the history agree and a merchant asking where the points
+went has an answer. Negative, so it cannot count towards tier status.
+The warning's dedupe key carries the expiry date, so a visit that
+pushes the date out earns a fresh warning later and a resident who does
+nothing is not told every morning. Residents see the date on the card,
+not only in an email.
+
+Floor of 90 days, enforced in the rule and stated in the schema: a
+setting below it is raised rather than honoured, because expiring
+points sooner than the rules allow is the one outcome worth ruling out.
+
+No migration; the column was already there.
+
+Also fixes sendOnce's duplicate detection, found while testing this.
+Drizzle wraps the driver error so the Postgres code sits on cause, and
+the check only read the top level. Nothing was ever sent twice, but
+every repeat run of the daily job reported its skipped messages as six
+failures, which is how a real failure comes to be ignored.
+
+Verified end to end against a seeded database: a lapsed balance cleared
+with its audit event, a balance inside the warning window emailed and
+left intact, a second run a no-op, and a visit pushing the date out
+without re-warning.
+
+## Regenerate changelog
+
 ## Stop the resident's name clipping on the card
 
 The card gave the name whatever was left after the photo and the
@@ -614,25 +713,4 @@ installs to the home screen, with an install prompt on the resident card tab.
 ## Admin revenue: subscription ledger, run rate, cliffs, forecast
 
 ## Schema and contract: subscription ledger and admin revenue
-
-## Rolling tiers, claimable tier benefits, outlet loyalty card, reward claims on the green screen
-
-## Update Replit configuration settings
-
-Replit-Commit-Author: Agent
-
-## Add asset image 1788807162509
-
-Replit-Commit-Author: Agent
-
-## Schema and contract: tier benefits as rewards, rolling tiers, loyalty card
-
-## Published your App
-
-Replit-Commit-Author: Deployment
-Replit-Commit-Deployment-Build-Id: 46bfc623-f7dd-4a85-a4ba-34511e546b0a
-
-## Configure Replit and add post-merge script
-
-Replit-Commit-Author: Agent
 

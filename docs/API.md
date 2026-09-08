@@ -1395,3 +1395,55 @@ the one that matters: at that width the card is about 180px tall, a wrapped name
 runs up towards the town line, and the row and footer offsets are tuned so it
 clears. Anyone changing those offsets should re-check at 320 rather than trusting
 390.
+
+---
+
+## Points expire on inactivity (8 September 2026)
+
+`loyalty_programs.expiry_days` has existed since the first schema, and the merchant
+settings form has always offered it as "Points expire after (days)". **Nothing ever
+enforced it.** A merchant could set 365, believe their liability was bounded, and it
+never was. Tier status already decayed on a rolling window; the spendable balance
+never did. This makes the field true.
+
+**The clock runs from the resident's last activity at that outlet, not from when
+each point was earned.** Per-point ageing is the obvious reading and it is the
+wrong rule: it means a regular watches their balance fall every month, in a scheme
+whose whole purpose is rewarding regulars. Expiry on inactivity costs an active
+customer nothing, ever, and still clears the balance of someone who has gone. It
+also fits on the card in one line: points last as long as you keep using the card.
+
+Activity is any loyalty event, earning or spending. Someone who came in and claimed
+a reward is plainly still a customer.
+
+`server/lib/points-expiry.ts` is pure and tested. `MIN_EXPIRY_DAYS` is 90: a
+programme configured below it is raised to it rather than rejected, because
+silently expiring points sooner than the rules allow is the one outcome worth
+ruling out. `insertLoyaltyProgramSchema` states the same floor, so a merchant is
+told at the point of setting it.
+
+**The daily job** (`expirePoints` in `server/lib/jobs.ts`) clears lapsed balances
+and warns residents inside `POINTS_EXPIRY_WARN_DAYS` (30) of the date. Clearing
+writes an `adjust` event for the negative amount with `metadata.reason = "expired"`,
+so the balance and the event history still agree and a merchant asking where the
+points went has an answer. The amount is negative, so it cannot count towards tier
+status. The warning's dedupe key carries the expiry date, so a resident who comes
+back and pushes the date out is warned again next time they go quiet, and one who
+does nothing is not told every morning.
+
+**Residents are told before it happens, on the card as well as by email.**
+`GET /api/loyalty/mine` and `GET /api/loyalty/card/:merchantId` both gain
+`pointsExpiresAt` (ISO string, null when the outlet does not expire points), and
+the card page states the date and that any visit resets it. An expiry a resident
+cannot see until it is nearly gone is a rule they will feel was hidden.
+
+No migration: the column was already there.
+
+### A bug found while testing this
+
+`sendOnce` decided whether an error was a duplicate by reading `err.code`, but
+Drizzle wraps the driver's error, so the Postgres code sits on `cause`. Nothing
+was ever sent twice, because the failed insert still rolled the transaction back,
+but every repeat run of the daily job reported its skipped messages as failures.
+Six failures every morning is how a real failure comes to be ignored. It now walks
+the cause chain.

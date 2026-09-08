@@ -11,6 +11,8 @@ export interface LoyaltyCardData {
   cardTheme: string;
   cardPattern: string;
   points: number;
+  /** When this balance lapses if the resident does not come back. Null when the outlet does not expire points. */
+  pointsExpiresAt: string | null;
   statusPoints: number;
   tierWindowDays: number;
   tier: { name: string; color: string | null; discountPercent: number | null } | null;

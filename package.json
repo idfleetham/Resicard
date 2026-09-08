@@ -18,7 +18,8 @@
     "db:migrate": "tsx server/scripts/migrate.ts",
     "jobs:daily": "tsx server/scripts/jobs-daily.ts",
     "db:generate": "drizzle-kit generate",
-    "docs:changelog": "node scripts/changelog.mjs"
+    "docs:changelog": "node scripts/changelog.mjs",
+    "brand:assets": "node scripts/brand-assets.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

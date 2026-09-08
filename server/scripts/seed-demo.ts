@@ -195,6 +195,9 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
         pointsPerCurrency: loyalty.pointsPerCurrency, pointsPerRedemption: loyalty.pointsPerRedemption,
         minBasketEarn: loyalty.minBasketEarn.toFixed(2), earnCooldownMinutes: loyalty.earnCooldownMinutes,
         dailyEarnCap: loyalty.dailyEarnCap, tierWindowDays: loyalty.tierWindowDays,
+        // Most outlets expire points after a year without a visit; a couple leave
+        // them open-ended, so both states are visible in a demo.
+        expiryDays: loyalty.tierWindowDays >= 730 ? null : 365,
         cardTheme: outlet.theme, cardPattern: outlet.pattern, active: true,
       });
       programId = p.id;

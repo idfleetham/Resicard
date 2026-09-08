@@ -142,6 +142,9 @@ export const config = {
   // Bearer token for POST /api/jobs/daily. Empty means the route is closed.
   jobsSecret: process.env.JOBS_SECRET ?? "",
   postcardCodeDays: readNumber("POSTCARD_CODE_DAYS", 60),
+  // How long before a points balance lapses the resident is told. One warning per
+  // expiry date, so a visit that pushes the date out earns a fresh one later.
+  pointsExpiryWarnDays: readNumber("POINTS_EXPIRY_WARN_DAYS", 30),
   postcardMaxAttempts: readNumber("POSTCARD_MAX_ATTEMPTS", 5),
   // Where and when a resident can be verified in person. Configuration rather than
   // a hard-coded address, so it can say "get in touch and we will arrange it"

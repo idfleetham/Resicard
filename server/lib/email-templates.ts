@@ -202,6 +202,33 @@ export function membershipLapsedEmail(brand: EmailBrand, expiry: Date | string, 
   });
 }
 
+/**
+ * Points about to lapse at one outlet.
+ *
+ * Deliberately not a marketing email: it is told plainly, it names the outlet and
+ * the date, and it does not suggest anything to spend the points on. A warning
+ * that reads as a promotion is the thing that makes people distrust the scheme
+ * that sent it.
+ */
+export function pointsExpiringEmail(
+  brand: EmailBrand,
+  outletName: string,
+  points: number,
+  expiresAt: Date | string,
+  firstName?: string | null,
+): EmailMessage {
+  return message(brand, `Your points at ${outletName} expire on ${formatEmailDate(expiresAt)}`, {
+    heading: "Some points are about to run out",
+    paragraphs: [
+      greeting(firstName),
+      `You have ${points.toLocaleString("en-GB")} points at ${outletName}, and they expire on ${formatEmailDate(expiresAt)} because it has been a while since you were last in.`,
+      "Any visit resets the clock. Earn or spend a single point and the date moves out again.",
+    ],
+    action: { label: "See your cards", url: `${brand.baseUrl}/resident` },
+    stopLine: STOP_LINE,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Marketing: sent because an outlet asked us to, to people who opted in.
 // ---------------------------------------------------------------------------

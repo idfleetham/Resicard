@@ -16,6 +16,7 @@ import {
   type RewardClaim,
   type User,
 } from "@shared/schema";
+import { expiryState } from "../lib/points-expiry";
 import { db } from "../db";
 import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
@@ -382,10 +383,17 @@ const affordable = (r: LoyaltyReward) => (r.costPoints ?? 0) <= points;
         .sort((a, b) => (a.costPoints ?? 0) - (b.costPoints ?? 0))[0];
       const eventAt = latestEvents.get(row.merchant.id)?.getTime() ?? 0;
       const balanceAt = row.balance.updatedAt?.getTime() ?? 0;
+      // Told on the card rather than only in an email: an expiry a resident cannot
+      // see until it is nearly gone is a rule they will feel was hidden from them.
+      const expiry = expiryState(
+        { lastActivityAt: latestEvents.get(row.merchant.id) ?? null, expiryDays: row.program.expiryDays, points },
+        now,
+      );
       result.push({
         merchant: row.merchant,
         ...cardDesign(row.program),
         points,
+        pointsExpiresAt: expiry.expiresAt ? expiry.expiresAt.toISOString() : null,
         statusPoints,
         tierWindowDays,
         tier: tier ? { name: tier.name, color: tier.color, discountPercent: tier.discountPercent || null } : null,
@@ -423,16 +431,26 @@ loyaltyRouter.get(
     const merchant = await merchantStore.getMerchantById(req.params.merchantId);
     if (!merchant) throw notFound("Outlet not found");
     const program = await requireProgram(merchant.id);
-    const [status, firstEventAt] = await Promise.all([
+    const [status, firstEventAt, latestEvents] = await Promise.all([
       residentStatus(program, merchant.id, user.id),
       loyaltyStore.earliestEventAt(merchant.id, user.id),
+      loyaltyStore.latestEventAtByMerchant(user.id),
     ]);
     const memberSince = firstEventAt ?? status.balance?.updatedAt ?? null;
+    const expiry = expiryState(
+      {
+        lastActivityAt: latestEvents.get(merchant.id) ?? null,
+        expiryDays: program.expiryDays,
+        points: status.balance?.points ?? 0,
+      },
+      new Date(),
+    );
     res.json({
       merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
       resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto, alias: generateCustomerAlias(user) },
       ...cardDesign(program),
       points: status.balance?.points ?? 0,
+      pointsExpiresAt: expiry.expiresAt ? expiry.expiresAt.toISOString() : null,
       statusPoints: status.statusPoints,
       tierWindowDays: status.tierWindowDays,
       tier: status.tier ? { name: status.tier.name, color: status.tier.color, discountPercent: status.tier.discountPercent || null } : null,

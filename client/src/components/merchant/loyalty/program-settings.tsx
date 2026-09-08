@@ -42,7 +42,7 @@ const NUMBERS: { key: keyof Omit<FormState, "active" | "cardTheme" | "cardPatter
   { key: "minBasketEarn", label: "Minimum spend to earn (£)", hint: "0 for none", step: "0.01" },
   { key: "earnCooldownMinutes", label: "Cooldown (minutes)", hint: "Between earns for one resident" },
   { key: "dailyEarnCap", label: "Daily earn cap", hint: "Earns per resident per day" },
-  { key: "expiryDays", label: "Points expire after (days)", hint: "Blank for never" },
+  { key: "expiryDays", label: "Points expire after (days without a visit)", hint: "Blank for never. Minimum 90. Any visit resets the clock, so a regular never loses points" },
   { key: "tierWindowDays", label: "Tier status window (days)", hint: "Tier is based on points earned in this period. Default 365." },
 ];
 

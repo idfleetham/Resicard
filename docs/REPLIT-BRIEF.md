@@ -156,6 +156,10 @@ Comments explain reasoning, not mechanics. Do not write `// loop over offers`.
 
 Do not "fix" any of these.
 
+- **Points expire on inactivity, not per point.** The clock runs from the
+  resident's last event at that outlet, so an active customer never loses
+  anything. Do not "fix" this into per-point ageing. `MIN_EXPIRY_DAYS` is 90 and a
+  lower setting is raised to it rather than honoured.
 - **An offer's picture is stored on the row, not computed on read.** Changing how
   artwork is drawn does not reach offers that already exist. `npm run art:repaint`
   updates them in place, and touches only images this codebase drew, never an
@@ -321,6 +325,11 @@ and make sure `drizzle-kit push` appears nowhere in any workflow.
   residents believing they are not being tracked.
 - Do not change the brand colours, fonts or spacing. They are in
   `client/src/index.css` and they are settled.
+- Do not hand-edit anything in `client/public/brand`. Every SVG there is written
+  by `npm run brand:assets` from `scripts/brand-assets.mjs`, which holds the
+  geometry, the colours and the buoy-once rule. Edit the script and re-run it, or
+  the next run silently reverts you. The PNG icons are rasterised from those SVGs
+  and committed; the script prints what it wrote.
 - Do not add features that were not asked for. If you think something is missing,
   say so and wait.
 - Do not "improve" copy. The wording is deliberate, it is UK English, it is

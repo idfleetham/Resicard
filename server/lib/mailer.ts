@@ -11,8 +11,18 @@ import type { EmailKind } from "@shared/schema";
 
 const UNIQUE_VIOLATION = "23505";
 
+/**
+ * Drizzle wraps the driver's error, so the Postgres code sits on `cause` rather
+ * than on the error itself. Checking only the top level made every repeat run of
+ * the daily job report its skipped messages as failures: nothing was sent twice,
+ * because the insert still rolled the transaction back, but the summary said six
+ * failures every morning, which is how a real failure gets ignored.
+ */
 function isDuplicate(err: unknown): boolean {
-  return typeof err === "object" && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION;
+  for (let e: unknown = err, depth = 0; e && depth < 5; e = (e as { cause?: unknown }).cause, depth++) {
+    if (typeof e === "object" && (e as { code?: string }).code === UNIQUE_VIOLATION) return true;
+  }
+  return false;
 }
 
 export type SendOutcome = "sent" | "duplicate" | "failed";
@@ -48,5 +58,12 @@ export const dedupeKeys = {
   postcardPosted: (postcardId: string) => `postcard_posted:${postcardId}`,
   verified: (userId: number) => `verified:${userId}`,
   merchantApproved: (merchantId: string) => `merchant_approved:${merchantId}`,
+  /**
+   * Keyed on the expiry date rather than the balance, so a resident who comes
+   * back in and pushes the date out is warned again next time they go quiet,
+   * and one who does nothing is not told every morning until it happens.
+   */
+  pointsExpiring: (merchantId: string, userId: number, expiryDate: string) =>
+    `points_expiring:${merchantId}:${userId}:${expiryDate}`,
 };
 
