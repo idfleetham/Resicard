@@ -1361,3 +1361,37 @@ outlet, ordered by `created_at`, which reproduces the order the seed created the
 in. Verified against a freshly seeded database: the repainted images are
 byte-identical to what a new seed produces, and running it twice changes nothing
 the second time.
+
+---
+
+## The name on the membership card (8 September 2026)
+
+"Iona Whyte" was clipping to "Iona Why…". Not an unusual name: the card put the
+photo, the name and the renewal block in one row, so the name got what was left,
+which is about 105px on a phone.
+
+The renewal date and the member number are now a footer strip under a hairline
+rule, and the name has the row from the photo to the card edge. Roughly 200px
+instead of 105px, and a number on its own line is what a membership card does
+anyway.
+
+Names longer than that row step down a size and wrap to a second line rather than
+truncate. `shared/name-display.ts` decides which size, and it is pure and tested:
+`cardNameSizeFor` takes the stricter of overall length and the longest single
+word, because a long name that breaks cleanly needs less help than a shorter one
+that cannot break at all. "Alexandra Fotheringham" is 22 characters and fine;
+"Ann Featherstonehaugh" is 21 and is not.
+
+**The sizes are in `cqw`, not pixels**, with the card declaring
+`container-type: inline-size`. A pixel size is wrong here because the card is a
+percentage of a page that is 320px wide on an SE and 430px on a Pro Max, and a
+threshold counted in characters cannot know which. One `cqw` is one per cent of
+the card's own width, so the name holds its proportion everywhere, and the clamp
+stops it growing absurd inside the wider card on the account page. The photo
+scales the same way, between 54 and 72px.
+
+Checked at 320, 390 and 430 with short, wrapping and long names. The 320 case is
+the one that matters: at that width the card is about 180px tall, a wrapped name
+runs up towards the town line, and the row and footer offsets are tuned so it
+clears. Anyone changing those offsets should re-check at 320 rather than trusting
+390.

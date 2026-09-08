@@ -5,6 +5,33 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Stop the resident's name clipping on the card
+
+The card gave the name whatever was left after the photo and the
+renewal block, which on a phone is about 105px. "Iona Whyte" did not
+fit, and that is not an unusual name.
+
+The renewal date and the member number move to a footer strip under a
+hairline, so the name gets the row from the photo to the card edge:
+roughly 200px. A number on its own line is what a membership card does
+anyway. Names longer than that step down a size and wrap to two lines
+rather than truncate.
+
+The step-down rule is pure and tested. It takes the stricter of overall
+length and the longest single word, because a long name that breaks
+cleanly needs less help than a shorter one that cannot break at all:
+"Alexandra Fotheringham" is 22 characters and fits, "Ann
+Featherstonehaugh" is 21 and does not.
+
+Sizes are in cqw against the card rather than pixels. A pixel size
+cannot be right when the card is a percentage of a page that is 320px
+on an SE and 430px on a Pro Max, and the first attempt at this proved
+it: fixed thresholds looked correct at 390 and clipped at 320, with the
+wrapped name running into the town line. Checked at all three widths
+with short, wrapping and long names.
+
+## Regenerate changelog
+
 ## Repaint artwork on offers that already exist
 
 The picture is written onto the offer row when the offer is created,
@@ -606,15 +633,6 @@ Replit-Commit-Author: Deployment
 Replit-Commit-Deployment-Build-Id: 46bfc623-f7dd-4a85-a4ba-34511e546b0a
 
 ## Configure Replit and add post-merge script
-
-Replit-Commit-Author: Agent
-
-## Remove critical and high dependency vulnerabilities
-
-Replit-Task-Id: 0c40312e-529b-4f6e-a86b-8eccdbc5ba23
-Replit-Merge-Attempt: MergeTask:0c40312e-529b-4f6e-a86b-8eccdbc5ba23:1:4394d1cf
-
-## Remove unused loyalty components and update dashboard routes
 
 Replit-Commit-Author: Agent
 
