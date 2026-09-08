@@ -5,3 +5,9 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Replit drops uploaded images here; they are not part of the application.
+attached_assets/
+# Release archives are built from the tree, never committed to it.
+resicard-v*.zip
+*.zip

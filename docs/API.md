@@ -1327,3 +1327,37 @@ buoy orange for that last reason.
 
 Nothing else changed. The outlet logos are still monograms, the set menus are
 still real PDFs, and no image depicts a real place.
+
+---
+
+## Repainting artwork on offers that already exist (8 September 2026)
+
+The picture on an offer is written onto the row when the offer is created. That is
+deliberate — the same reason `savedAmount` is frozen at redemption time — but it
+means a change to how artwork is drawn never reaches offers already in the
+database. The first deployment of the new subject artwork showed exactly that: the
+demo town kept the old abstract pictures.
+
+Re-running `seed:demo` would have fixed it by deleting every account and every
+redemption, which is a heavy price for new pictures.
+
+```
+npm run art:repaint              say what would change, change nothing
+npm run art:repaint -- --yes     apply it
+```
+
+`server/scripts/repaint-offer-art.ts` updates `offers.image_url` and no other
+column, on offers whose current image is a `data:image/svg+xml` URL. **Anything
+else is left alone**: a photograph a real merchant uploaded, a hosted file, an
+empty column. The check is on the stored value rather than on a list of demo
+merchant ids, which is what makes it safe to run against a database with real
+outlets on it.
+
+The colourway is picked from the outlet's slug, which is not a column — it lives
+in `demo-data.ts` — so the script matches on name to keep each seeded outlet on
+the colourway it already had, and falls back to a slug of the name for anything
+not from the demo town. The subject index is the offer's position within its own
+outlet, ordered by `created_at`, which reproduces the order the seed created them
+in. Verified against a freshly seeded database: the repainted images are
+byte-identical to what a new seed produces, and running it twice changes nothing
+the second time.

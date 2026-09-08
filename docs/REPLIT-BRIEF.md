@@ -156,6 +156,10 @@ Comments explain reasoning, not mechanics. Do not write `// loop over offers`.
 
 Do not "fix" any of these.
 
+- **An offer's picture is stored on the row, not computed on read.** Changing how
+  artwork is drawn does not reach offers that already exist. `npm run art:repaint`
+  updates them in place, and touches only images this codebase drew, never an
+  uploaded photograph. Do not "fix" this by generating the image on read.
 - **Checkout Sessions pass `managed_payments: { enabled: false }`, and line items
   still carry a `tax_code`.** Managed Payments covers digital products only, and a
   membership that buys a discount in a pub is not one, so it is turned off per

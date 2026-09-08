@@ -13,6 +13,7 @@
     "admin:create": "tsx server/scripts/create-admin.ts",
     "db:reset": "tsx server/scripts/reset-db.ts",
     "seed:demo": "tsx server/scripts/seed-demo.ts",
+    "art:repaint": "tsx server/scripts/repaint-offer-art.ts",
     "ledger:backfill": "tsx server/scripts/ledger-backfill.ts",
     "db:migrate": "tsx server/scripts/migrate.ts",
     "jobs:daily": "tsx server/scripts/jobs-daily.ts",

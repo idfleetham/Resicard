@@ -5,6 +5,74 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Repaint artwork on offers that already exist
+
+The picture is written onto the offer row when the offer is created,
+which is right for the same reason savedAmount is frozen at redemption
+time, but it means new artwork never reaches offers already in the
+database. The demo town on resicard.co.uk kept the old pictures, and the
+only fix in the codebase was to re-run the seed, which deletes every
+account and every redemption to do it.
+
+This changes one column on rows whose current image is an SVG data URL,
+and leaves everything else alone. The test being on the stored value
+rather than on a list of demo merchant ids is what makes it safe against
+a database with real outlets on it: a merchant's uploaded photograph is
+not an SVG data URL and is never touched.
+
+Verified against a freshly seeded database with an uploaded photograph
+and a null image planted among the rows: 56 repainted byte-identical to
+what a new seed produces, the photograph and the null untouched, and a
+second run a no-op.
+
+## Replace the original app with the rebuild
+
+main has been the pre-rebuild application plus Replit's own commits,
+while the rebuilt app has lived on `tidy` and been shipped to Replit as
+zip archives. That left no single source of truth: changes Replit made
+went to main, changes made here went to tidy, and the deployed app
+matched neither branch's history.
+
+This merge makes main the rebuilt app. The tree is `tidy`'s in full,
+with two exceptions taken from main because they belong to Replit
+rather than to the application:
+
+  .replit                 the deployment config, including the userenv
+                          block and the postMerge hook that tidy's older
+                          copy does not have
+  scripts/post-merge.sh   the hook that config points at
+
+Both parents are recorded, so nothing is lost: the original app and
+every Replit commit remain reachable in the history.
+
+What the merge removes from main, and why:
+
+  parked/                 the original MVP, kept for reference and
+                          imported by nothing. It contains the two lines
+                          that log req.headers.authorization and fail
+                          the security scan on every upload.
+  attached_assets/        a Replit image upload; the directory is now
+                          gitignored
+  DEPENDENCY_AUDIT.md     superseded by the overrides block in
+                          package.json and docs/REPLIT-BRIEF.md
+  residency-checks.tsx    components of the original app, with no
+  document-verification.tsx  counterpart in the rebuild
+
+## Bring the README up to the rebuilt app, and unstale .env.example
+
+The README is what GitHub shows first and it was several versions
+behind: it described drizzle-kit push rather than migrations, a parked/
+directory that has been deleted, a resident fee of 25 and a merchant
+Premium tier that is now two tiers. It said nothing about the decisions
+most likely to be mistaken for bugs, which is the thing a reader coming
+to this cold actually needs.
+
+.env.example carried the same two stale values. Also added attached_assets/
+and release archives to .gitignore, since Replit drops uploads into the
+former and neither belongs in the tree.
+
+## Regenerate changelog
+
 ## Draw the offer, not a pattern
 
 The demo offer images were abstract: horizons, arcs, a bar chart. Fine
@@ -522,25 +590,31 @@ installs to the home screen, with an install prompt on the resident card tab.
 
 ## Rolling tiers, claimable tier benefits, outlet loyalty card, reward claims on the green screen
 
+## Update Replit configuration settings
+
+Replit-Commit-Author: Agent
+
+## Add asset image 1788807162509
+
+Replit-Commit-Author: Agent
+
 ## Schema and contract: tier benefits as rewards, rolling tiers, loyalty card
 
-## Schema and contract: reward claims, tier benefits
+## Published your App
 
-## Resident Activity tab: ready to claim, points list, merged feed
+Replit-Commit-Author: Deployment
+Replit-Commit-Deployment-Build-Id: 46bfc623-f7dd-4a85-a4ba-34511e546b0a
 
-## Add db:reset script
+## Configure Replit and add post-merge script
 
-## Add db:reset script
+Replit-Commit-Author: Agent
 
-## Normalise household code input
+## Remove critical and high dependency vulnerabilities
 
-## Client: plans UI; readable household codes
+Replit-Task-Id: 0c40312e-529b-4f6e-a86b-8eccdbc5ba23
+Replit-Merge-Attempt: MergeTask:0c40312e-529b-4f6e-a86b-8eccdbc5ba23:1:4394d1cf
 
-## Server: Free/Premium merchant plans and household membership
+## Remove unused loyalty components and update dashboard routes
 
-## Contract and schema for Free/Premium merchant plans and household membership
-
-## Apply the Coast brand across the app and the till poster
-
-## Brand foundation: fonts, tokens, logo component, favicons
+Replit-Commit-Author: Agent
 
