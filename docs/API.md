@@ -1152,3 +1152,82 @@ regular time and place.
 The in-person route is the honest advantage: it is free, immediate, and stores
 nothing. The postcard costs real postage and takes days. Present them as equals
 with their trade-offs stated, rather than pushing the cheaper one.
+
+## Verification at an outlet, and entering the postcard code (added Sept 2026)
+
+### The code box is always there
+
+After requesting a postcard the panel said the card was being prepared and gave
+no way to enter anything, so the whole route was undemonstrable until a card
+physically arrived, and someone whose card came early had nowhere to type it.
+
+The code field is now shown as soon as a postcard has been requested, alongside
+the note about how long it takes. Entering a code before the card arrives simply
+fails the same way a wrong code does, which is the honest behaviour and costs
+nothing.
+
+### Verifying at a participating outlet
+
+Meeting an admin does not scale past the first few dozen residents and puts
+every sign-up through one person's diary. Instead, a small number of outlets
+verify on the operator's behalf.
+
+**How it works.** The resident's app shows a short verification code. They take
+it, with something showing their name and address, to any outlet on the list. The
+outlet enters the code in their portal, confirms they have seen the address, and
+the account is verified on the spot. Nothing is scanned, copied or kept: a person
+looks at a letter and presses a button.
+
+This reuses the shape the merchant already knows from redemptions, so it needs no
+new hardware and almost no explanation.
+
+**What it delegates, and how that is controlled.** A verifying outlet can grant
+residency, which is a real trust decision, so:
+
+- Verifying is off by default and switched on per outlet by an admin. It is not
+  something a merchant can enable for themselves.
+- Every verification records which outlet and which staff account did it. An
+  admin can see the trail and revoke a verification.
+- The downside of a bad verification is bounded: one person getting local prices
+  they are not entitled to. It is not access to anyone's data.
+
+Worth stating plainly rather than discovering later: this is a deliberate trade
+of some control for reach, made because a verification queue of one person is a
+worse risk to the business than an occasional wrong verification.
+
+### Schema
+
+```
+merchants   verifies_residents boolean default false   -- admin-controlled
+users       verified_by_merchant_id uuid null          -- which outlet, when verified there
+            verification_method gains "outlet"
+```
+
+`verified_by` keeps its existing meaning: the admin or staff user who did it.
+
+### API
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | /api/verification | resident | gains `code` (the resident's verification code) and `outlets: [{ id, name, address }]`, the outlets that verify |
+| POST | /api/merchant/verify | merchant, any plan | `{ code, confirmed: true }`. 403 unless the outlet has `verifiesResidents`. 404 on an unknown or already-used code. Marks the resident verified, records the outlet and staff user |
+| GET | /api/merchant/verify/:code | merchant | looks the code up without acting: returns `{ firstName, surname, addressLine1, town, postcode }` so staff can check the letter against it. 403 unless the outlet verifies |
+| PATCH | /api/admin/merchants/:id | admin | gains `verifiesResidents` |
+
+The resident's verification code is generated on first request and is stable
+until used, so they can come back another day with the same code.
+
+The lookup deliberately returns the address: staff cannot check a letter against
+an account without seeing what the account says. That is the one place a merchant
+sees a resident's name, it happens only when the resident hands them a code, and
+it is recorded.
+
+### Client
+
+- Resident verification panel: the postcard code box, and the outlet route
+  showing the code in the same style as a redemption code, with the list of
+  outlets and their addresses.
+- Merchant portal: a "Verify a resident" action. Enter the code, see the name and
+  address, confirm the letter matches, done. One screen, no menus.
+- Admin businesses table: a toggle for whether an outlet verifies.
+- Seed: five of the twenty-four outlets verify, spread across the town.

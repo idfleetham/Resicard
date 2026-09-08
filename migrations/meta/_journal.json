@@ -36,6 +36,13 @@
       "when": 1788877679989,
       "tag": "0004_red_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788880178926,
+      "tag": "0005_calm_patriot",
+      "breakpoints": true
     }
   ]
 }

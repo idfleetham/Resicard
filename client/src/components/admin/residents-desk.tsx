@@ -14,6 +14,7 @@ import { addressLines, type AdminResident } from "./types";
 const FILTERS = ["all", "false", "true"] as const;
 type Filter = (typeof FILTERS)[number];
 const FILTER_LABEL: Record<Filter, string> = { all: "Everyone", false: "Not verified", true: "Verified" };
+const METHOD_LABEL: Record<string, string> = { postcard: " by postcard", outlet: " at an outlet", in_person: " in person" };
 
 function membershipLabel(m: AdminResident["membership"]): string {
   if (m.status === "active" && m.expiry) return `${m.plan === "household" ? "Household" : "Member"} to ${formatDate(m.expiry)}`;
@@ -79,7 +80,7 @@ export default function ResidentsDesk() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-bold text-sea">{r.name}</span>
                     {r.verified ? (
-                      <Pill tone="live">Verified{r.method === "in_person" ? " in person" : r.method === "postcard" ? " by postcard" : ""}</Pill>
+                      <Pill tone="live">Verified{METHOD_LABEL[r.method ?? ""] ?? ""}</Pill>
                     ) : (
                       <Pill tone="slate">Not verified</Pill>
                     )}
@@ -87,6 +88,12 @@ export default function ResidentsDesk() {
                   </div>
                   <div className="text-sm text-sea mt-1">{lines.length ? lines.join(", ") : <span className="text-slate-brand">No address on file</span>}</div>
                   <div className="text-xs text-slate-brand mt-0.5">{r.email} · {r.username}{r.verifiedAt ? ` · verified ${formatDate(r.verifiedAt)}` : ""}</div>
+                  {/* Who did it, so a verification can be traced back to an outlet and a person before it is removed. */}
+                  {r.verified && (r.verifiedByOutlet || r.verifiedByUser) && (
+                    <div className="text-xs text-slate-brand mt-0.5">
+                      By {[r.verifiedByOutlet?.name, r.verifiedByUser].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   {r.verified ? (

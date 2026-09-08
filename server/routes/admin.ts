@@ -163,6 +163,18 @@ adminRouter.get(
       );
     }
     const rows = await userStore.listUsersWhere(and(...conditions)!, 300);
+    // Who did each verification, so the trail an outlet leaves can be read here.
+    const outletNames = new Map<string, string | null>();
+    const staffNames = new Map<number, string | null>();
+    for (const u of rows) {
+      if (u.verifiedByMerchantId && !outletNames.has(u.verifiedByMerchantId)) {
+        outletNames.set(u.verifiedByMerchantId, (await merchantStore.getMerchantById(u.verifiedByMerchantId))?.name ?? null);
+      }
+      if (u.verifiedBy && !staffNames.has(u.verifiedBy)) {
+        const who = await userStore.getUserById(u.verifiedBy);
+        staffNames.set(u.verifiedBy, who ? residentName(who) : null);
+      }
+    }
     const out = [];
     for (const u of rows) {
       const primary = await userStore.getHouseholdPrimary(u);
@@ -176,6 +188,10 @@ adminRouter.get(
         verified: Boolean(u.isResidencyVerified),
         verifiedAt: u.verifiedAt,
         method: u.verificationMethod ?? null,
+        verifiedByOutlet: u.verifiedByMerchantId
+          ? { id: u.verifiedByMerchantId, name: outletNames.get(u.verifiedByMerchantId) ?? null }
+          : null,
+        verifiedByUser: u.verifiedBy ? staffNames.get(u.verifiedBy) ?? null : null,
         membership: { status: membership.status, expiry: membership.expiry, plan: membership.plan },
         createdAt: u.createdAt,
       });
@@ -196,7 +212,9 @@ adminRouter.post(
       isResidencyVerified: true,
       verifiedAt: new Date(),
       verifiedBy: currentUser(req).id,
+      verifiedByMerchantId: null,
       verificationMethod: "in_person",
+      verificationCode: null,
     });
     if (!user) throw notFound("User not found");
     res.json(toPublicUser(user));
@@ -209,11 +227,15 @@ adminRouter.post(
     const userId = parseUserId(req.params.userId);
     const target = await userStore.getUserById(userId);
     if (!target || target.role !== "resident") throw notFound("User not found");
+    // A fresh code is issued the next time they look at the panel; the old one
+    // stays spent, so revoking cannot resurrect the code that was used.
     const user = await userStore.updateUser(userId, {
       isResidencyVerified: false,
       verifiedAt: null,
       verifiedBy: null,
+      verifiedByMerchantId: null,
       verificationMethod: null,
+      verificationCode: null,
     });
     if (!user) throw notFound("User not found");
     res.json(toPublicUser(user));

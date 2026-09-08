@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +62,21 @@ export default function BusinessesTable() {
     onError: (err) => toast({ title: "Could not save", description: errorMessage(err), variant: "destructive" }),
   });
 
+  /**
+   * Whether this outlet may verify residents. It is granted here and nowhere
+   * else: the switch hands an outlet the right to grant residency, so it belongs
+   * to whoever decided to trust them rather than to the outlet itself.
+   */
+  const setVerifies = useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) =>
+      (await apiRequest("PATCH", `/api/admin/merchants/${id}`, { verifiesResidents: value })).json(),
+    onSuccess: async (_res, vars) => {
+      await refresh();
+      toast({ title: vars.value ? "Outlet can verify residents" : "Verifying switched off" });
+    },
+    onError: (err) => toast({ title: "Could not save", description: errorMessage(err), variant: "destructive" }),
+  });
+
   const startPlacing = (m: AdminMerchant) => {
     setPlacing(m.id);
     setDraft({ latitude: m.latitude ?? "", longitude: m.longitude ?? "" });
@@ -94,6 +110,7 @@ export default function BusinessesTable() {
                 <TableHead className={`${TH} text-right`}>Favourites</TableHead>
                 <TableHead className={TH}>Joined</TableHead>
                 <TableHead className={TH}>Map</TableHead>
+                <TableHead className={TH}>Verifies</TableHead>
                 <TableHead className={TH} />
               </TableRow>
             </TableHeader>
@@ -127,6 +144,15 @@ export default function BusinessesTable() {
                       {m.latitude && m.longitude ? "Placed" : "Not placed"}
                     </button>
                   </TableCell>
+                  <TableCell className={`${TD} whitespace-nowrap`}>
+                    <Switch
+                      checked={Boolean(m.verifiesResidents)}
+                      disabled={m.status !== "approved" || setVerifies.isPending}
+                      onCheckedChange={(value) => setVerifies.mutate({ id: m.id, value })}
+                      aria-label={`${m.name} verifies residents`}
+                      data-testid={`switch-verifies-${m.id}`}
+                    />
+                  </TableCell>
                   <TableCell className={`${TD} text-right whitespace-nowrap`}>
                     {m.status !== "approved" && (
                       <Button size="sm" className="h-9 px-4 mr-2" onClick={() => decide.mutate({ id: m.id, action: "approve" })} disabled={decide.isPending}>Approve</Button>
@@ -138,7 +164,7 @@ export default function BusinessesTable() {
                 </TableRow>
                 {placing === m.id && (
                   <TableRow className="hover:bg-transparent border-[#E6E9E8]">
-                    <TableCell className={TD} colSpan={9}>
+                    <TableCell className={TD} colSpan={10}>
                       <div className="max-w-md space-y-3 py-2">
                         <LocationPicker value={draft} onChange={setDraft} />
                         <div className="flex gap-2">

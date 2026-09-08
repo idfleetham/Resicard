@@ -38,7 +38,7 @@ import { planFeeGbp as residentFeeGbp, randomHouseholdCode } from "../lib/member
 import { planFeeGbp as merchantFeeGbp } from "../lib/plan";
 import {
   DAY_WEIGHTS, HOURS_BY_CATEGORY, OUTLETS, RESIDENT_NAMES, RESIDENT_POSTCODES, RESIDENT_STREETS,
-  STREET_NAMES, STREETS, TIER_COLOURS, VISITS_BY_BAND, pointOn,
+  STREET_NAMES, STREETS, TIER_COLOURS, VERIFYING_SLUGS, VISITS_BY_BAND, pointOn,
 } from "./demo-data";
 import { menuPdf, offerArt, outletLogo } from "./demo-art";
 
@@ -175,6 +175,7 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
       reservationProvider: outlet.reservation?.provider ?? null, reservationUrl: outlet.reservation?.url ?? null,
       address: `${outlet.houseNumber} ${STREET_NAMES[outlet.street]}, St Andrews, ${STREETS[outlet.street].postcode}`,
       scanCode: await uniqueScanCode(), status: "approved", approvedAt: planStartedAt,
+      verifiesResidents: VERIFYING_SLUGS.includes(outlet.slug),
       planStatus: outlet.plan, planStartedAt: inTrial ? trialStart : planStartedAt,
       planRenewsAt: outlet.plan === "free" ? null : inTrial ? trialEnd : addMonths(now, 1),
     });
@@ -256,6 +257,8 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
 
 interface SeededResident {
   id: number; name: string; plan: "individual" | "household"; status: "active" | "cancelled" | "inactive";
+  /** Whether their address has been confirmed. An unverified member cannot redeem, so they have no history. */
+  verified: boolean;
   /** Active, but inside the free trial: nothing has been charged yet. */
   inTrial: boolean;
   expiry: Date | null;
@@ -267,6 +270,7 @@ interface SeededResident {
 
 async function seedResidents(hash: string, now: Date, outlets: SeededOutlet[]): Promise<SeededResident[]> {
   const seeded: SeededResident[] = [];
+  const verifying = outlets.filter((o) => VERIFYING_SLUGS.includes(o.slug));
   for (let i = 0; i < RESIDENT_NAMES.length; i++) {
     const [firstName, surname] = RESIDENT_NAMES[i];
     // Most members are current; a handful lapsed or never paid, so the revenue
@@ -281,14 +285,27 @@ async function seedResidents(hash: string, now: Date, outlets: SeededOutlet[]): 
       : status === "active" ? addMonths(now, randInt(1, 12))
       : status === "cancelled" ? new Date(now.getTime() - randInt(10, 90) * DAY_MS)
       : null;
-    const joined = new Date(now.getTime() - randInt(30, HISTORY_DAYS + 60) * DAY_MS);
+    // Roughly one in eight has signed up but not yet confirmed their address, so
+    // both verification routes can be walked end to end on seeded data. They
+    // joined in the last few days, which is why they are still waiting.
+    const verified = i % 8 !== 5;
+    const joined = verified
+      ? new Date(now.getTime() - randInt(30, HISTORY_DAYS + 60) * DAY_MS)
+      : new Date(now.getTime() - randInt(1, 9) * DAY_MS);
+    // Verified members are split across the three routes; the outlet ones record
+    // which outlet did it, as a real verification does.
+    const method = i % 5 === 0 ? "outlet" : i % 3 === 0 ? "in_person" : "postcard";
+    const byOutlet = method === "outlet" ? verifying[i % Math.max(1, verifying.length)] : undefined;
 
     const user = await userStore.createUser({
       username: randomHandle(), email: `resident${String(i + 1).padStart(2, "0")}@resicard.test`, password: hash,
       firstName, surname, role: "resident", town: "St Andrews", createdAt: joined,
       postcode: RESIDENT_POSTCODES[i % RESIDENT_POSTCODES.length],
       addressLine1: `${randInt(1, 84)} ${RESIDENT_STREETS[i % RESIDENT_STREETS.length]}`,
-      isResidencyVerified: true, verifiedAt: joined, verificationMethod: i % 3 === 0 ? "in_person" : "postcard",
+      isResidencyVerified: verified,
+      verifiedAt: verified ? joined : null,
+      verificationMethod: verified ? method : null,
+      verifiedByMerchantId: verified && byOutlet ? byOutlet.id : null,
       membershipPlan: plan, membershipStatus: status, membershipExpiry: expiry,
       membershipRenews: status === "active" && i % 13 !== 6,
       householdCode: plan === "household" ? randomHouseholdCode() : null,
@@ -298,7 +315,7 @@ async function seedResidents(hash: string, now: Date, outlets: SeededOutlet[]): 
     // Regulars are dealt round-robin rather than drawn at random: random draws
     // leave some outlets with almost no trade, which reads as a broken demo.
     const regulars = Array.from({ length: randInt(4, 6) }, (_, k) => outlets[(i * 5 + k) % outlets.length]);
-    seeded.push({ id: user.id, name: `${firstName} ${surname}`, plan, status, inTrial, expiry, band, regulars });
+    seeded.push({ id: user.id, name: `${firstName} ${surname}`, plan, status, verified, inTrial, expiry, band, regulars });
   }
   return seeded;
 }
@@ -390,7 +407,8 @@ function recordVisit(visit: Visit, state: RuleState): void {
 
 async function seedHistory(residents: SeededResident[], outlets: SeededOutlet[], now: Date) {
   const visits: Visit[] = [];
-  for (const resident of residents) {
+  // Only verified members could have redeemed anything, so only they have a past.
+  for (const resident of residents.filter((r) => r.verified)) {
     const [min, max] = VISITS_BY_BAND[resident.band];
     const target = randInt(min, max);
     for (let made = 0, tries = 0; made < target && tries < target * 12; tries++) {
@@ -582,6 +600,9 @@ async function main(): Promise<void> {
       `${sum((o) => o.tiers.length)} tiers, ${sum((o) => o.rewards.length)} rewards.`,
     `  ${residents.length} residents: ${members("active")} active (${residents.filter((r) => r.inTrial).length} still in their free trial), ${members("cancelled")} lapsed, ${members("inactive")} never paid.`,
     `  ${outlets.filter((o) => o.inTrial).length} outlets are inside their three months free.`,
+    `  ${outlets.filter((o) => VERIFYING_SLUGS.includes(o.slug)).length} outlets verify residents: ` +
+      `${outlets.filter((o) => VERIFYING_SLUGS.includes(o.slug)).map((o) => o.name).join(", ")}.`,
+    `  ${residents.filter((r) => !r.verified).length} residents are not verified yet, so both routes can be walked end to end.`,
     `  ${history.redemptions} redemptions over ${HISTORY_DAYS} days, ${history.events} loyalty events, ${history.balances} balances,`,
     `  ${history.claims} reward claims, ${history.favourites} favourites, ${ledgerRows} subscription ledger rows.`,
     `Password for everyone: ${PASSWORD}. admin@resicard.test, resident01..60@resicard.test, owner@<outlet>.test.`,

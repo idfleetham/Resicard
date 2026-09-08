@@ -5,6 +5,37 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Verify at an outlet, and let the postcard code be typed
+
+The postcard panel said a card was being prepared and gave no way to
+enter anything, so the route could not be shown to anyone until a card
+physically arrived, and a resident whose card came early had nowhere to
+type it. The field appears as soon as a card is requested; an early code
+fails exactly as a wrong one does, and costs no attempt because there is
+no card to spend it against.
+
+Verifying in person meant meeting an admin, which does not scale past the
+first few dozen residents and puts every sign-up through one diary. Five
+outlets now verify instead: the resident shows a code and something with
+their address on it, the outlet looks the code up, checks the letter and
+confirms. It reuses the shape merchants already know from redemptions, so
+it needs no hardware and almost no explaining.
+
+This hands a trust decision to merchants, so it is fenced. The right to
+verify is off by default and only an admin can grant it: the merchant
+settings schema deliberately does not list the field, so an outlet cannot
+switch it on for itself. Every verification records the outlet and the
+staff member, an admin can see the trail and revoke, and the code is
+cleared the moment it is used, so a second attempt finds nobody.
+
+The lookup returns a resident's name and address, which is the single
+exception to merchants never seeing a resident. It is narrow on purpose:
+it needs the resident's own code, works only for an outlet that has been
+switched on, returns nothing beyond what is needed to read a letter, and
+there is no way to browse or search.
+
+## Regenerate the changelog
+
 ## Postcode by sector, checked before anything else is typed
 
 The catchment is not always a whole postal district. KY15 is Cupar and
@@ -474,8 +505,4 @@ installs to the home screen, with an install prompt on the resident card tab.
 ## Rebuild server against the new schema and API contract
 
 ## Start tidy: remove dead files, park unused features, new schema and API contract
-
-## Clean up .replit configuration
-
-Replit-Commit-Author: Agent
 

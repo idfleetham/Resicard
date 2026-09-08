@@ -16,6 +16,10 @@ import { z } from "zod";
 export const USER_ROLES = ["resident", "merchant", "admin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
+/** How a resident's address was confirmed. */
+export const VERIFICATION_METHODS = ["postcard", "outlet", "in_person"] as const;
+export type VerificationMethod = (typeof VERIFICATION_METHODS)[number];
+
 export const MERCHANT_CATEGORIES = [
   "restaurant", "bar", "cafe", "pub", "takeaway", "hotel", "retail", "services", "experience",
 ] as const;
@@ -47,16 +51,21 @@ export const users = pgTable("users", {
   postcode: text("postcode"),
   profilePhoto: text("profile_photo"), // base64 data URL, shown on the digital card
 
-  // Residency verification (residents only). Two routes: a postcard with a
-  // code posted to the address, or an admin verifying in person. No documents
-  // are stored.
+  // Residency verification (residents only). Three routes: a postcard with a
+  // code posted to the address, an outlet that verifies on the operator's
+  // behalf, or an admin verifying in person. No documents are stored.
   addressLine1: text("address_line1"),
   addressLine2: text("address_line2"),
   town: text("town").default("St Andrews"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
   verifiedAt: timestamp("verified_at"),
-  verifiedBy: integer("verified_by"), // admin user id, null for postcard
-  verificationMethod: text("verification_method").$type<"postcard" | "in_person">(),
+  verifiedBy: integer("verified_by"), // the admin or staff user who did it, null for postcard
+  verifiedByMerchantId: uuid("verified_by_merchant_id"), // which outlet, when verified at one
+  verificationMethod: text("verification_method").$type<VerificationMethod>(),
+  // The code the resident shows at a verifying outlet. Generated the first time
+  // they look at the panel rather than for everyone at sign-up, and cleared when
+  // it is used, so a code that has already granted residency cannot be used again.
+  verificationCode: text("verification_code").unique(),
 
   // Membership (residents only): one flat annual fee, individual or household.
   // A household is two adults (children need no card). The paying adult is the
@@ -182,6 +191,11 @@ export const merchants = pgTable("merchants", {
 
   // The printed QR code in the outlet encodes /scan/<scanCode>
   scanCode: text("scan_code").notNull().unique(),
+
+  // Whether this outlet may verify a resident's address on the operator's
+  // behalf. Off unless an admin turns it on: it delegates the right to grant
+  // residency, so it is never a merchant setting (see updateMerchantSchema).
+  verifiesResidents: boolean("verifies_residents").default(false).notNull(),
 
   // Admin approval
   status: text("status").$type<"pending" | "approved" | "rejected">().default("pending"),
@@ -606,6 +620,14 @@ const coordinate = (limit: number) =>
     .transform((value) => (value === null ? null : value.toFixed(6)))
     .optional();
 
+/**
+ * What a merchant may change about their own record.
+ *
+ * `verifiesResidents` is deliberately absent and must stay absent: this schema
+ * is what the merchant settings route parses, and zod drops the keys it does
+ * not list, so an outlet cannot switch on its own right to verify residents by
+ * posting the field. Admins use adminUpdateMerchantSchema instead.
+ */
 export const updateMerchantSchema = z.object({
   name: z.string().min(1).optional(),
   category: z.enum(MERCHANT_CATEGORIES).optional(),
@@ -618,6 +640,21 @@ export const updateMerchantSchema = z.object({
   reservationUrl: z.string().url().optional().nullable().or(z.literal("")),
   latitude: coordinate(90),
   longitude: coordinate(180),
+});
+
+/** The same fields plus the ones only an admin may set. Used by the admin merchants route. */
+export const adminUpdateMerchantSchema = updateMerchantSchema.extend({
+  verifiesResidents: z.boolean().optional(),
+});
+
+/** A resident's verification code, as typed by outlet staff. */
+export const verificationCodeSchema = z.object({
+  code: z.string().trim().min(6).max(6),
+});
+
+/** Verifying a resident at an outlet. The confirmation is the whole point: staff say they have seen the address. */
+export const outletVerifySchema = verificationCodeSchema.extend({
+  confirmed: z.literal(true),
 });
 
 export const insertOfferSchema = createInsertSchema(offers)

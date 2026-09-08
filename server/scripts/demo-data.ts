@@ -250,6 +250,23 @@ export interface DemoOutlet {
   offers: DemoOffer[];
 }
 
+/**
+ * The five outlets that verify residents on the operator's behalf.
+ *
+ * Deliberately spread across the town rather than clustered on one street, so
+ * nobody has to walk the length of St Andrews to be verified: the middle of
+ * Market Street, the north-west by the golf course, the east end past the abbey,
+ * the Largo Road end, and the west end of South Street. They are also open at
+ * different times of day between them.
+ */
+export const VERIFYING_SLUGS: readonly string[] = [
+  "bramble-beam", // Market Street, middle of town
+  "gowfers-rest", // Golf Place, north-west
+  "netmakers-arms", // Abbey Street, east
+  "spice-lantern", // Largo Road, south-west
+  "tolbooth-books", // South Street, west end
+];
+
 export const OUTLETS: DemoOutlet[] = [
   // Restaurants ------------------------------------------------------------
   {

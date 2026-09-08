@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Check, Clock, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { errorMessage, formatDate } from "./format";
-import CodeInput from "./code-input";
+import PostcardCodeBox from "./postcard-code-box";
 import VerifyChoices from "./verify-choices";
-import { usePricing } from "@/components/pricing/use-pricing";
 
 /** What each route involves, from the server so no number or place is typed here. */
 export interface VerificationOptions {
@@ -18,10 +16,17 @@ export interface VerificationOptions {
   inPersonDetails: string;
 }
 
+/** An outlet that verifies residents on the operator's behalf. */
+export interface VerifyingOutlet {
+  id: string;
+  name: string;
+  address: string | null;
+}
+
 export interface VerificationInfo {
   verified: boolean;
   verifiedAt: string | null;
-  method: "postcard" | "in_person" | null;
+  method: "postcard" | "outlet" | "in_person" | null;
   address: { addressLine1: string | null; addressLine2: string | null; town: string | null; postcode: string | null };
   postcard: {
     status: "requested" | "posted" | "used" | "expired" | "cancelled" | null;
@@ -30,13 +35,16 @@ export interface VerificationInfo {
     expiresAt: string | null;
     attemptsLeft: number | null;
   } | null;
+  /** The code to show at a verifying outlet; null once the address is verified. */
+  code: string | null;
+  outlets: VerifyingOutlet[];
   options: VerificationOptions;
   canRequestPostcard: boolean;
   reason?: string;
 }
 
 const KEY = ["/api/verification"];
-const METHOD_LABEL: Record<string, string> = { postcard: "by postcard", in_person: "in person" };
+const METHOD_LABEL: Record<string, string> = { postcard: "by postcard", outlet: "at an outlet", in_person: "in person" };
 
 function AddressBlock({ address }: { address: VerificationInfo["address"] }) {
   const lines = [address.addressLine1, address.addressLine2, address.town, address.postcode].filter(Boolean);
@@ -50,22 +58,11 @@ function AddressBlock({ address }: { address: VerificationInfo["address"] }) {
   );
 }
 
-/** The other route stays visible while a card is in the post; nothing is kept either way. */
-function InPersonNote({ details }: { details: string }) {
-  return (
-    <p className="text-xs text-[#5C6F75] mt-2">
-      You can still be verified in person instead: show anything with your address on it and nothing is scanned, copied or
-      kept. {details}
-    </p>
-  );
-}
-
 export default function VerificationPanel() {
   const { user, refresh } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery<VerificationInfo>({ queryKey: KEY, enabled: Boolean(user) });
-  const { data: pricing } = usePricing();
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
 
@@ -106,41 +103,9 @@ export default function VerificationPanel() {
   }
 
   const card = data.postcard;
-
-  if (card?.status === "requested") {
-    return (
-      <div className="bg-sand rounded-2xl p-5 flex gap-3 text-sea">
-        <Clock className="h-5 w-5 flex-none" />
-        <div>
-          <p className="font-bold">Your card is being prepared</p>
-          <p className="text-sm mt-1">Requested {formatDate(card.requestedAt)}. It will be posted to your address and usually arrives in 2 to 4 days.</p>
-          <InPersonNote details={data.options.inPersonDetails} />
-        </div>
-      </div>
-    );
-  }
-
-  if (card?.status === "posted") {
-    return (
-      <section className="bg-white rounded-2xl p-5 text-sea flex flex-col gap-4">
-        <h2 className="font-display font-bold text-2xl tracking-[-0.02em]">Enter your code</h2>
-        <p className="text-sm text-slate-brand">
-          <Mail className="inline h-4 w-4 mr-1 -mt-0.5" />
-          Posted {formatDate(card.postedAt)}. Type the 6-character code from the card. It expires on {formatDate(card.expiresAt)}.
-        </p>
-        <CodeInput value={code} onChange={(v) => { setCode(v); setCodeError(null); }} disabled={confirm.isPending} />
-        {codeError && <p className="text-sm font-semibold text-[#B5321A]">{codeError}</p>}
-        {!codeError && card.attemptsLeft !== null && card.attemptsLeft < data.options.postcardMaxAttempts && (
-          <p className="text-xs text-slate-brand">{card.attemptsLeft} attempt{card.attemptsLeft === 1 ? "" : "s"} left.</p>
-        )}
-        <Button className="w-full h-12 text-base" disabled={code.length !== 6 || confirm.isPending} onClick={() => confirm.mutate()}>
-          {confirm.isPending ? "Checking" : "Confirm"}
-        </Button>
-        <InPersonNote details={data.options.inPersonDetails} />
-      </section>
-    );
-  }
-
+  // A card that is being prepared or is on its way both get the code box; a card
+  // that expired or was cancelled goes back to offering another one.
+  const open = card && (card.status === "requested" || card.status === "posted") ? card : null;
   const ended = card?.status === "expired" ? "Your last code expired." : card?.status === "cancelled" ? "Your last postcard was cancelled." : null;
 
   return (
@@ -151,11 +116,25 @@ export default function VerificationPanel() {
       <p className="text-sm text-[#0F3B47]/70">There are two ways to confirm you live here. Pick whichever suits you.</p>
       <VerifyChoices
         options={data.options}
-        contactEmail={pricing?.contactEmail ?? "hello@resicard.co.uk"}
         canRequestPostcard={data.canRequestPostcard}
         reason={data.reason}
         requesting={request.isPending}
         onRequestPostcard={() => request.mutate()}
+        code={data.code}
+        outlets={data.outlets}
+        postcardBox={
+          open ? (
+            <PostcardCodeBox
+              card={open}
+              maxAttempts={data.options.postcardMaxAttempts}
+              code={code}
+              error={codeError}
+              pending={confirm.isPending}
+              onChange={(v) => { setCode(v); setCodeError(null); }}
+              onConfirm={() => confirm.mutate()}
+            />
+          ) : undefined
+        }
       />
     </section>
   );

@@ -8,6 +8,7 @@ import { publicRouter } from "./public";
 import { redemptionsRouter } from "./redemptions";
 import { outletsRouter } from "./outlets";
 import { merchantRouter } from "./merchant";
+import { merchantVerifyRouter } from "./merchant-verify";
 import { merchantAnalyticsRouter } from "./merchant-analytics";
 import { merchantCampaignsRouter } from "./merchant-campaigns";
 import { campaignsRouter } from "./campaigns";
@@ -31,6 +32,7 @@ export function registerRoutes(app: Express): Server {
   app.use(redemptionsRouter);
   app.use(outletsRouter);
   app.use(merchantRouter);
+  app.use(merchantVerifyRouter);
   app.use(merchantAnalyticsRouter);
   app.use(merchantCampaignsRouter);
   app.use(campaignsRouter);

@@ -2,7 +2,9 @@ import { Router } from "express";
 import { postcardCodeSchema, type Postcard, type User } from "@shared/schema";
 import { config } from "../config";
 import * as userStore from "../storage/users";
+import * as merchantStore from "../storage/merchants";
 import * as postcardStore from "../storage/postcards";
+import { newVerificationCode } from "../lib/outlet-verification";
 import { authenticate, requireRole, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, notFound } from "../lib/http";
 import { attemptsLeft, expiryDate, formatAddress, hashCode, isAddressComplete, isExpired, newPostcardCode } from "../lib/postcards";
@@ -23,8 +25,26 @@ function postcardPayload(p: Postcard | undefined) {
   };
 }
 
+/**
+ * The resident's code for a verifying outlet, generated the first time they look
+ * at the panel rather than for everyone at sign-up. It stays the same until it is
+ * used, so they can come back another day with the code they already have.
+ */
+async function ensureVerificationCode(user: User): Promise<{ user: User; code: string | null }> {
+  if (user.isResidencyVerified) return { user, code: null };
+  if (user.verificationCode) return { user, code: user.verificationCode };
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = newVerificationCode();
+    if (await userStore.getUserByVerificationCode(code)) continue;
+    const updated = await userStore.updateUser(user.id, { verificationCode: code });
+    return { user: updated ?? user, code };
+  }
+  throw new Error("Could not generate a unique verification code");
+}
+
 /** The GET /api/verification shape, shared by every route here. */
-export async function verificationPayload(user: User, reason?: string) {
+export async function verificationPayload(input: User, reason?: string) {
+  const { user, code } = await ensureVerificationCode(input);
   let latest = await postcardStore.getLatestPostcardForUser(user.id);
   // A posted card that has run out of time is reported as expired the next time anyone looks.
   if (latest?.status === "posted" && isExpired(latest.expiresAt)) {
@@ -47,6 +67,10 @@ export async function verificationPayload(user: User, reason?: string) {
       postcode: user.postcode,
     },
     postcard: postcardPayload(latest),
+    // The code staff type in at an outlet, and where they can be found. Both are
+    // null / empty once the address is verified: there is nothing left to show.
+    code,
+    outlets: user.isResidencyVerified ? [] : await merchantStore.listVerifyingMerchants(),
     // What each route involves, so the chooser never hard-codes 60 days, 5 tries
     // or a meeting place that only exists in this deployment's configuration.
     options: {
@@ -97,16 +121,24 @@ verificationRouter.post(
     const { code } = parseBody(postcardCodeSchema, req.body);
     const user = await loadResident(currentUser(req).id);
     if (user.isResidencyVerified) throw badRequest("Your address is already verified");
+    // The box is offered as soon as a card is requested, so a code can be typed
+    // before one has been posted. Until the card is posted the row holds a
+    // throwaway hash, so an early code fails the comparison below exactly as a
+    // wrong code does; it just cannot cancel a card that is still being printed.
     const open = await postcardStore.getOpenPostcardForUser(user.id);
-    if (!open || open.status !== "posted") throw badRequest("No postcard has been posted to you yet");
-    if (isExpired(open.expiresAt)) {
+    if (!open) throw badRequest("No postcard has been requested");
+    const posted = open.status === "posted";
+    if (posted && isExpired(open.expiresAt)) {
       await postcardStore.updatePostcard(open.id, { status: "expired" });
       throw badRequest("That code has expired. Request another postcard.");
     }
-    if (hashCode(code) !== open.codeHash) {
-      const attempts = (open.attempts ?? 0) + 1;
+    if (!posted || hashCode(code) !== open.codeHash) {
+      // Tries are only spent against a card that exists: an early code costs nothing.
+      const attempts = (open.attempts ?? 0) + (posted ? 1 : 0);
       const left = attemptsLeft(attempts, config.postcardMaxAttempts);
-      await postcardStore.updatePostcard(open.id, { attempts, ...(left === 0 ? { status: "cancelled" as const } : {}) });
+      if (posted) {
+        await postcardStore.updatePostcard(open.id, { attempts, ...(left === 0 ? { status: "cancelled" as const } : {}) });
+      }
       if (left === 0) throw badRequest("Wrong code, no attempts left. Request another postcard.");
       throw badRequest(`Wrong code, ${left} attempt${left === 1 ? "" : "s"} left`);
     }
@@ -116,7 +148,9 @@ verificationRouter.post(
       isResidencyVerified: true,
       verifiedAt: now,
       verifiedBy: null,
+      verifiedByMerchantId: null,
       verificationMethod: "postcard",
+      verificationCode: null,
     });
     await sendOnce(user.id, "verified", dedupeKeys.verified(user.id), () =>
       emailService.sendVerified(user.email, user.firstName),

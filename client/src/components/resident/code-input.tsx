@@ -6,7 +6,12 @@ const LENGTH = 6;
  * Six upper-case boxes for the postcard code. One hidden-looking input per box so
  * phone keyboards and paste both work; typing moves forward, backspace moves back.
  */
-export default function CodeInput({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) {
+export default function CodeInput({
+  value,
+  onChange,
+  disabled,
+  label = "Code",
+}: { value: string; onChange: (v: string) => void; disabled?: boolean; label?: string }) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const chars = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, LENGTH);
 
@@ -43,7 +48,7 @@ export default function CodeInput({ value, onChange, disabled }: { value: string
   };
 
   return (
-    <div className="flex gap-2" aria-label="Postcard code">
+    <div className="flex gap-2" aria-label={label}>
       {Array.from({ length: LENGTH }, (_, i) => (
         <input
           key={i}

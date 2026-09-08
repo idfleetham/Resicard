@@ -31,6 +31,12 @@ export async function getUserByStripeSubscription(subscriptionId: string, client
   return row;
 }
 
+/** The resident holding this verification code, if any. Codes are cleared when used. */
+export async function getUserByVerificationCode(code: string, client: DbClient = db): Promise<User | undefined> {
+  const [row] = await client.select().from(users).where(eq(users.verificationCode, code)).limit(1);
+  return row;
+}
+
 export async function getUserByHouseholdCode(code: string, client: DbClient = db): Promise<User | undefined> {
   const [row] = await client.select().from(users).where(eq(users.householdCode, code)).limit(1);
   return row;

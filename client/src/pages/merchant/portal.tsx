@@ -14,6 +14,7 @@ import CampaignsTab from "@/components/merchant/campaigns-tab";
 import QrCodeTab from "@/components/merchant/qr-code-tab";
 import TeamManagement from "@/components/merchant/team-management";
 import MerchantSettings from "@/components/merchant/merchant-settings";
+import VerifyResident from "@/components/merchant/verify-resident";
 import PlanTab, { invalidatePlanGated } from "@/components/merchant/plan-tab";
 import { TAB_LIST, TAB_TRIGGER, TabScroller } from "@/components/merchant/portal-ui";
 
@@ -21,6 +22,7 @@ const TABS = [
   { key: "overview", label: "Overview" },
   { key: "offers", label: "Offers" },
   { key: "redemptions", label: "Redemptions" },
+  { key: "verify", label: "Verify" },
   { key: "loyalty", label: "Loyalty" },
   { key: "send", label: "Send" },
   { key: "analytics", label: "Analytics" },
@@ -98,6 +100,9 @@ export default function MerchantPortal() {
   }
 
   const merchant = user.merchant ?? null;
+  // Verifying residents is granted per outlet by an admin, so the tab only
+  // exists for an outlet that has been given it.
+  const tabs = TABS.filter((t) => t.key !== "verify" || merchant?.verifiesResidents);
   const changeTab = (value: string) => {
     if (!isTab(value)) return;
     setTab(value);
@@ -115,10 +120,10 @@ export default function MerchantPortal() {
 
         <StatusNotice status={merchant?.status ?? null} />
 
-        <Tabs value={tab} onValueChange={changeTab}>
+        <Tabs value={tabs.some((t) => t.key === tab) ? tab : "overview"} onValueChange={changeTab}>
           <TabScroller>
             <TabsList className={TAB_LIST}>
-              {TABS.map((t) => (
+              {tabs.map((t) => (
                 <TabsTrigger key={t.key} value={t.key} className={TAB_TRIGGER}>
                   {t.label}
                 </TabsTrigger>
@@ -129,6 +134,7 @@ export default function MerchantPortal() {
           <TabsContent value="overview" className="mt-0"><OverviewTab onGoTo={changeTab} /></TabsContent>
           <TabsContent value="offers" className="mt-0"><OffersManager /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsFeed /></TabsContent>
+          {merchant?.verifiesResidents && <TabsContent value="verify" className="mt-0"><VerifyResident /></TabsContent>}
           <TabsContent value="loyalty" className="mt-0"><LoyaltyTab /></TabsContent>
           <TabsContent value="send" className="mt-0"><CampaignsTab /></TabsContent>
           <TabsContent value="analytics" className="mt-0"><AnalyticsTab /></TabsContent>

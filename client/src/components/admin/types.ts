@@ -1,4 +1,4 @@
-import type { Merchant, OfferType, PriceChangeDirection, PriceChangeField } from "@shared/schema";
+import type { Merchant, OfferType, PriceChangeDirection, PriceChangeField, VerificationMethod } from "@shared/schema";
 
 export interface AdminStats {
   residents: number;
@@ -73,7 +73,11 @@ export interface AdminResident {
   address: { addressLine1: string | null; addressLine2: string | null; town: string | null; postcode: string | null };
   verified: boolean;
   verifiedAt: string | null;
-  method: "postcard" | "in_person" | null;
+  method: VerificationMethod | null;
+  /** The outlet that verified them, when it was done at one. */
+  verifiedByOutlet: { id: string; name: string | null } | null;
+  /** The admin or member of staff who did it. */
+  verifiedByUser: string | null;
   membership: { status: "inactive" | "active" | "cancelled"; expiry: string | null; plan: "individual" | "household" };
   createdAt: string | null;
 }

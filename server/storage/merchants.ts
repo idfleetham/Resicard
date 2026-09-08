@@ -82,6 +82,15 @@ export async function listApprovedMerchantsForMap(client: DbClient = db) {
     .orderBy(merchants.name);
 }
 
+/** Approved outlets that verify residents, as shown to a resident looking for somewhere to go. */
+export async function listVerifyingMerchants(client: DbClient = db) {
+  return client
+    .select({ id: merchants.id, name: merchants.name, address: merchants.address })
+    .from(merchants)
+    .where(and(eq(merchants.status, "approved"), eq(merchants.verifiesResidents, true)))
+    .orderBy(merchants.name);
+}
+
 /** All merchants (optionally by status) with owner details and an offer count, for admins. */
 export async function listMerchantsForAdmin(status: string | undefined, client: DbClient = db) {
   const query = client
