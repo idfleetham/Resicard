@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Ticket, Gift, Plus, Award } from "lucide-react";
-import { formatTime } from "@/components/resident/format";
+import { formatPounds, formatTime } from "@/components/resident/format";
 
 interface FeedMerchant {
   id: string;
@@ -10,7 +10,7 @@ interface FeedMerchant {
 
 /** One entry of GET /api/activity/mine. */
 export type ActivityItem =
-  | { kind: "redemption"; id: string; at: string; merchant: FeedMerchant; title: string; code: string; pointsAwarded: number }
+  | { kind: "redemption"; id: string; at: string; merchant: FeedMerchant; title: string; code: string; pointsAwarded: number; saved: number | null; savedEstimated: boolean }
   | { kind: "reward"; id: string; at: string; merchant: FeedMerchant; title: string; amount: number | null; claimId: string | null }
   | { kind: "points" | "tier"; id: string; at: string; merchant: FeedMerchant; title: string; amount: number | null };
 
@@ -57,13 +57,21 @@ function KindIcon({ kind }: { kind: ActivityItem["kind"] }) {
 
 function FeedLine({ item }: { item: ActivityItem }) {
   const amount = amountLabel(item);
+  // The saving sits with the merchant and time rather than on the right, where
+  // the redemption code already is.
+  const saved = item.kind === "redemption" && item.saved !== null
+    ? `saved ${item.savedEstimated ? "about " : ""}${formatPounds(item.saved)}`
+    : null;
   const body = (
     <>
       <KindIcon kind={item.kind} />
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-bold truncate leading-tight">{item.title}</span>
-        <span className="block text-xs text-slate-brand truncate mt-0.5">
-          {item.merchant.name} · {formatTime(item.at)}
+        <span className="flex items-center gap-1 text-xs text-slate-brand mt-0.5">
+          <span className="min-w-0 truncate">
+            {item.merchant.name} · {formatTime(item.at)}
+          </span>
+          {saved && <span className="shrink-0 font-semibold text-[#1F8A5B]">· {saved}</span>}
         </span>
       </span>
       {item.kind === "redemption" ? (

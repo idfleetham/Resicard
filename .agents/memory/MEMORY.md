@@ -1,0 +1,1 @@
+- [Archive replacement policy](archive-replacement-policy.md) — full project ZIP updates must preserve workspace configuration and use additive database changes.

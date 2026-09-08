@@ -9,6 +9,7 @@ import ResidentsDesk from "@/components/admin/residents-desk";
 import BusinessesTable from "@/components/admin/businesses-table";
 import UsersTable from "@/components/admin/users-table";
 import RedemptionsTable from "@/components/admin/redemptions-table";
+import PriceChanges from "@/components/admin/price-changes";
 import RevenueTab from "@/components/admin/revenue/revenue-tab";
 import { TAB_LIST, TAB_TRIGGER, TabScroller } from "@/components/merchant/portal-ui";
 
@@ -19,6 +20,7 @@ const TABS = [
   { key: "merchants", label: "Businesses" },
   { key: "users", label: "Users" },
   { key: "redemptions", label: "Redemptions" },
+  { key: "prices", label: "Prices" },
   { key: "revenue", label: "Revenue" },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
@@ -81,6 +83,7 @@ export default function AdminDashboard() {
           <TabsContent value="merchants" className="mt-0"><BusinessesTable /></TabsContent>
           <TabsContent value="users" className="mt-0"><UsersTable /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsTable /></TabsContent>
+          <TabsContent value="prices" className="mt-0"><PriceChanges /></TabsContent>
           <TabsContent value="revenue" className="mt-0"><RevenueTab /></TabsContent>
         </Tabs>
       </main>

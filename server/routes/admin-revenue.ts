@@ -17,7 +17,8 @@ function fees(): Fees {
   return {
     individual: config.residentAnnualFeeGbp,
     household: householdFeeGbp(config.residentAnnualFeeGbp),
-    merchantPremiumMonthly: config.merchantPremiumMonthlyFeeGbp,
+    merchantStandardMonthly: config.merchantStandardMonthlyFeeGbp,
+    merchantInsightMonthly: config.merchantInsightMonthlyFeeGbp,
   };
 }
 

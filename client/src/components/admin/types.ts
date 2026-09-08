@@ -1,4 +1,4 @@
-import type { Merchant } from "@shared/schema";
+import type { Merchant, OfferType, PriceChangeDirection, PriceChangeField } from "@shared/schema";
 
 export interface AdminStats {
   residents: number;
@@ -14,6 +14,7 @@ export interface AdminStats {
 export type AdminMerchant = Merchant & {
   owner: { id: number; email: string; firstName: string | null; surname: string | null } | null;
   offerCount: number;
+  favouriteCount: number;
 };
 
 export interface AdminRedemption {
@@ -25,6 +26,26 @@ export interface AdminRedemption {
   basketAmount: string | number | null;
   pointsAwarded: number | null;
   redeemedAt: string;
+}
+
+export interface AdminPriceChange {
+  id: string;
+  changedAt: string;
+  field: PriceChangeField;
+  oldValue: string | null;
+  newValue: string | null;
+  direction: PriceChangeDirection;
+  inflatesSaving: boolean;
+  /** The move as a fraction of the old figure: 0.25 is a quarter more. */
+  percentMove: number | null;
+  offer: { id: string; title: string; type: OfferType | null };
+  merchant: { id: string; name: string };
+  changedBy: { id: number; username: string } | null;
+}
+
+export interface AdminPriceChanges {
+  items: AdminPriceChange[];
+  summary: { merchants: { merchantId: string; name: string; flaggedChanges: number; largestMovePercent: number | null }[] };
 }
 
 export function fullName(u: { firstName?: string | null; surname?: string | null; username?: string | null; email?: string | null }): string {

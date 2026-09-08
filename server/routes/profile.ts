@@ -2,7 +2,7 @@ import { Router } from "express";
 import { updateProfileSchema, membershipCheckoutSchema } from "@shared/schema";
 import * as userStore from "../storage/users";
 import * as postcardStore from "../storage/postcards";
-import { authenticate, requireRole, toPublicUser, currentUser } from "../lib/auth";
+import { authenticate, requireRole, toSelfUser, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, notFound } from "../lib/http";
 import { isLocalPostcode, normalisePostcode } from "../lib/postcode";
 import {
@@ -39,6 +39,9 @@ profileRouter.put(
     if (input.addressLine1 !== undefined) values.addressLine1 = input.addressLine1;
     if (input.addressLine2 !== undefined) values.addressLine2 = input.addressLine2 ?? null;
     if (input.town !== undefined) values.town = input.town;
+    // Demographics are optional both ways round: clearing one is as valid as setting it.
+    if (input.ageBand !== undefined) values.ageBand = input.ageBand ?? null;
+    if (input.sex !== undefined) values.sex = input.sex ?? null;
 
     // Residents who change their address must verify again, and any postcard in flight
     // would go to the old address, so it is cancelled.
@@ -58,7 +61,7 @@ profileRouter.put(
     }
     const user = await userStore.updateUser(auth.id, values);
     if (!user) throw notFound("Account not found");
-    res.json(toPublicUser(user));
+    res.json(toSelfUser(user));
   }),
 );
 

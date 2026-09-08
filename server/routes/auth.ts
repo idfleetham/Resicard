@@ -8,10 +8,11 @@ import { config } from "../config";
 import { emailService } from "../email";
 import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
-import { signToken, authenticate, toPublicUser, currentUser } from "../lib/auth";
+import { signToken, authenticate, toSelfUser, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, conflict, forbidden } from "../lib/http";
 import { isLocalPostcode, normalisePostcode } from "../lib/postcode";
 import { uniqueScanCode } from "../lib/scan-code";
+import { randomHandle } from "../lib/codes";
 
 const BCRYPT_ROUNDS = 10;
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
@@ -27,9 +28,22 @@ const registerAdminSchema = z.object({
   setupSecret: z.string().min(1),
 });
 
-export async function assertIdentityAvailable(email: string, username: string): Promise<void> {
+/**
+ * Residents no longer choose a username, so there is nothing to check for them
+ * beyond the email; merchants and admins still pick one.
+ */
+export async function assertIdentityAvailable(email: string, username?: string): Promise<void> {
   if (await userStore.getUserByEmail(email)) throw conflict("An account with that email already exists");
-  if (await userStore.getUserByUsername(username)) throw conflict("That username is already taken");
+  if (username && (await userStore.getUserByUsername(username))) throw conflict("That username is already taken");
+}
+
+/** A generated resident handle no one else holds. Collisions are vanishingly rare, so a few tries is plenty. */
+async function uniqueResidentHandle(): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const handle = randomHandle();
+    if (!(await userStore.getUserByUsername(handle))) return handle;
+  }
+  throw new Error("Could not generate a unique resident handle");
 }
 
 export const authRouter = Router();
@@ -41,12 +55,12 @@ authRouter.post(
     if (input.role === "resident" && !isLocalPostcode(input.postcode)) {
       throw badRequest("Postcode is outside the Resicard area");
     }
-    await assertIdentityAvailable(input.email, input.username);
+    await assertIdentityAvailable(input.email, input.role === "merchant" ? input.username : undefined);
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
 
     if (input.role === "resident") {
       const user = await userStore.createUser({
-        username: input.username,
+        username: await uniqueResidentHandle(),
         email: input.email.toLowerCase(),
         password: passwordHash,
         firstName: input.firstName,
@@ -57,10 +71,12 @@ authRouter.post(
         addressLine2: input.addressLine2 ?? null,
         town: input.town,
         profilePhoto: input.profilePhoto ?? null,
+        ageBand: input.ageBand ?? null,
+        sex: input.sex ?? null,
         membershipStatus: "inactive",
         isResidencyVerified: false,
       });
-      res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
+      res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
       return;
     }
 
@@ -94,7 +110,7 @@ authRouter.post(
       const linked = await userStore.updateUser(owner.id, { merchantId: merchant.id }, tx);
       return linked ?? owner;
     });
-    res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
+    res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
   }),
 );
 
@@ -108,7 +124,7 @@ authRouter.post(
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    res.json({ user: toPublicUser(user), token: signToken(user) });
+    res.json({ user: toSelfUser(user), token: signToken(user) });
   }),
 );
 
@@ -123,7 +139,7 @@ authRouter.get(
       return;
     }
     const merchant = user.merchantId ? await merchantStore.getMerchantById(user.merchantId) : undefined;
-    res.json({ ...toPublicUser(user), merchant: merchant ?? undefined });
+    res.json({ ...toSelfUser(user), merchant: merchant ?? undefined });
   }),
 );
 
@@ -189,6 +205,6 @@ authRouter.post(
       surname: input.surname,
       role: "admin",
     });
-    res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
+    res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
   }),
 );

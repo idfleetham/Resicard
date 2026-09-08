@@ -68,7 +68,7 @@ export default function ForecastAssumptionsCard({ value, onChange }: Props) {
             aria-label="New residents per month"
           />
         </Field>
-        <Field label="New premium merchants per month" hint="Monthly fee">
+        <Field label="New paying businesses per month" hint="Monthly fee">
           <Input
             type="number"
             min={0}
@@ -77,7 +77,7 @@ export default function ForecastAssumptionsCard({ value, onChange }: Props) {
             className="h-12 rounded-xl"
             value={value.newMerchantsPerMonth}
             onChange={(e) => set({ newMerchantsPerMonth: toCount(e.target.value) })}
-            aria-label="New premium merchants per month"
+            aria-label="New paying businesses per month"
           />
         </Field>
       </div>

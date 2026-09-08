@@ -3,24 +3,29 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import { updateMerchantSchema, insertOfferSchema, updateOfferSchema, offers, type Merchant } from "@shared/schema";
 import { config } from "../config";
+import { db } from "../db";
 import * as userStore from "../storage/users";
+import * as priceChangeStore from "../storage/price-changes";
 import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumericString, HttpError } from "../lib/http";
 import { scanUrl, qrDataUrl, posterHtml } from "../lib/qr";
 import { uniqueScanCode } from "../lib/scan-code";
+import { diffPriceFields } from "../lib/price-changes";
 import { imageUpload, fileToDataUrl, uploadErrorHandler } from "../lib/uploads";
 import {
   isStripeConfigured,
   createMerchantPlanCheckout,
   activateMerchantPlanForCheckout,
   deactivateMerchantPlan,
+  changeMerchantPlanTier,
   cancelSubscription,
   trialDaysFor,
+  merchantPlanFee,
 } from "../lib/stripe";
 import { hasEverPaid } from "../lib/ledger";
-import { canGoLive, planFeatures, planLimitMessage } from "../lib/plan";
+import { canGoLive, normalisePlan, planFeatures, planLimitMessage } from "../lib/plan";
 import { assertIdentityAvailable } from "./auth";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -56,6 +61,8 @@ function toOfferRow(input: OfferInput): OfferRow {
   if (input.globalUsageLimit !== undefined) row.globalUsageLimit = int(input.globalUsageLimit);
   if (input.fixedPrice !== undefined) row.fixedPrice = toNumericString(input.fixedPrice);
   if (input.originalValue !== undefined) row.originalValue = toNumericString(input.originalValue);
+  if (input.typicalSpend !== undefined) row.typicalSpend = toNumericString(input.typicalSpend);
+  if (input.itemValue !== undefined) row.itemValue = toNumericString(input.itemValue);
   if (input.minBasket !== undefined) row.minBasket = toNumericString(input.minBasket);
   if (input.maxDiscount !== undefined) row.maxDiscount = toNumericString(input.maxDiscount);
   if (row.validFrom === "") row.validFrom = null;
@@ -184,7 +191,28 @@ merchantRouter.put(
     const input = parseBody(updateOfferSchema, req.body);
     const row = toOfferRow(input);
     if (row.active === true && !offer.active) await assertCanGoLive(await loadMerchant(currentMerchantId(req)));
-    const updated = await offerStore.updateOffer(offer.id, row);
+
+    // The figures behind the offer are compared before the update overwrites
+    // them, and the record is written with the update or not at all.
+    const changes = diffPriceFields(offer, row, row.type ?? offer.type);
+    const changedBy = currentUser(req).id;
+    const updated = await db.transaction(async (tx) => {
+      const saved = await offerStore.updateOffer(offer.id, row, tx);
+      await priceChangeStore.insertPriceChanges(
+        changes.map((c) => ({
+          offerId: offer.id,
+          merchantId: offer.merchantId,
+          changedBy,
+          field: c.field,
+          oldValue: toNumericString(c.oldValue),
+          newValue: toNumericString(c.newValue),
+          direction: c.direction,
+          inflatesSaving: c.inflatesSaving,
+        })),
+        tx,
+      );
+      return saved;
+    });
     res.json(updated ?? offer);
   }),
 );
@@ -222,22 +250,38 @@ merchantRouter.post(
 
 // Plan
 
+const PLAN_NAMES = { free: "Free", standard: "Standard", insight: "Insight" } as const;
+
+/** All three tiers with their prices, so the client never hard-codes a fee. */
+function planCatalogue() {
+  return [
+    { key: "free" as const, name: PLAN_NAMES.free, monthlyFee: 0 },
+    { key: "standard" as const, name: PLAN_NAMES.standard, monthlyFee: config.merchantStandardMonthlyFeeGbp },
+    { key: "insight" as const, name: PLAN_NAMES.insight, monthlyFee: config.merchantInsightMonthlyFeeGbp },
+  ];
+}
+
+const targetPlanSchema = z.object({ plan: z.enum(["standard", "insight"]) });
+
 async function planPayload(merchant: Merchant) {
-  // In trial = on Premium but never charged; the trial ends when the plan next renews.
+  const plan = normalisePlan(merchant.planStatus);
+  // In trial = on a paid plan but never charged; the trial ends when the plan next renews.
   const paidBefore = await hasEverPaid("merchant_premium", merchant.id);
-  const inTrial = merchant.planStatus === "premium" && !paidBefore;
+  const inTrial = plan !== "free" && !paidBefore;
   return {
-    planStatus: merchant.planStatus ?? "free",
+    planStatus: plan,
+    planName: PLAN_NAMES[plan],
     planStartedAt: merchant.planStartedAt,
     planRenewsAt: merchant.planRenewsAt,
     inTrial,
     trialEndsAt: inTrial ? merchant.planRenewsAt : null,
     trialDaysAvailable: await trialDaysFor("merchant_premium", merchant.id),
-    premiumMonthlyFee: config.merchantPremiumMonthlyFeeGbp,
+    monthlyFee: plan === "free" ? 0 : merchantPlanFee(plan),
+    plans: planCatalogue(),
     currency: "GBP",
     freeLiveOfferLimit: config.freePlanLiveOfferLimit,
     liveOfferCount: await offerStore.countLiveOffersForMerchant(merchant.id),
-    features: planFeatures(merchant.planStatus),
+    features: planFeatures(plan),
   };
 }
 
@@ -252,14 +296,26 @@ merchantRouter.post(
   "/api/merchant/plan/checkout",
   asyncHandler(async (req, res) => {
     const merchant = await loadMerchant(currentMerchantId(req));
-    if (merchant.planStatus === "premium") throw badRequest("You are already on Premium");
-    if (isStripeConfigured()) {
-      const owner = await userStore.getUserById(merchant.ownerUserId);
-      res.json({ url: await createMerchantPlanCheckout(merchant, owner?.email ?? merchant.email ?? "") });
+    const { plan } = parseBody(targetPlanSchema, req.body);
+    const current = normalisePlan(merchant.planStatus);
+    if (current === plan) throw badRequest(`You are already on ${PLAN_NAMES[plan]}`);
+
+    // Already paying, either way up or down: the card is on file, so the tier changes in
+    // place rather than through checkout. Insight to Standard therefore only takes
+    // analytics away; the loyalty programme and every live offer carry on.
+    if (current !== "free") {
+      const updated = await changeMerchantPlanTier(merchant, plan);
+      res.json(await planPayload(updated ?? merchant));
       return;
     }
-    await activateMerchantPlanForCheckout(merchant);
-    res.json({ activated: true });
+
+    if (isStripeConfigured()) {
+      const owner = await userStore.getUserById(merchant.ownerUserId);
+      res.json({ url: await createMerchantPlanCheckout(merchant, owner?.email ?? merchant.email ?? "", plan) });
+      return;
+    }
+    await activateMerchantPlanForCheckout(merchant, plan);
+    res.json({ activated: true, planStatus: plan });
   }),
 );
 
@@ -269,7 +325,7 @@ merchantRouter.post(
     const merchant = await loadMerchant(currentMerchantId(req));
     await cancelSubscription(merchant.stripeSubscriptionId);
     const result = await deactivateMerchantPlan(merchant, merchant.stripeSubscriptionId ? "stripe" : "dev", "cancelled");
-    res.json({ planStatus: result.merchant.planStatus ?? "free", pausedOffers: result.pausedOffers });
+    res.json({ planStatus: normalisePlan(result.merchant.planStatus), pausedOffers: result.pausedOffers });
   }),
 );
 

@@ -5,6 +5,7 @@ import { useMerchantOffers } from "@/hooks/use-merchant-offers";
 import { formatDate } from "@/components/resident/format";
 import { Panel, SectionTitle, Tile } from "./portal-ui";
 import { usePlan, type PlanInfo } from "./plan-tab";
+import { MERCHANT_PLAN_NAMES } from "@/components/pricing/plan-features";
 
 export interface RedemptionSummary {
   today: number;
@@ -13,6 +14,7 @@ export interface RedemptionSummary {
   allTime: number;
   rewardsAllTime: number;
   rewardsThisMonth: number;
+  favourites: number;
   byOffer: { offerId: string; title: string; count: number }[];
 }
 
@@ -23,17 +25,16 @@ function shortDate(value: string): string {
 
 function planLine(plan: PlanInfo | undefined): string {
   if (!plan) return "";
-  if (plan.planStatus === "premium") {
-    return `Premium plan${plan.planRenewsAt ? ` · renews ${shortDate(plan.planRenewsAt)}` : ""}`;
-  }
-  return "Free plan";
+  const name = `${MERCHANT_PLAN_NAMES[plan.planStatus]} plan`;
+  if (plan.planStatus === "free") return name;
+  return `${name}${plan.planRenewsAt ? ` · renews ${shortDate(plan.planRenewsAt)}` : ""}`;
 }
 
 function planNote(plan: PlanInfo | undefined): string {
   if (!plan) return "";
-  return plan.planStatus === "premium"
-    ? "Unlimited live offers, loyalty programme and analytics."
-    : `${plan.liveOfferCount} of ${plan.freeLiveOfferLimit} live offers. Premium adds unlimited offers, loyalty and analytics.`;
+  if (plan.planStatus === "insight") return "Unlimited live offers, the loyalty programme, analytics and town benchmarks.";
+  if (plan.planStatus === "standard") return "Unlimited live offers and the loyalty programme. Insight adds analytics and town benchmarks.";
+  return `${plan.liveOfferCount} of ${plan.freeLiveOfferLimit} live offers. Standard adds unlimited offers and the loyalty programme.`;
 }
 
 export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void }) {
@@ -42,7 +43,7 @@ export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void 
   const { data: offers = [] } = useMerchantOffers();
   const liveOffers = offers.filter((o) => o.active && !o.archived);
   const top = [...(summary?.byOffer ?? [])].sort((a, b) => b.count - a.count).slice(0, 5);
-  const premium = plan?.planStatus === "premium";
+  const showRewards = Boolean(plan?.features.loyalty);
 
   return (
     <div className="space-y-5">
@@ -57,12 +58,13 @@ export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void 
         </div>
       )}
 
-      <div className={`grid grid-cols-2 gap-3 ${premium ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
+      <div className={`grid grid-cols-2 gap-3 ${showRewards ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}>
         <Tile label="Today" value={summary?.today} />
         <Tile label="This week" value={summary?.thisWeek} />
         <Tile label="This month" value={summary?.thisMonth} />
         <Tile label="All time" value={summary?.allTime} />
-        {premium && (
+        <Tile label="Favourites" value={summary?.favourites} note="Residents who have starred you" />
+        {showRewards && (
           <Tile
             label="Rewards claimed"
             value={summary ? `${summary.rewardsThisMonth}` : undefined}

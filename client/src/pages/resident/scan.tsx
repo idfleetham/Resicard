@@ -24,7 +24,7 @@ const PREMIUM_REASON = "premium membership";
 function fixLinkFor(reason: string): { href: string; label: string } | null {
   const r = reason.toLowerCase();
   if (r.includes("residency") || r.includes("verified")) return { href: "/resident", label: "Verify your address" };
-  if (r.includes("membership")) return { href: "/resident?tab=card", label: "Go Premium" };
+  if (r.includes("membership")) return { href: "/resident?tab=resicard", label: "Go Premium" };
   return null;
 }
 
@@ -143,7 +143,7 @@ export default function ScanPage() {
               {loyalty && <p className="text-sm text-slate-brand mt-1">Points and tier benefits work on Free.</p>}
             </div>
             <Button asChild variant="buoy" className="w-full h-12 text-base">
-              <Link href="/resident?tab=card">Go Premium</Link>
+              <Link href="/resident?tab=resicard">Go Premium</Link>
             </Button>
           </div>
           {offers.length > 0 && <OfferList offers={offers} disabled onSelect={() => undefined} />}

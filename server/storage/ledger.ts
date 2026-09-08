@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, inArray } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../db";
 import { subscriptionEvents, type SubscriptionEvent } from "@shared/schema";
 import type { DbClient } from "./types";
@@ -38,6 +38,15 @@ export async function hasPaidAmount(kind: SubscriptionEvent["kind"], subjectId: 
     .where(and(eq(subscriptionEvents.kind, kind), eq(subscriptionEvents.subjectId, subjectId), gt(subscriptionEvents.amountGbp, "0")))
     .limit(1);
   return Boolean(row);
+}
+
+/** Everything a subject has actually been charged, in GBP. Trials are zero, so they add nothing. */
+export async function sumPaidForSubject(kind: SubscriptionEvent["kind"], subjectId: string, client: DbClient = db): Promise<number> {
+  const [row] = await client
+    .select({ total: sql<string>`coalesce(sum(${subscriptionEvents.amountGbp}), 0)` })
+    .from(subscriptionEvents)
+    .where(and(eq(subscriptionEvents.kind, kind), eq(subscriptionEvents.subjectId, subjectId)));
+  return Number(row?.total ?? 0);
 }
 
 /** Subject ids of the given kind that have at least one event of any action. */

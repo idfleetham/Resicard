@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql, count, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, sql, count, type SQL } from "drizzle-orm";
 import { db } from "../db";
 import {
   loyaltyPrograms,
@@ -63,6 +63,29 @@ export async function getTier(id: string, programId: number, client: DbClient = 
     .where(and(eq(loyaltyTiers.id, id), eq(loyaltyTiers.programId, programId)))
     .limit(1);
   return row;
+}
+
+/** Tier names for a set of tier ids, keyed by id. One query for many outlets. */
+export async function listTierNamesByIds(ids: string[], client: DbClient = db): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+  const rows = await client
+    .select({ id: loyaltyTiers.id, name: loyaltyTiers.name })
+    .from(loyaltyTiers)
+    .where(inArray(loyaltyTiers.id, ids));
+  return new Map(rows.map((r) => [r.id, r.name]));
+}
+
+/** Tier name and flat discount by tier id, for callers that show both without loading the whole tier. */
+export async function listTierSummariesByIds(
+  ids: string[],
+  client: DbClient = db,
+): Promise<Map<string, { name: string; discountPercent: number | null }>> {
+  if (ids.length === 0) return new Map();
+  const rows = await client
+    .select({ id: loyaltyTiers.id, name: loyaltyTiers.name, discountPercent: loyaltyTiers.discountPercent })
+    .from(loyaltyTiers)
+    .where(inArray(loyaltyTiers.id, ids));
+  return new Map(rows.map((r) => [r.id, { name: r.name, discountPercent: r.discountPercent ?? null }]));
 }
 
 export async function getTierById(id: string, client: DbClient = db): Promise<LoyaltyTier | undefined> {

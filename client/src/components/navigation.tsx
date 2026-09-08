@@ -27,6 +27,9 @@ export default function Navigation() {
           </Link>
 
           <div className="hidden sm:flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => go("/pricing")}>
+              Pricing
+            </Button>
             {isAuthenticated && user ? (
               <>
                 <Button variant="ghost" size="sm" onClick={() => go(homePathForRole(user.role))}>
@@ -64,6 +67,9 @@ export default function Navigation() {
 
         {open && (
           <div className="sm:hidden border-t border-[#E6E9E8] py-2 flex flex-col gap-1">
+            <Button variant="ghost" className="justify-start h-12 text-base" onClick={() => go("/pricing")}>
+              Pricing
+            </Button>
             {isAuthenticated && user ? (
               <>
                 <Button variant="ghost" className="justify-start h-12 text-base" onClick={() => go(homePathForRole(user.role))}>

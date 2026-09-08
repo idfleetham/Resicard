@@ -112,7 +112,11 @@ export async function countOffersWhere(condition: SQL | undefined, client: DbCli
   return row?.value ?? 0;
 }
 
-/** Count of active, non-archived offers belonging to approved merchants. */
+/**
+ * Count of active, non-archived offers belonging to approved merchants. No route
+ * reads it since the public counter narrowed to residents and outlets; kept
+ * because it is the one query that defines "a live offer" for the whole town.
+ */
 export async function countPublicActiveOffers(client: DbClient = db): Promise<number> {
   const [row] = await client
     .select({ value: count() })

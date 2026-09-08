@@ -7,7 +7,7 @@ import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import type { User, Merchant } from "@shared/schema";
 import { planFeeGbp, randomHouseholdCode, type MembershipPlan } from "./membership";
-import { liveOffersOverLimit } from "./plan";
+import { liveOffersOverLimit, normalisePlan, planFeeGbp as merchantPlanFeeGbp, type PlanStatus } from "./plan";
 import {
   recordSubscriptionEvent,
   startOrRenew,
@@ -115,18 +115,41 @@ export async function recordMembershipEnded(user: User, action: "cancelled" | "l
   });
 }
 
-/** Moves the merchant to Premium; renews one month from now. */
+/** The merchant tiers that are actually bought. */
+export type PaidMerchantPlan = Exclude<PlanStatus, "free">;
+
+const MERCHANT_PLAN_NAMES: Record<PaidMerchantPlan, string> = {
+  standard: "Resicard Standard (business)",
+  insight: "Resicard Insight (business)",
+};
+
+function toPence(gbp: number): number {
+  return Math.round(gbp * 100);
+}
+
+/** The monthly fee for a paid merchant tier, at the prices this deployment is configured with. */
+export function merchantPlanFee(plan: PaidMerchantPlan): number {
+  return merchantPlanFeeGbp(plan, { standard: config.merchantStandardMonthlyFeeGbp, insight: config.merchantInsightMonthlyFeeGbp });
+}
+
+/**
+ * Moves the merchant onto `plan` (Standard or Insight); renews one month from now.
+ * `planStartedAt` is kept when they were already paying, so a tier change does not
+ * look like a new customer.
+ */
 export async function activateMerchantPlan(
   merchant: Merchant,
+  plan: PaidMerchantPlan,
   stripeIds?: StripeIds,
   source: LedgerSource = stripeIds ? "stripe" : "dev",
   opts?: ActivationOpts,
 ) {
   const now = new Date();
   const renewsAt = opts?.periodEnd ?? addMonths(now, 1);
+  const wasPaying = normalisePlan(merchant.planStatus) !== "free";
   const updated = await merchantStore.updateMerchant(merchant.id, {
-    planStatus: "premium",
-    planStartedAt: merchant.planStatus === "premium" ? merchant.planStartedAt : now,
+    planStatus: plan,
+    planStartedAt: wasPaying ? merchant.planStartedAt : now,
     planRenewsAt: renewsAt,
     stripeCustomerId: stripeIds?.customerId ?? merchant.stripeCustomerId,
     stripeSubscriptionId: stripeIds?.subscriptionId ?? merchant.stripeSubscriptionId,
@@ -135,14 +158,52 @@ export async function activateMerchantPlan(
     kind: "merchant_premium",
     subjectId: merchant.id,
     subjectName: merchantSubjectName(merchant),
-    plan: "premium",
-    action: await startOrRenew("merchant_premium", merchant.id, merchant.planStatus === "premium"),
-    amountGbp: opts?.amountGbp ?? config.merchantPremiumMonthlyFeeGbp,
+    plan,
+    action: await startOrRenew("merchant_premium", merchant.id, wasPaying),
+    amountGbp: opts?.amountGbp ?? merchantPlanFee(plan),
     periodStart: now,
     periodEnd: renewsAt,
     source,
   });
   return updated;
+}
+
+/**
+ * Repoints an existing merchant subscription at another tier's price. Stripe only ever
+ * gives these subscriptions one item, so this swaps that item's price and lets Stripe
+ * prorate. Errors are not swallowed: the caller must not move the plan if the billing
+ * did not move with it.
+ */
+export async function changeMerchantSubscriptionPrice(subscriptionId: string, plan: PaidMerchantPlan): Promise<void> {
+  if (!stripe) return;
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const item = subscription.items.data[0];
+  if (!item) throw new Error(`Subscription ${subscriptionId} has no item to reprice`);
+  // A subscription item can only be pointed at a Price object, so the new tier's price
+  // is created first (the same inline shape checkout builds for a new subscription).
+  const price = await stripe.prices.create({
+    currency: "gbp",
+    unit_amount: toPence(merchantPlanFee(plan)),
+    recurring: { interval: "month" },
+    product_data: { name: MERCHANT_PLAN_NAMES[plan] },
+  });
+  await stripe.subscriptions.update(subscriptionId, {
+    items: [{ id: item.id, price: price.id }],
+    proration_behavior: "create_prorations",
+    metadata: { kind: "merchant_plan", merchantId: subscription.metadata?.merchantId ?? "", plan },
+  });
+}
+
+/**
+ * Moves a merchant who is already paying onto another tier. The period and the start
+ * date are untouched, so a tier change does not read as a new customer and, going down
+ * from Insight to Standard, the loyalty programme and the live offers carry on. Nothing
+ * goes on the ledger: no money moves today, and the next paid invoice records the new
+ * amount at the new price.
+ */
+export async function changeMerchantPlanTier(merchant: Merchant, plan: PaidMerchantPlan): Promise<Merchant | undefined> {
+  if (merchant.stripeSubscriptionId) await changeMerchantSubscriptionPrice(merchant.stripeSubscriptionId, plan);
+  return merchantStore.updateMerchant(merchant.id, { planStatus: plan });
 }
 
 /**
@@ -154,16 +215,17 @@ export async function deactivateMerchantPlan(
   source: LedgerSource = "dev",
   action: "cancelled" | "lapsed" = "cancelled",
 ): Promise<{ merchant: Merchant; pausedOffers: number }> {
+  const previous = normalisePlan(merchant.planStatus);
   const updated = await merchantStore.updateMerchant(merchant.id, { planStatus: "free", planRenewsAt: null, stripeSubscriptionId: null });
   const liveCount = await offerStore.countLiveOffersForMerchant(merchant.id);
   const extra = liveOffersOverLimit("free", liveCount, config.freePlanLiveOfferLimit);
   const pausedOffers = await offerStore.pauseNewestLiveOffers(merchant.id, extra);
-  if (merchant.planStatus === "premium") {
+  if (previous !== "free") {
     await recordSubscriptionEvent({
       kind: "merchant_premium",
       subjectId: merchant.id,
       subjectName: merchantSubjectName(merchant),
-      plan: "premium",
+      plan: previous,
       action,
       amountGbp: 0,
       periodStart: null,
@@ -172,10 +234,6 @@ export async function deactivateMerchantPlan(
     });
   }
   return { merchant: updated ?? merchant, pausedOffers };
-}
-
-function toPence(gbp: number): number {
-  return Math.round(gbp * 100);
 }
 
 /** `subscription_data` with a trial when one is due, and the card always collected up front. */
@@ -216,11 +274,11 @@ export async function createMembershipCheckout(user: User, plan: MembershipPlan)
   return session.url;
 }
 
-/** Checkout Session for the merchant's Premium plan. Returns the hosted page URL. */
-export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail: string): Promise<string> {
+/** Checkout Session for a merchant plan. The target tier travels in the metadata. */
+export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail: string, plan: PaidMerchantPlan): Promise<string> {
   if (!stripe) throw new Error("Stripe is not configured");
   const trialDays = await trialDaysFor("merchant_premium", merchant.id);
-  const metadata = { kind: "merchant_plan", merchantId: merchant.id };
+  const metadata = { kind: "merchant_plan", merchantId: merchant.id, plan };
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_collection: "always",
@@ -231,9 +289,9 @@ export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail:
         quantity: 1,
         price_data: {
           currency: "gbp",
-          unit_amount: toPence(config.merchantPremiumMonthlyFeeGbp),
+          unit_amount: toPence(merchantPlanFee(plan)),
           recurring: { interval: "month" },
-          product_data: { name: "Resicard Premium (merchant)" },
+          product_data: { name: MERCHANT_PLAN_NAMES[plan] },
         },
       },
     ],
@@ -257,11 +315,11 @@ export async function activateMembershipForCheckout(user: User, plan: Membership
   return activateMembership(user, plan, undefined, "dev", { periodEnd: addDays(new Date(), trialDays), amountGbp: 0 });
 }
 
-/** Development mode: the same for a merchant's Premium plan. */
-export async function activateMerchantPlanForCheckout(merchant: Merchant) {
+/** Development mode: the same for a merchant plan. */
+export async function activateMerchantPlanForCheckout(merchant: Merchant, plan: PaidMerchantPlan) {
   const trialDays = await trialDaysFor("merchant_premium", merchant.id);
-  if (trialDays === 0) return activateMerchantPlan(merchant);
-  return activateMerchantPlan(merchant, undefined, "dev", { periodEnd: addDays(new Date(), trialDays), amountGbp: 0 });
+  if (trialDays === 0) return activateMerchantPlan(merchant, plan);
+  return activateMerchantPlan(merchant, plan, undefined, "dev", { periodEnd: addDays(new Date(), trialDays), amountGbp: 0 });
 }
 
 /** Cancels the Stripe subscription if there is one; silently does nothing otherwise. */
@@ -303,7 +361,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   } else if (kind === "merchant_plan") {
     const merchantId = session.metadata?.merchantId;
     const merchant = merchantId ? await merchantStore.getMerchantById(merchantId) : undefined;
-    if (merchant) await activateMerchantPlan(merchant, ids);
+    // Sessions created before the re-cut carry no plan; they bought what is now Standard.
+    const plan: PaidMerchantPlan = session.metadata?.plan === "insight" ? "insight" : "standard";
+    if (merchant) await activateMerchantPlan(merchant, plan, ids);
   }
 }
 
@@ -343,7 +403,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
   if (renewal.kind === "merchant_plan" && renewal.merchantId) {
     const merchant = await merchantStore.getMerchantById(renewal.merchantId);
     if (merchant) {
-      await activateMerchantPlan(merchant, ids, "stripe", { periodEnd: renewal.periodEnd, amountGbp: renewal.amountGbp });
+      // A renewal never changes the tier: the metadata tier wins, else what they are already on.
+      const plan: PaidMerchantPlan = renewal.merchantPlan ?? (normalisePlan(merchant.planStatus) === "insight" ? "insight" : "standard");
+      await activateMerchantPlan(merchant, plan, ids, "stripe", { periodEnd: renewal.periodEnd, amountGbp: renewal.amountGbp });
     }
   }
 }

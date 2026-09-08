@@ -60,7 +60,7 @@ export default function LoyaltyDashboard() {
             </TabScroller>
 
             <TabsContent value="setup" className="mt-0 space-y-3">
-              <ProgramSettings program={program} />
+              <ProgramSettings program={program} tiers={data?.tiers ?? []} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <TiersEditor tiers={data?.tiers ?? []} enabled={enabled} />
                 <RewardsEditor rewards={data?.rewards ?? []} tiers={data?.tiers ?? []} model={program?.model ?? "points"} enabled={enabled} />

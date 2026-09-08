@@ -30,10 +30,10 @@ export default function RevenueTab() {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Tile label="Monthly run rate" value={pounds(now.runRate.monthly)} note="Premium fees plus annual fees over 12" />
+        <Tile label="Monthly run rate" value={pounds(now.runRate.monthly)} note="Business fees plus annual fees over 12" />
         <Tile label="Annual run rate" value={pounds(now.runRate.annual)} note="Monthly run rate times 12" />
         <Tile label="Active residents" value={now.residents.active} note={`${now.residents.individual} individual, ${now.residents.household} household`} />
-        <Tile label="Premium merchants" value={now.merchants.premium} note={`${now.merchants.free} on Free of ${now.merchants.approved} approved`} />
+        <Tile label="Paying businesses" value={now.merchants.paying} note={`${now.merchants.standard} Standard, ${now.merchants.insight} Insight, ${now.merchants.free} Free`} />
         <Tile label="Expiring in 30 days" value={now.residents.expiringIn30Days} note={`${pounds(expiringAmount)} to renew`} />
       </div>
 

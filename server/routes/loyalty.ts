@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import { and, eq, gte } from "drizzle-orm";
 import {
+  CARD_PATTERNS,
+  CARD_THEMES,
   insertLoyaltyProgramSchema,
   insertLoyaltyTierSchema,
   insertLoyaltyRewardSchema,
@@ -22,7 +24,7 @@ import * as redemptionStore from "../storage/redemptions";
 import type { DbClient } from "../storage/types";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, badRequest, forbidden, HttpError } from "../lib/http";
-import { isPremium, PLAN_REQUIRED_MESSAGE } from "../lib/plan";
+import { hasLoyalty, PLAN_REQUIRED_MESSAGE } from "../lib/plan";
 import {
   awardPoints,
   adjustPoints,
@@ -52,15 +54,22 @@ const earnSchema = z
     message: "Provide either userId or redemptionCode",
   });
 const redeemRewardSchema = z.object({ merchantId: z.string().uuid(), rewardId: z.string().uuid() });
-// drizzle-zod types `model` as a plain string; narrow it to the allowed values.
-const programUpdateSchema = insertLoyaltyProgramSchema
-  .partial()
-  .extend({ model: z.enum(["points", "stamps"]).optional().nullable() });
+// drizzle-zod types these as plain strings; narrow them to the allowed values.
+const programUpdateSchema = insertLoyaltyProgramSchema.partial().extend({
+  model: z.enum(["points", "stamps"]).optional().nullable(),
+  cardTheme: z.enum(CARD_THEMES).optional().nullable(),
+  cardPattern: z.enum(CARD_PATTERNS).optional().nullable(),
+});
 
 async function requireProgram(merchantId: string): Promise<LoyaltyProgram> {
   const program = await loyaltyStore.getProgramByMerchant(merchantId);
   if (!program) throw notFound("No loyalty programme set up yet");
   return program;
+}
+
+/** The card design, defaulted here so every client surface can draw a card without null checks. */
+function cardDesign(program: LoyaltyProgram) {
+  return { cardTheme: program.cardTheme ?? "sea", cardPattern: program.cardPattern ?? "plain" };
 }
 
 async function programPayload(program: LoyaltyProgram) {
@@ -72,15 +81,15 @@ export const loyaltyRouter = Router();
 
 // Merchant side ---------------------------------------------------------------
 
-/** Every merchant-side loyalty route is part of Premium: 403 plan_required on Free. */
-const requirePremium = asyncHandler(async (req, _res, next) => {
+/** Every merchant-side loyalty route needs Standard or above: 403 plan_required on Free. */
+const requireLoyaltyPlan = asyncHandler(async (req, _res, next) => {
   const merchant = await merchantStore.getMerchantById(currentMerchantId(req));
   if (!merchant) throw notFound("Merchant not found");
-  if (!isPremium(merchant.planStatus)) throw new HttpError(403, PLAN_REQUIRED_MESSAGE, "plan_required");
+  if (!hasLoyalty(merchant.planStatus)) throw new HttpError(403, PLAN_REQUIRED_MESSAGE, "plan_required");
   next();
 });
 
-const merchantOnly = [authenticate, requireRole("merchant"), requirePremium] as const;
+const merchantOnly = [authenticate, requireRole("merchant"), requireLoyaltyPlan] as const;
 
 loyaltyRouter.get(
   "/api/loyalty/program",
@@ -380,6 +389,7 @@ loyaltyRouter.get(
       const balanceAt = row.balance.updatedAt?.getTime() ?? 0;
       result.push({
         merchant: row.merchant,
+        ...cardDesign(row.program),
         points,
         stamps,
         statusPoints,
@@ -426,7 +436,8 @@ loyaltyRouter.get(
     const memberSince = firstEventAt ?? status.balance?.updatedAt ?? null;
     res.json({
       merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
-      resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto },
+      resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto, alias: generateCustomerAlias(user) },
+      ...cardDesign(program),
       points: status.balance?.points ?? 0,
       statusPoints: status.statusPoints,
       tierWindowDays: status.tierWindowDays,

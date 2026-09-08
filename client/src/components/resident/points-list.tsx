@@ -13,6 +13,8 @@ export interface TierBenefit extends LoyaltyReward {
 /** One entry of GET /api/loyalty/mine. */
 export interface LoyaltyMembership {
   merchant: { id: string; name: string; logoUrl: string | null };
+  cardTheme: string;
+  cardPattern: string;
   points: number;
   stamps: number;
   statusPoints: number;

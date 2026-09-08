@@ -32,8 +32,8 @@ function memberNumber(id: number | string): string {
  * Matches the brand card: sea, beach photo, name, verified line, valid-to.
  */
 export default function DigitalMembershipCard({ user, membership }: DigitalMembershipCardProps) {
-  const stats = useQuery<{ townName?: string }>({ queryKey: ["/api/stats"], staleTime: 60 * 60 * 1000 });
-  const townName = stats.data?.townName ?? "St Andrews";
+  const stats = useQuery<{ town?: string }>({ queryKey: ["/api/stats"], staleTime: 60 * 60 * 1000 });
+  const townName = stats.data?.town ?? "St Andrews";
   const name = [user.firstName, user.surname].filter(Boolean).join(" ") || user.username;
   const status = membership?.status ?? user.membershipStatus;
   const rawExpiry = membership ? membership.expiry : user.membershipExpiry;

@@ -6,7 +6,15 @@ import { GreenScreen, GreenScreenLoading, GreenScreenNotFound, type GreenScreenL
 import type { OfferType } from "@shared/schema";
 
 interface RedemptionDetails {
-  redemption: { id: string; code: string; redeemedAt: string; pointsAwarded: number; basketAmount: number | null };
+  redemption: {
+    id: string;
+    code: string;
+    redeemedAt: string;
+    pointsAwarded: number;
+    basketAmount: number | null;
+    savedAmount: number | null;
+    savedEstimated: boolean;
+  };
   offer: {
     id: string;
     title: string;
@@ -63,6 +71,10 @@ export default function RedemptionSuccess() {
   if (error || !data) return <GreenScreenNotFound title="Redemption not found" message={error ? errorMessage(error) : ""} />;
 
   const points = data.redemption.pointsAwarded;
+  const { savedAmount, savedEstimated } = data.redemption;
+  // Quiet by design: the code and the outlet are what staff and resident read first.
+  const savedLine =
+    savedAmount === null ? null : `You saved ${savedEstimated ? "about " : ""}${formatPounds(savedAmount)}`;
   return (
     <GreenScreen
       kind="redemption"
@@ -76,6 +88,7 @@ export default function RedemptionSuccess() {
       at={data.redemption.redeemedAt}
       loyalty={data.loyalty}
       pointsLine={points > 0 ? `+${points} points at ${data.merchant.name}` : null}
+      savedLine={savedLine}
     />
   );
 }

@@ -3,9 +3,10 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { errorMessage, formatDate, formatPounds, trialLengthLabel } from "./format";
+import { errorMessage, formatDate, formatPounds, monthlyFromAnnual, trialLengthLabel } from "./format";
 import { HouseholdJoinPanel, HouseholdMemberPanel, HouseholdPrimaryPanel } from "./household-panel";
 import { CancelNowLink, DowngradeButton, DowngradeScheduledNote, KeepPremiumButton } from "./membership-actions";
+import { FreePlanCompare, PremiumIncludes } from "./plan-reminder";
 import { isMembershipLive, useMembership, useRefreshMembership, type MembershipInfo, type MembershipPlan } from "./use-membership";
 
 export type { MembershipInfo } from "./use-membership";
@@ -63,26 +64,27 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
 
   return (
     <>
-      <p className="text-sm">Free includes your card, loyalty points and tier benefits at every outlet.</p>
+      <p className="text-sm">Free lets you browse every offer and see what it is worth. Premium is the card itself.</p>
+      <FreePlanCompare />
       <div>
         <h3 className="font-display font-bold text-xl tracking-[-0.02em]">Go Premium to redeem offers</h3>
         <p className="text-sm text-slate-brand mt-1">
-          {expired ? "Your Premium membership has run out. Renew to redeem offers again." : "One flat fee for the year. No per-offer charges."}
+          {expired ? "Your Premium membership has run out. Renew to redeem offers again." : "One flat fee, billed once a year. No per-offer charges."}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <PlanOption
           selected={plan === "individual"}
           title="Individual"
-          price={formatPounds(data.fees.individual)}
-          note="a year"
+          price={monthlyFromAnnual(data.fees.individual)}
+          note={`a month · ${formatPounds(data.fees.individual)} billed yearly`}
           onSelect={() => setPlan("individual")}
         />
         <PlanOption
           selected={plan === "household"}
           title="Household"
-          price={formatPounds(data.fees.household)}
-          note="a year · two adults, children free"
+          price={monthlyFromAnnual(data.fees.household)}
+          note={`a month · ${formatPounds(data.fees.household)} billed yearly · two adults, children free`}
           onSelect={() => setPlan("household")}
         />
       </div>
@@ -142,13 +144,14 @@ export default function MembershipStatus() {
           {data.inTrial ? (
             <p className="text-sm">
               Free until <span className="font-bold">{formatDate(data.trialEndsAt)}</span>, then{" "}
-              {formatPounds(data.plan === "household" ? data.fees.household : data.fees.individual)} a year.
+              {monthlyFromAnnual(data.plan === "household" ? data.fees.household : data.fees.individual)} a month, billed yearly.
             </p>
           ) : (
             <p className="text-sm">
               Renews on <span className="font-bold">{formatDate(data.expiry)}</span>.
             </p>
           )}
+          <PremiumIncludes />
           {role === "primary" && <HouseholdPrimaryPanel data={data} />}
           <DowngradeButton data={data} />
           <CancelNowLink />
@@ -156,6 +159,7 @@ export default function MembershipStatus() {
       ) : premium ? (
         <>
           <DowngradeScheduledNote data={data} />
+          <PremiumIncludes />
           {role === "primary" && <HouseholdPrimaryPanel data={data} />}
           <KeepPremiumButton />
         </>

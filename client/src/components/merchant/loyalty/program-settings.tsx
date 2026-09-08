@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import type { LoyaltyProgram } from "@shared/schema";
+import type { CardPattern, CardTheme, LoyaltyProgram, LoyaltyTier } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLoyaltyMutation } from "./use-loyalty";
+import CardDesign from "./card-design";
 import { INPUT, SectionTitle } from "../portal-ui";
 
 interface FormState {
@@ -17,6 +18,8 @@ interface FormState {
   dailyEarnCap: string;
   expiryDays: string;
   tierWindowDays: string;
+  cardTheme: CardTheme;
+  cardPattern: CardPattern;
   active: boolean;
 }
 
@@ -30,11 +33,13 @@ function fromProgram(p: LoyaltyProgram | null | undefined): FormState {
     dailyEarnCap: String(p?.dailyEarnCap ?? 3),
     expiryDays: p?.expiryDays ? String(p.expiryDays) : "",
     tierWindowDays: String(p?.tierWindowDays ?? 365),
+    cardTheme: p?.cardTheme ?? "sea",
+    cardPattern: p?.cardPattern ?? "plain",
     active: p?.active ?? true,
   };
 }
 
-const NUMBERS: { key: keyof Omit<FormState, "model" | "active">; label: string; hint: string; step?: string }[] = [
+const NUMBERS: { key: keyof Omit<FormState, "model" | "active" | "cardTheme" | "cardPattern">; label: string; hint: string; step?: string }[] = [
   { key: "pointsPerCurrency", label: "Points per £1", hint: "When a bill total is entered" },
   { key: "pointsPerRedemption", label: "Points per scan", hint: "When no bill total is entered" },
   { key: "minBasketEarn", label: "Minimum spend to earn (£)", hint: "0 for none", step: "0.01" },
@@ -44,7 +49,20 @@ const NUMBERS: { key: keyof Omit<FormState, "model" | "active">; label: string; 
   { key: "tierWindowDays", label: "Tier status window (days)", hint: "Tier is based on points earned in this period. Default 365." },
 ];
 
-export default function ProgramSettings({ program }: { program: LoyaltyProgram | null | undefined }) {
+/** The preview shows the top tier, because that is where the flat discount usually sits. */
+function topTier(tiers: LoyaltyTier[]) {
+  const sorted = [...tiers].sort((a, b) => (b.thresholdPoints ?? 0) - (a.thresholdPoints ?? 0));
+  const t = sorted[0];
+  return t ? { name: t.name, color: t.color, discountPercent: t.discountPercent } : null;
+}
+
+export default function ProgramSettings({
+  program,
+  tiers = [],
+}: {
+  program: LoyaltyProgram | null | undefined;
+  tiers?: LoyaltyTier[];
+}) {
   const [form, setForm] = useState<FormState>(() => fromProgram(program));
   useEffect(() => setForm(fromProgram(program)), [program]);
 
@@ -61,6 +79,8 @@ export default function ProgramSettings({ program }: { program: LoyaltyProgram |
         dailyEarnCap: Number(f.dailyEarnCap),
         expiryDays: f.expiryDays ? Number(f.expiryDays) : null,
         tierWindowDays: Number(f.tierWindowDays) || 365,
+        cardTheme: f.cardTheme,
+        cardPattern: f.cardPattern,
         active: f.active,
       },
     }),
@@ -104,6 +124,15 @@ export default function ProgramSettings({ program }: { program: LoyaltyProgram |
               <p className="text-xs text-slate-brand">{n.hint}</p>
             </div>
           ))}
+        </div>
+        <div className="pt-4 border-t border-[#E6E9E8] space-y-3">
+          <SectionTitle>Card design</SectionTitle>
+          <CardDesign
+            theme={form.cardTheme}
+            pattern={form.cardPattern}
+            onChange={({ theme, pattern }) => setForm({ ...form, cardTheme: theme, cardPattern: pattern })}
+            previewTier={topTier(tiers)}
+          />
         </div>
         <Button type="submit" variant="buoy" className="h-12 px-8 w-full sm:w-auto" disabled={save.isPending}>
           {save.isPending ? "Saving" : program ? "Save" : "Create programme"}

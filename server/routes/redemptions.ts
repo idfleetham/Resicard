@@ -7,6 +7,7 @@ import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import * as redemptionStore from "../storage/redemptions";
 import * as loyaltyStore from "../storage/loyalty";
+import * as favouriteStore from "../storage/favourites";
 import type { DbClient } from "../storage/types";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumber, toNumericString, HttpError } from "../lib/http";
@@ -18,8 +19,9 @@ import {
   merchantRedeemReasons,
 } from "../lib/offer-rules";
 import { awardPoints, nextTierSummary, residentStatus, tierSnapshot } from "../lib/loyalty";
+import { estimateSaving } from "../lib/savings";
 import { effectiveMembership } from "../lib/membership";
-import { isPremium } from "../lib/plan";
+import { hasLoyalty } from "../lib/plan";
 import { stripMenuPdf } from "./public";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -70,9 +72,9 @@ async function buildContext(user: User, merchant: Merchant, client: DbClient): P
   };
 }
 
-/** The merchant's active loyalty programme, only while they are on Premium. */
+/** The merchant's active loyalty programme, only while they are on a plan that includes loyalty. */
 async function activeProgram(merchant: Merchant, client: DbClient) {
-  if (!isPremium(merchant.planStatus)) return null;
+  if (!hasLoyalty(merchant.planStatus)) return null;
   const program = await loyaltyStore.getProgramByMerchant(merchant.id, client);
   return program && program.active ? program : null;
 }
@@ -109,6 +111,8 @@ async function redemptionResponse(redemption: Redemption, offer: Offer, merchant
       redeemedAt: redemption.redeemedAt,
       pointsAwarded: redemption.pointsAwarded ?? 0,
       basketAmount: toNumber(redemption.basketAmount),
+      savedAmount: redemption.savedAmount === null ? null : toNumber(redemption.savedAmount),
+      savedEstimated: redemption.savedEstimated !== false,
     },
     offer: {
       id: offer.id,
@@ -204,6 +208,9 @@ redemptionsRouter.post(
         pointsAwarded = award.pointsAwarded;
       }
 
+      // Frozen here so a later edit to the offer cannot rewrite the resident's history.
+      const saving = estimateSaving(offer, basketAmount);
+
       const redemption = await redemptionStore.createRedemption(
         {
           offerId: offer.id,
@@ -212,6 +219,8 @@ redemptionsRouter.post(
           code: await uniqueRedemptionCode(tx),
           basketAmount: toNumericString(basketAmount),
           pointsAwarded,
+          savedAmount: toNumericString(saving.amount),
+          savedEstimated: saving.estimated,
         },
         tx,
       );
@@ -305,10 +314,11 @@ redemptionsRouter.get(
   requireRole("merchant"),
   asyncHandler(async (req, res) => {
     const merchantId = currentMerchantId(req);
-    const [summary, rewards] = await Promise.all([
+    const [summary, rewards, favourites] = await Promise.all([
       redemptionStore.summariseRedemptionsForMerchant(merchantId),
       loyaltyStore.countRewardClaimsForMerchant(merchantId),
+      favouriteStore.countFavouritesForMerchant(merchantId),
     ]);
-    res.json({ ...summary, rewardsAllTime: rewards.allTime, rewardsThisMonth: rewards.thisMonth });
+    res.json({ ...summary, rewardsAllTime: rewards.allTime, rewardsThisMonth: rewards.thisMonth, favourites });
   }),
 );

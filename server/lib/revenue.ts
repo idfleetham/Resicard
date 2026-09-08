@@ -1,4 +1,5 @@
 import type { SubscriptionEvent } from "@shared/schema";
+import { normalisePlan, planFeeGbp, type PlanStatus } from "./plan";
 
 /**
  * Pure aggregation for the admin revenue screen. Every function takes plain
@@ -11,7 +12,8 @@ import type { SubscriptionEvent } from "@shared/schema";
 export interface Fees {
   individual: number;
   household: number;
-  merchantPremiumMonthly: number;
+  merchantStandardMonthly: number;
+  merchantInsightMonthly: number;
 }
 
 /** The subset of a users row the revenue maths needs. */
@@ -55,7 +57,7 @@ export interface UpcomingRenewal {
   kind: "resident_membership" | "merchant_premium";
   subjectId: string;
   name: string;
-  plan: "individual" | "household" | "premium";
+  plan: "individual" | "household" | "standard" | "insight";
   expiresAt: string;
   amount: number;
 }
@@ -129,8 +131,14 @@ export function payingResidents(residents: ResidentLike[], now: Date): ResidentL
   );
 }
 
-export function premiumMerchants(merchants: MerchantLike[]): MerchantLike[] {
-  return merchants.filter((m) => m.planStatus === "premium");
+/** Merchants on a paid tier. Legacy "premium" rows read as Standard, so they still count. */
+export function payingMerchants(merchants: MerchantLike[]): MerchantLike[] {
+  return merchants.filter((m) => normalisePlan(m.planStatus) !== "free");
+}
+
+/** What this merchant pays each month at current fees; the tier decides, not one constant. */
+export function merchantMonthlyFee(merchant: MerchantLike, fees: Fees): number {
+  return planFeeGbp(merchant.planStatus, { standard: fees.merchantStandardMonthly, insight: fees.merchantInsightMonthly });
 }
 
 /** Last 12 months of ledger amounts collected, oldest first, every month present. */
@@ -181,7 +189,7 @@ export function buildResidentCliffs(residents: ResidentLike[], fees: Fees, now: 
 }
 
 /**
- * A premium merchant's renewal dates from now: planRenewsAt (then its monthly
+ * A paying merchant's renewal dates from now: planRenewsAt (then its monthly
  * anniversaries) or the monthly anniversary of planStartedAt. Each date is derived
  * from the original anchor so a 31st clamps per month rather than drifting.
  */
@@ -198,19 +206,20 @@ export function merchantRenewalDates(merchant: MerchantLike, now: Date, months: 
   return dates;
 }
 
-/** Premium plans due to renew in each of the next `months` months. */
+/** Paid plans due to renew in each of the next `months` months, valued at each merchant's own fee. */
 export function buildMerchantCliffs(merchants: MerchantLike[], fees: Fees, now: Date, months = 12): MerchantCliff[] {
   const byMonth = new Map<string, MerchantCliff>();
   for (let i = 0; i < months; i++) {
     const month = monthKeyOffset(now, i);
     byMonth.set(month, { month, count: 0, amount: 0 });
   }
-  for (const m of premiumMerchants(merchants)) {
+  for (const m of payingMerchants(merchants)) {
+    const fee = merchantMonthlyFee(m, fees);
     for (const d of merchantRenewalDates(m, now, months)) {
       const bucket = byMonth.get(monthKey(d));
       if (!bucket) continue;
       bucket.count++;
-      bucket.amount = round2(bucket.amount + fees.merchantPremiumMonthly);
+      bucket.amount = round2(bucket.amount + fee);
     }
   }
   return Array.from(byMonth.values());
@@ -226,10 +235,11 @@ export function buildNext30Days(residents: ResidentLike[], merchants: MerchantLi
     const plan = toPlan(r.membershipPlan);
     out.push({ kind: "resident_membership", subjectId: String(r.id), name: r.name, plan, expiresAt: expiry.toISOString(), amount: residentFee(plan, fees) });
   }
-  for (const m of premiumMerchants(merchants)) {
+  for (const m of payingMerchants(merchants)) {
     const next = merchantRenewalDates(m, now, 2)[0];
     if (!next || next.getTime() > limit) continue;
-    out.push({ kind: "merchant_premium", subjectId: m.id, name: m.name, plan: "premium", expiresAt: next.toISOString(), amount: fees.merchantPremiumMonthly });
+    const plan = normalisePlan(m.planStatus) as Exclude<PlanStatus, "free">;
+    out.push({ kind: "merchant_premium", subjectId: m.id, name: m.name, plan, expiresAt: next.toISOString(), amount: merchantMonthlyFee(m, fees) });
   }
   return out.sort((a, b) => a.expiresAt.localeCompare(b.expiresAt));
 }
@@ -241,13 +251,16 @@ export function buildNow(residents: ResidentLike[], merchants: MerchantLike[], f
   const cancelled = residents.filter((r) => r.membershipStatus === "cancelled" && !r.householdPrimaryId).length;
   const notRenewingCount = paying.filter(notRenewing).length;
   const expiringIn30Days = buildNext30Days(residents, [], fees, now).length;
-  const premium = premiumMerchants(merchants).length;
+  const payingMerchantRows = payingMerchants(merchants);
+  const standard = payingMerchantRows.filter((m) => normalisePlan(m.planStatus) === "standard").length;
+  const insight = payingMerchantRows.length - standard;
   const approved = merchants.filter((m) => m.status === "approved").length;
-  const free = merchants.filter((m) => m.status === "approved" && m.planStatus !== "premium").length;
-  const monthly = round2(premium * fees.merchantPremiumMonthly + (individual * fees.individual + household * fees.household) / 12);
+  const free = merchants.filter((m) => m.status === "approved" && normalisePlan(m.planStatus) === "free").length;
+  const merchantMonthly = payingMerchantRows.reduce((sum, m) => sum + merchantMonthlyFee(m, fees), 0);
+  const monthly = round2(merchantMonthly + (individual * fees.individual + household * fees.household) / 12);
   return {
     residents: { active: paying.length, individual, household, cancelled, notRenewing: notRenewingCount, expiringIn30Days },
-    merchants: { premium, free, approved },
+    merchants: { paying: payingMerchantRows.length, standard, insight, free, approved },
     runRate: { monthly, annual: round2(monthly * 12) },
   };
 }
@@ -257,7 +270,9 @@ export function buildSchedule(residents: ResidentLike[], merchants: MerchantLike
   const current = buildNow(residents, merchants, fees, now);
   return {
     residentExpiries: cliffs.map((c) => ({ month: c.month, individual: c.individual, household: c.household })),
-    premiumMerchants: current.merchants.premium,
+    payingMerchants: current.merchants.paying,
+    // The forecast values future merchants at one price, so it uses the average of what is paid today.
+    merchantAverageMonthly: current.merchants.paying > 0 ? round2(payingMerchants(merchants).reduce((s, m) => s + merchantMonthlyFee(m, fees), 0) / current.merchants.paying) : fees.merchantStandardMonthly,
     activeIndividual: current.residents.individual,
     activeHousehold: current.residents.household,
   };

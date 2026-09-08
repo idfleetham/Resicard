@@ -16,7 +16,7 @@ export interface SubscriptionEventInput {
   kind: LedgerKind;
   subjectId: string;
   subjectName: string | null;
-  plan: "individual" | "household" | "premium" | null;
+  plan: "individual" | "household" | "standard" | "insight" | null;
   action: LedgerAction;
   amountGbp: number;
   periodStart: Date | null;

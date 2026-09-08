@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { OFFER_TYPE_LABELS, categoryLabel } from "@/components/resident/format";
+import { OFFER_TYPE_LABELS, categoryLabel, needsIndicativeValue } from "@/components/resident/format";
 import type { OfferFormHandle } from "./offer-form";
 
 const MAX_PDF_BYTES = 5 * 1024 * 1024;
@@ -28,6 +28,8 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
 
   const showPercent = type === "percentage_discount" || type === "off_peak";
   const showFixed = type === "fixed_price" || type === "set_menu" || type === "fixed_amount_discount";
+  // Only some types need an indicative figure to estimate what residents save.
+  const indicative = needsIndicativeValue(type);
 
   const onPdf = (file: File | null) => {
     if (!file) return;
@@ -125,6 +127,26 @@ export function OfferFormBasics({ form, imageFile, onImageChange, existingImageU
             )} />
           )}
         </div>
+      )}
+
+      {indicative && (
+        <FormField control={form.control} name={indicative} render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-xs text-slate-brand">
+              {indicative === "typicalSpend" ? "Typical bill (£)" : "Usual price of the item (£)"}
+            </FormLabel>
+            <FormControl>
+              <Input type="number" min={0} step="0.01" inputMode="decimal" className="h-12 rounded-xl max-w-[10rem]" {...field} value={String(field.value ?? "")} />
+            </FormControl>
+            <p className="text-xs text-slate-brand">
+              {indicative === "typicalSpend"
+                ? "Roughly what a resident spends when they use this offer. It is only used to estimate what residents have saved, and is never shown to them as a price."
+                : "Roughly what the free or second item usually costs. It is only used to estimate what residents have saved, and is never shown to them as a price."}
+              {" "}Leaving it blank simply means this offer never counts towards anyone's savings total.
+            </p>
+            <FormMessage />
+          </FormItem>
+        )} />
       )}
 
       <FormField control={form.control} name="description" render={({ field }) => (

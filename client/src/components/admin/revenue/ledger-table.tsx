@@ -10,7 +10,7 @@ import { pounds, type LedgerEvent } from "./types";
 
 const ACTION_LABELS: Record<LedgerEvent["action"], string> = { started: "Started", renewed: "Renewed", cancelled: "Cancelled", lapsed: "Lapsed" };
 const ACTION_TONES: Record<LedgerEvent["action"], PillTone> = { started: "live", renewed: "sea", cancelled: "red", lapsed: "slate" };
-const PLAN_LABELS: Record<string, string> = { individual: "Individual", household: "Household", premium: "Premium" };
+const PLAN_LABELS: Record<string, string> = { individual: "Individual", household: "Household", premium: "Standard", standard: "Standard", insight: "Insight" };
 
 async function downloadCsv(): Promise<void> {
   const res = await apiRequest("GET", "/api/admin/revenue/export.csv");

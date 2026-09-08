@@ -57,6 +57,16 @@ export function formatPounds(value: number | string | null | undefined): string 
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(Number.isNaN(n) ? 0 : n);
 }
 
+/**
+ * An annual fee quoted per month. The membership is billed once a year, but
+ * "£3 a month" is the figure people judge it by, and a household at £6 a month
+ * is an easier decision than one at £72.
+ */
+export function monthlyFromAnnual(annual: number): string {
+  const monthly = annual / 12;
+  return Number.isInteger(monthly) ? `£${monthly}` : formatPounds(monthly);
+}
+
 /** "just now", "2 min ago", "1 hr ago" */
 export function relativeTime(value: string | Date, now: Date = new Date()): string {
   const diffSec = Math.max(0, Math.round((now.getTime() - new Date(value).getTime()) / 1000));
@@ -96,6 +106,28 @@ export const OFFER_TYPE_LABELS: Record<OfferType, string> = {
   off_peak: "Off-peak",
   loyalty_reward: "Loyalty reward",
 };
+
+/**
+ * Which indicative figure an offer type needs before its redemptions can count
+ * towards a resident's savings total, or null when the offer already carries
+ * enough to work the saving out.
+ *
+ * Mirrors `needsIndicativeValue` in server/lib/savings.ts; client code cannot
+ * import from the server, so the two must be kept in step by hand.
+ */
+export function needsIndicativeValue(type: OfferType | null): "typicalSpend" | "itemValue" | null {
+  switch (type) {
+    case "percentage_discount":
+    case "off_peak":
+      return "typicalSpend";
+    case "bogo":
+    case "free_item_with_purchase":
+    case "loyalty_reward":
+      return "itemValue";
+    default:
+      return null;
+  }
+}
 
 interface OfferLike {
   type: OfferType | null;

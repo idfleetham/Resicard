@@ -3,7 +3,8 @@
 export interface RevenueFees {
   individual: number;
   household: number;
-  merchantPremiumMonthly: number;
+  merchantStandardMonthly: number;
+  merchantInsightMonthly: number;
 }
 
 export interface HistoryMonth {
@@ -25,7 +26,7 @@ export interface UpcomingRenewal {
   kind: "resident_membership" | "merchant_premium";
   subjectId: string;
   name: string;
-  plan: "individual" | "household" | "premium";
+  plan: "individual" | "household" | "standard" | "insight";
   expiresAt: string;
   amount: number;
 }
@@ -34,14 +35,16 @@ export interface RevenueReport {
   fees: RevenueFees;
   now: {
     residents: { active: number; individual: number; household: number; cancelled: number; notRenewing: number; expiringIn30Days: number };
-    merchants: { premium: number; free: number; approved: number };
+    merchants: { paying: number; standard: number; insight: number; free: number; approved: number };
     runRate: { monthly: number; annual: number };
   };
   history: HistoryMonth[];
   cliffs: { residents: ResidentCliff[]; merchants: MerchantCliff[]; next30Days: UpcomingRenewal[] };
   schedule: {
     residentExpiries: { month: string; individual: number; household: number }[];
-    premiumMerchants: number;
+    payingMerchants: number;
+    /** What one merchant pays on average today; the forecast values future merchants at this. */
+    merchantAverageMonthly: number;
     activeIndividual: number;
     activeHousehold: number;
   };

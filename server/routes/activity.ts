@@ -13,7 +13,7 @@ interface FeedMerchant {
 }
 
 export type ActivityItem =
-  | { kind: "redemption"; id: string; at: Date; merchant: FeedMerchant; title: string; code: string; pointsAwarded: number }
+  | { kind: "redemption"; id: string; at: Date; merchant: FeedMerchant; title: string; code: string; pointsAwarded: number; saved: number | null; savedEstimated: boolean }
   | { kind: "reward"; id: string; at: Date; merchant: FeedMerchant; title: string; amount: number | null; claimId: string | null }
   | { kind: "points" | "tier"; id: string; at: Date; merchant: FeedMerchant; title: string; amount: number | null };
 
@@ -46,6 +46,8 @@ activityRouter.get(
         title: r.offerTitle,
         code: r.code,
         pointsAwarded: r.pointsAwarded ?? 0,
+        saved: r.savedAmount === null ? null : Number(r.savedAmount),
+        savedEstimated: r.savedEstimated !== false,
       });
     }
     for (const { event, merchant } of events) {

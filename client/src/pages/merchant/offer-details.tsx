@@ -11,7 +11,8 @@ import { OfferStatusPill } from "@/components/merchant/offers-manager";
 import { Pill } from "@/components/merchant/portal-ui";
 import type { RedemptionSummary } from "@/components/merchant/overview-tab";
 import {
-  OFFER_TYPE_LABELS, categoryLabel, formatDate, formatPounds, offerConditions, offerHeadline, offerWhen,
+  OFFER_TYPE_LABELS, categoryLabel, formatDate, formatPounds, needsIndicativeValue, offerConditions,
+  offerHeadline, offerWhen,
 } from "@/components/resident/format";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -31,6 +32,9 @@ export default function OfferDetails() {
   const [editing, setEditing] = useState(false);
 
   const count = summary?.byOffer.find((o) => o.offerId === id)?.count ?? offer?.usageCount ?? 0;
+  // The indicative figure this offer type needs, and whether the merchant set one.
+  const indicative = needsIndicativeValue(offer?.type ?? null);
+  const indicativeValue = indicative === "typicalSpend" ? offer?.typicalSpend : indicative === "itemValue" ? offer?.itemValue : null;
   const limits: string[] = [];
   if (offer?.maxPerDay) limits.push(`${offer.maxPerDay} per resident per day`);
   if (offer?.maxPerWeek) limits.push(`${offer.maxPerWeek} per resident per week`);
@@ -81,6 +85,16 @@ export default function OfferDetails() {
                       {offer.originalValue ? <span className="text-slate-brand"> (usually {formatPounds(offer.originalValue)})</span> : null}
                     </Row>
                   )}
+                  {indicative && indicativeValue ? (
+                    <Row label={indicative === "typicalSpend" ? "Typical bill" : "Usual item price"}>
+                      {formatPounds(indicativeValue)}
+                      <span className="text-slate-brand"> (indicative, not a price residents see; used only to estimate what they save)</span>
+                    </Row>
+                  ) : indicative ? (
+                    <Row label={indicative === "typicalSpend" ? "Typical bill" : "Usual item price"}>
+                      <span className="text-slate-brand">Not set, so this offer does not count towards residents&apos; savings totals.</span>
+                    </Row>
+                  ) : null}
                   <Row label="When">{offerWhen(offer).join(" / ") || "Every day, all day"}</Row>
                   {offer.validFrom && <Row label="Valid from">{formatDate(offer.validFrom)}</Row>}
                   {offer.blackoutDates && offer.blackoutDates.length > 0 && (

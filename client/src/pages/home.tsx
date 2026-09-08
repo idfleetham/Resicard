@@ -5,38 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import OfferCard, { type PublicOffer } from "@/components/offer-card";
 import OfferDetailsModal from "@/components/offer-details-modal";
+import PublicCounter from "@/components/public-counter";
 import { OfferGridSkeleton } from "@/components/resident/offers-tab";
 import { useAuth } from "@/hooks/use-auth";
 import { homePathForRole } from "@/lib/auth";
+import { usePricing } from "@/components/pricing/use-pricing";
+import { monthlyFromAnnual } from "@/components/resident/format";
 
-interface Stats {
-  activeOffers: number;
-  merchants: number;
-  redemptions: number;
-  members: number;
+/** The price is the persuasive part, so it comes from /api/pricing rather than being typed here twice. */
+function steps(monthly: string | null) {
+  return [
+    { title: "Prove you live here.", text: "We post a card with a code to your address, or an admin verifies you in person. No documents are stored." },
+    {
+      title: "Free or Premium.",
+      text: `Free lets you browse every offer and see what it is worth. Premium${monthly ? `, ${monthly} a month billed yearly,` : ","} gets you the card itself: redeeming, points and tiers. The first three months are free.`,
+    },
+    { title: "Scan the code at the till.", text: "Pick the offer, show the green screen." },
+  ];
 }
-
-const STEPS = [
-  { title: "Prove you live here.", text: "Your postcode and one proof of address, checked by a person." },
-  {
-    title: "Free or Premium.",
-    text: "Free gets you the card and loyalty points. Premium, one flat fee a year, gets you the resident offers, and the first three months are free.",
-  },
-  { title: "Scan the code at the till.", text: "Pick the offer, show the green screen." },
-];
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [selected, setSelected] = useState<PublicOffer | null>(null);
-  const stats = useQuery<Stats>({ queryKey: ["/api/stats"] });
   const offers = useQuery<PublicOffer[]>({ queryKey: ["/api/offers"] });
-
-  const statItems = [
-    { label: "outlets", value: stats.data?.merchants },
-    { label: "live offers", value: stats.data?.activeOffers },
-    { label: "residents", value: stats.data?.members },
-    { label: "redemptions", value: stats.data?.redemptions },
-  ];
+  const pricing = usePricing();
 
   const homePath = isAuthenticated && user ? homePathForRole(user.role) : null;
 
@@ -91,18 +83,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-5 sm:px-6 -mt-[22px] relative">
-        <div className="bg-white rounded-2xl px-[18px] py-4 grid grid-cols-2 sm:grid-cols-4 gap-2 shadow-[0_10px_30px_rgba(15,59,71,0.12)]">
-          {statItems.map(({ label, value }) => (
-            <div key={label} className="flex flex-col gap-0.5">
-              <div className="font-display font-extrabold text-[28px] sm:text-[36px] leading-none tracking-[-0.02em] tabular-nums">
-                {value ?? "-"}
-              </div>
-              <div className="text-[11px] sm:text-xs font-semibold text-slate-brand">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PublicCounter className="max-w-6xl mx-auto px-5 sm:px-6 pt-7 sm:pt-10" />
 
       <section className="max-w-6xl mx-auto px-5 sm:px-6 pt-7 sm:pt-12">
         <div className="flex items-baseline justify-between mb-[14px]">
@@ -129,7 +110,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-5 sm:px-6 pt-[30px] sm:pt-12">
         <h2 className="font-display font-bold text-2xl tracking-[-0.02em] mb-4">How it works</h2>
         <ol className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {STEPS.map((step, i) => (
+          {steps(pricing.data ? monthlyFromAnnual(pricing.data.resident.individual) : null).map((step, i) => (
             <li key={step.title} className="flex gap-[14px] items-start bg-white rounded-2xl p-[14px] sm:p-5">
               <span className="flex-none h-8 w-8 rounded-full bg-sea text-foam font-display font-extrabold text-[15px] flex items-center justify-center">
                 {i + 1}
@@ -150,12 +131,17 @@ export default function Home() {
               Listing is free: offers for residents on the days you choose, a QR poster and a redemption feed. Premium adds a loyalty programme and analytics, and the first three months are free.
             </p>
           </div>
-          <Link
-            href="/register?role=merchant"
-            className="text-sm font-bold text-foam underline underline-offset-[3px] mt-1 md:mt-0"
-          >
-            List your business
-          </Link>
+          <div className="flex items-center gap-5 mt-1 md:mt-0">
+            <Link
+              href="/register?role=merchant"
+              className="text-sm font-bold text-foam underline underline-offset-[3px]"
+            >
+              List your business
+            </Link>
+            <Link href="/pricing" className="text-sm font-semibold text-foam/90 underline underline-offset-[3px]">
+              See pricing
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -164,9 +150,14 @@ export default function Home() {
           <Logo size={18} />
           <span>{new Date().getFullYear()}</span>
         </div>
-        <Link href="/admin-signup" className="text-sea underline underline-offset-2">
-          Admin
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/pricing" className="text-sea underline underline-offset-2">
+            Pricing
+          </Link>
+          <Link href="/admin-signup" className="text-sea underline underline-offset-2">
+            Admin
+          </Link>
+        </div>
       </footer>
 
       <OfferDetailsModal offer={selected} onClose={() => setSelected(null)} />

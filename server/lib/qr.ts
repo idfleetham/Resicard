@@ -75,7 +75,9 @@ export function posterHtml(merchantName: string, qr: string, url: string): strin
   const name = escapeHtml(merchantName);
   const photo = photoDataUrl();
   const fontUrl = `${config.publicBaseUrl}/fonts/bricolage-grotesque-latin.woff2`;
-  const fee = `£${config.residentAnnualFeeGbp}`;
+  // Quoted per month: the poster has one line to make the case, and £3 makes it faster than £36.
+  const monthly = config.residentAnnualFeeGbp / 12;
+  const fee = Number.isInteger(monthly) ? `£${monthly} a month` : `£${monthly.toFixed(2)} a month`;
   const photoBand = photo
     ? `<img class="photo" src="${photo}" alt="">`
     : "";
@@ -153,7 +155,7 @@ export function posterHtml(merchantName: string, qr: string, url: string): strin
       <div class="display foot-name">${name}</div>
       <div class="url">${escapeHtml(url)}</div>
     </div>
-    <div class="foot-right">Not a member yet?<br>resicard.co.uk · ${fee} a year</div>
+    <div class="foot-right">Not a member yet?<br>resicard.co.uk · ${fee}</div>
   </div>
 </div>
 </body>

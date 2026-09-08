@@ -51,6 +51,8 @@ export async function listRedemptionsForUser(userId: number, client: DbClient = 
       redeemedAt: redemptions.redeemedAt,
       basketAmount: redemptions.basketAmount,
       pointsAwarded: redemptions.pointsAwarded,
+      savedAmount: redemptions.savedAmount,
+      savedEstimated: redemptions.savedEstimated,
       offerId: redemptions.offerId,
       offerTitle: offers.title,
       offerType: offers.type,
@@ -63,6 +65,38 @@ export async function listRedemptionsForUser(userId: number, client: DbClient = 
     .innerJoin(merchants, eq(merchants.id, redemptions.merchantId))
     .where(eq(redemptions.userId, userId))
     .orderBy(desc(redemptions.redeemedAt));
+}
+
+/** Every saving figure recorded for a resident, oldest to newest, for the savings panel. */
+export async function listSavingsForUser(userId: number, client: DbClient = db) {
+  return client
+    .select({
+      savedAmount: redemptions.savedAmount,
+      savedEstimated: redemptions.savedEstimated,
+      redeemedAt: redemptions.redeemedAt,
+    })
+    .from(redemptions)
+    .where(eq(redemptions.userId, userId))
+    .orderBy(redemptions.redeemedAt);
+}
+
+/** The resident's biggest single savings, with where they happened. */
+export async function listTopSavingsForUser(userId: number, limit: number, client: DbClient = db) {
+  return client
+    .select({
+      id: redemptions.id,
+      savedAmount: redemptions.savedAmount,
+      redeemedAt: redemptions.redeemedAt,
+      offerTitle: offers.title,
+      merchantId: merchants.id,
+      merchantName: merchants.name,
+    })
+    .from(redemptions)
+    .innerJoin(offers, eq(offers.id, redemptions.offerId))
+    .innerJoin(merchants, eq(merchants.id, redemptions.merchantId))
+    .where(and(eq(redemptions.userId, userId), sql`${redemptions.savedAmount} is not null`))
+    .orderBy(desc(redemptions.savedAmount))
+    .limit(limit);
 }
 
 /** Merchant's redemptions, newest first, with the resident's id and username (aliased by the caller). */

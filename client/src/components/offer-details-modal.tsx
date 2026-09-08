@@ -90,7 +90,7 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
                 <p className="text-sm text-sea">
                   To redeem, scan the Resicard code at {offer.merchant.name} when you are there and choose this offer.
                 </p>
-                <Button variant="buoy" className="w-full h-12 text-base" onClick={() => { onClose(); setLocation("/resident?tab=card&scan=1"); }}>
+                <Button variant="buoy" className="w-full h-12 text-base" onClick={() => { onClose(); setLocation("/resident?tab=resicard&scan=1"); }}>
                   Scan a Resicard code
                 </Button>
               </>

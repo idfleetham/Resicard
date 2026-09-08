@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uuid, date, numeric, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, uuid, date, numeric, jsonb, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -19,6 +19,15 @@ export type UserRole = (typeof USER_ROLES)[number];
 export const MERCHANT_CATEGORIES = [
   "restaurant", "bar", "cafe", "pub", "takeaway", "hotel", "retail", "services", "experience",
 ] as const;
+
+// Optional demographics, collected only to see which offers work for which group.
+// They are reported in aggregate and never per resident, so both value sets are
+// closed: free text would be a second name field.
+export const AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"] as const;
+export type AgeBand = (typeof AGE_BANDS)[number];
+
+export const SEX_OPTIONS = ["female", "male", "other", "prefer_not_to_say"] as const;
+export type SexOption = (typeof SEX_OPTIONS)[number];
 
 export const OFFER_TYPES = [
   "percentage_discount",
@@ -46,6 +55,11 @@ export const users = pgTable("users", {
   role: text("role").$type<UserRole>().notNull(),
   postcode: text("postcode"),
   profilePhoto: text("profile_photo"), // base64 data URL, shown on the digital card
+
+  // Optional, and never returned for one resident to anyone but that resident:
+  // they exist only for the aggregate demographics in the Insight analytics.
+  ageBand: text("age_band").$type<AgeBand>(),
+  sex: text("sex").$type<SexOption>(),
 
   // Residency verification (residents only). Two routes: a postcard with a
   // code posted to the address, or an admin verifying in person. No documents
@@ -121,6 +135,12 @@ export const merchants = pgTable("merchants", {
   reservationProvider: text("reservation_provider"),
   reservationUrl: text("reservation_url"),
 
+  // Where the outlet sits on the map. Nullable on purpose: an outlet with no
+  // coordinates keeps working everywhere else and is listed under the map
+  // rather than pinned on it. Set by hand, never geocoded.
+  latitude: numeric("latitude", { precision: 9, scale: 6 }),
+  longitude: numeric("longitude", { precision: 9, scale: 6 }),
+
   // The printed QR code in the outlet encodes /scan/<scanCode>
   scanCode: text("scan_code").notNull().unique(),
 
@@ -131,7 +151,7 @@ export const merchants = pgTable("merchants", {
 
   // Plan: Free (capped) or Premium (monthly fee; unlocks loyalty, analytics,
   // unlimited live offers).
-  planStatus: text("plan_status").$type<"free" | "premium">().default("free"),
+  planStatus: text("plan_status").$type<"free" | "standard" | "insight">().default("free"),
   planStartedAt: timestamp("plan_started_at").defaultNow(),
   planRenewsAt: timestamp("plan_renews_at"),
   stripeCustomerId: text("stripe_customer_id"),
@@ -139,6 +159,17 @@ export const merchants = pgTable("merchants", {
 
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+/** Outlets a resident has starred, so their usual places come first. */
+export const favourites = pgTable(
+  "favourites",
+  {
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.userId, t.merchantId] }) }),
+);
 
 // ---------------------------------------------------------------------------
 // Offers
@@ -156,6 +187,12 @@ export const offers = pgTable("offers", {
   fixedPrice: numeric("fixed_price", { precision: 10, scale: 2 }),
   originalValue: numeric("original_value", { precision: 10, scale: 2 }),
   category: text("category"),
+
+  // Indicative figures, set by the merchant, used only to estimate what a
+  // resident saved. Never shown as a price and never billed on.
+  typicalSpend: numeric("typical_spend", { precision: 10, scale: 2 }), // typical bill a percentage offer is used on
+  itemValue: numeric("item_value", { precision: 10, scale: 2 }), // usual price of the free / second / reward item
+
   tags: jsonb("tags").$type<string[]>(),
 
   // Eligibility
@@ -207,12 +244,25 @@ export const redemptions = pgTable("redemptions", {
   code: text("code").notNull().unique(), // short code shown on the success screen
   basketAmount: numeric("basket_amount", { precision: 10, scale: 2 }),
   pointsAwarded: integer("points_awarded").default(0),
+  // What the resident saved, frozen at redemption time so later edits to the
+  // offer cannot rewrite history. Null when there was nothing to work from.
+  savedAmount: numeric("saved_amount", { precision: 10, scale: 2 }),
+  // True when savedAmount came from indicative figures rather than a real bill.
+  savedEstimated: boolean("saved_estimated").default(true),
   redeemedAt: timestamp("redeemed_at").defaultNow(),
 });
 
 // ---------------------------------------------------------------------------
 // Loyalty (per merchant)
 // ---------------------------------------------------------------------------
+
+// The merchant's card design, kept to a short list so every card stays legible
+// and the wallet reads as one app. Rendered by client/src/components/loyalty/card-themes.ts.
+export const CARD_THEMES = ["sea", "ink", "moss", "rust", "plum", "sand"] as const;
+export type CardTheme = (typeof CARD_THEMES)[number];
+
+export const CARD_PATTERNS = ["plain", "wave", "stripe"] as const;
+export type CardPattern = (typeof CARD_PATTERNS)[number];
 
 export const loyaltyPrograms = pgTable("loyalty_programs", {
   id: serial("id").primaryKey(),
@@ -226,6 +276,10 @@ export const loyaltyPrograms = pgTable("loyalty_programs", {
   stackingAllowed: boolean("stacking_allowed").default(false),
   expiryDays: integer("expiry_days"),
   tierWindowDays: integer("tier_window_days").default(365), // tier status is based on points earned in this rolling window
+  // How the resident's card for this outlet is drawn. A fixed set, not free
+  // colours: free rein produces unreadable cards and six different-looking apps.
+  cardTheme: text("card_theme").$type<CardTheme>().default("sea"),
+  cardPattern: text("card_pattern").$type<CardPattern>().default("plain"),
   active: boolean("active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -309,6 +363,38 @@ export const subscriptionEvents = pgTable("subscription_events", {
 });
 
 // ---------------------------------------------------------------------------
+// Price change audit: one row per figure a merchant changed on an offer.
+//
+// The old figure is overwritten by the update, so unless it is written down at
+// the moment of the edit it cannot be recovered later. This is a record of what
+// changed, nothing more.
+// ---------------------------------------------------------------------------
+
+export const PRICE_CHANGE_FIELDS = [
+  "percentOff", "fixedPrice", "originalValue", "typicalSpend", "itemValue", "minBasket", "maxDiscount",
+] as const;
+export type PriceChangeField = (typeof PRICE_CHANGE_FIELDS)[number];
+
+export const PRICE_CHANGE_DIRECTIONS = ["up", "down", "set", "cleared"] as const;
+export type PriceChangeDirection = (typeof PRICE_CHANGE_DIRECTIONS)[number];
+
+export const offerPriceChanges = pgTable("offer_price_changes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  changedBy: integer("changed_by").references(() => users.id), // the merchant user who saved the edit
+  field: text("field").$type<PriceChangeField>().notNull(),
+  // percentOff is an integer on the offer and is kept here as a plain number.
+  oldValue: numeric("old_value", { precision: 10, scale: 2 }),
+  newValue: numeric("new_value", { precision: 10, scale: 2 }),
+  direction: text("direction").$type<PriceChangeDirection>().notNull(),
+  inflatesSaving: boolean("inflates_saving").default(false).notNull(),
+  changedAt: timestamp("changed_at").defaultNow(),
+});
+
+export type OfferPriceChange = typeof offerPriceChanges.$inferSelect;
+
+// ---------------------------------------------------------------------------
 // Relations
 // ---------------------------------------------------------------------------
 
@@ -358,9 +444,10 @@ const optionalNumber = z
   .optional()
   .nullable();
 
+// A resident's username is generated by the server (see server/lib/codes.ts), so
+// nothing a resident chose can identify them to a merchant through their alias.
 export const registerResidentSchema = z.object({
   role: z.literal("resident"),
-  username: z.string().min(3).max(30),
   email: z.string().email(),
   password: z.string().min(8),
   firstName: z.string().min(1),
@@ -370,6 +457,8 @@ export const registerResidentSchema = z.object({
   addressLine2: z.string().trim().max(80).optional().nullable(),
   town: z.string().trim().min(2).max(40).default("St Andrews"),
   profilePhoto: z.string().optional(),
+  ageBand: z.enum(AGE_BANDS).optional().nullable(),
+  sex: z.enum(SEX_OPTIONS).optional().nullable(),
 });
 
 export const registerMerchantSchema = z.object({
@@ -400,6 +489,8 @@ export const updateProfileSchema = z.object({
   addressLine2: z.string().trim().max(80).optional().nullable(),
   town: z.string().trim().min(2).max(40).optional(),
   profilePhoto: z.string().optional(),
+  ageBand: z.enum(AGE_BANDS).optional().nullable(),
+  sex: z.enum(SEX_OPTIONS).optional().nullable(),
 });
 
 export const addressSchema = z.object({
@@ -413,6 +504,23 @@ export const postcardCodeSchema = z.object({
   code: z.string().trim().min(6).max(6),
 });
 
+/**
+ * A map coordinate on its way into a `numeric(9,6)` column. Accepts a number or a
+ * string because the merchant form types one and the map pin drags another, and
+ * hands Drizzle the string that column wants. An empty string clears the pin.
+ */
+const coordinate = (limit: number) =>
+  z
+    .union([z.number(), z.string()])
+    .nullable()
+    .transform((value) => (value === null || value === "" ? null : Number(value)))
+    .refine((value) => value === null || (Number.isFinite(value) && Math.abs(value) <= limit), {
+      message: `Must be a number between -${limit} and ${limit}`,
+    })
+    // Outermost, so an update that leaves the fields out does not clear the pin.
+    .transform((value) => (value === null ? null : value.toFixed(6)))
+    .optional();
+
 export const updateMerchantSchema = z.object({
   name: z.string().min(1).optional(),
   category: z.enum(MERCHANT_CATEGORIES).optional(),
@@ -423,6 +531,8 @@ export const updateMerchantSchema = z.object({
   businessHours: z.string().optional().nullable(),
   reservationProvider: z.string().optional().nullable(),
   reservationUrl: z.string().url().optional().nullable().or(z.literal("")),
+  latitude: coordinate(90),
+  longitude: coordinate(180),
 });
 
 export const insertOfferSchema = createInsertSchema(offers)
@@ -447,6 +557,8 @@ export const insertOfferSchema = createInsertSchema(offers)
     percentOff: optionalNumber,
     fixedPrice: optionalNumber,
     originalValue: optionalNumber,
+    typicalSpend: optionalNumber,
+    itemValue: optionalNumber,
     minBasket: optionalNumber,
     maxDiscount: optionalNumber,
     maxPerDay: optionalNumber,
@@ -499,7 +611,14 @@ export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards)
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-export type PublicUser = Omit<User, "password">;
+/**
+ * A user as returned to anyone but themselves: no password, and no demographics.
+ * Demographics are aggregate-only, so the safe shape is the default one and the
+ * fuller `SelfUser` has to be asked for by name.
+ */
+export type PublicUser = Omit<User, "password" | "ageBand" | "sex">;
+/** A user as returned to that same user: their own demographics included. */
+export type SelfUser = Omit<User, "password">;
 export type Postcard = typeof postcards.$inferSelect;
 export type Merchant = typeof merchants.$inferSelect;
 export type InsertMerchant = typeof merchants.$inferInsert;
@@ -513,6 +632,7 @@ export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
 export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
 export type RewardClaim = typeof rewardClaims.$inferSelect;
 export type SubscriptionEvent = typeof subscriptionEvents.$inferSelect;
+export type Favourite = typeof favourites.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 /** Alias shown to merchants instead of a resident's real name. */

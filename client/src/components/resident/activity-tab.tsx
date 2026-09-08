@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ClaimStrip } from "@/components/resident/claim-strip";
+import { SavingsPanel } from "@/components/resident/savings-panel";
 import { PointsList, type LoyaltyMembership } from "@/components/resident/points-list";
 import { ActivityFeed, type ActivityItem } from "@/components/resident/activity-feed";
 
@@ -40,6 +41,8 @@ export default function ActivityTab() {
 
   return (
     <div className="space-y-8 text-sea">
+      <SavingsPanel />
+
       <ClaimStrip items={memberships} />
 
       {memberships.length > 0 && <PointsSummary items={memberships} />}

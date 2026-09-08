@@ -47,6 +47,7 @@ describe("renewalFromInvoice", () => {
       userId: 42,
       merchantId: null,
       plan: "individual",
+      merchantPlan: null,
       periodEnd: new Date("2027-12-06T12:00:00Z"),
       amountGbp: 30,
     });
@@ -61,6 +62,15 @@ describe("renewalFromInvoice", () => {
   it("reads a merchant plan renewal", () => {
     const result = renewalFromInvoice(invoice({ metadata: { kind: "merchant_plan", merchantId: "m-1" } }));
     expect(result).toMatchObject({ kind: "merchant_plan", merchantId: "m-1", userId: null, plan: null, amountGbp: 30 });
+    // A subscription created before the three tiers carries no plan; the caller falls back to Standard.
+    expect(result?.merchantPlan).toBeNull();
+  });
+
+  it("carries the merchant tier from the subscription metadata", () => {
+    const insight = renewalFromInvoice(invoice({ metadata: { kind: "merchant_plan", merchantId: "m-1", plan: "insight" } }));
+    expect(insight?.merchantPlan).toBe("insight");
+    const standard = renewalFromInvoice(invoice({ metadata: { kind: "merchant_plan", merchantId: "m-1", plan: "standard" } }));
+    expect(standard?.merchantPlan).toBe("standard");
   });
 
   it("ignores the zero-pound invoice that starts a trial", () => {

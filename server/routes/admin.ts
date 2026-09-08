@@ -7,6 +7,7 @@ import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import * as redemptionStore from "../storage/redemptions";
 import * as postcardStore from "../storage/postcards";
+import * as favouriteStore from "../storage/favourites";
 import { config } from "../config";
 import { effectiveMembership } from "../lib/membership";
 import { expiryDate, hashCode, newPostcardCode, printSheetHtml } from "../lib/postcards";
@@ -218,7 +219,15 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const status = typeof req.query.status === "string" ? req.query.status : undefined;
     const rows = await merchantStore.listMerchantsForAdmin(status);
-    res.json(rows.map((r) => ({ ...r.merchant, owner: r.owner, offerCount: r.offerCount })));
+    const counts = await favouriteStore.countFavouritesByMerchant(rows.map((r) => r.merchant.id));
+    res.json(
+      rows.map((r) => ({
+        ...r.merchant,
+        owner: r.owner,
+        offerCount: r.offerCount,
+        favouriteCount: counts.get(r.merchant.id) ?? 0,
+      })),
+    );
   }),
 );
 

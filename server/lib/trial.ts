@@ -30,6 +30,8 @@ export interface InvoiceRenewal {
   userId: number | null;
   merchantId: string | null;
   plan: "individual" | "household" | null;
+  /** The merchant tier the subscription was bought on; null on a subscription created before the re-cut. */
+  merchantPlan: "standard" | "insight" | null;
   periodEnd: Date;
   amountGbp: number;
 }
@@ -60,6 +62,7 @@ export function renewalFromInvoice(input: InvoiceRenewalInput): InvoiceRenewal |
       userId,
       merchantId: null,
       plan: input.metadata?.plan === "household" ? "household" : "individual",
+      merchantPlan: null,
       periodEnd,
       amountGbp,
     };
@@ -67,7 +70,16 @@ export function renewalFromInvoice(input: InvoiceRenewalInput): InvoiceRenewal |
   if (kind === "merchant_plan") {
     const merchantId = input.metadata?.merchantId;
     if (!merchantId) return null;
-    return { kind, userId: null, merchantId, plan: null, periodEnd, amountGbp };
+    const merchantPlan = input.metadata?.plan;
+    return {
+      kind,
+      userId: null,
+      merchantId,
+      plan: null,
+      merchantPlan: merchantPlan === "insight" || merchantPlan === "standard" ? merchantPlan : null,
+      periodEnd,
+      amountGbp,
+    };
   }
   return null;
 }

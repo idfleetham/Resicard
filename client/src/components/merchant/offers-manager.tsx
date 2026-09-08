@@ -18,8 +18,8 @@ function FreePlanNote() {
   if (!plan || plan.planStatus !== "free") return null;
   return (
     <p className="bg-sand rounded-2xl px-5 py-3 text-sm text-sea">
-      Free plan: {plan.liveOfferCount} of {plan.freeLiveOfferLimit} live offers.{" "}
-      <Link href="/merchant?tab=plan" className="font-bold underline underline-offset-2">Upgrade for more</Link>
+      Free plan: {plan.liveOfferCount} of {plan.freeLiveOfferLimit} live offers. Standard and Insight have no limit.{" "}
+      <Link href="/merchant?tab=plan" className="font-bold underline underline-offset-2">See the plans</Link>
     </p>
   );
 }

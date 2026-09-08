@@ -15,12 +15,14 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import AdminSignup from "@/pages/admin-signup";
 import EditProfile from "@/pages/edit-profile";
+import Pricing from "@/pages/pricing";
 
 import ResidentDashboard from "@/pages/resident/dashboard";
 import ScanPage from "@/pages/resident/scan";
 import RedemptionSuccess from "@/pages/resident/redemption-success";
 import RewardClaimPage from "@/pages/resident/reward-claim";
 import LoyaltyCardPage from "@/pages/resident/loyalty-card";
+import OutletPage from "@/pages/resident/outlet";
 
 import MerchantPortal from "@/pages/merchant/portal";
 import OfferDetails from "@/pages/merchant/offer-details";
@@ -32,6 +34,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/pricing" component={Pricing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
@@ -45,6 +48,7 @@ function Router() {
       <Route path="/redemptions/:id" component={RedemptionSuccess} />
       <Route path="/reward-claims/:id" component={RewardClaimPage} />
       <Route path="/loyalty/:merchantId" component={LoyaltyCardPage} />
+      <Route path="/outlets/:id" component={OutletPage} />
 
       <Route path="/merchant" component={MerchantPortal} />
       <Route path="/merchant/plan" component={MerchantPortal} />

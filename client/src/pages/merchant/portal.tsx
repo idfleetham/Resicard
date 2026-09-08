@@ -9,6 +9,7 @@ import OverviewTab from "@/components/merchant/overview-tab";
 import OffersManager from "@/components/merchant/offers-manager";
 import RedemptionsFeed from "@/components/merchant/redemptions-feed";
 import LoyaltyTab from "@/components/merchant/loyalty-tab";
+import AnalyticsTab from "@/components/merchant/analytics-tab";
 import QrCodeTab from "@/components/merchant/qr-code-tab";
 import TeamManagement from "@/components/merchant/team-management";
 import MerchantSettings from "@/components/merchant/merchant-settings";
@@ -20,6 +21,7 @@ const TABS = [
   { key: "offers", label: "Offers" },
   { key: "redemptions", label: "Redemptions" },
   { key: "loyalty", label: "Loyalty" },
+  { key: "analytics", label: "Analytics" },
   { key: "qr", label: "QR code" },
   { key: "team", label: "Team" },
   { key: "settings", label: "Settings" },
@@ -71,7 +73,7 @@ export default function MerchantPortal() {
   useEffect(() => {
     if (!checkout || !ready) return;
     if (checkout === "success") {
-      toast({ title: "Payment received", description: "Premium is now active." });
+      toast({ title: "Payment received", description: "Your new plan is now active." });
       void invalidatePlanGated(queryClient);
       void queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     } else if (checkout === "cancelled") {
@@ -126,6 +128,7 @@ export default function MerchantPortal() {
           <TabsContent value="offers" className="mt-0"><OffersManager /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsFeed /></TabsContent>
           <TabsContent value="loyalty" className="mt-0"><LoyaltyTab /></TabsContent>
+          <TabsContent value="analytics" className="mt-0"><AnalyticsTab /></TabsContent>
           <TabsContent value="qr" className="mt-0"><QrCodeTab merchantName={merchant?.name ?? "outlet"} /></TabsContent>
           <TabsContent value="team" className="mt-0"><TeamManagement /></TabsContent>
           <TabsContent value="settings" className="mt-0"><MerchantSettings /></TabsContent>

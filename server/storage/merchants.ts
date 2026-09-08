@@ -48,6 +48,40 @@ export async function listApprovedMerchantsWithOfferCount(client: DbClient = db)
     .orderBy(merchants.name);
 }
 
+/** Approved merchants with the columns the resident outlets list needs. */
+export async function listApprovedMerchantsForOutlets(client: DbClient = db) {
+  return client
+    .select({
+      id: merchants.id,
+      name: merchants.name,
+      category: merchants.category,
+      address: merchants.address,
+      logoUrl: merchants.logoUrl,
+      reservationProvider: merchants.reservationProvider,
+      reservationUrl: merchants.reservationUrl,
+      planStatus: merchants.planStatus,
+    })
+    .from(merchants)
+    .where(eq(merchants.status, "approved"))
+    .orderBy(merchants.name);
+}
+
+/** Approved merchants with the columns the resident map needs, coordinates included. */
+export async function listApprovedMerchantsForMap(client: DbClient = db) {
+  return client
+    .select({
+      id: merchants.id,
+      name: merchants.name,
+      category: merchants.category,
+      latitude: merchants.latitude,
+      longitude: merchants.longitude,
+      planStatus: merchants.planStatus,
+    })
+    .from(merchants)
+    .where(eq(merchants.status, "approved"))
+    .orderBy(merchants.name);
+}
+
 /** All merchants (optionally by status) with owner details and an offer count, for admins. */
 export async function listMerchantsForAdmin(status: string | undefined, client: DbClient = db) {
   const query = client

@@ -4,7 +4,7 @@ import { formatDate } from "@/components/resident/format";
 import { Pill, SectionTitle, TD, TH, TR } from "@/components/merchant/portal-ui";
 import { monthLabel, pounds, type MerchantCliff, type ResidentCliff, type UpcomingRenewal } from "./types";
 
-const PLAN_LABELS: Record<UpcomingRenewal["plan"], string> = { individual: "Individual", household: "Household", premium: "Premium" };
+const PLAN_LABELS: Record<UpcomingRenewal["plan"], string> = { individual: "Individual", household: "Household", standard: "Standard", insight: "Insight" };
 
 function Card({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
@@ -52,7 +52,7 @@ function ResidentCliffs({ rows }: { rows: ResidentCliff[] }) {
 
 function MerchantCliffs({ rows }: { rows: MerchantCliff[] }) {
   const visible = rows.filter((r) => r.count > 0);
-  if (visible.length === 0) return <p className="py-6 text-center text-sm text-slate-brand">No premium plans are due to renew.</p>;
+  if (visible.length === 0) return <p className="py-6 text-center text-sm text-slate-brand">No business plans are due to renew.</p>;
   return (
     <Table>
       <TableHeader>
@@ -119,7 +119,7 @@ export default function CliffsTable({ residents, merchants, next30Days }: Props)
         <Card title="Resident expiries" note="Memberships ending each month, valued at current fees.">
           <ResidentCliffs rows={residents} />
         </Card>
-        <Card title="Merchant renewals" note="Premium plans due each month.">
+        <Card title="Business renewals" note="Paid plans due each month.">
           <MerchantCliffs rows={merchants} />
         </Card>
       </div>

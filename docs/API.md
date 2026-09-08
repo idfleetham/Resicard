@@ -401,3 +401,521 @@ are read against the primary's id.
 trials never convert in our database and second-year payments are taken by Stripe but never
 extend the membership. Keep `checkout.session.completed` and `customer.subscription.deleted`
 enabled too.
+
+## Outlets and favourites (added Sept 2026)
+
+A resident can star an outlet. Favourites are stored server-side (`favourites`, one row per resident and merchant) so they follow the resident between devices, and the count is a useful thing to show a merchant.
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/outlets | resident | every approved merchant: `{ id, name, category, address, logoUrl, reservationProvider, reservationUrl, isFavourite, liveOfferCount, bestOffer: { id, title, headline } \| null, loyalty: { points, tierName } \| null }`. Sorted favourites first, then by name. `bestOffer` is the featured offer if there is one, else the first live one; `headline` is a short label the client can print as-is ("20% off", "£15", "Free"). |
+| GET | /api/outlets/:id | resident | one outlet in the same shape plus `offers: Offer[]` (live now, same rules as /api/scan but without the resident's per-day limits applied, so they can see what is normally on), `allOffers: Offer[]` (active, whether or not live at this moment), `loyalty: { points, statusPoints, tier, nextTier, benefits, rewards } \| null` |
+| PUT | /api/favourites/:merchantId | resident | adds; `{ isFavourite: true }`. Idempotent. 404 for an unknown or unapproved merchant |
+| DELETE | /api/favourites/:merchantId | resident | removes; `{ isFavourite: false }` |
+| GET | /api/merchant/redemptions/summary | merchant | gains `favourites: number` (how many residents have starred this outlet) |
+| GET | /api/admin/merchants | admin | each row gains `favouriteCount` |
+
+Client: the Offers tab gets a segmented control, "Offers" and "Outlets" (`?tab=offers&view=outlets`). The Outlets view lists starred outlets under "Your places" then the rest under "All outlets". A new page `/outlets/:id` shows one outlet: name, category, address with a maps link, booking link when set, the star, its offers, and the resident's points and tier there with a link to the loyalty card. Offer cards link to their outlet.
+
+## Pricing page and merchant analytics (added Sept 2026)
+
+### Public pricing
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/pricing | none | `{ townName, currency: "GBP", freeTrialDays, resident: { individual, household }, merchant: { premiumMonthly, freeLiveOfferLimit } }` |
+
+A public page at `/pricing` (linked from the landing page nav, the footer, and the "Run a bar, cafe or shop?" panel) sets out both sides. Two comparison tables, Residents and Businesses, each Free against Premium, with a tick or a dash per line and no invented claims. It also carries the analytics preview described below, and a short note that the three months free applies to both.
+
+### Merchant analytics
+
+`GET /api/merchant/analytics` (merchant, Premium only; 403 `plan_required` on Free). Window: the last 90 days, comparing with the 90 before. All from existing tables, no new schema.
+
+```
+{
+  range: { from, to },
+  headline: {
+    redemptions, redemptionsPrevious,
+    residents,            // distinct residents who redeemed in the window
+    newResidents,         // whose first redemption here fell in the window
+    returningShare,       // 0..1 of redemptions from residents seen before
+    favourites,
+    averageBasket | null  // where staff entered a bill total
+  },
+  byWeek:  [{ weekStart, redemptions, newResidents }],      // 13 weeks
+  byDay:   [{ day: "mon".."sun", redemptions }],
+  byHour:  [{ hour: 0..23, redemptions }],
+  byOffer: [{ offerId, title, headline, redemptions, share }],
+  loyalty: { members, activeMembers30d, pointsIssued30d, rewardsClaimed30d, tiers: [{ name, color, members }] } | null,
+  town: {
+    categoryLabel,          // "Pubs", "Cafes"
+    outletsInCategory,
+    yourRedemptions30d,
+    medianRedemptions30d,   // across approved outlets in that category
+    busiestDays: [{ day, share }],   // town-wide, all outlets
+    memberGrowth: [{ month, members }]  // town-wide active members by month, 12 months
+  } | null
+}
+```
+
+Privacy: `town` is null when fewer than `ANALYTICS_MIN_COHORT` (default 5) approved outlets share the category, because a median across three outlets identifies them. Nothing in `town` ever names another outlet, and nothing anywhere names a resident.
+
+### Analytics preview with example data
+
+`client/src/components/merchant/analytics/` holds one `<AnalyticsDashboard data={...} example={boolean} />` used for both the real thing and the preview, so the preview cannot drift from the product. `example-data.ts` holds a fixed dataset in the same shape.
+
+The example data is INVENTED and must stay that way. The outlet is "The Salted Oar" and offers are like "20% off food, Sunday to Thursday". Do not use the name of any real business, in St Andrews or anywhere else. Every screen showing it carries a visible "Example data" label.
+
+Shown in two places: the `/pricing` page, and the merchant Analytics view when the merchant is on Free (in place of the plain upgrade card), so a merchant can see exactly what they would be buying.
+
+## Resident savings (added Sept 2026)
+
+The point of Resicard is that it saves a household money. Until now nothing told
+the resident how much, so nothing argued for the renewal. This adds an estimate.
+
+### Honesty rules
+
+The figure is a **floor, not a best guess**, and everything about it is built to
+keep it that way:
+
+- Where the till entered a real bill, the saving is exact.
+- Where only an indicative figure exists, the saving is marked estimated.
+- Where neither exists, the redemption contributes **nothing**. It is counted in
+  `uncounted` so the resident can see the total is understated, never inflated.
+- Every screen showing a total says the word "about" or "estimated".
+
+A resident who works out that the headline is padded stops trusting the rest of
+the app, so understating is the only safe error.
+
+### Schema
+
+`offers` gains two nullable numerics, set by the merchant and never shown as a price:
+
+| Column | Meaning | Asked for when the offer type is |
+|---|---|---|
+| `typical_spend` | the bill this offer is normally used on | `percentage_discount`, `off_peak` |
+| `item_value` | the usual price of the free / second / reward item | `free_item_with_purchase`, `bogo`, `loyalty_reward` |
+
+`fixed_price` and `set_menu` need nothing new: the merchant already gives a price
+and a usual price. `fixed_amount_discount` needs nothing: the amount off is the saving.
+
+`redemptions` gains:
+
+| Column | Meaning |
+|---|---|
+| `saved_amount` | pounds saved, **frozen at redemption time**, or null |
+| `saved_estimated` | true when it rested on an indicative figure rather than a real bill |
+
+Freezing it at redemption time is deliberate: a merchant editing an offer next
+March must not silently rewrite anyone's history.
+
+### Estimation (`server/lib/savings.ts`, pure and tested)
+
+`estimateSaving(offer, basketAmount)` → `{ amount: number | null, estimated: boolean }`
+
+| Offer type | Saving | Estimated? |
+|---|---|---|
+| percentage / off-peak | `(basket ?? typicalSpend) × percent / 100` | only when there was no basket |
+| money off | the amount off | no |
+| fixed price / set menu | usual price − price | no |
+| two for one | `itemValue` | yes |
+| free item / loyalty reward | `itemValue` | yes |
+| anything without the figures above | null | — |
+
+Capped by `maxDiscount` where set, and never larger than the bill.
+
+`summariseSavings(rows, now)` rolls the rows into a total, an unbroken month
+series (quiet months are zero, not skipped) and a mean per month.
+
+### API
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/savings/mine | resident | see below |
+
+```
+{
+  currency: "GBP",
+  total,                // pounds, a floor
+  counted,              // redemptions behind the total
+  uncounted,            // redemptions with nothing to estimate from
+  estimatedPortion,     // how much of the total rests on indicative figures
+  months: [{ month: "2026-03", amount, count }],   // oldest first, no gaps
+  averageMonthly,
+  firstAt,              // ISO date of the first counted redemption, or null
+  membershipPaid,       // what this resident has actually been charged (trials are £0)
+  aheadBy,              // total − membershipPaid
+  top: [{ id, amount, at, offerTitle, merchantId, merchantName }]   // best three
+}
+```
+
+`GET /api/activity/mine` redemption items gain `saved: number | null` and
+`savedEstimated: boolean`. The redemption success payload gains the same two fields.
+
+### Client
+
+- A savings panel at the top of the resident **Activity** tab: the cumulative £
+  figure, average per month, a small monthly bar chart, and the line that argues
+  for the renewal — savings set against what they have paid.
+- The chart is not shown until there is more than one month of history; before
+  that it is a single figure and a note.
+- Each redemption row in the activity feed shows its saving where there is one.
+- The merchant offer form asks for the indicative figure its offer type needs,
+  labelled as an approximation used only to estimate resident savings, with a
+  note that leaving it blank means the offer never shows up in anyone's total.
+
+## Plans re-cut: three merchant tiers, honest resident tiers (added Sept 2026)
+
+### Why
+
+Two problems with the old two-by-two.
+
+The **resident** Free column promised "loyalty points and tier status", but points
+are only ever awarded on a redemption and redeeming was Premium. A Free resident
+would earn nothing, sit at no tier forever and have nothing to claim. Five ticks
+that did nothing, against one that mattered.
+
+The **merchant** side put analytics in the same tier as the loyalty programme.
+Analytics is the only feature whose value comes from the network rather than the
+outlet: it is worth nothing at forty members and a great deal at four thousand.
+It belongs on its own at the top.
+
+### Merchant plans
+
+`merchants.plan_status` becomes `"free" | "standard" | "insight"`. Existing rows
+holding the legacy value `"premium"` are read as `standard` (see `normalisePlan`)
+so nothing breaks before a migration runs.
+
+| | Free | Standard | Insight |
+|---|---|---|---|
+| Monthly fee | £0 | `merchantStandardMonthlyFeeGbp` (30) | `merchantInsightMonthlyFeeGbp` (75) |
+| Listing, QR poster, scheduling | yes | yes | yes |
+| Live offers | `freePlanLiveOfferLimit` (2) | unlimited | unlimited |
+| Redemption feed, counts, favourites | yes | yes | yes |
+| Loyalty programme, tiers, rewards, till tool | no | yes | yes |
+| Branded loyalty card, tier-only offers | no | yes | yes |
+| `GET /api/merchant/analytics` | no | no | yes |
+| Town benchmarks | no | no | yes |
+
+`server/lib/plan.ts` keeps the gate in one place and gains a rank:
+
+```
+export type PlanStatus = "free" | "standard" | "insight";
+normalisePlan(value)   // "premium" -> "standard"; anything unknown -> "free"
+planRank(value)        // free 0, standard 1, insight 2
+hasLoyalty(value)      // rank >= 1
+hasAnalytics(value)    // rank >= 2
+canGoLive / liveOffersOverLimit  // unchanged behaviour, now rank-based
+```
+
+`isPremium` is retired. Every call site becomes `hasLoyalty` or `hasAnalytics`
+according to what it is actually gating. `GET /api/merchant/analytics` returns
+403 `plan_required` below Insight; the loyalty routes return 403 `plan_required`
+below Standard.
+
+`GET /api/merchant/plan` returns `{ planStatus, plans: [...], features, ... }`
+where `features` is `{ unlimitedOffers, loyalty, analytics }`. Upgrade and
+downgrade take a target plan rather than assuming one: `POST /api/merchant/plan/checkout`
+accepts `{ plan: "standard" | "insight" }`, and downgrading from Insight to
+Standard keeps the loyalty programme running.
+
+### Resident plans
+
+Behaviour is unchanged; the presentation stops promising things Free never had.
+
+| | Free | Premium |
+|---|---|---|
+| Browse every offer and see what it is worth | yes | yes |
+| Find and favourite outlets | yes | yes |
+| See each outlet's loyalty card and what its tiers are worth | yes | yes |
+| The verified Resicard | no | yes |
+| Redeem offers | no | yes |
+| Earn points and tier status | no | yes |
+| Claim tier benefits and rewards | no | yes |
+| Flat tier discounts on the loyalty card | no | yes |
+| The savings tracker | no | yes |
+| Household cover | no | yes |
+
+`client/src/components/pricing/plan-features.ts` stays the single source of truth
+for both tables, shared by `/pricing`, the merchant plan tab and the resident
+reminder, so the page and the app cannot drift apart.
+
+### Pricing endpoint
+
+`GET /api/pricing` gains the merchant tiers:
+
+```
+merchant: {
+  freeLiveOfferLimit,
+  standardMonthly,
+  insightMonthly
+}
+```
+
+`premiumMonthly` is kept as an alias of `standardMonthly` for one release.
+
+## Anonymity, demographics and the public counter (added Sept 2026)
+
+### Residents no longer choose a username
+
+Merchants never see a resident's name — they see the alias from
+`generateCustomerAlias`, which falls back to `users.username`. A username the
+resident chose themselves undoes that: "fiona_mcleod_standrews" identifies a
+person as surely as her name does. So residents no longer pick one.
+
+- `registerResidentSchema` drops `username`. The resident registration form
+  drops the field.
+- The server generates it: `randomHandle()` in `server/lib/codes.ts` produces
+  `member_` plus 8 characters of the human alphabet (no vowels to make, no 0/O/1/I
+  confusion), retried on collision. It carries no personal information and is not
+  guessable from anything the resident typed.
+- Merchants still choose theirs: a merchant is a business trading publicly, and
+  their name is on the poster anyway.
+- Login is by email, so nothing about signing in changes.
+- Existing rows keep their usernames. A follow-up script can rotate them; that is
+  a decision for the owner, not something to do automatically.
+
+### Optional demographics
+
+For aggregate trends only — which offers work for which age group, whether the
+Tuesday cohort differs from the Saturday one. `users` gains two nullable columns:
+
+| Column | Values |
+|---|---|
+| `age_band` | `18-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65+` |
+| `sex` | `female`, `male`, `other`, `prefer_not_to_say` |
+
+Rules, and they are not negotiable:
+
+- **Both are optional**, at registration and in the profile. Skipping them must
+  cost the resident nothing at all. A mandatory demographic question on a product
+  whose whole pitch is trust will lose sign-ups worth more than the data.
+- The registration step says plainly what they are for and that they are optional.
+- **Never exposed per resident.** No endpoint returns another user's age band or
+  sex, ever. Not to merchants, not in the redemption feed, not in the activity
+  feed, not in the admin merchant views.
+- They appear only in aggregate, in the Insight analytics, suppressed below
+  `analyticsMinCohort` in exactly the way the town benchmarks already are — and a
+  band with fewer than that many residents behind it is folded into "not shown"
+  rather than reported.
+- `prefer_not_to_say` is a stored answer, not a missing one, and is reported as
+  its own aggregate row.
+
+### Public counter
+
+`GET /api/stats` (no auth):
+
+```
+{ town, residents, merchants, visible: boolean }
+```
+
+`residents` counts residents with a current membership; `merchants` counts
+approved outlets. `visible` is false until both pass `publicCounterMinimum`
+(config `PUBLIC_COUNTER_MIN`, default 40) — "34 residents and 6 outlets" on the
+landing page argues against joining, and there is no way to spin it. The client
+renders nothing when `visible` is false.
+
+Shown on the landing page and on the pricing page, as one quiet line of two large
+figures, not a hero element.
+
+## Merchant loyalty card design and the resident wallet (added Sept 2026)
+
+### Why
+
+The loyalty card is the thing a resident actually shows across a bar, and a flat
+tier discount is redeemed by showing it. Buried in a tab it is a points balance;
+given a wallet of its own it is the reason the programme feels real. And a card
+that looks like the outlet, rather than like Resicard, is worth more to the
+merchant than any feature we could add to the dashboard.
+
+### Merchant design, within limits
+
+Free rein produces unreadable cards and an app that looks like six different
+apps. So: a fixed layout, and a small set of choices inside it. `loyalty_programs`
+gains:
+
+| Column | Values | Default |
+|---|---|---|
+| `card_theme` | `sea`, `ink`, `moss`, `rust`, `plum`, `sand` | `sea` |
+| `card_pattern` | `plain`, `wave`, `stripe` | `plain` |
+
+Each theme is a background colour and a legible foreground, defined once in
+`client/src/components/loyalty/card-themes.ts` and used by every surface that
+draws a card. The merchant's existing `logoUrl` supplies the mark; tier colour
+supplies the accent. Nothing else is configurable — no fonts, no free-text
+colours, no uploaded backgrounds. Every theme is checked for contrast against its
+foreground, because this card gets read across a dark bar.
+
+Set from the merchant loyalty tab, with a live preview of the resident's card.
+Included from Standard upwards (it is part of the loyalty programme).
+
+`GET /api/merchant/loyalty` and `PUT /api/merchant/loyalty/program` gain the two
+fields. `GET /api/loyalty/mine` and `GET /api/loyalty/:merchantId` return them
+alongside the existing programme data.
+
+### The resident wallet
+
+A fourth section on the resident dashboard. Tabs become **Resicard**, **Offers**,
+**Cards**, **Activity** (`?tab=cards`), so "Card" the membership card and "Cards"
+the loyalty cards are not the same word doing two jobs.
+
+The Cards view is a wallet: every outlet whose programme the resident is in, drawn
+as its own themed card, overlapping in a stack the way a wallet of passes does,
+favourites first. Each card shows the outlet name and logo, the resident's tier,
+their points, and any flat tier discount, which is the number that matters when
+they are standing at the bar.
+
+Tapping one opens the existing `/loyalty/:merchantId` page, which becomes a
+full-bleed presentation of that card: the outlet's theme edge to edge, the tier
+and any flat discount large enough to read at arm's length, the resident's name
+and alias, and the points and next tier below the fold. It should look like
+something you hold up, not a dashboard.
+
+Empty state: a sand card explaining that loyalty cards appear here once they have
+redeemed at an outlet that runs a programme.
+
+## Price change audit (added Sept 2026)
+
+### Why
+
+An outlet can put its menu up 20% and then advertise 20% off. In a town with six
+pubs on the scheme, competition eventually punishes that. At launch it does not:
+some categories will have one or two outlets, the member base is too small for a
+merchant to feel the loss, and nobody remembers what a pint cost in March. The
+rise is invisible; only the poster is visible.
+
+The merchant is already typing these figures into the offer form, so the edits
+are observable. Nothing records them today, and the old values are gone the moment
+they are overwritten, so this cannot be reconstructed later. That is the whole
+argument for building it now rather than when it is needed.
+
+This is a record, not an accusation. Prices go up for ordinary reasons.
+
+### Schema
+
+```
+offer_price_changes
+  id uuid pk
+  offer_id uuid -> offers(id) on delete cascade
+  merchant_id uuid -> merchants(id) on delete cascade
+  changed_by integer -> users(id)          // the merchant user who saved the edit
+  field text                                // percentOff | fixedPrice | originalValue
+                                            // | typicalSpend | itemValue | minBasket | maxDiscount
+  old_value numeric(10,2) null              // percentOff is stored here as a plain number
+  new_value numeric(10,2) null
+  direction text                            // "up" | "down" | "set" | "cleared"
+  inflates_saving boolean                   // see below
+  changed_at timestamp default now()
+```
+
+One row per changed field, written inside the same transaction as the offer
+update, so a partial record is impossible.
+
+`inflates_saving` is true when the change makes the offer look better than it did
+without the resident getting anything more: a rise in `originalValue`,
+`typicalSpend` or `itemValue`, or a rise in `fixedPrice` on a `fixed_amount_discount`.
+It is the single flag the admin view sorts on. A fall in `percentOff` makes the
+offer worse and is recorded but not flagged, since it is honest.
+
+### API
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/admin/price-changes | admin | see below |
+
+Query: `?flaggedOnly=true`, `?merchantId=`, `?days=` (default 180), `?limit=` (default 200).
+
+```
+{
+  items: [{
+    id, changedAt, field, oldValue, newValue, direction, inflatesSaving,
+    percentMove,                       // (new - old) / old, null when old was null or zero
+    offer: { id, title, type },
+    merchant: { id, name },
+    changedBy: { id, username } | null
+  }],
+  summary: { merchants: [{ merchantId, name, flaggedChanges, largestMovePercent }] }
+}
+```
+
+Sorted newest first. The summary lists only merchants with at least one flagged
+change in the window, so a quiet town shows an empty table rather than noise.
+
+### Admin view
+
+A "Prices" tab: a "flagged only" toggle on by default, a merchant filter, and a
+table of old value, new value, the move as a percentage, the offer and who made
+the change. Above it, one line per merchant with flagged changes.
+
+The copy must stay neutral. It says what changed, never what it means. Wording
+like "suspicious" or "gaming" does not appear anywhere in the interface: the admin
+looking at it is the one who decides, and a merchant who sees a screenshot of it
+should not find an accusation in it.
+
+## Map of what is on now (added Sept 2026)
+
+### Why
+
+St Andrews is a few hundred metres across and entirely walkable, so "what can I
+get right now, near here" is a real question with a spatial answer. In a city a
+map of offers is decoration; in this town it is the fastest route to a decision.
+
+### Schema
+
+`merchants` gains `latitude` and `longitude` (`numeric(9,6)`, nullable). Nullable
+matters: an outlet with no coordinates keeps working everywhere else and is simply
+absent from the map, listed underneath it instead.
+
+Coordinates are set by the merchant in their settings and by an admin on the
+merchants table, by typing them or by dragging a pin. There is no automatic
+geocoding: for a town with a few dozen outlets, placing a pin by hand is more
+accurate than a geocoder and avoids a paid dependency on day one.
+
+### API
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/outlets/map | resident | outlets with coordinates and what is live right now |
+
+```
+{
+  centre: { lat, lng },              // config mapCentreLat / mapCentreLng
+  outlets: [{
+    id, name, category, latitude, longitude, isFavourite,
+    liveOffers: [{ id, title, headline, endsAt | null }],   // live at this moment only
+    loyalty: { tierName, discountPercent } | null
+  }],
+  withoutCoordinates: [{ id, name, category, liveOfferCount }]
+}
+```
+
+"Live right now" uses the same `isOfferLiveNow` rules as `/api/scan`, evaluated
+against the request time, so an off-peak offer that starts at five does not appear
+at three. Outlets with no live offer are still returned, drawn quietly, because a
+resident wanting to know where the scheme is accepted is a fair question too.
+
+`GET /api/merchant/settings` and its update accept the two fields; the admin
+merchant update does too.
+
+### Client
+
+A third view on the Offers tab, beside Offers and Outlets:
+`?tab=offers&view=map`. Leaflet with a configurable tile source
+(`VITE_MAP_TILE_URL`, `VITE_MAP_TILE_ATTRIBUTION`). Category filter chips reuse
+`CATEGORY_LABELS`. A pin carries the outlet's category; favourites are marked.
+Tapping a pin opens a card with the outlet name, what is on now and a link to
+`/outlets/:id`.
+
+Outlets without coordinates are listed under the map so they are never invisible,
+with a line saying they have not been placed yet.
+
+The map is an alternative route to an offer, never the only one. Every offer must
+stay reachable from the list view for anyone on a slow connection, with tiles
+blocked, or using a screen reader.
+
+**Tiles cost money at scale and this is a decision for the owner.** The default is
+OpenStreetMap's public tiles, which are fine for development but whose usage policy
+is not intended for a commercial product. Before launch a provider with a key
+(MapTiler and Mapbox both have free tiers around 100k loads a month) should be set
+through the two environment variables. The map must degrade to the list view, with
+a short note, when no tile source is configured or tiles fail to load.

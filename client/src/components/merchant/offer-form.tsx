@@ -26,6 +26,8 @@ function toFormValues(offer?: Offer | null): OfferFormValues {
     percentOff: str(offer?.percentOff),
     fixedPrice: str(offer?.fixedPrice),
     originalValue: str(offer?.originalValue),
+    typicalSpend: str(offer?.typicalSpend),
+    itemValue: str(offer?.itemValue),
     category: offer?.category ?? "",
     tags: offer?.tags ?? [],
     daysOfWeek: offer?.daysOfWeek ?? [],

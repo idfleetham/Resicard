@@ -12,15 +12,18 @@ import { InstallPrompt } from "@/components/resident/install-prompt";
 import { useMembership } from "@/components/resident/use-membership";
 import ScanButton from "@/components/resident/scan-button";
 import OffersTab from "@/components/resident/offers-tab";
+import CardsTab from "@/components/resident/cards-tab";
 import ActivityTab from "@/components/resident/activity-tab";
 
-const TABS = ["card", "offers", "activity"] as const;
+const TABS = ["resicard", "offers", "cards", "activity"] as const;
 type Tab = (typeof TABS)[number];
 
-const TAB_LABELS: Record<Tab, string> = { card: "Card", offers: "Offers", activity: "Activity" };
+// "Resicard" is the membership card, "Cards" the outlets' loyalty cards; one
+// word doing both jobs was the confusing part.
+const TAB_LABELS: Record<Tab, string> = { resicard: "Resicard", offers: "Offers", cards: "Cards", activity: "Activity" };
 
-/** Older links use ?tab=history; it opens the Activity tab. */
-const TAB_ALIASES: Record<string, Tab> = { history: "activity" };
+/** Older links use ?tab=history and ?tab=card; both still open the right tab. */
+const TAB_ALIASES: Record<string, Tab> = { history: "activity", card: "resicard" };
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
@@ -44,7 +47,7 @@ export default function ResidentDashboard() {
 
   const params = new URLSearchParams(search);
   const requestedTab = resolveTab(params.get("tab"));
-  const [tab, setTab] = useState<Tab>(requestedTab ?? "card");
+  const [tab, setTab] = useState<Tab>(requestedTab ?? "resicard");
   const autoScan = params.get("scan") === "1";
   const checkout = params.get("checkout");
 
@@ -80,7 +83,7 @@ export default function ResidentDashboard() {
   const changeTab = (value: string) => {
     if (!isTab(value)) return;
     setTab(value);
-    setLocation(value === "card" ? "/resident" : `/resident?tab=${value}`, { replace: true });
+    setLocation(value === "resicard" ? "/resident" : `/resident?tab=${value}`, { replace: true });
   };
 
   return (
@@ -92,15 +95,15 @@ export default function ResidentDashboard() {
         </h1>
 
         <Tabs value={tab} onValueChange={changeTab}>
-          <TabsList className="grid grid-cols-3 w-full sm:w-auto sm:inline-grid h-12 p-1 mb-5 rounded-full bg-white">
+          <TabsList className="grid grid-cols-4 w-full sm:w-auto sm:inline-grid h-12 p-1 mb-5 rounded-full bg-white">
             {TABS.map((t) => (
-              <TabsTrigger key={t} value={t} className={`${TAB_TRIGGER} sm:px-7`}>
+              <TabsTrigger key={t} value={t} className={`${TAB_TRIGGER} sm:px-6`}>
                 {TAB_LABELS[t]}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <TabsContent value="card" className="mt-0">
+          <TabsContent value="resicard" className="mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="flex flex-col gap-3">
                 <DigitalMembershipCard user={user} membership={membership.data ?? null} />
@@ -119,6 +122,10 @@ export default function ResidentDashboard() {
 
           <TabsContent value="offers" className="mt-0">
             <OffersTab />
+          </TabsContent>
+
+          <TabsContent value="cards" className="mt-0">
+            <CardsTab />
           </TabsContent>
 
           <TabsContent value="activity" className="mt-0">

@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { uploadMerchantFile } from "@/hooks/use-merchant-offers";
 import { categoryLabel, errorMessage } from "@/components/resident/format";
 import { BusinessHoursEditor, parseBusinessHours, serialiseBusinessHours, type BusinessHours } from "./business-hours-editor";
+import { LocationPicker } from "./location-picker";
 import { INPUT, SectionTitle } from "./portal-ui";
 
 const LABEL = "text-xs text-slate-brand";
@@ -33,6 +34,8 @@ interface FormState {
   email: string;
   reservationProvider: string;
   reservationUrl: string;
+  latitude: string;
+  longitude: string;
   hours: BusinessHours;
 }
 
@@ -45,6 +48,8 @@ function fromMerchant(m: Merchant): FormState {
     email: m.email ?? "",
     reservationProvider: m.reservationProvider ?? "none",
     reservationUrl: m.reservationUrl ?? "",
+    latitude: m.latitude ?? "",
+    longitude: m.longitude ?? "",
     hours: parseBusinessHours(m.businessHours),
   };
 }
@@ -72,6 +77,8 @@ export default function MerchantSettings() {
           email: f.email || null,
           reservationProvider: f.reservationProvider === "none" ? null : f.reservationProvider,
           reservationUrl: f.reservationProvider === "none" ? "" : f.reservationUrl,
+          latitude: f.latitude.trim() === "" ? null : f.latitude,
+          longitude: f.longitude.trim() === "" ? null : f.longitude,
           businessHours: serialiseBusinessHours(f.hours),
         })
       ).json() as Promise<Merchant>,
@@ -145,6 +152,17 @@ export default function MerchantSettings() {
         {form.reservationProvider !== "none" && (
           <div className="space-y-1"><Label htmlFor="rurl" className={LABEL}>Booking link</Label><Input id="rurl" type="url" placeholder="https://" className={INPUT} value={form.reservationUrl} onChange={text("reservationUrl")} /></div>
         )}
+      </div>
+
+      <div className="bg-white rounded-2xl p-5 space-y-4">
+        <SectionTitle>Where you are</SectionTitle>
+        <p className="text-xs text-[#0F3B47]/70">
+          Your pin on the residents' map. Leave it off and you are still listed, just under the map rather than on it.
+        </p>
+        <LocationPicker
+          value={{ latitude: form.latitude, longitude: form.longitude }}
+          onChange={(next) => setForm({ ...form, ...next })}
+        />
       </div>
 
       <div className="bg-white rounded-2xl p-5 space-y-4">

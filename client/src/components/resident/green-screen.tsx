@@ -32,6 +32,8 @@ export interface GreenScreenProps {
   loyalty: GreenScreenLoyalty | null;
   /** Optional line under the person card, e.g. "+12 points at The Criterion". */
   pointsLine?: string | null;
+  /** Optional quiet line stating what this redemption saved. */
+  savedLine?: string | null;
 }
 
 export const GREEN_SCREEN_EXPIRY_MS = 10 * 60 * 1000;
@@ -54,7 +56,7 @@ function tierLine(loyalty: GreenScreenLoyalty): string {
  * redemption or a reward claim. Turns grey after ten minutes.
  */
 export function GreenScreen(props: GreenScreenProps) {
-  const { kind, headlineLines, title, subtitle, terms, merchant, resident, code, at, loyalty, pointsLine } = props;
+  const { kind, headlineLines, title, subtitle, terms, merchant, resident, code, at, loyalty, pointsLine, savedLine } = props;
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -125,6 +127,8 @@ export function GreenScreen(props: GreenScreenProps) {
             <p className="font-display font-extrabold text-[22px] leading-none tracking-[0.08em]">{code}</p>
           </div>
         </div>
+
+        {savedLine && <p className="mt-3.5 text-sm font-semibold opacity-95">{savedLine}</p>}
 
         {loyalty?.tierName && (
           <div className="mt-3.5 text-sm opacity-95">

@@ -5,8 +5,8 @@ import { users, merchants, type Offer } from "@shared/schema";
 import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import * as userStore from "../storage/users";
-import * as redemptionStore from "../storage/redemptions";
 import { asyncHandler, notFound, badRequest } from "../lib/http";
+import { householdFeeGbp } from "../lib/membership";
 import { dataUrlToBuffer } from "../lib/uploads";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -61,18 +61,43 @@ publicRouter.get(
   }),
 );
 
+/**
+ * The public counter: residents with a current membership and approved outlets.
+ * Both figures are withheld together until each clears `publicCounterMinimum`,
+ * because "34 residents and 6 outlets" is an argument against joining and the
+ * client cannot be trusted to make that judgement for us.
+ */
 publicRouter.get(
   "/api/stats",
   asyncHandler(async (_req, res) => {
-    const [activeOffers, merchantCount, redemptions, members] = await Promise.all([
-      offerStore.countPublicActiveOffers(),
-      merchantStore.countMerchantsWhere(eq(merchants.status, "approved")),
-      redemptionStore.countRedemptionsWhere(undefined),
+    const [residents, merchantCount] = await Promise.all([
       userStore.countUsersWhere(and(eq(users.role, "resident"), eq(users.membershipStatus, "active"))),
+      merchantStore.countMerchantsWhere(eq(merchants.status, "approved")),
     ]);
-    res.json({ activeOffers, merchants: merchantCount, redemptions, members, townName: config.townName });
+    const visible = residents >= config.publicCounterMinimum && merchantCount >= config.publicCounterMinimum;
+    res.json({ town: config.townName, residents, merchants: merchantCount, visible });
   }),
 );
+
+/** Everything the public pricing page needs, so no fee is ever hardcoded in the client. */
+publicRouter.get("/api/pricing", (_req, res) => {
+  res.json({
+    townName: config.townName,
+    currency: "GBP",
+    freeTrialDays: config.freeTrialDays,
+    resident: {
+      individual: config.residentAnnualFeeGbp,
+      household: householdFeeGbp(config.residentAnnualFeeGbp),
+    },
+    merchant: {
+      freeLiveOfferLimit: config.freePlanLiveOfferLimit,
+      standardMonthly: config.merchantStandardMonthlyFeeGbp,
+      insightMonthly: config.merchantInsightMonthlyFeeGbp,
+      // Kept for one release for clients still asking for the old single price.
+      premiumMonthly: config.merchantStandardMonthlyFeeGbp,
+    },
+  });
+});
 
 publicRouter.get("/api/placeholder/:w/:h", (req, res) => {
   const w = Math.min(Math.max(Number(req.params.w) || 300, 1), 2000);

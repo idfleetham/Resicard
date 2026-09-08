@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction, RequestHandler } from "express";
-import type { UserRole, User, PublicUser } from "@shared/schema";
+import type { UserRole, User, PublicUser, SelfUser } from "@shared/schema";
 import { config } from "../config";
 
 export interface AuthUser {
@@ -90,7 +90,18 @@ export function currentMerchantId(req: Request): string {
   return user.merchantId;
 }
 
+/**
+ * A user as returned to anyone but themselves. Demographics are aggregate-only,
+ * so they are stripped here rather than at each call site: the default shape has
+ * to be the safe one.
+ */
 export function toPublicUser(user: User): PublicUser {
+  const { password: _password, ageBand: _ageBand, sex: _sex, ...rest } = user;
+  return rest;
+}
+
+/** A user as returned to that same user, who may of course see what they entered. */
+export function toSelfUser(user: User): SelfUser {
   const { password: _password, ...rest } = user;
   return rest;
 }

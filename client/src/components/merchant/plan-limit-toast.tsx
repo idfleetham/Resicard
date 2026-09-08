@@ -1,10 +1,10 @@
 import { ToastAction } from "@/components/ui/toast";
 
-/** The "Upgrade" action for a Free-plan limit toast. */
+/** The action on a Free-plan limit toast: it opens the plan tab. */
 export function upgradeToastAction(onClick: () => void) {
   return (
-    <ToastAction altText="Upgrade to Premium" onClick={onClick}>
-      Upgrade
+    <ToastAction altText="See the plans" onClick={onClick}>
+      See plans
     </ToastAction>
   );
 }

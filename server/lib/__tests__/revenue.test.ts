@@ -15,7 +15,7 @@ import {
   type ResidentLike,
 } from "../revenue";
 
-const fees = { individual: 25, household: 50, merchantPremiumMonthly: 30 };
+const fees = { individual: 25, household: 50, merchantStandardMonthly: 30, merchantInsightMonthly: 75 };
 const now = new Date("2026-09-07T12:00:00Z");
 
 function event(partial: Partial<SubscriptionEvent>): SubscriptionEvent {
@@ -40,7 +40,7 @@ function resident(partial: Partial<ResidentLike>): ResidentLike {
 }
 
 function merchant(partial: Partial<MerchantLike>): MerchantLike {
-  return { id: "m1", name: "Shop", status: "approved", planStatus: "premium", planStartedAt: new Date("2026-01-31T10:00:00Z"), planRenewsAt: null, ...partial };
+  return { id: "m1", name: "Shop", status: "approved", planStatus: "standard", planStartedAt: new Date("2026-01-31T10:00:00Z"), planRenewsAt: null, ...partial };
 }
 
 describe("month keys", () => {
@@ -133,11 +133,37 @@ describe("merchant renewals", () => {
     const renews = new Date("2026-09-20T00:00:00Z");
     const list = buildNext30Days([], [merchant({ planRenewsAt: renews })], fees, now);
     expect(list).toHaveLength(1);
-    expect(list[0]).toMatchObject({ kind: "merchant_premium", plan: "premium", amount: 30, expiresAt: renews.toISOString() });
+    expect(list[0]).toMatchObject({ kind: "merchant_premium", plan: "standard", amount: 30, expiresAt: renews.toISOString() });
+  });
+
+  it("values each renewal at its own tier, and reads a legacy premium row as Standard", () => {
+    const renews = new Date("2026-09-20T00:00:00Z");
+    const rows = [
+      merchant({ id: "m1", planStatus: "standard", planRenewsAt: renews }),
+      merchant({ id: "m2", planStatus: "insight", planRenewsAt: renews }),
+      merchant({ id: "m3", planStatus: "premium", planRenewsAt: renews }),
+    ];
+    expect(buildMerchantCliffs(rows, fees, now).find((c) => c.month === "2026-09")).toMatchObject({ count: 3, amount: 135 });
+    const list = buildNext30Days([], rows, fees, now);
+    expect(list.map((r) => [r.plan, r.amount])).toEqual([["standard", 30], ["insight", 75], ["standard", 30]]);
   });
 
   it("ignores free merchants", () => {
     expect(buildMerchantCliffs([merchant({ planStatus: "free" })], fees, now).every((c) => c.count === 0)).toBe(true);
+    expect(buildMerchantCliffs([merchant({ planStatus: null })], fees, now).every((c) => c.count === 0)).toBe(true);
+  });
+
+  it("counts each tier and adds the right fee to the run rate", () => {
+    const rows = [
+      merchant({ id: "m1", planStatus: "standard" }),
+      merchant({ id: "m2", planStatus: "insight" }),
+      merchant({ id: "m3", planStatus: "premium" }),
+      merchant({ id: "m4", planStatus: "free" }),
+    ];
+    const current = buildNow([], rows, fees, now);
+    expect(current.merchants).toEqual({ paying: 3, standard: 2, insight: 1, free: 1, approved: 4 });
+    expect(current.runRate.monthly).toBe(135);
+    expect(current.runRate.annual).toBe(1620);
   });
 });
 
