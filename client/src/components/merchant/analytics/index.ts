@@ -5,4 +5,4 @@
  */
 export { default as AnalyticsDashboard } from "./dashboard";
 export { EXAMPLE_ANALYTICS, EXAMPLE_OUTLET_NAME } from "./example-data";
-export type { AnalyticsData, AnalyticsHeadline, DayKey, DemographicsData, LoyaltyBlockData, TownBlockData } from "./types";
+export type { AnalyticsData, AnalyticsHeadline, DayKey, LoyaltyBlockData, TownBlockData } from "./types";

@@ -1,8 +1,8 @@
 import { apiRequest } from "./queryClient";
-import type { Merchant, SelfUser } from "@shared/schema";
+import type { Merchant, PublicUser } from "@shared/schema";
 
-/** The signed-in user's own record, so it carries their own demographics. */
-export type AuthUser = SelfUser & { merchant?: Merchant | null };
+/** The signed-in user's record, plus the merchant it is linked to for merchants. */
+export type AuthUser = PublicUser & { merchant?: Merchant | null };
 
 export interface AuthResponse {
   user: AuthUser;

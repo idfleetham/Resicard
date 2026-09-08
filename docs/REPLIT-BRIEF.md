@@ -6,7 +6,7 @@ Paste this whole document to the agent before it touches anything.
 
 ## What this is
 
-`resicard-v17.zip` is the current Resicard codebase. It is **not** an increment on
+`resicard-v20.zip` is the current Resicard codebase. It is **not** an increment on
 what is in the Replit project today. The application was rebuilt from scratch and
 this zip replaces the working tree entirely.
 
@@ -36,6 +36,11 @@ yours to do, and it is now handled here rather than by you:
   do not remove the `overrides` block; it exists so this stops being your job.
 - **Migrations now ship with the code.** See the install steps below. You should
   not have to write DDL by hand again.
+- **A demo dataset ships too.** `npm run seed:demo -- --yes` fills a development
+  database with 24 invented outlets at real St Andrews addresses, 60 residents and
+  six months of realistic trade. It refuses to run in production, refuses without
+  `--yes`, and refuses over any user whose email is not a `.test` address. Never
+  run it against a database with real members.
 
 Deliberately **not** done: vite and vitest are held at their current majors. They
 are build tooling and never run in production, so their advisories do not reach
@@ -121,7 +126,7 @@ Do not "fix" any of these.
 - **Merchants never see a resident's name.** They see an alias from
   `generateCustomerAlias`. This is a hard rule, not a placeholder.
 - **Analytics suppress anything below `ANALYTICS_MIN_COHORT` (5).** Town benchmarks
-  and demographic bands disappear below that. That is the point.
+  disappear below that. That is the point.
 - **`savedAmount` is frozen onto the redemption row at redemption time** rather
   than computed on read, so a merchant editing an offer later cannot rewrite
   anyone's savings history.
@@ -155,7 +160,24 @@ STRIPE_WEBHOOK_SECRET=      # webhook must send invoice.paid,
                             # customer.subscription.deleted
 VITE_MAP_TILE_URL=          # Ordnance Survey, see below
 VITE_MAP_TILE_ATTRIBUTION=
+RESEND_API_KEY=             # email; without it messages print to the log
+EMAIL_FROM=                 # e.g. Resicard <hello@resicard.co.uk>
+EMAIL_REPLY_TO=
+JOBS_SECRET=                # bearer token for POST /api/jobs/daily
+VAPID_PUBLIC_KEY=           # web push; without these, campaigns email only
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=              # mailto:hello@resicard.co.uk
 ```
+
+**The VAPID keys must never be rotated after launch.** New keys silently
+invalidate every push subscription residents have already granted, and there is
+no way to ask for permission again without them noticing. Generate them once,
+store them, and treat them like the JWT secret.
+
+**`npm run jobs:daily` needs to run once a day** for renewal reminders to go out.
+Either schedule the script, or have a scheduled deployment call
+`POST /api/jobs/daily` with the `JOBS_SECRET` as a bearer token. It is idempotent,
+so running it more often is harmless and missing a day loses nothing.
 
 Ordnance Survey OS Maps API is the chosen tile provider:
 
@@ -213,7 +235,7 @@ purpose.
 A resident can ask to be deleted and there is a one-month deadline. Deleting the
 row will fail, because redemptions reference it, and cascading would silently
 rewrite merchants' historic figures. Write a function that clears name, email,
-address, photo, demographics and Stripe ids, marks the row anonymised, and leaves
+address, photo and Stripe ids, marks the row anonymised, and leaves
 the redemptions attached to a subject who is no longer a person. Add an admin
 action that calls it.
 

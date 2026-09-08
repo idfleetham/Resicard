@@ -6,14 +6,12 @@ import * as loyaltyStore from "../storage/loyalty";
 import { authenticate, requireRole, currentMerchantId } from "../lib/auth";
 import { asyncHandler, notFound, HttpError } from "../lib/http";
 import { ANALYTICS_PLAN_REQUIRED_MESSAGE, hasAnalytics } from "../lib/plan";
-import { AGE_BANDS, SEX_OPTIONS } from "@shared/schema";
 import {
   buildBusiestDays,
   buildByDay,
   buildByHour,
   buildByOffer,
   buildByWeek,
-  buildDemographics,
   buildHeadline,
   buildMemberGrowth,
   firstSeenByUser,
@@ -27,11 +25,6 @@ import {
  * whenever fewer than `config.analyticsMinCohort` approved outlets share the
  * category, because a median across three outlets identifies them; nothing in it
  * ever names another outlet, and nothing anywhere names a resident.
- *
- * The `demographics` block is the same idea applied to people: it is the only
- * place a resident's age band or sex is ever reported, it is withheld entirely
- * below `config.analyticsMinCohort` residents, and any single band that thin is
- * folded into "not shown".
  */
 
 export const merchantAnalyticsRouter = Router();
@@ -70,13 +63,12 @@ merchantAnalyticsRouter.get(
     const from = new Date(to.getTime() - WINDOW_DAYS * DAY_MS);
     const previousFrom = new Date(from.getTime() - WINDOW_DAYS * DAY_MS);
 
-    const [allRows, firstSeen, offers, favourites, program, residents] = await Promise.all([
+    const [allRows, firstSeen, offers, favourites, program] = await Promise.all([
       analyticsStore.listRedemptionsInWindow(merchantId, previousFrom, to),
       analyticsStore.firstRedemptionByUser(merchantId),
       analyticsStore.listOffersForMerchant(merchantId),
       analyticsStore.countFavourites(merchantId),
       loyaltyStore.getProgramByMerchant(merchantId),
-      analyticsStore.residentDemographicsInWindow(merchantId, from, to),
     ]);
 
     const rows = inWindow(allRows, from, to);
@@ -109,7 +101,6 @@ merchantAnalyticsRouter.get(
       byHour: buildByHour(rows),
       byOffer: buildByOffer(rows, offers),
       loyalty,
-      demographics: buildDemographics(residents, AGE_BANDS, SEX_OPTIONS, config.analyticsMinCohort),
       town,
     });
   }),

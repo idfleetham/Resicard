@@ -53,6 +53,13 @@ npm test                  # unit tests for the offer rules
 
 Create the first admin with `npm run admin:create -- <username> <email> <password>`.
 
+For a populated town to demo or develop against, run `npm run seed:demo -- --yes`. It creates
+24 invented outlets at real St Andrews addresses, 60 invented residents and six months of
+redemption history. Every login is on the reserved `.test` domain and the password is
+`demo1234`. It never runs in production, and refuses a database holding any non-`.test`
+account unless `--force` is given. The header of `server/scripts/seed-demo.ts` is the
+documentation; the town itself lives in `server/scripts/demo-data.ts`.
+
 ## Environment variables
 
 | Name | Purpose | Default |

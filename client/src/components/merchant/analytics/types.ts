@@ -28,16 +28,6 @@ export interface LoyaltyBlockData {
   tiers: TierPoint[];
 }
 
-/**
- * Aggregate demographics of the residents who redeemed in the window. Null when
- * there were too few of them; a "not shown" row stands for every band too thin to
- * report on its own, so no figure here can be traced back to a person.
- */
-export interface DemographicsData {
-  ageBands: { band: string; share: number }[];
-  sex: { value: string; share: number }[];
-}
-
 export interface TownBlockData {
   categoryLabel: string;
   outletsInCategory: number;
@@ -55,7 +45,6 @@ export interface AnalyticsData {
   byHour: HourPoint[];
   byOffer: OfferPoint[];
   loyalty: LoyaltyBlockData | null;
-  demographics: DemographicsData | null;
   town: TownBlockData | null;
 }
 
@@ -72,18 +61,6 @@ export const AXIS_TICK = { fontSize: 12, fill: SLATE } as const;
 
 export const DAY_LABELS: Record<DayKey, string> = {
   mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
-};
-
-/** The server's stand-in for every group too small to report, and how it reads on screen. */
-export const NOT_SHOWN = "not shown";
-export const NOT_SHOWN_LABEL = "Not shown";
-
-/** The label for a stored demographic value. */
-export const SEX_LABELS: Record<string, string> = {
-  female: "Female",
-  male: "Male",
-  other: "Other",
-  prefer_not_to_say: "Prefer not to say",
 };
 
 export function percent(share: number): string {

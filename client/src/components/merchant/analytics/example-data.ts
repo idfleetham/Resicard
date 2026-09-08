@@ -11,8 +11,7 @@
  * The numbers are shaped like a steady small-town pub over 90 days: 428
  * redemptions from 165 residents, a Thursday and Sunday skew, an evening peak
  * between 6 and 8pm, and a three-tier loyalty programme. Every total is internally
- * consistent — byWeek, byDay, byHour and byOffer each sum to the headline 428, and
- * each demographic block sums to 1 across the residents who answered it.
+ * consistent — byWeek, byDay, byHour and byOffer each sum to the headline 428.
  */
 
 import type { AnalyticsData } from "./types";
@@ -99,26 +98,6 @@ export const EXAMPLE_ANALYTICS: AnalyticsData = {
       { name: "Harbour", color: "#0F3B47", members: 96 },
       { name: "Skipper", color: "#5C6F75", members: 38 },
       { name: "Lighthouse", color: "#E4572E", members: 14 },
-    ],
-  },
-
-  // 165 residents redeemed; 128 gave an age band and 121 gave a sex. The 18-24
-  // band and "other" are shown folded away, so the example shows what suppression
-  // looks like rather than pretending everyone can be reported.
-  demographics: {
-    ageBands: [
-      { band: "25-34", share: 0.234 },
-      { band: "35-44", share: 0.281 },
-      { band: "45-54", share: 0.211 },
-      { band: "55-64", share: 0.156 },
-      { band: "65+", share: 0.086 },
-      { band: "not shown", share: 0.032 },
-    ],
-    sex: [
-      { value: "female", share: 0.512 },
-      { value: "male", share: 0.421 },
-      { value: "prefer_not_to_say", share: 0.041 },
-      { value: "not shown", share: 0.026 },
     ],
   },
 

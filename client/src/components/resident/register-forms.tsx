@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PhotoPicker from "@/components/resident/photo-picker";
-import DemographicFields from "@/components/resident/demographic-fields";
 import { categoryLabel } from "@/components/resident/format";
 
 type ResidentValues = z.infer<typeof registerResidentSchema>;
@@ -71,13 +70,13 @@ interface FormProps<T> {
   onSubmit: (values: T) => Promise<void>;
 }
 
-export function ResidentRegisterForm({ onSubmit }: FormProps<ResidentValues>) {
+export function ResidentRegisterForm({ onSubmit, referralCode }: FormProps<ResidentValues> & { referralCode?: string }) {
   const form = useForm<ResidentValues>({
     resolver: zodResolver(registerResidentSchema),
     defaultValues: {
       role: "resident", firstName: "", surname: "", email: "", password: "",
       addressLine1: "", addressLine2: "", town: "St Andrews", postcode: "", profilePhoto: undefined,
-      ageBand: null, sex: null,
+      referralCode: referralCode ?? "",
     },
   });
 
@@ -105,18 +104,32 @@ export function ResidentRegisterForm({ onSubmit }: FormProps<ResidentValues>) {
             <TextField control={form.control} name="postcode" label="Postcode" autoComplete="postal-code" placeholder="e.g. KY16 9AA" />
           </div>
         </div>
-        <DemographicFields
-          control={form.control}
-          ageBandName="ageBand"
-          sexName="sex"
-          intro="Outlets see these only as anonymous totals, never against your name, so they can tell which offers suit which age group. You can leave both blank and join now."
-        />
         <FormField
           control={form.control}
           name="profilePhoto"
           render={({ field }) => (
             <FormItem>
               <PhotoPicker value={field.value} onChange={field.onChange} label="Profile photo (optional)" />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="referralCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Referral code (optional)</FormLabel>
+              <FormControl>
+                <Input
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  placeholder="From a member who told you about Resicard"
+                  className="h-12 rounded-xl text-base uppercase"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

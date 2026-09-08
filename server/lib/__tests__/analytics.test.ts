@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AGE_BANDS, SEX_OPTIONS } from "@shared/schema";
 import {
   buildBusiestDays,
-  buildDemographics,
-  NOT_SHOWN,
   buildByDay,
   buildByHour,
   buildByOffer,
@@ -232,95 +229,5 @@ describe("town shaping", () => {
   it("ignores months outside the 12", () => {
     const growth = buildMemberGrowth([{ month: "2024-01", members: 5 }], at("2026-09-08T12:00:00Z"));
     expect(growth.every((g) => g.members === 0)).toBe(true);
-  });
-});
-
-describe("buildDemographics", () => {
-  const MIN = 5;
-
-  /** `count` residents in one age band, with ids that never clash between calls. */
-  function cohort(band: string | null, count: number, startId: number, sex: string | null = null) {
-    return Array.from({ length: count }, (_, i) => ({ userId: startId + i, ageBand: band, sex }));
-  }
-
-  const build = (residents: { userId: number; ageBand: string | null; sex: string | null }[], min = MIN) =>
-    buildDemographics(residents, AGE_BANDS, SEX_OPTIONS, min);
-
-  it("is null when fewer residents than the minimum redeemed at all", () => {
-    expect(build(cohort("25-34", 4, 1))).toBeNull();
-  });
-
-  it("reports at exactly the minimum, and withholds one below it", () => {
-    // The boundary is the whole point: minCohort residents is enough, one fewer is not.
-    expect(build(cohort("25-34", MIN, 1))).not.toBeNull();
-    expect(build(cohort("25-34", MIN - 1, 1))).toBeNull();
-  });
-
-  it("folds every band thinner than the minimum into one 'not shown' row", () => {
-    const residents = [
-      ...cohort("25-34", 6, 1),
-      ...cohort("35-44", 5, 100),
-      ...cohort("65+", 2, 200), // two people: reporting this band would name them
-      ...cohort("18-24", 1, 300),
-    ];
-    const result = build(residents);
-    expect(result?.ageBands.map((b) => b.band)).toEqual(["25-34", "35-44", NOT_SHOWN]);
-    // 3 of 14 answers are withheld, and no band under the minimum appears at all.
-    expect(result?.ageBands.find((b) => b.band === NOT_SHOWN)?.share).toBe(0.214);
-    expect(result?.ageBands.some((b) => b.band === "65+" || b.band === "18-24")).toBe(false);
-  });
-
-  it("shows a band of exactly the minimum but not one of the minimum less one", () => {
-    const result = build([...cohort("25-34", 20, 1), ...cohort("45-54", MIN, 100), ...cohort("55-64", MIN - 1, 200)]);
-    expect(result?.ageBands.map((b) => b.band)).toEqual(["25-34", "45-54", NOT_SHOWN]);
-  });
-
-  it("withholds every band when nobody's answer is common enough", () => {
-    const result = build([...cohort("25-34", 4, 1), ...cohort("35-44", 4, 100), ...cohort("55-64", 4, 200)]);
-    expect(result?.ageBands).toEqual([{ band: NOT_SHOWN, share: 1 }]);
-  });
-
-  it("counts a resident once however many times they redeemed", () => {
-    const repeated = [
-      ...cohort("25-34", 5, 1),
-      { userId: 1, ageBand: "25-34", sex: null },
-      { userId: 2, ageBand: "25-34", sex: null },
-    ];
-    expect(build(repeated)?.ageBands).toEqual([{ band: "25-34", share: 1 }]);
-    // The same five people repeating themselves cannot lift a four-person cohort over the line.
-    expect(build([...cohort("25-34", 4, 1), { userId: 1, ageBand: "25-34", sex: null }])).toBeNull();
-  });
-
-  it("takes shares of the residents who answered, ignoring those who did not", () => {
-    const residents = [...cohort("25-34", 6, 1), ...cohort(null, 10, 100)];
-    const result = build(residents);
-    expect(result?.ageBands).toEqual([{ band: "25-34", share: 1 }]);
-    expect(result?.sex).toEqual([]);
-  });
-
-  it("reports 'prefer not to say' as an answer in its own right", () => {
-    const residents = [
-      ...cohort(null, 6, 1, "prefer_not_to_say"),
-      ...cohort(null, 6, 100, "female"),
-    ];
-    expect(build(residents)?.sex).toEqual([
-      { value: "female", share: 0.5 },
-      { value: "prefer_not_to_say", share: 0.5 },
-    ]);
-  });
-
-  it("orders bands as the value sets are declared, with 'not shown' last", () => {
-    const residents = [
-      ...cohort("65+", 5, 1),
-      ...cohort("18-24", 5, 100),
-      ...cohort("45-54", 5, 200),
-      ...cohort("35-44", 2, 300),
-    ];
-    expect(build(residents)?.ageBands.map((b) => b.band)).toEqual(["18-24", "45-54", "65+", NOT_SHOWN]);
-  });
-
-  it("ignores a value that is not in the declared set", () => {
-    const residents = [...cohort("25-34", 6, 1), ...cohort("ancient", 6, 100)];
-    expect(build(residents)?.ageBands).toEqual([{ band: "25-34", share: 1 }]);
   });
 });

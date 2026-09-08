@@ -18,6 +18,7 @@ import {
   type LedgerSource,
 } from "./ledger";
 import { addDays, renewalFromInvoice, trialDaysFrom } from "./trial";
+import { creditReferralOnFirstPayment } from "./referral-service";
 
 // Stripe is optional. Without STRIPE_SECRET_KEY the checkout routes activate the
 // membership or plan directly (development mode) instead of returning a Checkout URL.
@@ -393,8 +394,17 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
   if (renewal.kind === "membership" && renewal.userId !== null) {
     const user = await userStore.getUserById(renewal.userId);
     if (user) {
+      // This is the payment a referral waits for. Crediting claims the pending row
+      // in one statement, so a webhook Stripe sends twice pays out once; the month
+      // owed to the referred member comes back as a number and is folded into the
+      // expiry, which keeps the expiry a function of the invoice rather than of how
+      // many times it arrived.
+      // Two days of slack so a clock difference between here and Stripe cannot put
+      // the moment of crediting a fraction before the period it belongs to.
+      const periodStart = addDays(addMonths(renewal.periodEnd, -12), -2);
+      const credit = await creditReferralOnFirstPayment(user.id, periodStart);
       await activateMembership(user, renewal.plan === "household" ? "household" : "individual", ids, "stripe", {
-        periodEnd: renewal.periodEnd,
+        periodEnd: credit.referredMonths > 0 ? addMonths(renewal.periodEnd, credit.referredMonths) : renewal.periodEnd,
         amountGbp: renewal.amountGbp,
       });
     }

@@ -4,6 +4,7 @@ import fs from "fs";
 import { config } from "./config";
 import { registerRoutes } from "./routes";
 import { registerStripeWebhook } from "./lib/stripe";
+import { startCampaignDispatcher } from "./lib/campaign-dispatch";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -37,6 +38,10 @@ interface ErrorLike {
 
 (async () => {
   const server = registerRoutes(app);
+
+  // Campaigns composed outside 08:00-20:00 Europe/London are queued, so
+  // something has to be awake to send them when the window opens.
+  startCampaignDispatcher();
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     const e = (err ?? {}) as ErrorLike;

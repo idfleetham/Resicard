@@ -50,6 +50,21 @@ export const config = {
   // top of Market Street, which puts almost every outlet in the town on screen.
   mapCentreLat: readNumber("MAP_CENTRE_LAT", 56.339),
   mapCentreLng: readNumber("MAP_CENTRE_LNG", -2.795),
+  // Web push. Without a key pair the feature is simply off: no subscription is
+  // accepted and the composer says so, rather than a merchant sending into a void.
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? "",
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? "",
+  vapidSubject: process.env.VAPID_SUBJECT ?? "mailto:hello@resicard.co.uk",
+  // Email. Without RESEND_API_KEY nothing is sent and every message is printed
+  // to the server log instead, so a deployment with no keys still works.
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFrom: process.env.EMAIL_FROM ?? "Resicard <hello@resicard.co.uk>",
+  emailReplyTo: process.env.EMAIL_REPLY_TO ?? "hello@resicard.co.uk",
+  // A sender's postal identity has to be on the message, so it is configuration
+  // rather than a constant: whoever runs this instance is the sender.
+  emailPostalAddress: process.env.EMAIL_POSTAL_ADDRESS ?? "Resicard, St Andrews, Fife, Scotland",
+  // Bearer token for POST /api/jobs/daily. Empty means the route is closed.
+  jobsSecret: process.env.JOBS_SECRET ?? "",
   postcardCodeDays: readNumber("POSTCARD_CODE_DAYS", 60),
   postcardMaxAttempts: readNumber("POSTCARD_MAX_ATTEMPTS", 5),
   port: readNumber("PORT", 5000),

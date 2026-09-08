@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { homePathForRole } from "@/lib/auth";
 import AuthLayout from "@/components/resident/auth-layout";
 import PhotoPicker from "@/components/resident/photo-picker";
-import DemographicFields from "@/components/resident/demographic-fields";
+import NotificationPreferences from "@/components/resident/notification-preferences";
 import { errorMessage } from "@/components/resident/format";
 
 const schema = updateProfileSchema.extend({
@@ -43,7 +43,7 @@ export default function EditProfile() {
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { firstName: "", surname: "", profilePhoto: undefined, ageBand: null, sex: null },
+    defaultValues: { firstName: "", surname: "", profilePhoto: undefined },
   });
 
   useEffect(() => {
@@ -57,8 +57,6 @@ export default function EditProfile() {
       town: resident ? user.town ?? "St Andrews" : undefined,
       postcode: resident ? user.postcode ?? "" : undefined,
       profilePhoto: user.profilePhoto ?? undefined,
-      ageBand: resident ? user.ageBand ?? null : null,
-      sex: resident ? user.sex ?? null : null,
     });
   }, [user, form]);
 
@@ -70,9 +68,6 @@ export default function EditProfile() {
         if (values.addressLine1) body.addressLine1 = values.addressLine1;
         body.addressLine2 = values.addressLine2?.trim() ? values.addressLine2 : null;
         if (values.town) body.town = values.town;
-        // Sent even when null, so a resident can take an answer back.
-        body.ageBand = values.ageBand ?? null;
-        body.sex = values.sex ?? null;
       }
       const res = await apiRequest("PUT", "/api/profile", body);
       queryClient.setQueryData(["/api/auth/me"], { ...user, ...(await res.json()) });
@@ -150,14 +145,6 @@ export default function EditProfile() {
               <p className="text-xs text-slate-brand">Changing your address means verifying again.</p>
             </div>
           )}
-          {isResident && (
-            <DemographicFields
-              control={form.control}
-              ageBandName="ageBand"
-              sexName="sex"
-              intro="Outlets see these only as anonymous totals, never against your name. You can leave them blank or change them whenever you like."
-            />
-          )}
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="h-12 flex-1" onClick={() => setLocation(homePathForRole(user.role))}>
               Cancel
@@ -168,6 +155,12 @@ export default function EditProfile() {
           </div>
         </form>
       </Form>
+      {/* Consent lives with the profile because that is where people look for it. */}
+      {isResident && (
+        <div className="mt-3">
+          <NotificationPreferences />
+        </div>
+      )}
     </AuthLayout>
   );
 }

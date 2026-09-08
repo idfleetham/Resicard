@@ -10,6 +10,7 @@ import OffersManager from "@/components/merchant/offers-manager";
 import RedemptionsFeed from "@/components/merchant/redemptions-feed";
 import LoyaltyTab from "@/components/merchant/loyalty-tab";
 import AnalyticsTab from "@/components/merchant/analytics-tab";
+import CampaignsTab from "@/components/merchant/campaigns-tab";
 import QrCodeTab from "@/components/merchant/qr-code-tab";
 import TeamManagement from "@/components/merchant/team-management";
 import MerchantSettings from "@/components/merchant/merchant-settings";
@@ -21,6 +22,7 @@ const TABS = [
   { key: "offers", label: "Offers" },
   { key: "redemptions", label: "Redemptions" },
   { key: "loyalty", label: "Loyalty" },
+  { key: "send", label: "Send" },
   { key: "analytics", label: "Analytics" },
   { key: "qr", label: "QR code" },
   { key: "team", label: "Team" },
@@ -128,6 +130,7 @@ export default function MerchantPortal() {
           <TabsContent value="offers" className="mt-0"><OffersManager /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsFeed /></TabsContent>
           <TabsContent value="loyalty" className="mt-0"><LoyaltyTab /></TabsContent>
+          <TabsContent value="send" className="mt-0"><CampaignsTab /></TabsContent>
           <TabsContent value="analytics" className="mt-0"><AnalyticsTab /></TabsContent>
           <TabsContent value="qr" className="mt-0"><QrCodeTab merchantName={merchant?.name ?? "outlet"} /></TabsContent>
           <TabsContent value="team" className="mt-0"><TeamManagement /></TabsContent>

@@ -35,20 +35,6 @@ export async function listRedemptionsInWindow(merchantId: string, from: Date, to
     .where(and(eq(redemptions.merchantId, merchantId), gte(redemptions.redeemedAt, from), lt(redemptions.redeemedAt, to)));
 }
 
-/**
- * One row per resident who redeemed at this outlet in the window, with the optional
- * demographics they gave. Distinct by resident, so the aggregate counts people
- * rather than visits, and it is only ever read into the suppression logic in
- * server/lib/analytics.ts — never returned per resident.
- */
-export async function residentDemographicsInWindow(merchantId: string, from: Date, to: Date, client: DbClient = db) {
-  return client
-    .selectDistinct({ userId: users.id, ageBand: users.ageBand, sex: users.sex })
-    .from(redemptions)
-    .innerJoin(users, eq(users.id, redemptions.userId))
-    .where(and(eq(redemptions.merchantId, merchantId), gte(redemptions.redeemedAt, from), lt(redemptions.redeemedAt, to)));
-}
-
 /** Each resident's first ever redemption at this outlet, however long ago. */
 export async function firstRedemptionByUser(merchantId: string, client: DbClient = db): Promise<Map<number, Date>> {
   const rows = await client

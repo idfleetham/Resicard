@@ -12,8 +12,10 @@
     "test": "vitest run",
     "admin:create": "tsx server/scripts/create-admin.ts",
     "db:reset": "tsx server/scripts/reset-db.ts",
+    "seed:demo": "tsx server/scripts/seed-demo.ts",
     "ledger:backfill": "tsx server/scripts/ledger-backfill.ts",
     "db:migrate": "tsx server/scripts/migrate.ts",
+    "jobs:daily": "tsx server/scripts/jobs-daily.ts",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
@@ -52,6 +54,7 @@
     "@types/multer": "^2.0.0",
     "@types/pg": "^8.23.1",
     "@types/qrcode": "^1.5.5",
+    "@types/web-push": "^3.6.4",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -79,6 +82,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "web-push": "^3.6.7",
     "wouter": "^3.3.5",
     "zod": "^3.24.2"
   },

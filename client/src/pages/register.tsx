@@ -13,7 +13,10 @@ const TAB_TRIGGER =
 export default function Register() {
   const { register } = useAuth();
   const { toast } = useToast();
-  const role = new URLSearchParams(useSearch()).get("role");
+  const params = new URLSearchParams(useSearch());
+  const role = params.get("role");
+  // A shared referral link arrives as ?ref=CODE, so the code is already filled in.
+  const referralCode = params.get("ref") ?? undefined;
   const [tab, setTab] = useState(role === "merchant" ? "merchant" : "resident");
 
   const submit = async (values: Record<string, unknown>) => {
@@ -35,7 +38,7 @@ export default function Register() {
           <TabsTrigger value="merchant" className={TAB_TRIGGER}>Business</TabsTrigger>
         </TabsList>
         <TabsContent value="resident">
-          <ResidentRegisterForm onSubmit={submit} />
+          <ResidentRegisterForm onSubmit={submit} referralCode={referralCode} />
         </TabsContent>
         <TabsContent value="merchant">
           <MerchantRegisterForm onSubmit={submit} />

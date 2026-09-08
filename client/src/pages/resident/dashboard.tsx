@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import DigitalMembershipCard from "@/components/digital-membership-card";
 import VerificationPanel from "@/components/resident/verification-panel";
 import MembershipStatus from "@/components/resident/membership-status";
+import ReferralPanel from "@/components/resident/referral-panel";
 import { InstallPrompt } from "@/components/resident/install-prompt";
 import { useMembership } from "@/components/resident/use-membership";
 import ScanButton from "@/components/resident/scan-button";
@@ -115,6 +116,7 @@ export default function ResidentDashboard() {
               <div className="flex flex-col gap-3">
                 <VerificationPanel />
                 <MembershipStatus />
+                <ReferralPanel />
                 <InstallPrompt />
               </div>
             </div>

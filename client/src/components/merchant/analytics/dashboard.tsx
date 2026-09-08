@@ -3,7 +3,6 @@ import WeeklyChart from "./weekly-chart";
 import TimingCharts from "./timing-charts";
 import OfferPerformance from "./offer-performance";
 import LoyaltyBlock from "./loyalty-block";
-import DemographicsBlock from "./demographics-block";
 import TownBlock from "./town-block";
 import type { AnalyticsData } from "./types";
 
@@ -40,8 +39,6 @@ export default function AnalyticsDashboard({ data, example = false }: { data: An
           You have not set up a loyalty programme, so there is nothing to show here yet.
         </div>
       )}
-
-      {data.demographics && <DemographicsBlock demographics={data.demographics} />}
 
       {data.town && <TownBlock town={data.town} />}
     </div>

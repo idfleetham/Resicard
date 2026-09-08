@@ -675,31 +675,27 @@ person as surely as her name does. So residents no longer pick one.
 - Existing rows keep their usernames. A follow-up script can rotate them; that is
   a decision for the owner, not something to do automatically.
 
-### Optional demographics
+### Optional demographics: built, then removed (Sept 2026)
 
-For aggregate trends only — which offers work for which age group, whether the
-Tuesday cohort differs from the Saturday one. `users` gains two nullable columns:
+Two nullable columns on `users` — `age_band` (`18-24` … `65+`) and `sex` —
+were built here, offered as optional questions at registration and in the
+profile, and reported only as suppressed aggregates in the Insight analytics.
+They were removed before launch, along with the analytics block that read them.
+The reasons, recorded so the idea is not simply rediscovered:
 
-| Column | Values |
-|---|---|
-| `age_band` | `18-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65+` |
-| `sex` | `female`, `male`, `other`, `prefer_not_to_say` |
+- Self-reported age and sex at this scale are unreliable, and a figure a merchant
+  cannot trust is worse than no figure.
+- The cohort minimum (`ANALYTICS_MIN_COHORT`) meant most bands would have shown as
+  "not shown" until membership ran into the thousands, so the block would have been
+  mostly empty for years.
+- They were friction in a sign-up flow whose whole pitch is trust, and two extra
+  questions cost more sign-ups than the data was worth.
+- Holding them created a category of data protection obligation with no
+  corresponding benefit. Not collecting is cheaper than protecting.
 
-Rules, and they are not negotiable:
-
-- **Both are optional**, at registration and in the profile. Skipping them must
-  cost the resident nothing at all. A mandatory demographic question on a product
-  whose whole pitch is trust will lose sign-ups worth more than the data.
-- The registration step says plainly what they are for and that they are optional.
-- **Never exposed per resident.** No endpoint returns another user's age band or
-  sex, ever. Not to merchants, not in the redemption feed, not in the activity
-  feed, not in the admin merchant views.
-- They appear only in aggregate, in the Insight analytics, suppressed below
-  `analyticsMinCohort` in exactly the way the town benchmarks already are — and a
-  band with fewer than that many residents behind it is folded into "not shown"
-  rather than reported.
-- `prefer_not_to_say` is a stored answer, not a missing one, and is reported as
-  its own aggregate row.
+The columns are dropped by a migration in `migrations/`. Nothing else in this
+section changed: generated usernames, the merchant alias, `ANALYTICS_MIN_COHORT`
+and the town-benchmark suppression all still stand.
 
 ### Public counter
 
@@ -919,3 +915,149 @@ is not intended for a commercial product. Before launch a provider with a key
 (MapTiler and Mapbox both have free tiers around 100k loads a month) should be set
 through the two environment variables. The map must degrade to the list view, with
 a short note, when no tile source is configured or tiles fail to load.
+
+## Email, campaigns and referrals (added Sept 2026)
+
+Three features that earn money, in the order they matter.
+
+### 1. Email
+
+Password resets currently print to a console, which is a launch blocker. But the
+commercial case is the renewal reminder: a membership that lapses silently is
+money already earned and then lost.
+
+**Provider.** `EmailService` in `server/email.ts` stays the interface;
+`ConsoleEmailService` stays the default so nothing breaks without keys. Add
+`ResendEmailService`, used when `RESEND_API_KEY` is set. Resend is chosen for a
+simple HTTP API, a free tier around 3,000 messages a month, and an EU region, so
+there is no international transfer question to answer in the privacy notice.
+Config: `RESEND_API_KEY`, `EMAIL_FROM` (e.g. `Resicard <hello@resicard.co.uk>`),
+`EMAIL_REPLY_TO`.
+
+**Messages.** Every one plain, short and in the brand voice. HTML with a plain
+text alternative, no images beyond the wordmark, no tracking pixels of any kind.
+
+| Message | When |
+|---|---|
+| Password reset | as now |
+| Welcome | on registration |
+| Postcard on its way | when an admin marks a postcard posted |
+| Verified | when a code is accepted |
+| Trial ending | 7 days before the first charge |
+| Renewal coming | 30 and 7 days before `membershipExpiry` |
+| Membership lapsed | the day after expiry |
+| Merchant approved | when an admin approves an outlet |
+
+**`email_log`.** One row per message actually sent: `userId`, `kind`, `sentAt`,
+and a `dedupeKey` unique index. Nothing is sent twice. This table is what makes
+the scheduled reminders safe to re-run.
+
+**Scheduled sending.** `npm run jobs:daily`, idempotent, safe to run repeatedly.
+It finds memberships at the reminder thresholds and sends what has not been sent.
+Also exposed as `POST /api/jobs/daily`, guarded by a `JOBS_SECRET` bearer token,
+so a Replit scheduled deployment or any cron service can call it. It returns a
+summary of what it sent.
+
+### 2. Push an offer to residents
+
+The most commercially valuable thing on this list. A publican looking at an empty
+Tuesday who can reach eight hundred locals has bought something no other scheme in
+the town sells. It is the argument for Standard over Free.
+
+It is also the feature most likely to destroy the thing the business depends on,
+so the limits are part of the feature and not a setting.
+
+**Limits, enforced server-side and not configurable by the merchant:**
+
+- One campaign per merchant per **7 days**, and at most **4 per calendar month**.
+- Nothing sends outside **08:00 to 20:00** Europe/London. A campaign created
+  outside those hours is queued for the next window.
+- A campaign must reference a live offer. A merchant cannot send free text.
+- Body copy is capped at 140 characters and the merchant sees the count.
+
+**Consent, which differs by channel:**
+
+- **Web push**: the browser permission prompt *is* the consent. Once granted,
+  push is on, and the resident can turn it off per outlet or entirely.
+- **Email**: this is direct marketing under PECR, so it is **explicit opt-in,
+  default off**, offered in the profile and never pre-ticked. Every campaign email
+  carries an unsubscribe link that works in one click without signing in.
+
+**Audience.** Residents with a current membership who have not opted out, and
+either have a push subscription or have opted in to email. A merchant may target
+everyone, or only residents who have that outlet in their favourites, or only
+residents who have redeemed there before. The merchant never sees who is in the
+audience, only the count, and the count is suppressed below `ANALYTICS_MIN_COHORT`.
+
+**Schema.**
+
+```
+push_subscriptions   id, userId, endpoint (unique), p256dh, auth, createdAt, lastSeenAt
+campaigns            id, merchantId, offerId, body, audience ('all'|'favourites'|'past'),
+                     status ('queued'|'sending'|'sent'|'failed'), scheduledFor,
+                     sentAt, recipients, createdBy, createdAt
+campaign_optouts     userId + merchantId composite pk, createdAt   -- null merchantId = all outlets
+users                gains marketingEmailOptIn boolean default false
+```
+
+**API.**
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| POST | /api/push/subscribe | resident | stores the browser subscription |
+| DELETE | /api/push/subscribe | resident | removes it |
+| GET | /api/push/key | resident | the VAPID public key |
+| POST | /api/merchant/campaigns | merchant, Standard+ | `{ offerId, body, audience }`; 403 `plan_required` on Free, 429 `campaign_limit` with the next allowed date |
+| GET | /api/merchant/campaigns | merchant | history with recipient counts and the next allowed send date |
+| GET | /api/campaign-preferences | resident | per-outlet and global opt-outs, email opt-in |
+| PUT | /api/campaign-preferences | resident | update them |
+| GET | /api/unsubscribe/:token | none | one-click email unsubscribe |
+
+Web push uses VAPID: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
+The service worker gains `push` and `notificationclick` handlers. It still caches
+nothing.
+
+### 3. Referrals
+
+In a town where everyone knows everyone, a member bringing a friend is the
+cheapest acquisition there is.
+
+Each member has a code (`users.referralCode`, generated on first use, from
+`HUMAN_ALPHABET`). A new member enters it at registration. When the referred
+member's **first payment succeeds** — not when they sign up, and not during the
+trial — both get one month added to their `membershipExpiry`.
+
+Paying first is the whole anti-fraud design. Without it, a person with ten email
+addresses farms free membership in an afternoon.
+
+Further limits: a referrer earns at most **6 months in any 12**; a member cannot
+refer themselves or anyone in their own household; a code can only be entered at
+registration, never added later.
+
+```
+referrals   id, referrerId, referredId (unique), code, status ('pending'|'credited'),
+            createdAt, creditedAt
+users       gains referralCode (unique, nullable)
+```
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | /api/referrals/mine | resident | the code, a share link, how many are pending and credited, months earned and the cap |
+| POST | /api/auth/register | none | accepts an optional `referralCode`; an unknown code is ignored silently rather than blocking a sign-up |
+
+Crediting happens in the Stripe `invoice.paid` handler alongside the existing
+membership extension, in the same transaction, so a duplicate webhook cannot
+credit twice.
+
+The resident card tab gains a quiet panel: the code, a share button using the
+Web Share API where available, and what it is worth. Not a hero element.
+
+### Joining the two halves
+
+`server/lib/campaign-email.ts` discovers the campaign sender structurally: it
+looks for a `sendCampaign` method on the shared `emailService` singleton and
+falls back to logging when there is none. `TemplatedEmailService` now has that
+method, so campaign email sends through the same provider and the same templates
+as everything else. Campaign sends are deliberately **not** written to
+`email_log`: that table exists to stop a deduped reminder going twice, and a
+campaign is a fan-out with its own `campaigns` row.

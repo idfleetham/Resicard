@@ -6,9 +6,11 @@ import { registerSchema, loginSchema } from "@shared/schema";
 import { db } from "../db";
 import { config } from "../config";
 import { emailService } from "../email";
+import { dedupeKeys, sendOnce } from "../lib/mailer";
+import { attachReferralAtRegistration } from "../lib/referral-service";
 import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
-import { signToken, authenticate, toSelfUser, currentUser } from "../lib/auth";
+import { signToken, authenticate, toPublicUser, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, conflict, forbidden } from "../lib/http";
 import { isLocalPostcode, normalisePostcode } from "../lib/postcode";
 import { uniqueScanCode } from "../lib/scan-code";
@@ -71,12 +73,14 @@ authRouter.post(
         addressLine2: input.addressLine2 ?? null,
         town: input.town,
         profilePhoto: input.profilePhoto ?? null,
-        ageBand: input.ageBand ?? null,
-        sex: input.sex ?? null,
         membershipStatus: "inactive",
         isResidencyVerified: false,
       });
-      res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
+      await attachReferralAtRegistration(user, input.referralCode);
+      await sendOnce(user.id, "welcome", dedupeKeys.welcome(user.id), () =>
+        emailService.sendWelcome(user.email, user.firstName),
+      );
+      res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
       return;
     }
 
@@ -110,7 +114,7 @@ authRouter.post(
       const linked = await userStore.updateUser(owner.id, { merchantId: merchant.id }, tx);
       return linked ?? owner;
     });
-    res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
+    res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
   }),
 );
 
@@ -124,7 +128,7 @@ authRouter.post(
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    res.json({ user: toSelfUser(user), token: signToken(user) });
+    res.json({ user: toPublicUser(user), token: signToken(user) });
   }),
 );
 
@@ -139,7 +143,7 @@ authRouter.get(
       return;
     }
     const merchant = user.merchantId ? await merchantStore.getMerchantById(user.merchantId) : undefined;
-    res.json({ ...toSelfUser(user), merchant: merchant ?? undefined });
+    res.json({ ...toPublicUser(user), merchant: merchant ?? undefined });
   }),
 );
 
@@ -157,14 +161,19 @@ authRouter.post(
     if (user) {
       await userStore.revokePasswordResetTokens(user.id);
       const token = randomBytes(32).toString("hex");
+      const tokenHash = createHash("sha256").update(token).digest("hex");
       await userStore.insertPasswordResetToken({
         userId: user.id,
-        tokenHash: createHash("sha256").update(token).digest("hex"),
+        tokenHash,
         expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
         requestIp: req.ip ?? null,
         userAgent: req.headers["user-agent"] ?? null,
       });
-      await emailService.sendPasswordReset(user.email, `${config.publicBaseUrl}/reset-password?token=${token}`, user.username);
+      // Keyed on the token, so a member can ask again and again and each request
+      // sends exactly one email.
+      await sendOnce(user.id, "password_reset", dedupeKeys.passwordReset(tokenHash), () =>
+        emailService.sendPasswordReset(user.email, `${config.publicBaseUrl}/reset-password?token=${token}`, user.firstName ?? undefined),
+      );
     }
     res.json({ message });
   }),
@@ -205,6 +214,6 @@ authRouter.post(
       surname: input.surname,
       role: "admin",
     });
-    res.status(201).json({ user: toSelfUser(user), token: signToken(user) });
+    res.status(201).json({ user: toPublicUser(user), token: signToken(user) });
   }),
 );

@@ -13,6 +13,8 @@ import { effectiveMembership } from "../lib/membership";
 import { expiryDate, hashCode, newPostcardCode, printSheetHtml } from "../lib/postcards";
 import { authenticate, requireRole, currentUser, toPublicUser } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, badRequest } from "../lib/http";
+import { emailService } from "../email";
+import { dedupeKeys, sendOnce } from "../lib/mailer";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const postIdsSchema = z.object({ ids: z.array(z.string().regex(UUID_RE)).min(1).max(200) });
@@ -114,6 +116,10 @@ adminRouter.post(
         attempts: 0,
       });
       posted.push({ id: p.id, name: residentName(p), address: p.addressSnapshot, code });
+      // Keyed on the postcard, so a resident who has one re-issued hears about that one too.
+      await sendOnce(p.userId, "postcard_posted", dedupeKeys.postcardPosted(p.id), () =>
+        emailService.sendPostcardPosted(p.email, p.firstName, expiresAt),
+      );
     }
     // The plain codes exist only in this response and the print sheet built from it.
     const printHtml = printSheetHtml(posted.map((c) => ({ ...c, expiresAt })));
@@ -245,7 +251,14 @@ async function setMerchantStatus(id: string, status: "approved" | "rejected", ad
 adminRouter.post(
   "/api/admin/merchants/:id/approve",
   asyncHandler(async (req, res) => {
-    res.json(await setMerchantStatus(req.params.id, "approved", currentUser(req).id));
+    const merchant = await setMerchantStatus(req.params.id, "approved", currentUser(req).id);
+    const owner = await userStore.getUserById(merchant.ownerUserId);
+    if (owner) {
+      await sendOnce(owner.id, "merchant_approved", dedupeKeys.merchantApproved(merchant.id), () =>
+        emailService.sendMerchantApproved(merchant.email ?? owner.email, merchant.name, owner.firstName),
+      );
+    }
+    res.json(merchant);
   }),
 );
 

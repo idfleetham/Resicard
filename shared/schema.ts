@@ -20,15 +20,6 @@ export const MERCHANT_CATEGORIES = [
   "restaurant", "bar", "cafe", "pub", "takeaway", "hotel", "retail", "services", "experience",
 ] as const;
 
-// Optional demographics, collected only to see which offers work for which group.
-// They are reported in aggregate and never per resident, so both value sets are
-// closed: free text would be a second name field.
-export const AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"] as const;
-export type AgeBand = (typeof AGE_BANDS)[number];
-
-export const SEX_OPTIONS = ["female", "male", "other", "prefer_not_to_say"] as const;
-export type SexOption = (typeof SEX_OPTIONS)[number];
-
 export const OFFER_TYPES = [
   "percentage_discount",
   "fixed_amount_discount",
@@ -56,11 +47,6 @@ export const users = pgTable("users", {
   postcode: text("postcode"),
   profilePhoto: text("profile_photo"), // base64 data URL, shown on the digital card
 
-  // Optional, and never returned for one resident to anyone but that resident:
-  // they exist only for the aggregate demographics in the Insight analytics.
-  ageBand: text("age_band").$type<AgeBand>(),
-  sex: text("sex").$type<SexOption>(),
-
   // Residency verification (residents only). Two routes: a postcard with a
   // code posted to the address, or an admin verifying in person. No documents
   // are stored.
@@ -84,6 +70,15 @@ export const users = pgTable("users", {
   householdPrimaryId: integer("household_primary_id"), // set on the second adult
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+
+  // The member's own referral code, generated the first time they look at it
+  // rather than for everyone at sign-up, so codes exist only where they are used.
+  referralCode: text("referral_code").unique(),
+
+  // Marketing email is direct marketing under PECR, so it is explicit opt-in
+  // and off until the resident turns it on. Web push is not here: the browser
+  // permission prompt is that consent, recorded as a push_subscriptions row.
+  marketingEmailOptIn: boolean("marketing_email_opt_in").default(false).notNull(),
 
   // Merchant users belong to a merchant record
   merchantId: uuid("merchant_id"),
@@ -116,6 +111,50 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   requestIp: text("request_ip"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Email
+// ---------------------------------------------------------------------------
+
+export const EMAIL_KINDS = [
+  "password_reset",
+  "welcome",
+  "postcard_posted",
+  "verified",
+  "trial_ending",
+  "renewal_30",
+  "renewal_7",
+  "membership_lapsed",
+  "merchant_approved",
+] as const;
+export type EmailKind = (typeof EMAIL_KINDS)[number];
+
+// One row per message actually sent. `dedupeKey` is what makes the daily job safe
+// to run as often as anyone likes: the row is written in the same transaction as
+// the send, so a message either went out and is recorded, or neither.
+export const emailLog = pgTable("email_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind").$type<EmailKind>().notNull(),
+  dedupeKey: text("dedupe_key").notNull().unique(),
+  sentAt: timestamp("sent_at").defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Referrals
+// ---------------------------------------------------------------------------
+
+// A code entered at registration. It stays pending until the referred member's
+// first payment succeeds, because paying first is the whole anti-fraud design.
+export const referrals = pgTable("referrals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  referrerId: integer("referrer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  referredId: integer("referred_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  code: text("code").notNull(),
+  status: text("status").$type<"pending" | "credited">().notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  creditedAt: timestamp("credited_at"),
 });
 
 // ---------------------------------------------------------------------------
@@ -344,6 +383,57 @@ export const rewardClaims = pgTable("reward_claims", {
 });
 
 // ---------------------------------------------------------------------------
+// Campaigns: a merchant pushing one live offer to residents.
+//
+// The limits (one a week, four a month, 08:00-20:00 only, always an existing
+// offer and never free text) live in server/lib/campaigns.ts and are applied on
+// every send. Nothing here is a merchant setting, deliberately.
+// ---------------------------------------------------------------------------
+
+// A browser push subscription. Its existence is the resident's consent: the
+// browser prompt is what they answered, and revoking it deletes the row.
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastSeenAt: timestamp("last_seen_at").defaultNow(),
+});
+
+export const campaigns = pgTable("campaigns", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  offerId: uuid("offer_id").notNull().references(() => offers.id, { onDelete: "cascade" }),
+  body: text("body").notNull(), // <= 140 characters
+  audience: text("audience").$type<"all" | "favourites" | "past">().notNull().default("all"),
+  status: text("status").$type<"queued" | "sending" | "sent" | "failed">().notNull().default("queued"),
+  // When it goes out. Set at creation: now inside the window, otherwise 08:00 next.
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  sentAt: timestamp("sent_at"),
+  recipients: integer("recipients").default(0),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// A resident's opt-out. A null merchantId means every outlet, which is why the
+// primary key carries a sentinel uuid rather than a nullable column: Postgres
+// primary keys cannot be null, and a partial unique index would not be enforced
+// by the composite key the contract asks for.
+export const CAMPAIGN_OPTOUT_ALL = "00000000-0000-0000-0000-000000000000";
+
+export const campaignOptouts = pgTable(
+  "campaign_optouts",
+  {
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    merchantId: uuid("merchant_id").notNull(), // CAMPAIGN_OPTOUT_ALL = every outlet
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.userId, t.merchantId] }) }),
+);
+
+// ---------------------------------------------------------------------------
 // Subscription ledger: one row per payment or plan change, so revenue can be
 // reported and forecast without asking Stripe.
 // ---------------------------------------------------------------------------
@@ -457,8 +547,9 @@ export const registerResidentSchema = z.object({
   addressLine2: z.string().trim().max(80).optional().nullable(),
   town: z.string().trim().min(2).max(40).default("St Andrews"),
   profilePhoto: z.string().optional(),
-  ageBand: z.enum(AGE_BANDS).optional().nullable(),
-  sex: z.enum(SEX_OPTIONS).optional().nullable(),
+  // Optional, and only ever accepted here. An unknown code is ignored rather than
+  // refused: nothing about a referral is worth blocking a sign-up over.
+  referralCode: z.string().trim().max(20).optional(),
 });
 
 export const registerMerchantSchema = z.object({
@@ -489,8 +580,6 @@ export const updateProfileSchema = z.object({
   addressLine2: z.string().trim().max(80).optional().nullable(),
   town: z.string().trim().min(2).max(40).optional(),
   profilePhoto: z.string().optional(),
-  ageBand: z.enum(AGE_BANDS).optional().nullable(),
-  sex: z.enum(SEX_OPTIONS).optional().nullable(),
 });
 
 export const addressSchema = z.object({
@@ -609,16 +698,32 @@ export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards)
     claimRule: z.enum(["once", "weekly", "monthly", "unlimited"]).default("unlimited"),
   });
 
+// A campaign is an offer plus one short line. There is no free-text send: the
+// offer is what the resident is promised and what they can then redeem.
+export const createCampaignSchema = z.object({
+  offerId: z.string().uuid(),
+  body: z.string().trim().min(1, "Write a line for residents").max(140, "Keep it to 140 characters"),
+  audience: z.enum(["all", "favourites", "past"]).default("all"),
+});
+
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url().max(1000),
+  keys: z.object({ p256dh: z.string().min(1).max(255), auth: z.string().min(1).max(255) }),
+});
+
+export const pushUnsubscribeSchema = z.object({ endpoint: z.string().url().max(1000) });
+
+export const campaignPreferencesSchema = z.object({
+  marketingEmailOptIn: z.boolean().optional(),
+  optOutAll: z.boolean().optional(),
+  // Outlets to stop hearing from. Sent whole, so unticking one is a plain replace.
+  optedOutMerchantIds: z.array(z.string().uuid()).max(500).optional(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-/**
- * A user as returned to anyone but themselves: no password, and no demographics.
- * Demographics are aggregate-only, so the safe shape is the default one and the
- * fuller `SelfUser` has to be asked for by name.
- */
-export type PublicUser = Omit<User, "password" | "ageBand" | "sex">;
-/** A user as returned to that same user: their own demographics included. */
-export type SelfUser = Omit<User, "password">;
+/** A user as returned over the API: every column but the password hash. */
+export type PublicUser = Omit<User, "password">;
 export type Postcard = typeof postcards.$inferSelect;
 export type Merchant = typeof merchants.$inferSelect;
 export type InsertMerchant = typeof merchants.$inferInsert;
@@ -634,6 +739,12 @@ export type RewardClaim = typeof rewardClaims.$inferSelect;
 export type SubscriptionEvent = typeof subscriptionEvents.$inferSelect;
 export type Favourite = typeof favourites.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type EmailLogEntry = typeof emailLog.$inferSelect;
+export type Referral = typeof referrals.$inferSelect;
+export type Campaign = typeof campaigns.$inferSelect;
+export type InsertCampaign = typeof campaigns.$inferInsert;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type CampaignOptout = typeof campaignOptouts.$inferSelect;
 
 /** Alias shown to merchants instead of a resident's real name. */
 export function generateCustomerAlias(user: { id: number; username?: string | null }): string {

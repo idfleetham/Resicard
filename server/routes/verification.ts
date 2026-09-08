@@ -6,6 +6,8 @@ import * as postcardStore from "../storage/postcards";
 import { authenticate, requireRole, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, notFound } from "../lib/http";
 import { attemptsLeft, expiryDate, formatAddress, hashCode, isAddressComplete, isExpired, newPostcardCode } from "../lib/postcards";
+import { emailService } from "../email";
+import { dedupeKeys, sendOnce } from "../lib/mailer";
 
 export const verificationRouter = Router();
 verificationRouter.use("/api/verification", authenticate, requireRole("resident"));
@@ -109,6 +111,9 @@ verificationRouter.post(
       verifiedBy: null,
       verificationMethod: "postcard",
     });
+    await sendOnce(user.id, "verified", dedupeKeys.verified(user.id), () =>
+      emailService.sendVerified(user.email, user.firstName),
+    );
     res.json(await verificationPayload(updated ?? user));
   }),
 );
