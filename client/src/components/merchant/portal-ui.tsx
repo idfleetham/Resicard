@@ -23,11 +23,12 @@ export function SectionTitle({ children, className = "" }: { children: ReactNode
   return <h2 className={`font-display font-bold text-2xl tracking-[-0.02em] text-sea ${className}`}>{children}</h2>;
 }
 
-export function Tile({ label, value }: { label: string; value: ReactNode }) {
+export function Tile({ label, value, note }: { label: string; value: ReactNode; note?: ReactNode }) {
   return (
     <div className="bg-white rounded-2xl p-5">
       <p className="text-xs text-slate-brand">{label}</p>
       <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea mt-2">{value ?? "-"}</p>
+      {note && <p className="text-xs text-slate-brand mt-1">{note}</p>}
     </div>
   );
 }

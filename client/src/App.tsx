@@ -19,6 +19,8 @@ import EditProfile from "@/pages/edit-profile";
 import ResidentDashboard from "@/pages/resident/dashboard";
 import ScanPage from "@/pages/resident/scan";
 import RedemptionSuccess from "@/pages/resident/redemption-success";
+import RewardClaimPage from "@/pages/resident/reward-claim";
+import LoyaltyCardPage from "@/pages/resident/loyalty-card";
 
 import MerchantPortal from "@/pages/merchant/portal";
 import OfferDetails from "@/pages/merchant/offer-details";
@@ -41,6 +43,8 @@ function Router() {
       <Route path="/membership" component={ResidentDashboard} />
       <Route path="/scan/:scanCode" component={ScanPage} />
       <Route path="/redemptions/:id" component={RedemptionSuccess} />
+      <Route path="/reward-claims/:id" component={RewardClaimPage} />
+      <Route path="/loyalty/:merchantId" component={LoyaltyCardPage} />
 
       <Route path="/merchant" component={MerchantPortal} />
       <Route path="/merchant/plan" component={MerchantPortal} />

@@ -1,6 +1,6 @@
 /**
  * Resize an image file in the browser and return a JPEG data URL.
- * Profile photos are cropped to a centred square; documents keep their aspect ratio.
+ * Profile photos are cropped to a centred square; other images keep their aspect ratio.
  */
 export function resizeImageFile(
   file: File,

@@ -12,9 +12,7 @@ const ROLES = ["all", "resident", "merchant", "admin"] as const;
 
 function residencyBadge(u: PublicUser) {
   if (u.role !== "resident") return null;
-  if (u.isResidencyVerified) return <Pill tone="live">Verified</Pill>;
-  if (u.documentStatus === "pending") return <Pill tone="sand">Checking</Pill>;
-  if (u.documentStatus === "rejected") return <Pill tone="red">Rejected</Pill>;
+  if (u.isResidencyVerified) return <Pill tone="live">{u.verificationMethod === "in_person" ? "Verified in person" : "Verified"}</Pill>;
   return <Pill tone="slate">Not verified</Pill>;
 }
 

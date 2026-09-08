@@ -91,6 +91,6 @@ export function currentMerchantId(req: Request): string {
 }
 
 export function toPublicUser(user: User): PublicUser {
-  const { password: _password, documentFile: _documentFile, ...rest } = user;
+  const { password: _password, ...rest } = user;
   return rest;
 }

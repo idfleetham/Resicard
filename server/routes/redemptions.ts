@@ -17,7 +17,7 @@ import {
   residentRedeemReasons,
   merchantRedeemReasons,
 } from "../lib/offer-rules";
-import { awardPoints } from "../lib/loyalty";
+import { awardPoints, nextTierSummary, residentStatus, tierSnapshot } from "../lib/loyalty";
 import { effectiveMembership } from "../lib/membership";
 import { isPremium } from "../lib/plan";
 import { stripMenuPdf } from "./public";
@@ -54,7 +54,9 @@ async function offerBlockReason(offer: Offer, ctx: OfferCheckContext, client: Db
 }
 
 async function buildContext(user: User, merchant: Merchant, client: DbClient): Promise<OfferCheckContext> {
-  const balance = await loyaltyStore.getBalance(merchant.id, user.id, client);
+  // The tier is rolling: derive it from status points rather than the stored balance row.
+  const program = await activeProgram(merchant, client);
+  const status = program ? await residentStatus(program, merchant.id, user.id, client) : null;
   const priorAtMerchant = await redemptionStore.countRedemptionsWhere(
     and(eq(redemptions.merchantId, merchant.id), eq(redemptions.userId, user.id)),
     client,
@@ -62,7 +64,7 @@ async function buildContext(user: User, merchant: Merchant, client: DbClient): P
   return {
     userId: user.id,
     merchantId: merchant.id,
-    currentTierId: balance?.tierId ?? null,
+    currentTierId: status?.tier?.id ?? null,
     redeemedAtMerchantBefore: priorAtMerchant > 0,
     now: new Date(),
   };
@@ -79,9 +81,15 @@ async function activeProgram(merchant: Merchant, client: DbClient) {
 async function loyaltySnapshot(merchant: Merchant, userId: number, client: DbClient) {
   const program = await activeProgram(merchant, client);
   if (!program) return null;
-  const balance = await loyaltyStore.getBalance(merchant.id, userId, client);
-  const tier = balance?.tierId ? await loyaltyStore.getTierById(balance.tierId, client) : null;
-  return { program, balance: balance ?? null, tier: tier ?? null };
+  const status = await residentStatus(program, merchant.id, userId, client);
+  return {
+    program,
+    balance: status.balance,
+    tier: status.tier,
+    statusPoints: status.statusPoints,
+    tierWindowDays: status.tierWindowDays,
+    nextTier: nextTierSummary(status.nextTier),
+  };
 }
 
 /** Rule 1 with the household taken into account. */
@@ -92,7 +100,8 @@ async function residentReasons(user: User, client: DbClient): Promise<string[]> 
 
 /** The success-screen payload shared by POST /api/redemptions and GET /api/redemptions/:id. */
 async function redemptionResponse(redemption: Redemption, offer: Offer, merchant: Merchant, user: User) {
-  const snapshot = await loyaltySnapshot(merchant, user.id, db);
+  // Tier details only while the merchant runs an active programme on Premium.
+  const loyalty = (await activeProgram(merchant, db)) ? await tierSnapshot(merchant.id, user.id) : null;
   return {
     redemption: {
       id: redemption.id,
@@ -112,7 +121,7 @@ async function redemptionResponse(redemption: Redemption, offer: Offer, merchant
     },
     merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
     resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto },
-    loyalty: snapshot ? { points: snapshot.balance?.points ?? 0, tierName: snapshot.tier?.name ?? null } : null,
+    loyalty,
   };
 }
 
@@ -257,17 +266,36 @@ redemptionsRouter.get(
   requireRole("merchant"),
   asyncHandler(async (req, res) => {
     const merchantId = currentMerchantId(req);
-    const rows = await redemptionStore.listRedemptionsForMerchant(merchantId, {
-      from: parseDateParam(req.query.from, false),
-      to: parseDateParam(req.query.to, true),
-    });
-    res.json(
-      rows.map(({ userId, username, ...rest }) => ({
+    const range = { from: parseDateParam(req.query.from, false), to: parseDateParam(req.query.to, true) };
+    const [redemptionRows, claimRows] = await Promise.all([
+      redemptionStore.listRedemptionsForMerchant(merchantId, range),
+      loyaltyStore.listRewardClaimsForMerchant(merchantId, range),
+    ]);
+    const items = [
+      ...redemptionRows.map(({ userId, username, ...rest }) => ({
+        kind: "redemption" as const,
         ...rest,
         basketAmount: toNumber(rest.basketAmount),
+        rewardId: null,
+        pointsSpent: null,
         customerAlias: generateCustomerAlias({ id: userId, username }),
       })),
-    );
+      ...claimRows.map(({ userId, username, rewardName, claimedAt, ...rest }) => ({
+        kind: "reward" as const,
+        id: rest.id,
+        code: rest.code,
+        redeemedAt: claimedAt,
+        basketAmount: null,
+        pointsAwarded: null,
+        offerId: null,
+        offerTitle: rewardName,
+        rewardId: rest.rewardId,
+        pointsSpent: rest.pointsSpent ?? 0,
+        customerAlias: generateCustomerAlias({ id: userId, username }),
+      })),
+    ];
+    items.sort((a, b) => (b.redeemedAt?.getTime() ?? 0) - (a.redeemedAt?.getTime() ?? 0));
+    res.json(items);
   }),
 );
 
@@ -276,6 +304,11 @@ redemptionsRouter.get(
   authenticate,
   requireRole("merchant"),
   asyncHandler(async (req, res) => {
-    res.json(await redemptionStore.summariseRedemptionsForMerchant(currentMerchantId(req)));
+    const merchantId = currentMerchantId(req);
+    const [summary, rewards] = await Promise.all([
+      redemptionStore.summariseRedemptionsForMerchant(merchantId),
+      loyaltyStore.countRewardClaimsForMerchant(merchantId),
+    ]);
+    res.json({ ...summary, rewardsAllTime: rewards.allTime, rewardsThisMonth: rewards.thisMonth });
   }),
 );

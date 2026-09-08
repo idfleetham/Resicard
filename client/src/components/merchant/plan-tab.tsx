@@ -11,13 +11,19 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { OFFERS_KEY } from "@/hooks/use-merchant-offers";
 import { PROGRAM_KEY } from "./loyalty/types";
-import { errorMessage, formatDate, formatPounds } from "@/components/resident/format";
+import { errorMessage, formatDate, formatPounds, trialLengthLabel } from "@/components/resident/format";
 import { Pill, SectionTitle } from "./portal-ui";
 
 export interface PlanInfo {
   planStatus: "free" | "premium";
   planStartedAt: string | null;
   planRenewsAt: string | null;
+  /** True while Premium is running on the free trial (nothing paid yet). */
+  inTrial: boolean;
+  /** When the free trial ends and the first payment is taken. */
+  trialEndsAt: string | null;
+  /** Trial days this merchant would get if they upgraded now; 0 once they have paid. */
+  trialDaysAvailable: number;
   premiumMonthlyFee: number;
   currency: string;
   freeLiveOfferLimit: number;
@@ -50,14 +56,14 @@ function Feature({ children }: { children: string }) {
   );
 }
 
-function PlanCard({ title, price, current, features, children }: {
-  title: string; price: string; current: boolean; features: string[]; children?: React.ReactNode;
+function PlanCard({ title, price, current, features, pill, children }: {
+  title: string; price: string; current: boolean; features: string[]; pill?: React.ReactNode; children?: React.ReactNode;
 }) {
   return (
     <div className={`bg-white rounded-2xl p-5 flex flex-col gap-4 ${current ? "" : "border border-[#E6E9E8]"}`}>
       <div className="flex items-center justify-between gap-3">
         <SectionTitle>{title}</SectionTitle>
-        {current && <Pill tone="sea">Current plan</Pill>}
+        {pill ?? (current && <Pill tone="sea">Current plan</Pill>)}
       </div>
       <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea">{price}</p>
       <ul className="space-y-2 flex-1">
@@ -115,6 +121,7 @@ export default function PlanTab() {
   }
 
   const isFree = plan.planStatus === "free";
+  const trial = plan.trialDaysAvailable > 0 ? trialLengthLabel(plan.trialDaysAvailable) : null;
   const limit = plan.freeLiveOfferLimit;
   const freeFeatures = [
     "Listing in the residents' app",
@@ -140,11 +147,24 @@ export default function PlanTab() {
           )}
         </PlanCard>
 
-        <PlanCard title="Premium" price={`${formatPounds(plan.premiumMonthlyFee)} a month`} current={!isFree} features={premiumFeatures}>
+        <PlanCard
+          title="Premium"
+          price={`${formatPounds(plan.premiumMonthlyFee)} a month`}
+          current={!isFree}
+          features={premiumFeatures}
+          pill={plan.inTrial ? <Pill tone="sand">Free trial</Pill> : undefined}
+        >
           {isFree ? (
-            <Button variant="buoy" className="h-12 w-full" onClick={() => checkout.mutate()} disabled={checkout.isPending}>
-              {checkout.isPending ? "Starting" : "Upgrade to Premium"}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button variant="buoy" className="h-12 w-full" onClick={() => checkout.mutate()} disabled={checkout.isPending}>
+                {checkout.isPending ? "Starting" : trial ? `Start ${trial} free` : "Upgrade to Premium"}
+              </Button>
+              {trial && <p className="text-xs text-slate-brand">Card details taken now, first payment in {trial}.</p>}
+            </div>
+          ) : plan.inTrial ? (
+            <p className="text-xs text-slate-brand">
+              Free until {formatDate(plan.trialEndsAt)}, then {formatPounds(plan.premiumMonthlyFee)} a month.
+            </p>
           ) : (
             <p className="text-xs text-slate-brand">
               {plan.planRenewsAt ? `Renews ${formatDate(plan.planRenewsAt)}.` : "Billed monthly."}

@@ -63,13 +63,17 @@ Create the first admin with `npm run admin:create -- <username> <email> <passwor
 | RESIDENT_ANNUAL_FEE_GBP | individual resident membership (household is 2x) | 25 |
 | MERCHANT_PREMIUM_MONTHLY_FEE_GBP | merchant Premium plan (Free is capped) | 30 |
 | FREE_PLAN_LIVE_OFFER_LIMIT | live offers allowed on the Free plan | 2 |
+| FREE_TRIAL_DAYS | free trial for a first-time resident or merchant; 0 turns trials off | 90 |
+| TOWN_NAME | the town this instance serves, shown on the card | St Andrews |
 | LOCAL_POSTCODE_PREFIXES | who counts as local at sign-up | KY16,KY15,KY10,DD6 |
+| POSTCARD_CODE_DAYS | how long a posted verification code stays valid | 60 |
+| POSTCARD_MAX_ATTEMPTS | wrong-code attempts before a postcard is cancelled | 5 |
 | ADMIN_SETUP_SECRET | enables `POST /api/auth/register-admin`; leave unset to disable | unset |
 | STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET | enable real payments | unset |
 
 ## Things not done yet
 
 - Password reset emails only print to the server log. Wire an email provider in `server/email.ts`.
-- Residency documents are stored as base64 in the users table. Move to object storage and add a retention policy before real residents upload anything.
+- Residency is verified by a postcard with a code posted to the address, or in person at a Resicard event. No documents are uploaded or stored.
 - The postcode check is a prefix match, not a distance calculation.
 - No rate limiting on login or registration.

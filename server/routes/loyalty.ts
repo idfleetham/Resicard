@@ -9,17 +9,34 @@ import {
   generateCustomerAlias,
   redemptions,
   type LoyaltyProgram,
+  type LoyaltyReward,
+  type Merchant,
+  type RewardClaim,
+  type User,
 } from "@shared/schema";
 import { db } from "../db";
 import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
 import * as loyaltyStore from "../storage/loyalty";
 import * as redemptionStore from "../storage/redemptions";
+import type { DbClient } from "../storage/types";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, badRequest, forbidden, HttpError } from "../lib/http";
 import { isPremium, PLAN_REQUIRED_MESSAGE } from "../lib/plan";
-import { awardPoints, adjustPoints, getOrCreateBalance, setPointsAndRecalculateTier } from "../lib/loyalty";
-import { generateRedemptionCode, nextTier, resolveTier } from "../lib/offer-rules";
+import {
+  awardPoints,
+  adjustPoints,
+  canClaim,
+  getOrCreateBalance,
+  isTierBenefit,
+  nextTierSummary,
+  residentStatus,
+  resolveStatus,
+  setPointsAndRefreshStatus,
+  tierSnapshot,
+  tierWindowDaysOf,
+} from "../lib/loyalty";
+import { HUMAN_ALPHABET, randomCode } from "../lib/codes";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -166,17 +183,34 @@ loyaltyRouter.get(
   "/api/loyalty/members",
   ...merchantOnly,
   asyncHandler(async (req, res) => {
-    const rows = await loyaltyStore.listBalancesForMerchant(currentMerchantId(req));
-    res.json(
-      rows.map((r) => ({
+    const merchantId = currentMerchantId(req);
+    const program = await loyaltyStore.getProgramByMerchant(merchantId);
+    const rows = await loyaltyStore.listBalancesForMerchant(merchantId);
+    const tierWindowDays = program ? tierWindowDaysOf(program) : 365;
+    const [tiers, statusByUser] = await Promise.all([
+      program ? loyaltyStore.listTiers(program.id) : Promise.resolve([]),
+      loyaltyStore.sumStatusPointsByUser(merchantId, new Date(Date.now() - tierWindowDays * 24 * 60 * 60 * 1000)),
+    ]);
+    const members = [];
+    for (const r of rows) {
+      const statusPoints = statusByUser.get(r.balance.userId) ?? 0;
+      const { tier, nextTier } = resolveStatus(tiers, statusPoints);
+      if ((r.balance.tierId ?? null) !== (tier?.id ?? null)) {
+        await loyaltyStore.updateBalance(r.balance.id, { tierId: tier?.id ?? null });
+      }
+      members.push({
         userId: r.balance.userId,
         customerAlias: generateCustomerAlias({ id: r.balance.userId, username: r.username }),
         points: r.balance.points ?? 0,
         stamps: r.balance.stamps ?? 0,
-        tierName: r.tierName ?? null,
+        statusPoints,
+        tierWindowDays,
+        tierName: tier?.name ?? null,
+        nextTier: nextTierSummary(nextTier),
         lastActivity: r.balance.updatedAt,
-      })),
-    );
+      });
+    }
+    res.json(members);
   }),
 );
 
@@ -192,7 +226,13 @@ loyaltyRouter.post(
     if (!member || member.role !== "resident") throw notFound("Member not found");
     const { amount, reason } = parseBody(adjustSchema, req.body);
     const result = await db.transaction((tx) => adjustPoints(program, merchantId, userId, amount, reason, tx));
-    res.json({ ...result.balance, tierName: result.tier?.name ?? null });
+    res.json({
+      ...result.balance,
+      statusPoints: result.statusPoints,
+      tierWindowDays: result.tierWindowDays,
+      tierName: result.tier?.name ?? null,
+      nextTier: nextTierSummary(result.nextTier),
+    });
   }),
 );
 
@@ -288,7 +328,10 @@ loyaltyRouter.post(
     res.json({
       pointsAwarded: result.pointsAwarded,
       balance: result.balance,
+      statusPoints: result.statusPoints,
+      tierWindowDays: result.tierWindowDays,
       tierName: result.tier?.name ?? null,
+      nextTier: nextTierSummary(result.nextTier),
       customerAlias: generateCustomerAlias(member),
     });
   }),
@@ -306,20 +349,30 @@ loyaltyRouter.get(
       loyaltyStore.listBalancesForUser(userId),
       loyaltyStore.latestEventAtByMerchant(userId),
     ]);
+    const now = new Date();
     const result = [];
     for (const row of rows) {
-      const [tiers, rewards] = await Promise.all([
-        loyaltyStore.listTiers(row.program.id),
+      const [status, allRewards, lastClaims] = await Promise.all([
+        residentStatus(row.program, row.merchant.id, userId, db, { balance: row.balance }),
         loyaltyStore.listRewards(row.program.id, true),
+        loyaltyStore.lastClaimAtByReward(row.merchant.id, userId),
       ]);
+      const { tiers, tier, nextTier: next, statusPoints, tierWindowDays } = status;
       const points = row.balance.points ?? 0;
       const stamps = row.balance.stamps ?? 0;
-      const tier = row.tier ?? resolveTier(tiers, points);
-      const next = nextTier(tiers, points);
       const stampModel = row.program.model === "stamps";
-      const affordable = (r: (typeof rewards)[number]) =>
+      const check = (r: LoyaltyReward) => canClaim(r, tier, tiers, lastClaims.get(r.id) ?? null, now);
+      const benefits = allRewards
+        .filter(isTierBenefit)
+        .filter((r) => check(r).entitled)
+        .map((r) => {
+          const c = check(r);
+          return { ...r, claimable: c.ok, nextClaimAt: c.nextClaimAt ? c.nextClaimAt.toISOString() : null };
+        });
+      const rewards = allRewards.filter((r) => !isTierBenefit(r));
+      const affordable = (r: LoyaltyReward) =>
         stampModel ? (r.costStamps ?? 0) <= stamps && (r.costPoints ?? 0) <= points : (r.costPoints ?? 0) <= points;
-      const claimable = rewards.filter(affordable);
+      const claimable = rewards.filter((r) => affordable(r) && check(r).ok);
       const nextReward = rewards
         .filter((r) => !affordable(r) && (r.costPoints ?? 0) > 0)
         .sort((a, b) => (a.costPoints ?? 0) - (b.costPoints ?? 0))[0];
@@ -329,9 +382,19 @@ loyaltyRouter.get(
         merchant: row.merchant,
         points,
         stamps,
-        tier: tier ? { name: tier.name, color: tier.color, discountPercent: tier.discountPercent } : null,
-        nextTier: next ? { name: next.name, thresholdPoints: next.thresholdPoints } : null,
-        tiers: tiers.map((t) => ({ id: t.id, name: t.name, thresholdPoints: t.thresholdPoints, color: t.color })),
+        statusPoints,
+        tierWindowDays,
+        tier: tier ? { name: tier.name, color: tier.color, discountPercent: tier.discountPercent || null } : null,
+        tierDiscountPercent: tier?.discountPercent || null,
+        nextTier: nextTierSummary(next),
+        tiers: tiers.map((t) => ({
+          id: t.id,
+          name: t.name,
+          thresholdPoints: t.thresholdPoints,
+          color: t.color,
+          discountPercent: t.discountPercent || null,
+        })),
+        benefits,
         rewards,
         claimable,
         nextReward: nextReward
@@ -345,12 +408,69 @@ loyaltyRouter.get(
   }),
 );
 
+loyaltyRouter.get(
+  "/api/loyalty/card/:merchantId",
+  authenticate,
+  requireRole("resident"),
+  asyncHandler(async (req, res) => {
+    if (!UUID_RE.test(req.params.merchantId)) throw notFound("Outlet not found");
+    const user = await userStore.getUserById(currentUser(req).id);
+    if (!user) throw notFound("Account not found");
+    const merchant = await merchantStore.getMerchantById(req.params.merchantId);
+    if (!merchant) throw notFound("Outlet not found");
+    const program = await requireProgram(merchant.id);
+    const [status, firstEventAt] = await Promise.all([
+      residentStatus(program, merchant.id, user.id),
+      loyaltyStore.earliestEventAt(merchant.id, user.id),
+    ]);
+    const memberSince = firstEventAt ?? status.balance?.updatedAt ?? null;
+    res.json({
+      merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
+      resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto },
+      points: status.balance?.points ?? 0,
+      statusPoints: status.statusPoints,
+      tierWindowDays: status.tierWindowDays,
+      tier: status.tier ? { name: status.tier.name, color: status.tier.color, discountPercent: status.tier.discountPercent || null } : null,
+      nextTier: nextTierSummary(status.nextTier),
+      memberSince,
+    });
+  }),
+);
+
+/** The green-screen payload shared by POST /api/loyalty/redeem-reward and GET /api/reward-claims/:id. */
+async function claimResponse(claim: RewardClaim, reward: LoyaltyReward, merchant: Merchant, user: User) {
+  return {
+    claim: {
+      id: claim.id,
+      code: claim.code,
+      claimedAt: claim.claimedAt,
+      pointsSpent: claim.pointsSpent ?? 0,
+      stampsSpent: claim.stampsSpent ?? 0,
+    },
+    reward: { id: reward.id, name: reward.name, terms: reward.terms },
+    merchant: { id: merchant.id, name: merchant.name, logoUrl: merchant.logoUrl },
+    resident: { firstName: user.firstName, surname: user.surname, profilePhoto: user.profilePhoto },
+    loyalty: await tierSnapshot(merchant.id, user.id),
+  };
+}
+
+const CLAIM_CODE_LENGTH = 6;
+
+async function uniqueClaimCode(client: DbClient): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = randomCode(CLAIM_CODE_LENGTH, HUMAN_ALPHABET);
+    if (!(await loyaltyStore.getRewardClaimByCode(code, client))) return code;
+  }
+  throw new Error("Could not generate a unique claim code");
+}
+
 loyaltyRouter.post(
   "/api/loyalty/redeem-reward",
   authenticate,
   requireRole("resident"),
   asyncHandler(async (req, res) => {
-    const userId = currentUser(req).id;
+    const user = await userStore.getUserById(currentUser(req).id);
+    if (!user) throw notFound("Account not found");
     const { merchantId, rewardId } = parseBody(redeemRewardSchema, req.body);
     const merchant = await merchantStore.getMerchantById(merchantId);
     if (!merchant) throw notFound("Merchant not found");
@@ -359,30 +479,68 @@ loyaltyRouter.post(
     const reward = await loyaltyStore.getReward(rewardId, program.id);
     if (!reward || !reward.active) throw notFound("Reward not found");
 
-    const outcome = await db.transaction(async (tx) => {
-      const balance = await getOrCreateBalance(merchantId, userId, tx);
-      const costPoints = reward.costPoints ?? 0;
-      const costStamps = reward.costStamps ?? 0;
+    const claim = await db.transaction(async (tx) => {
+      const balance = await getOrCreateBalance(merchantId, user.id, tx);
+      const status = await residentStatus(program, merchantId, user.id, tx, { balance });
+      const check = canClaim(reward, status.tier, status.tiers, await loyaltyStore.lastClaimAt(reward.id, user.id, tx));
+      if (!check.entitled) throw forbidden(check.reason ?? "This benefit is for members of a higher tier");
+      if (!check.ok) throw badRequest(check.reason ?? "Already claimed");
+
+      // Tier benefits cost nothing; points rewards are paid from the spendable balance.
+      const costPoints = isTierBenefit(reward) ? 0 : reward.costPoints ?? 0;
+      const costStamps = isTierBenefit(reward) ? 0 : reward.costStamps ?? 0;
       if ((balance.points ?? 0) < costPoints) throw badRequest("Not enough points for this reward");
       if ((balance.stamps ?? 0) < costStamps) throw badRequest("Not enough stamps for this reward");
-      const code = generateRedemptionCode();
-      await loyaltyStore.createEvent(
-        {
-          merchantId,
-          userId,
-          programId: program.id,
-          type: "redeem_reward",
-          amount: -costPoints,
-          metadata: { rewardId: reward.id, rewardName: reward.name, costStamps, code },
-        },
-        tx,
-      );
+
       if (costStamps > 0) {
         await loyaltyStore.updateBalance(balance.id, { stamps: (balance.stamps ?? 0) - costStamps }, tx);
       }
-      const updated = await setPointsAndRecalculateTier(program, balance, (balance.points ?? 0) - costPoints, tx);
-      return { balance: updated.balance, tier: updated.tier, code };
+      if (costPoints > 0) {
+        await setPointsAndRefreshStatus(program, balance, (balance.points ?? 0) - costPoints, tx);
+      }
+
+      const created = await loyaltyStore.createRewardClaim(
+        {
+          rewardId: reward.id,
+          merchantId,
+          userId: user.id,
+          code: await uniqueClaimCode(tx),
+          pointsSpent: costPoints,
+          stampsSpent: costStamps,
+        },
+        tx,
+      );
+      await loyaltyStore.createEvent(
+        {
+          merchantId,
+          userId: user.id,
+          programId: program.id,
+          type: "redeem_reward",
+          amount: -costPoints,
+          metadata: { rewardId: reward.id, rewardName: reward.name, claimId: created.id, source: "reward_claim" },
+        },
+        tx,
+      );
+      return created;
     });
-    res.json({ balance: { ...outcome.balance, tierName: outcome.tier?.name ?? null }, code: outcome.code });
+    res.status(201).json(await claimResponse(claim, reward, merchant, user));
+  }),
+);
+
+loyaltyRouter.get(
+  "/api/reward-claims/:id",
+  authenticate,
+  requireRole("resident"),
+  asyncHandler(async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) throw notFound("Reward claim not found");
+    const claim = await loyaltyStore.getRewardClaimById(req.params.id);
+    if (!claim || claim.userId !== currentUser(req).id) throw notFound("Reward claim not found");
+    const [reward, merchant, user] = await Promise.all([
+      loyaltyStore.getRewardById(claim.rewardId),
+      merchantStore.getMerchantById(claim.merchantId),
+      userStore.getUserById(claim.userId),
+    ]);
+    if (!reward || !merchant || !user) throw notFound("Reward claim not found");
+    res.json(await claimResponse(claim, reward, merchant, user));
   }),
 );

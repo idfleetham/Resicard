@@ -294,7 +294,7 @@ export function residentRedeemReasons(user: ResidentLike, membership: Membership
   if (!user.isResidencyVerified) reasons.push("Residency not yet verified");
   const expiry = membership.expiry ? new Date(membership.expiry) : null;
   if (membership.status !== "active") {
-    reasons.push("Membership not active");
+    reasons.push("Premium membership needed to redeem offers");
   } else if (!expiry || expiry.getTime() <= now.getTime()) {
     reasons.push("Membership has expired");
   }

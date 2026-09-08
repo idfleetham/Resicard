@@ -47,15 +47,16 @@ export const users = pgTable("users", {
   postcode: text("postcode"),
   profilePhoto: text("profile_photo"), // base64 data URL, shown on the digital card
 
-  // Residency verification (residents only)
-  documentType: text("document_type"), // driving_licence | bank_statement | utility_bill | council_tax
-  documentFile: text("document_file"), // base64 data URL
-  documentStatus: text("document_status").$type<"pending" | "approved" | "rejected">(),
-  documentSubmittedAt: timestamp("document_submitted_at"),
-  documentReviewedAt: timestamp("document_reviewed_at"),
-  documentReviewedBy: integer("document_reviewed_by"),
-  documentRejectionReason: text("document_rejection_reason"),
+  // Residency verification (residents only). Two routes: a postcard with a
+  // code posted to the address, or an admin verifying in person. No documents
+  // are stored.
+  addressLine1: text("address_line1"),
+  addressLine2: text("address_line2"),
+  town: text("town").default("St Andrews"),
   isResidencyVerified: boolean("is_residency_verified").default(false),
+  verifiedAt: timestamp("verified_at"),
+  verifiedBy: integer("verified_by"), // admin user id, null for postcard
+  verificationMethod: text("verification_method").$type<"postcard" | "in_person">(),
 
   // Membership (residents only): one flat annual fee, individual or household.
   // A household is two adults (children need no card). The paying adult is the
@@ -64,6 +65,7 @@ export const users = pgTable("users", {
   membershipPlan: text("membership_plan").$type<"individual" | "household">().default("individual"),
   membershipStatus: text("membership_status").$type<"inactive" | "active" | "cancelled">().default("inactive"),
   membershipExpiry: timestamp("membership_expiry"),
+  membershipRenews: boolean("membership_renews").default(true), // false = downgrade to Free at expiry
   householdCode: text("household_code").unique(), // set on the primary of a household plan
   householdPrimaryId: integer("household_primary_id"), // set on the second adult
   stripeCustomerId: text("stripe_customer_id"),
@@ -74,6 +76,21 @@ export const users = pgTable("users", {
   staffPin: text("staff_pin"),
 
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// A postcard with a code, posted to the resident's address by an admin.
+export const postcards = pgTable("postcards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  codeHash: text("code_hash").notNull(), // sha256 of the 6-character code
+  addressSnapshot: text("address_snapshot").notNull(), // the full address as printed
+  status: text("status").$type<"requested" | "posted" | "used" | "expired" | "cancelled">().default("requested"),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  postedAt: timestamp("posted_at"),
+  postedBy: integer("posted_by"),
+  usedAt: timestamp("used_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  attempts: integer("attempts").default(0),
 });
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
@@ -208,6 +225,7 @@ export const loyaltyPrograms = pgTable("loyalty_programs", {
   dailyEarnCap: integer("daily_earn_cap").default(3),
   stackingAllowed: boolean("stacking_allowed").default(false),
   expiryDays: integer("expiry_days"),
+  tierWindowDays: integer("tier_window_days").default(365), // tier status is based on points earned in this rolling window
   active: boolean("active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -217,7 +235,7 @@ export const loyaltyTiers = pgTable("loyalty_tiers", {
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   thresholdPoints: integer("threshold_points").notNull(),
-  discountPercent: integer("discount_percent").default(0),
+  discountPercent: integer("discount_percent"), // optional flat discount shown on the outlet loyalty card; null = none
   pointsMultiplier: numeric("points_multiplier", { precision: 3, scale: 2 }).default("1.00"),
   color: text("color").default("#f97316"),
   sortOrder: integer("sort_order").default(0),
@@ -248,11 +266,45 @@ export const loyaltyRewards = pgTable("loyalty_rewards", {
   id: uuid("id").primaryKey().defaultRandom(),
   programId: integer("program_id").notNull().references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  costPoints: integer("cost_points"),
+  costPoints: integer("cost_points"), // null or 0 with a tierId = a tier benefit
   costStamps: integer("cost_stamps"),
+  tierId: uuid("tier_id").references(() => loyaltyTiers.id, { onDelete: "cascade" }), // only members of this tier (or above) can claim
+  claimRule: text("claim_rule").$type<"once" | "weekly" | "monthly" | "unlimited">().default("unlimited"),
   terms: text("terms"),
   active: boolean("active").default(true),
   imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// A reward claimed with points. Shown to staff on the same green screen as an
+// offer redemption and listed in the merchant's feed.
+export const rewardClaims = pgTable("reward_claims", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  rewardId: uuid("reward_id").notNull().references(() => loyaltyRewards.id),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  code: text("code").notNull().unique(),
+  pointsSpent: integer("points_spent").default(0),
+  stampsSpent: integer("stamps_spent").default(0),
+  claimedAt: timestamp("claimed_at").defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Subscription ledger: one row per payment or plan change, so revenue can be
+// reported and forecast without asking Stripe.
+// ---------------------------------------------------------------------------
+
+export const subscriptionEvents = pgTable("subscription_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  kind: text("kind").$type<"resident_membership" | "merchant_premium">().notNull(),
+  subjectId: text("subject_id").notNull(), // users.id as text, or merchants.id
+  subjectName: text("subject_name"), // snapshot for reporting
+  plan: text("plan"), // individual | household | premium
+  action: text("action").$type<"started" | "renewed" | "cancelled" | "lapsed">().notNull(),
+  amountGbp: numeric("amount_gbp", { precision: 10, scale: 2 }).default("0"),
+  periodStart: timestamp("period_start"),
+  periodEnd: timestamp("period_end"),
+  source: text("source").$type<"stripe" | "dev" | "admin" | "backfill">().default("dev"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -314,6 +366,9 @@ export const registerResidentSchema = z.object({
   firstName: z.string().min(1),
   surname: z.string().min(1),
   postcode: z.string().min(5),
+  addressLine1: z.string().trim().min(3).max(80),
+  addressLine2: z.string().trim().max(80).optional().nullable(),
+  town: z.string().trim().min(2).max(40).default("St Andrews"),
   profilePhoto: z.string().optional(),
 });
 
@@ -341,12 +396,21 @@ export const updateProfileSchema = z.object({
   firstName: z.string().min(1).optional(),
   surname: z.string().min(1).optional(),
   postcode: z.string().min(5).optional(),
+  addressLine1: z.string().trim().min(3).max(80).optional(),
+  addressLine2: z.string().trim().max(80).optional().nullable(),
+  town: z.string().trim().min(2).max(40).optional(),
   profilePhoto: z.string().optional(),
 });
 
-export const submitDocumentSchema = z.object({
-  documentType: z.enum(["driving_licence", "bank_statement", "utility_bill", "council_tax"]),
-  documentFile: z.string().min(1),
+export const addressSchema = z.object({
+  addressLine1: z.string().trim().min(3).max(80),
+  addressLine2: z.string().trim().max(80).optional().nullable(),
+  town: z.string().trim().min(2).max(40).default("St Andrews"),
+  postcode: z.string().trim().min(5).max(10),
+});
+
+export const postcardCodeSchema = z.object({
+  code: z.string().trim().min(6).max(6),
 });
 
 export const updateMerchantSchema = z.object({
@@ -416,17 +480,27 @@ export const scanRedeemSchema = z.object({
   basketAmount: optionalNumber,
 });
 
-export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms).omit({
-  id: true,
-  merchantId: true,
-  createdAt: true,
-});
-export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers).omit({ id: true, programId: true });
-export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards).omit({ id: true, programId: true, createdAt: true });
+export const insertLoyaltyProgramSchema = createInsertSchema(loyaltyPrograms)
+  .omit({ id: true, merchantId: true, createdAt: true })
+  .extend({ tierWindowDays: z.number().int().min(30).max(1095).optional() });
+export const insertLoyaltyTierSchema = createInsertSchema(loyaltyTiers)
+  .omit({ id: true, programId: true })
+  .extend({
+    discountPercent: z.number().int().min(1).max(100).nullable().optional(),
+  });
+export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards)
+  .omit({ id: true, programId: true, createdAt: true })
+  .extend({
+    costPoints: z.number().int().min(0).nullable().optional(),
+    costStamps: z.number().int().min(0).nullable().optional(),
+    tierId: z.string().uuid().nullable().optional(),
+    claimRule: z.enum(["once", "weekly", "monthly", "unlimited"]).default("unlimited"),
+  });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-export type PublicUser = Omit<User, "password" | "documentFile">;
+export type PublicUser = Omit<User, "password">;
+export type Postcard = typeof postcards.$inferSelect;
 export type Merchant = typeof merchants.$inferSelect;
 export type InsertMerchant = typeof merchants.$inferInsert;
 export type Offer = typeof offers.$inferSelect;
@@ -437,6 +511,8 @@ export type LoyaltyTier = typeof loyaltyTiers.$inferSelect;
 export type LoyaltyBalance = typeof loyaltyBalances.$inferSelect;
 export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;
 export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
+export type RewardClaim = typeof rewardClaims.$inferSelect;
+export type SubscriptionEvent = typeof subscriptionEvents.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 /** Alias shown to merchants instead of a resident's real name. */

@@ -24,7 +24,6 @@ Merchant-facing routes resolve the merchant from `req.user.merchantId` (never fr
 | Method | Path | Auth | Body | Response |
 |---|---|---|---|---|
 | PUT | /api/profile | any | `updateProfileSchema` | `PublicUser` |
-| POST | /api/profile/document | resident | `submitDocumentSchema` | `PublicUser` (documentStatus pending) |
 | GET | /api/membership | resident | | `{ status, expiry, annualFee, currency: "GBP", canRedeem: boolean, reasons: string[] }` where canRedeem requires residency approved and membership active |
 | POST | /api/membership/checkout | resident | | If Stripe configured: `{ url }` Stripe Checkout session URL for the annual fee. If not configured (dev): activates membership for 12 months and returns `{ activated: true }`. |
 | POST | /api/membership/cancel | resident | | `{ status }` |
@@ -186,3 +185,219 @@ The resident "Activity" tab (`client/src/components/resident/activity-tab.tsx`) 
 | `tier` | `{ kind, id, at, merchant, title: "Now Gold", amount: null }` from `tier_change` events |
 
 `earn_points` events written by an offer redemption (`metadata.source === "redemption"`, or `metadata.redemptionId` set) are skipped, since the redemption row already carries `pointsAwarded`. `adjust` events are not shown.
+
+## Reward claims and tier benefits (added Sept 2026)
+
+Tiers: `loyaltyTiers.benefits` is a list of short lines the merchant writes; `discountPercent` is optional (null = none) and only means a flat discount staff apply for that tier. Any other discount is an offer with `eligibleTiers`.
+
+Claiming a reward now creates a `reward_claims` row and is shown to staff on the same green screen as a redemption.
+
+| Method | Path | Auth | Body | Response |
+|---|---|---|---|---|
+| POST | /api/loyalty/redeem-reward | resident | `{ merchantId, rewardId }` | `{ claim: { id, code, claimedAt, pointsSpent, stampsSpent }, reward: { id, name, terms }, merchant: { id, name, logoUrl }, resident: { firstName, surname, profilePhoto }, loyalty: { points, tierName, tierBenefits: string[], tierDiscountPercent: number \| null } }` (deducts points/stamps, writes a `redeem_reward` event with `metadata.claimId`) |
+| GET | /api/reward-claims/:id | resident (own) | | same shape, for re-showing the screen |
+| GET | /api/redemptions/:id | resident (own) | | now also includes `loyalty.tierBenefits` and `loyalty.tierDiscountPercent` (both from the resident's current tier at that merchant, empty/null if none) |
+| POST | /api/redemptions | resident | | response `loyalty` gains the same two fields |
+| GET | /api/merchant/redemptions | merchant | | items gain `kind: "redemption" \| "reward"`; reward items have `offerTitle` = reward name, `offerId` = null, `rewardId`, `pointsSpent`. Both kinds interleaved newest first |
+| GET | /api/merchant/redemptions/summary | merchant | | gains `rewardsAllTime` and `rewardsThisMonth` |
+| GET | /api/activity/mine | resident | | reward items now carry `claimId` and link target `/reward-claims/:id` |
+
+## Tier benefits as rewards, loyalty card, rolling tiers (added Sept 2026, supersedes "tier benefits" above)
+
+- `loyaltyTiers.benefits` is removed. A tier benefit is a `loyaltyRewards` row with `tierId` set and `costPoints` 0 or null, plus a `claimRule`: `once` (one claim ever), `weekly` (one per calendar week, Mon to Sun, Europe/London), `monthly` (one per calendar month), `unlimited`. `claimRule` also applies to points rewards. A reward with `tierId` can be claimed by members of that tier or any higher tier (by sortOrder/threshold).
+- Tier status is rolling: `statusPoints` = sum of positive `earn_points` (and `adjust` with positive amount) event amounts in the last `program.tierWindowDays` days. The resident's tier is the highest tier with `thresholdPoints <= statusPoints`, computed on read (`server/lib/loyalty.ts` `resolveStatus`), and `loyalty_balances.tierId` is refreshed whenever it is computed. `balance.points` stays the spendable balance and is unaffected by tier calculation.
+- Everywhere a tier is reported (`/api/loyalty/mine`, `/api/scan`, redemption and claim responses, merchant members list) include `statusPoints`, `tierWindowDays`, and `nextTier` computed from statusPoints.
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/loyalty/mine | resident | each item gains `statusPoints`, `tierWindowDays`, `tierDiscountPercent`, and `benefits: Reward[]` (tier rewards the resident is entitled to, each with `claimable: boolean` and `nextClaimAt: string \| null` per claimRule); `claimable` (points rewards) unchanged; `rewards` lists points rewards only |
+| GET | /api/loyalty/card/:merchantId | resident | `{ merchant: { id, name, logoUrl }, resident: { firstName, surname, profilePhoto }, points, statusPoints, tierWindowDays, tier: { name, color, discountPercent } \| null, nextTier, memberSince }` — the outlet loyalty card, shown to staff for a flat tier discount |
+| POST | /api/loyalty/redeem-reward | resident | as before; for tier benefits deducts nothing; enforces `claimRule` (400 "Already claimed this week/month", "Already claimed") and tier entitlement (403) |
+| PUT | /api/loyalty/program | merchant | accepts `tierWindowDays` |
+| POST/PUT | /api/loyalty/rewards | merchant | accept `tierId`, `claimRule`, `costPoints` 0/null |
+
+Resident-side pages: `/loyalty/:merchantId` renders the outlet loyalty card (sea card like the membership card, live clock, tier and discount line, benefits list with Claim buttons).
+
+## Revenue (admin) (added Sept 2026)
+
+Every membership activation, renewal, cancellation and merchant plan change writes a `subscription_events` row (`server/lib/ledger.ts`: `recordSubscriptionEvent`). Called from the dev activation paths, the Stripe webhook, and cancel routes. `npm run ledger:backfill` inserts `started` rows (source backfill) for currently active memberships and premium merchants that have none.
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | /api/admin/revenue | admin | see below |
+| GET | /api/admin/revenue/events | admin | `?limit=200` newest ledger rows with subjectName |
+| GET | /api/admin/revenue/export.csv | admin | the same as CSV |
+
+`GET /api/admin/revenue` returns:
+```
+{
+  fees: { individual, household, merchantPremiumMonthly },
+  now: {
+    residents: { active, individual, household, cancelled, expiringIn30Days },
+    merchants: { premium, free, approved },
+    runRate: { monthly, annual }   // merchants premium x monthly fee + active resident annual fees / 12
+  },
+  history: [{ month: "2026-09", residents: number, merchants: number, total: number, newResidents: number, renewedResidents: number, cancelledResidents: number, newMerchants: number, cancelledMerchants: number }]  // last 12 months from the ledger (amounts collected)
+  cliffs: {
+    residents: [{ month, count, individual, household, amount }],   // memberships expiring in each of the next 12 months, amount = renewal value at current fees
+    merchants: [{ month, count, amount }],                           // premium plans due to renew in each month (planRenewsAt, or monthly anniversary of planStartedAt)
+    next30Days: [{ kind, subjectId, name, plan, expiresAt, amount }]  // sorted soonest first
+  },
+  schedule: {
+    residentExpiries: [{ month, individual, household }],   // next 24 months
+    premiumMerchants: number,
+    activeIndividual: number, activeHousehold: number
+  }
+}
+```
+The client builds the forecast from `schedule` with adjustable assumptions (resident renewal rate, merchant monthly churn, new residents and new premium merchants per month), so no forecast logic lives on the server beyond the schedule.
+
+## Residency verification by postcard or in person (added Sept 2026, replaces document upload)
+
+`users.documentType/documentFile/documentStatus/...` are removed. Residents have `addressLine1`, `addressLine2`, `town`, `postcode`. Verification sets `isResidencyVerified`, `verifiedAt`, `verificationMethod` (`postcard` | `in_person`) and, for in person, `verifiedBy`. Nothing about documents is stored anywhere.
+
+Postcard flow: resident requests a postcard → admin sees it in a queue, prints the batch (A6 cards, address and code), marks them posted → resident enters the code from the card → verified. Config: `POSTCARD_CODE_DAYS` (default 60), `POSTCARD_MAX_ATTEMPTS` (default 5). Codes use HUMAN_ALPHABET, 6 characters, stored as sha256; the plain code exists only in the print sheet at posting time, so the print sheet must be generated when the admin marks the batch as posted (the code is generated then and returned once). Address changes after a postcard is requested cancel any open postcard.
+
+Resident:
+
+| Method | Path | Body | Response |
+|---|---|---|---|
+| GET | /api/verification | | `{ verified, verifiedAt, method, address: { addressLine1, addressLine2, town, postcode }, postcard: { status, requestedAt, postedAt, expiresAt, attemptsLeft } \| null, canRequestPostcard: boolean, reason?: string }` (a resident can request when not verified and no postcard is requested/posted and address is complete) |
+| POST | /api/verification/postcard | | requests a postcard; 400 if address incomplete or one is already open; returns the GET shape |
+| POST | /api/verification/postcard/code | `postcardCodeSchema` | checks the code against the open posted postcard (case-insensitive); success sets verified (method postcard), marks the postcard used; wrong code increments attempts, 400 "Wrong code, N attempts left"; after max attempts the postcard is cancelled and the resident can request another; expired → 400 with a message and canRequestPostcard true |
+| PUT | /api/profile | `updateProfileSchema` | address fields accepted; changing address on a verified resident clears verification (they must verify again) and cancels open postcards |
+
+Registration (`registerResidentSchema`) now takes `addressLine1`, `addressLine2`, `town`; postcode still checked by prefix.
+
+Admin:
+
+| Method | Path | Body | Response |
+|---|---|---|---|
+| GET | /api/admin/postcards | `?status=requested\|posted\|used\|expired\|cancelled` (default requested) | list with resident name, address snapshot, requestedAt, postedAt, expiresAt |
+| POST | /api/admin/postcards/post | `{ ids: string[] }` | generates codes for those requested postcards, sets status posted, expiresAt = now + POSTCARD_CODE_DAYS; returns `{ posted: [{ id, name, address, code }] }` — the ONLY time codes are returned in plain text |
+| GET | /api/admin/postcards/print?ids=a,b,c | | HTML print sheet (must be fetched right after `post`, with the codes passed back in from the client, OR simpler: `post` returns the HTML print sheet directly as `{ posted, printHtml }`; implement the latter) |
+| POST | /api/admin/postcards/:id/cancel | | cancels |
+| POST | /api/admin/residents/:userId/verify | `{ note?: string }` | in-person verification: sets verified, method in_person, verifiedBy = admin; cancels open postcards |
+| POST | /api/admin/residents/:userId/unverify | | clears verification |
+| GET | /api/admin/residents | `?q=&verified=` | residents list with name, email, address, verified, method, membership status; for the in-person desk |
+
+Remove: `POST /api/profile/document`, `GET /api/admin/documents/pending`, `/approve`, `/reject`. `GET /api/admin/stats` replaces `pendingDocuments` with `postcardsToPost`.
+
+`residentRedeemReasons` unchanged ("Residency not yet verified").
+
+## Resident Free and Premium (added Sept 2026)
+
+Every verified resident has a card. `users.membershipStatus` active = Premium; anything else = Free. There is no separate column: "Free" is the name of the state where a resident has no active paid membership.
+
+- Free: verified card, browse offers, earn loyalty points and tier status at Premium outlets, claim tier benefits and points rewards, show the outlet loyalty card. Cannot redeem resident offers.
+- Premium (annual, individual or household): everything in Free plus redeeming offers.
+- Downgrade = stop the membership at the end of the paid period (`membershipStatus` stays active until `membershipExpiry`, then becomes `inactive`; Stripe subscription cancelled at period end). Points, tiers, claims and history are untouched. Cancel = the same thing; the UI offers "Move to Free at renewal" first and only then "Cancel now" which ends access immediately (no refund; sets status cancelled).
+
+| Method | Path | Auth | Body | Response |
+|---|---|---|---|---|
+| GET | /api/membership | resident | | gains `tier: "free" \| "premium"`, `renews: boolean` (false once a downgrade is scheduled), `endsAt` (the expiry when a downgrade is scheduled), and `pointsKept: true` |
+| POST | /api/membership/downgrade | resident (primary or individual) | | schedules the downgrade: sets `users.membershipRenews = false` (new boolean column, default true); cancels the Stripe subscription at period end if one exists; ledger event `cancelled` with periodEnd = expiry; returns the GET shape |
+| POST | /api/membership/resume | resident | | undoes a scheduled downgrade before expiry: `membershipRenews = true`; returns GET shape |
+| POST | /api/membership/cancel | resident | | unchanged (immediate) |
+
+`residentRedeemReasons`: for a Free resident the reason is "Premium membership needed to redeem offers" (replaces "Membership not active"). `GET /api/scan` still returns loyalty for Free residents at Premium outlets; the offers list is still returned but `canRedeem` false with that reason. Loyalty routes never check membership.
+
+Admin revenue: a scheduled downgrade counts in the cliffs as an expiry that will not renew (`residents[].notRenewing` count added to each cliff month, and `now.residents.notRenewing`).
+
+## Free trial and Stripe renewals (added Sept 2026)
+
+The first three months are free for both residents and merchants. Card details are taken at
+sign-up, so the trial converts on its own; no one has to come back and pay.
+
+Config: `FREE_TRIAL_DAYS` (default 90, `server/config.ts` as `config.freeTrialDays`). Set it to
+0 to switch trials off everywhere - checkouts then charge immediately and every `trialDays*`
+field below reports 0.
+
+### Who gets a trial
+
+A trial is only for a subject who has **never paid**. `hasEverPaid(kind, subjectId)`
+(`server/lib/ledger.ts`, backed by `hasPaidAmount` in `server/storage/ledger.ts`) is true when
+any `subscription_events` row for that subject has `amountGbp > 0`. Trial activations are
+written to the ledger with amount 0, so a trial never counts as revenue and never blocks
+itself. A returning member - anyone who has paid before, including someone who cancelled and
+came back - pays straight away.
+
+`trialDaysFor(kind, subjectId)` (`server/lib/stripe.ts`) returns `config.freeTrialDays` when
+`hasEverPaid` is false and the config is above 0, otherwise 0. The pure part of that decision
+is `trialDaysFrom(hasPaidBefore, freeTrialDays)` in `server/lib/trial.ts`.
+
+### Checkout
+
+Both `createMembershipCheckout` and `createMerchantPlanCheckout` pass
+`subscription_data.trial_period_days` when the subject is due a trial, and set
+`payment_method_collection: "always"` so the card is collected during the trial.
+
+Without a Stripe key (development), the checkout routes activate directly through
+`activateMembershipForCheckout` / `activateMerchantPlanForCheckout`: a first-time subject gets
+expiry = now + `FREE_TRIAL_DAYS` and a ledger row of 0; a returning subject gets the normal
+full period at the full fee.
+
+`activateMembership` and `activateMerchantPlan` both take an optional last argument
+`opts?: { periodEnd?: Date; amountGbp?: number }`. `periodEnd` replaces the computed +12 months
+(resident) or +1 month (merchant); `amountGbp` replaces the fee on the ledger row. Existing
+callers that pass neither behave exactly as before.
+
+### Webhook: `invoice.paid`
+
+New handler alongside `checkout.session.completed` and `customer.subscription.deleted`. It
+extends the membership or plan to the period the invoice paid for and writes a `renewed` ledger
+event with the real amount from the invoice. This is what makes a trial convert into a paid
+membership, and it is also the fix for year-two renewals, which previously never extended
+`membershipExpiry` in our database.
+
+The rules live in `renewalFromInvoice` (`server/lib/trial.ts`, pure and unit tested). An invoice
+is acted on only when all of these hold:
+
+- `billing_reason === "subscription_cycle"`. Anything else (notably `subscription_create`) is a
+  sign-up invoice that `checkout.session.completed` has already recorded - acting on both would
+  double-count the sale. Trial conversion and later renewals are both cycles, so one rule covers
+  both.
+- `amount_paid > 0`. The £0 invoice Stripe raises when a trial starts is ignored, so a trial
+  sign-up shows no revenue.
+- The subscription metadata carries our `kind` (`membership` or `merchant_plan`) and the
+  matching `userId` / `merchantId`.
+
+The new period end is read from the invoice's first line item `period.end` (falling back to
+`invoice.period_end`). Note it is **not** read from `subscription.current_period_end`: on the
+Basil API version that field lives on subscription items, not on the subscription.
+
+`setCancelAtPeriodEnd`, `cancelSubscription` and the `customer.subscription.deleted` handler are
+unchanged.
+
+### Reporting the trial
+
+| Method | Path | Auth | Response additions |
+|---|---|---|---|
+| GET | /api/membership | resident | `inTrial: boolean` (membership current and `hasEverPaid` false), `trialEndsAt: string \| null` (the expiry while in trial), `trialDaysAvailable: number` (what this resident would get if they joined now; 0 once they have paid) |
+| GET | /api/merchant/plan | merchant | the same three fields, where `inTrial` is Premium plus never charged and `trialEndsAt` is `planRenewsAt` |
+
+For a household member the paying subject is the primary, so `inTrial` and `trialDaysAvailable`
+are read against the primary's id.
+
+### Client
+
+- `membership-status.tsx`: with `trialDaysAvailable > 0` the plan chooser's button reads "Start
+  3 months free" and a line under the price cards reads "Free until your first payment in 3
+  months. Cancel any time before then." While `inTrial` the sand block keeps the heading
+  "Premium membership", shows a sand "Free trial" pill, and reads "Free until DD Mon YYYY, then
+  £X a year." above the usual downgrade and cancel actions.
+- `digital-membership-card.tsx`: the date block reads "FREE UNTIL" with the trial end date
+  instead of "RENEWS".
+- `merchant/plan-tab.tsx`: the Premium button reads "Start 3 months free" with "Card details
+  taken now, first payment in 3 months." underneath; while in trial the card shows a sand "Free
+  trial" pill and "Free until DD Mon YYYY, then £X a month."
+- The wording "3 months" is derived from the day count by `trialLengthLabel` in
+  `client/src/components/resident/format.ts`: whole 30-day multiples read as months, anything
+  else as "N days". Fees are always read from the API, never hardcoded.
+
+### Deploying against real Stripe
+
+`invoice.paid` must be enabled on the webhook endpoint in the Stripe dashboard; without it
+trials never convert in our database and second-year payments are taken by Stripe but never
+extend the membership. Keep `checkout.session.completed` and `customer.subscription.deleted`
+enabled too.

@@ -10,6 +10,7 @@ export interface MembershipLike {
   membershipPlan?: string | null;
   membershipStatus?: string | null;
   membershipExpiry?: Date | string | null;
+  membershipRenews?: boolean | null;
   householdPrimaryId?: number | null;
 }
 
@@ -17,9 +18,15 @@ export interface EffectiveMembership {
   plan: MembershipPlan;
   status: MembershipStatus;
   expiry: Date | null;
+  /** False once a downgrade to Free at the end of the paid period is scheduled. */
+  renews: boolean;
+  /** The expiry when a downgrade is scheduled and the membership is still active; otherwise null. */
+  endsAt: Date | null;
   /** True when the status and expiry come from the household primary. */
   inherited: boolean;
 }
+
+export type MembershipTier = "free" | "premium";
 
 export const HOUSEHOLD_CODE_LENGTH = 8;
 
@@ -37,16 +44,29 @@ function toPlan(value: string | null | undefined): MembershipPlan {
   return value === "household" ? "household" : "individual";
 }
 
+function fromRow(row: MembershipLike, plan: MembershipPlan, inherited: boolean, now: Date): EffectiveMembership {
+  const renews = row.membershipRenews !== false;
+  const expiry = toExpiry(row.membershipExpiry);
+  let status = toStatus(row.membershipStatus);
+  // A scheduled downgrade ends at expiry even if nothing has flipped the status column yet.
+  if (status === "active" && !renews && (expiry === null || expiry.getTime() <= now.getTime())) status = "inactive";
+  const endsAt = status === "active" && !renews ? expiry : null;
+  return { plan, status, expiry, renews, endsAt, inherited };
+}
+
 /**
- * A user with a householdPrimaryId inherits the primary's status and expiry while the
- * primary is on a household plan; otherwise the user's own membership applies.
+ * A user with a householdPrimaryId inherits the primary's status, expiry and renews flag
+ * while the primary is on a household plan; otherwise the user's own membership applies.
  */
-export function effectiveMembership(user: MembershipLike, primary: MembershipLike | null): EffectiveMembership {
+export function effectiveMembership(user: MembershipLike, primary: MembershipLike | null, now: Date = new Date()): EffectiveMembership {
   const covered = Boolean(user.householdPrimaryId) && primary !== null && toPlan(primary.membershipPlan) === "household";
-  if (covered && primary) {
-    return { plan: "household", status: toStatus(primary.membershipStatus), expiry: toExpiry(primary.membershipExpiry), inherited: true };
-  }
-  return { plan: toPlan(user.membershipPlan), status: toStatus(user.membershipStatus), expiry: toExpiry(user.membershipExpiry), inherited: false };
+  if (covered && primary) return fromRow(primary, "household", true, now);
+  return fromRow(user, toPlan(user.membershipPlan), false, now);
+}
+
+/** Premium = an active, unexpired membership; everything else is Free. */
+export function membershipTier(membership: EffectiveMembership, now: Date = new Date()): MembershipTier {
+  return isMembershipCurrent(membership, now) ? "premium" : "free";
 }
 
 /** True when the membership is active and has not expired. */

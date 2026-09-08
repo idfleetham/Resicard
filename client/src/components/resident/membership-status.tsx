@@ -3,21 +3,24 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { errorMessage, formatDate, formatPounds } from "./format";
+import { errorMessage, formatDate, formatPounds, trialLengthLabel } from "./format";
 import { HouseholdJoinPanel, HouseholdMemberPanel, HouseholdPrimaryPanel } from "./household-panel";
+import { CancelNowLink, DowngradeButton, DowngradeScheduledNote, KeepPremiumButton } from "./membership-actions";
 import { isMembershipLive, useMembership, useRefreshMembership, type MembershipInfo, type MembershipPlan } from "./use-membership";
 
 export type { MembershipInfo } from "./use-membership";
 
 type CheckoutResponse = { url: string } | { activated: true };
 
-function StatusPill({ tone, children }: { tone: "green" | "muted" | "buoy"; children: string }) {
+function StatusPill({ tone, children }: { tone: "green" | "muted" | "buoy" | "sand"; children: string }) {
   const cls =
     tone === "green"
       ? "bg-[#1F8A5B] text-white"
       : tone === "buoy"
         ? "bg-buoy text-white"
-        : "bg-white/70 text-slate-brand";
+        : tone === "sand"
+          ? "bg-sand text-sea ring-1 ring-sea/20"
+          : "bg-white/70 text-slate-brand";
   return <span className={`text-[11px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full leading-none ${cls}`}>{children}</span>;
 }
 
@@ -56,11 +59,17 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
     onError: (err) => toast({ title: "Payment could not start", description: errorMessage(err), variant: "destructive" }),
   });
 
+  const trial = data.trialDaysAvailable > 0 ? trialLengthLabel(data.trialDaysAvailable) : null;
+
   return (
     <>
-      <p className="text-sm">
-        {expired ? "Your membership has run out. Renew to keep using Resicard." : "One flat fee for the year. No per-offer charges."}
-      </p>
+      <p className="text-sm">Free includes your card, loyalty points and tier benefits at every outlet.</p>
+      <div>
+        <h3 className="font-display font-bold text-xl tracking-[-0.02em]">Go Premium to redeem offers</h3>
+        <p className="text-sm text-slate-brand mt-1">
+          {expired ? "Your Premium membership has run out. Renew to redeem offers again." : "One flat fee for the year. No per-offer charges."}
+        </p>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <PlanOption
           selected={plan === "individual"}
@@ -77,35 +86,15 @@ function ChoosePlan({ data, expired }: { data: MembershipInfo; expired: boolean 
           onSelect={() => setPlan("household")}
         />
       </div>
+      {trial && (
+        <p className="text-sm text-slate-brand -mt-1">
+          Free until your first payment in {trial}. Cancel any time before then.
+        </p>
+      )}
       <Button variant="default" className="w-full h-12 text-base" disabled={checkout.isPending} onClick={() => checkout.mutate()}>
-        {checkout.isPending ? "Starting payment" : expired ? "Renew membership" : "Pay membership"}
+        {checkout.isPending ? "Starting payment" : trial ? `Start ${trial} free` : expired ? "Renew Premium" : "Go Premium"}
       </Button>
     </>
-  );
-}
-
-function CancelButton() {
-  const { toast } = useToast();
-  const refresh = useRefreshMembership();
-  const cancel = useMutation({
-    mutationFn: async () => (await apiRequest("POST", "/api/membership/cancel")).json(),
-    onSuccess: async () => {
-      await refresh();
-      toast({ title: "Membership cancelled", description: "You can rejoin at any time." });
-    },
-    onError: (err) => toast({ title: "Could not cancel", description: errorMessage(err), variant: "destructive" }),
-  });
-  return (
-    <Button
-      variant="outline"
-      className="w-full h-11 bg-transparent border-[#0F3B47]/30"
-      disabled={cancel.isPending}
-      onClick={() => {
-        if (window.confirm("Cancel your membership? You will lose access to offers when it ends.")) cancel.mutate();
-      }}
-    >
-      Cancel membership
-    </Button>
   );
 }
 
@@ -123,41 +112,52 @@ export default function MembershipStatus() {
   }
 
   const live = isMembershipLive(data);
+  const premium = data.tier === "premium" && live;
   const expired = data.status === "active" && !live;
   const role = data.household.role;
-  const title = live && data.plan === "household" ? "Household membership" : "Membership";
+  const title = premium ? "Premium membership" : "Free membership";
 
   return (
     <section className="bg-sand rounded-2xl p-5 text-sea flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="font-display font-bold text-2xl tracking-[-0.02em]">{title}</h2>
-        {live ? (
-          <StatusPill tone="green">Active</StatusPill>
+        {premium && data.inTrial && data.renews ? (
+          <StatusPill tone="sand">Free trial</StatusPill>
+        ) : premium ? (
+          <StatusPill tone={data.renews ? "green" : "muted"}>{data.renews ? "Active" : "Ending"}</StatusPill>
         ) : data.status === "cancelled" ? (
           <StatusPill tone="muted">Cancelled</StatusPill>
         ) : expired ? (
           <StatusPill tone="buoy">Expired</StatusPill>
-        ) : (
-          <StatusPill tone="muted">Not active</StatusPill>
-        )}
+        ) : null}
       </div>
 
       {role === "member" ? (
         <>
-          {live && (
-            <p className="text-sm">
-              Valid until <span className="font-bold">{formatDate(data.expiry)}</span>.
-            </p>
-          )}
+          {premium && !data.renews && <DowngradeScheduledNote data={data} />}
           <HouseholdMemberPanel data={data} />
         </>
-      ) : live ? (
+      ) : premium && data.renews ? (
         <>
-          <p className="text-sm">
-            Valid until <span className="font-bold">{formatDate(data.expiry)}</span>.
-          </p>
+          {data.inTrial ? (
+            <p className="text-sm">
+              Free until <span className="font-bold">{formatDate(data.trialEndsAt)}</span>, then{" "}
+              {formatPounds(data.plan === "household" ? data.fees.household : data.fees.individual)} a year.
+            </p>
+          ) : (
+            <p className="text-sm">
+              Renews on <span className="font-bold">{formatDate(data.expiry)}</span>.
+            </p>
+          )}
           {role === "primary" && <HouseholdPrimaryPanel data={data} />}
-          <CancelButton />
+          <DowngradeButton data={data} />
+          <CancelNowLink />
+        </>
+      ) : premium ? (
+        <>
+          <DowngradeScheduledNote data={data} />
+          {role === "primary" && <HouseholdPrimaryPanel data={data} />}
+          <KeepPremiumButton />
         </>
       ) : (
         <>

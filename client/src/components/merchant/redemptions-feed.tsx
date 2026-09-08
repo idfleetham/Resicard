@@ -4,12 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate, formatPounds, formatTime } from "@/components/resident/format";
-import { INPUT, SectionTitle, TD, TH, TR } from "./portal-ui";
+import { INPUT, Pill, SectionTitle, TD, TH, TR } from "./portal-ui";
 
+/** One row of GET /api/merchant/redemptions: an offer redemption or a reward claim. */
 export interface MerchantRedemption {
+  kind: "redemption" | "reward";
   id: string;
-  offerId: string;
+  /** Null for a reward claim. */
+  offerId: string | null;
+  /** The offer title, or the reward name for a claim. */
   offerTitle: string;
+  rewardId: string | null;
+  pointsSpent: number | null;
   customerAlias: string;
   code: string;
   basketAmount: string | number | null;
@@ -67,11 +73,12 @@ export default function RedemptionsFeed() {
             <TableHeader>
               <TableRow className="border-[#E6E9E8] hover:bg-transparent">
                 <TableHead className={TH}>When</TableHead>
+                <TableHead className={TH}>Kind</TableHead>
                 <TableHead className={TH}>Offer</TableHead>
                 <TableHead className={TH}>Customer</TableHead>
                 <TableHead className={TH}>Code</TableHead>
                 <TableHead className={`${TH} text-right`}>Basket</TableHead>
-                <TableHead className={`${TH} text-right`}>Points</TableHead>
+                <TableHead className={`${TH} text-right`}>Points earned</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,11 +88,16 @@ export default function RedemptionsFeed() {
                     <span className="font-bold">{formatTime(r.redeemedAt)}</span>
                     <span className="text-xs text-slate-brand ml-2">{formatDate(r.redeemedAt)}</span>
                   </TableCell>
+                  <TableCell className={TD}>
+                    {r.kind === "reward" ? <Pill tone="sand">Reward</Pill> : <Pill tone="sea">Offer</Pill>}
+                  </TableCell>
                   <TableCell className={TD}>{r.offerTitle}</TableCell>
                   <TableCell className={`${TD} text-slate-brand`}>{r.customerAlias}</TableCell>
                   <TableCell className={`${TD} font-mono tracking-wider`}>{r.code}</TableCell>
-                  <TableCell className={`${TD} text-right`}>{r.basketAmount ? formatPounds(r.basketAmount) : "-"}</TableCell>
-                  <TableCell className={`${TD} text-right`}>{r.pointsAwarded || "-"}</TableCell>
+                  <TableCell className={`${TD} text-right whitespace-nowrap`}>
+                    {r.kind === "reward" ? `${r.pointsSpent ?? 0} points spent` : r.basketAmount ? formatPounds(r.basketAmount) : "-"}
+                  </TableCell>
+                  <TableCell className={`${TD} text-right`}>{r.kind === "reward" ? "-" : r.pointsAwarded || "-"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

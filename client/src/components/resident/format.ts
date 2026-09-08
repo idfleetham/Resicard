@@ -32,6 +32,13 @@ export function formatDate(value: string | Date | null | undefined): string {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/** "3 months" for a 90 day trial, "45 days" for anything that is not whole months. */
+export function trialLengthLabel(days: number): string {
+  const months = days / 30;
+  if (days > 0 && Number.isInteger(months)) return `${months} month${months === 1 ? "" : "s"}`;
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
+
 /** HH:MM (24h) */
 export function formatTime(value: string | Date | null | undefined, withSeconds = false): string {
   if (!value) return "";

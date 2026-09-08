@@ -6,8 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRequireRole } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import DigitalMembershipCard from "@/components/digital-membership-card";
-import DocumentVerification from "@/components/document-verification";
+import VerificationPanel from "@/components/resident/verification-panel";
 import MembershipStatus from "@/components/resident/membership-status";
+import { InstallPrompt } from "@/components/resident/install-prompt";
 import { useMembership } from "@/components/resident/use-membership";
 import ScanButton from "@/components/resident/scan-button";
 import OffersTab from "@/components/resident/offers-tab";
@@ -109,8 +110,9 @@ export default function ResidentDashboard() {
                 </p>
               </div>
               <div className="flex flex-col gap-3">
-                <DocumentVerification />
+                <VerificationPanel />
                 <MembershipStatus />
+                <InstallPrompt />
               </div>
             </div>
           </TabsContent>

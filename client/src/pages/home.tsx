@@ -18,7 +18,10 @@ interface Stats {
 
 const STEPS = [
   { title: "Prove you live here.", text: "Your postcode and one proof of address, checked by a person." },
-  { title: "Pay once a year.", text: "One flat fee for an individual, or a household rate for two adults with children free. Nothing per offer, nothing taken from the outlets." },
+  {
+    title: "Free or Premium.",
+    text: "Free gets you the card and loyalty points. Premium, one flat fee a year, gets you the resident offers, and the first three months are free.",
+  },
   { title: "Scan the code at the till.", text: "Pick the offer, show the green screen." },
 ];
 
@@ -64,8 +67,12 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto w-full px-5 sm:px-6 pb-12 sm:pb-16 mt-auto pt-16 sm:pt-24">
           <div className="max-w-2xl flex flex-col gap-[14px]">
             <h1 className="font-display font-extrabold text-[42px] sm:text-[64px] leading-none tracking-[-0.03em] text-foam" style={{ textWrap: "pretty" }}>
-              Local prices for local people
+              Local prices for local people.
             </h1>
+            <p className="text-[15px] sm:text-lg leading-relaxed text-foam/90 max-w-xl">
+              St Andrews prices are set for visitors and students. Resicard lets the town's outlets give residents a
+              better deal.
+            </p>
             <div className="mt-1">
               {homePath ? (
                 <Button asChild variant="buoy" className="h-[52px] w-full sm:w-auto sm:px-10 text-base">
@@ -76,6 +83,9 @@ export default function Home() {
                   <Link href="/register">Join Resicard</Link>
                 </Button>
               )}
+              <p className="text-sm text-[#F2F5F4]/75 mt-1">
+                Works on your phone's home screen. Nothing to download, no app store.
+              </p>
             </div>
           </div>
         </div>
@@ -137,7 +147,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col gap-2">
             <h2 className="font-display font-bold text-xl sm:text-2xl tracking-[-0.02em] text-foam">Run a bar, cafe or shop?</h2>
             <p className="text-sm sm:text-base leading-relaxed text-foam/90">
-              Listing is free: offers for residents on the days you choose, a QR poster and a redemption feed. Premium adds a loyalty programme and analytics.
+              Listing is free: offers for residents on the days you choose, a QR poster and a redemption feed. Premium adds a loyalty programme and analytics, and the first three months are free.
             </p>
           </div>
           <Link

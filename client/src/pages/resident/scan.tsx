@@ -19,11 +19,48 @@ interface ScanResponse {
   reasons: string[];
 }
 
+const PREMIUM_REASON = "premium membership";
+
 function fixLinkFor(reason: string): { href: string; label: string } | null {
   const r = reason.toLowerCase();
   if (r.includes("residency") || r.includes("verified")) return { href: "/resident", label: "Verify your address" };
-  if (r.includes("membership")) return { href: "/resident", label: "Pay your membership" };
+  if (r.includes("membership")) return { href: "/resident?tab=card", label: "Go Premium" };
   return null;
+}
+
+/** True when the only thing stopping a redemption is that the resident is on Free. */
+function premiumOnly(canRedeem: boolean, reasons: string[]): boolean {
+  return !canRedeem && reasons.length > 0 && reasons.every((r) => r.toLowerCase().includes(PREMIUM_REASON));
+}
+
+function OfferList({ offers, disabled, onSelect }: { offers: ScanOffer[]; disabled: boolean; onSelect: (offer: ScanOffer) => void }) {
+  return (
+    <div className={`flex flex-col gap-3 ${disabled ? "opacity-50" : ""}`} aria-disabled={disabled}>
+      <p className="text-xs font-semibold text-slate-brand mt-2">{disabled ? "Offers at this outlet" : "Choose an offer to redeem"}</p>
+      {offers.map((offer) => {
+        const when = offerWhen(offer);
+        return (
+          <button
+            key={offer.id}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(offer)}
+            className="w-full text-left bg-white rounded-2xl p-5 min-h-[104px] flex items-center gap-4 transition-colors hover:bg-[#FAFBFB] active:bg-foam focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-foam disabled:cursor-not-allowed disabled:hover:bg-white"
+          >
+            <p className="font-display font-extrabold text-[28px] leading-[0.95] tracking-[-0.03em] w-[104px] flex-none">
+              {offerHeadline(offer)}
+            </p>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold leading-snug">{offer.title}</p>
+              {offer.shortPromo && <p className="text-sm text-slate-brand">{offer.shortPromo}</p>}
+              {when.length > 0 && <p className="text-xs text-slate-brand mt-1">{when.join(" · ")}</p>}
+            </div>
+            <ChevronRight className="h-6 w-6 text-slate-brand shrink-0" />
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function ScanPage() {
@@ -71,6 +108,7 @@ export default function ScanPage() {
   }
 
   const { merchant, offers, unavailable = [], loyalty, canRedeem, reasons } = scan.data;
+  const needsPremium = premiumOnly(canRedeem, reasons);
 
   return shell(
     <>
@@ -97,7 +135,23 @@ export default function ScanPage() {
         </div>
       )}
 
-      {!canRedeem ? (
+      {needsPremium ? (
+        <div className="flex flex-col gap-3">
+          <div className="bg-sand rounded-2xl p-5 flex flex-col gap-3">
+            <div>
+              <p className="font-display font-bold text-xl tracking-[-0.02em]">Go Premium to redeem offers</p>
+              {loyalty && <p className="text-sm text-slate-brand mt-1">Points and tier benefits work on Free.</p>}
+            </div>
+            <Button asChild variant="buoy" className="w-full h-12 text-base">
+              <Link href="/resident?tab=card">Go Premium</Link>
+            </Button>
+          </div>
+          {offers.length > 0 && <OfferList offers={offers} disabled onSelect={() => undefined} />}
+          <Button asChild variant="ghost" className="w-full h-11">
+            <Link href="/resident">Back to my card</Link>
+          </Button>
+        </div>
+      ) : !canRedeem ? (
         <div className="flex flex-col gap-3">
           <div className="bg-sand rounded-2xl p-5">
             <p className="font-display font-bold text-xl tracking-[-0.02em]">You cannot redeem here yet</p>
@@ -138,30 +192,7 @@ export default function ScanPage() {
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold text-slate-brand mt-2">Choose an offer to redeem</p>
-          {offers.map((offer) => {
-            const when = offerWhen(offer);
-            return (
-              <button
-                key={offer.id}
-                type="button"
-                onClick={() => setSelected(offer)}
-                className="w-full text-left bg-white rounded-2xl p-5 min-h-[104px] flex items-center gap-4 transition-colors hover:bg-[#FAFBFB] active:bg-foam focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-foam"
-              >
-                <p className="font-display font-extrabold text-[28px] leading-[0.95] tracking-[-0.03em] w-[104px] flex-none">
-                  {offerHeadline(offer)}
-                </p>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold leading-snug">{offer.title}</p>
-                  {offer.shortPromo && <p className="text-sm text-slate-brand">{offer.shortPromo}</p>}
-                  {when.length > 0 && <p className="text-xs text-slate-brand mt-1">{when.join(" · ")}</p>}
-                </div>
-                <ChevronRight className="h-6 w-6 text-slate-brand shrink-0" />
-              </button>
-            );
-          })}
-        </div>
+        <OfferList offers={offers} disabled={false} onSelect={setSelected} />
       )}
 
       <RedeemSheet

@@ -14,7 +14,8 @@ interface FeedMerchant {
 
 export type ActivityItem =
   | { kind: "redemption"; id: string; at: Date; merchant: FeedMerchant; title: string; code: string; pointsAwarded: number }
-  | { kind: "points" | "reward" | "tier"; id: string; at: Date; merchant: FeedMerchant; title: string; amount: number | null };
+  | { kind: "reward"; id: string; at: Date; merchant: FeedMerchant; title: string; amount: number | null; claimId: string | null }
+  | { kind: "points" | "tier"; id: string; at: Date; merchant: FeedMerchant; title: string; amount: number | null };
 
 /** Points earned as part of an offer redemption already show on the redemption row. */
 function belongsToRedemption(metadata: Record<string, unknown> | null): boolean {
@@ -60,7 +61,8 @@ activityRouter.get(
           break;
         case "redeem_reward": {
           const name = typeof meta?.rewardName === "string" ? meta.rewardName : "reward";
-          feed.push({ kind: "reward", id: event.id, at, merchant, title: `Claimed ${name}`, amount: event.amount });
+          const claimId = typeof meta?.claimId === "string" ? meta.claimId : null;
+          feed.push({ kind: "reward", id: event.id, at, merchant, title: `Claimed ${name}`, amount: event.amount, claimId });
           break;
         }
         case "tier_change": {

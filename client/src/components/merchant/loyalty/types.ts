@@ -17,7 +17,10 @@ export interface LoyaltyMember {
   customerAlias: string;
   points: number;
   stamps: number;
+  statusPoints: number;
+  tierWindowDays: number;
   tierName: string | null;
+  nextTier: { name: string; thresholdPoints: number } | null;
   lastActivity: string | null;
 }
 

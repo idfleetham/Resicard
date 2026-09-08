@@ -65,7 +65,10 @@ export default function MembersTable() {
                     <span className="font-bold">{m.customerAlias}</span>
                     <span className="text-xs text-slate-brand ml-2">#{m.userId}</span>
                   </TableCell>
-                  <TableCell className={TD}>{m.tierName ?? "-"}</TableCell>
+                  <TableCell className={TD}>
+                    {m.tierName ?? "-"}
+                    {m.tierName && <span className="text-xs text-slate-brand ml-2 tabular-nums">{m.statusPoints} pts</span>}
+                  </TableCell>
                   <TableCell className={`${TD} text-right font-bold`}>{m.points}</TableCell>
                   <TableCell className={`${TD} text-right`}>{m.stamps}</TableCell>
                   <TableCell className={`${TD} whitespace-nowrap`}>{m.lastActivity ? formatDate(m.lastActivity) : "-"}</TableCell>

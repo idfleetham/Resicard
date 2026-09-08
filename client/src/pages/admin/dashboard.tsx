@@ -4,18 +4,22 @@ import Navigation from "@/components/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRequireRole } from "@/hooks/use-auth";
 import StatsOverview from "@/components/admin/stats-overview";
-import ResidencyChecks from "@/components/admin/residency-checks";
+import Postcards from "@/components/admin/postcards";
+import ResidentsDesk from "@/components/admin/residents-desk";
 import BusinessesTable from "@/components/admin/businesses-table";
 import UsersTable from "@/components/admin/users-table";
 import RedemptionsTable from "@/components/admin/redemptions-table";
+import RevenueTab from "@/components/admin/revenue/revenue-tab";
 import { TAB_LIST, TAB_TRIGGER, TabScroller } from "@/components/merchant/portal-ui";
 
 const TABS = [
   { key: "overview", label: "Overview" },
-  { key: "documents", label: "Residency checks" },
+  { key: "postcards", label: "Postcards" },
+  { key: "residents", label: "Residents" },
   { key: "merchants", label: "Businesses" },
   { key: "users", label: "Users" },
   { key: "redemptions", label: "Redemptions" },
+  { key: "revenue", label: "Revenue" },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
 
@@ -72,10 +76,12 @@ export default function AdminDashboard() {
           </TabScroller>
 
           <TabsContent value="overview" className="mt-0"><StatsOverview onGoTo={changeTab} /></TabsContent>
-          <TabsContent value="documents" className="mt-0"><ResidencyChecks /></TabsContent>
+          <TabsContent value="postcards" className="mt-0"><Postcards /></TabsContent>
+          <TabsContent value="residents" className="mt-0"><ResidentsDesk /></TabsContent>
           <TabsContent value="merchants" className="mt-0"><BusinessesTable /></TabsContent>
           <TabsContent value="users" className="mt-0"><UsersTable /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsTable /></TabsContent>
+          <TabsContent value="revenue" className="mt-0"><RevenueTab /></TabsContent>
         </Tabs>
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, sql, count } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql, count, type SQL } from "drizzle-orm";
 import { db } from "../db";
 import {
   loyaltyPrograms,
@@ -6,6 +6,7 @@ import {
   loyaltyRewards,
   loyaltyBalances,
   loyaltyEvents,
+  rewardClaims,
   merchants,
   users,
   type LoyaltyProgram,
@@ -13,6 +14,7 @@ import {
   type LoyaltyReward,
   type LoyaltyBalance,
   type LoyaltyEvent,
+  type RewardClaim,
 } from "@shared/schema";
 import type { DbClient } from "./types";
 
@@ -20,6 +22,7 @@ type ProgramInsert = typeof loyaltyPrograms.$inferInsert;
 type TierInsert = typeof loyaltyTiers.$inferInsert;
 type RewardInsert = typeof loyaltyRewards.$inferInsert;
 type EventInsert = typeof loyaltyEvents.$inferInsert;
+type RewardClaimInsert = typeof rewardClaims.$inferInsert;
 
 // Programmes
 
@@ -100,6 +103,11 @@ export async function getReward(id: string, programId: number, client: DbClient 
   return row;
 }
 
+export async function getRewardById(id: string, client: DbClient = db): Promise<LoyaltyReward | undefined> {
+  const [row] = await client.select().from(loyaltyRewards).where(eq(loyaltyRewards.id, id)).limit(1);
+  return row;
+}
+
 export async function createReward(values: RewardInsert, client: DbClient = db): Promise<LoyaltyReward> {
   const [row] = await client.insert(loyaltyRewards).values(values).returning();
   return row;
@@ -112,6 +120,84 @@ export async function updateReward(id: string, values: Partial<RewardInsert>, cl
 
 export async function deleteReward(id: string, client: DbClient = db): Promise<void> {
   await client.delete(loyaltyRewards).where(eq(loyaltyRewards.id, id));
+}
+
+// Reward claims
+
+export async function createRewardClaim(values: RewardClaimInsert, client: DbClient = db): Promise<RewardClaim> {
+  const [row] = await client.insert(rewardClaims).values(values).returning();
+  return row;
+}
+
+export async function getRewardClaimById(id: string, client: DbClient = db): Promise<RewardClaim | undefined> {
+  const [row] = await client.select().from(rewardClaims).where(eq(rewardClaims.id, id)).limit(1);
+  return row;
+}
+
+export async function getRewardClaimByCode(code: string, client: DbClient = db): Promise<RewardClaim | undefined> {
+  const [row] = await client.select().from(rewardClaims).where(eq(rewardClaims.code, code.toUpperCase())).limit(1);
+  return row;
+}
+
+/** When the resident last claimed each reward at this merchant, keyed by reward id. */
+export async function lastClaimAtByReward(merchantId: string, userId: number, client: DbClient = db): Promise<Map<string, Date>> {
+  const rows = await client
+    .select({ rewardId: rewardClaims.rewardId, latest: sql<Date>`max(${rewardClaims.claimedAt})` })
+    .from(rewardClaims)
+    .where(and(eq(rewardClaims.merchantId, merchantId), eq(rewardClaims.userId, userId)))
+    .groupBy(rewardClaims.rewardId);
+  return new Map(rows.map((r) => [r.rewardId, new Date(r.latest)]));
+}
+
+/** When the resident last claimed one reward, or null. */
+export async function lastClaimAt(rewardId: string, userId: number, client: DbClient = db): Promise<Date | null> {
+  const [row] = await client
+    .select({ claimedAt: rewardClaims.claimedAt })
+    .from(rewardClaims)
+    .where(and(eq(rewardClaims.rewardId, rewardId), eq(rewardClaims.userId, userId)))
+    .orderBy(desc(rewardClaims.claimedAt))
+    .limit(1);
+  return row?.claimedAt ?? null;
+}
+
+/** Merchant's reward claims, newest first, with the reward name and the resident's id and username. */
+export async function listRewardClaimsForMerchant(
+  merchantId: string,
+  range: { from?: Date; to?: Date },
+  client: DbClient = db,
+) {
+  const conditions: SQL[] = [eq(rewardClaims.merchantId, merchantId)];
+  if (range.from) conditions.push(gte(rewardClaims.claimedAt, range.from));
+  if (range.to) conditions.push(lte(rewardClaims.claimedAt, range.to));
+  return client
+    .select({
+      id: rewardClaims.id,
+      code: rewardClaims.code,
+      claimedAt: rewardClaims.claimedAt,
+      pointsSpent: rewardClaims.pointsSpent,
+      stampsSpent: rewardClaims.stampsSpent,
+      rewardId: rewardClaims.rewardId,
+      rewardName: loyaltyRewards.name,
+      userId: rewardClaims.userId,
+      username: users.username,
+    })
+    .from(rewardClaims)
+    .innerJoin(loyaltyRewards, eq(loyaltyRewards.id, rewardClaims.rewardId))
+    .innerJoin(users, eq(users.id, rewardClaims.userId))
+    .where(and(...conditions))
+    .orderBy(desc(rewardClaims.claimedAt));
+}
+
+/** Reward claim counts for the merchant's redemptions summary. */
+export async function countRewardClaimsForMerchant(merchantId: string, client: DbClient = db) {
+  const [row] = await client
+    .select({
+      allTime: sql<number>`count(*)::int`,
+      thisMonth: sql<number>`count(*) filter (where ${rewardClaims.claimedAt} >= date_trunc('month', now() at time zone 'Europe/London') at time zone 'Europe/London')::int`,
+    })
+    .from(rewardClaims)
+    .where(eq(rewardClaims.merchantId, merchantId));
+  return row ?? { allTime: 0, thisMonth: 0 };
 }
 
 // Balances
@@ -146,34 +232,30 @@ export async function updateBalance(
   return row;
 }
 
-/** Balances for a merchant with the resident's username and tier name. */
+/** Balances for a merchant with the resident's username. Tier comes from status points, not the row. */
 export async function listBalancesForMerchant(merchantId: string, client: DbClient = db) {
   return client
     .select({
       balance: loyaltyBalances,
       username: users.username,
-      tierName: loyaltyTiers.name,
     })
     .from(loyaltyBalances)
     .innerJoin(users, eq(users.id, loyaltyBalances.userId))
-    .leftJoin(loyaltyTiers, eq(loyaltyTiers.id, loyaltyBalances.tierId))
     .where(eq(loyaltyBalances.merchantId, merchantId))
     .orderBy(desc(loyaltyBalances.points));
 }
 
-/** A resident's balances across merchants, with merchant and tier details. */
+/** A resident's balances across merchants, with merchant and programme details. */
 export async function listBalancesForUser(userId: number, client: DbClient = db) {
   return client
     .select({
       balance: loyaltyBalances,
       merchant: { id: merchants.id, name: merchants.name, logoUrl: merchants.logoUrl },
       program: loyaltyPrograms,
-      tier: loyaltyTiers,
     })
     .from(loyaltyBalances)
     .innerJoin(merchants, eq(merchants.id, loyaltyBalances.merchantId))
     .innerJoin(loyaltyPrograms, eq(loyaltyPrograms.merchantId, merchants.id))
-    .leftJoin(loyaltyTiers, eq(loyaltyTiers.id, loyaltyBalances.tierId))
     .where(eq(loyaltyBalances.userId, userId))
     .orderBy(desc(loyaltyBalances.updatedAt));
 }
@@ -219,6 +301,39 @@ export async function latestEventAtByMerchant(userId: number, client: DbClient =
     .where(eq(loyaltyEvents.userId, userId))
     .groupBy(loyaltyEvents.merchantId);
   return new Map(rows.map((r) => [r.merchantId, new Date(r.latest)]));
+}
+
+/** Condition for events that count towards tier status: positive earn_points and adjust amounts. */
+function statusEventCondition(since: Date): SQL {
+  return sql`${loyaltyEvents.type} in ('earn_points', 'adjust') and ${loyaltyEvents.amount} > 0 and ${loyaltyEvents.createdAt} >= ${since}`;
+}
+
+/** Points earned by one resident at one merchant since a given time (tier status points). */
+export async function sumStatusPoints(merchantId: string, userId: number, since: Date, client: DbClient = db): Promise<number> {
+  const [row] = await client
+    .select({ total: sql<number>`coalesce(sum(${loyaltyEvents.amount}), 0)::int` })
+    .from(loyaltyEvents)
+    .where(and(eq(loyaltyEvents.merchantId, merchantId), eq(loyaltyEvents.userId, userId), statusEventCondition(since)));
+  return row?.total ?? 0;
+}
+
+/** Status points per resident at one merchant since a given time, keyed by user id. */
+export async function sumStatusPointsByUser(merchantId: string, since: Date, client: DbClient = db): Promise<Map<number, number>> {
+  const rows = await client
+    .select({ userId: loyaltyEvents.userId, total: sql<number>`coalesce(sum(${loyaltyEvents.amount}), 0)::int` })
+    .from(loyaltyEvents)
+    .where(and(eq(loyaltyEvents.merchantId, merchantId), statusEventCondition(since)))
+    .groupBy(loyaltyEvents.userId);
+  return new Map(rows.map((r) => [r.userId, r.total]));
+}
+
+/** The resident's first loyalty event at this merchant, or null. */
+export async function earliestEventAt(merchantId: string, userId: number, client: DbClient = db): Promise<Date | null> {
+  const [row] = await client
+    .select({ earliest: sql<Date | null>`min(${loyaltyEvents.createdAt})` })
+    .from(loyaltyEvents)
+    .where(and(eq(loyaltyEvents.merchantId, merchantId), eq(loyaltyEvents.userId, userId)));
+  return row?.earliest ? new Date(row.earliest) : null;
 }
 
 /** Earn events for one resident at one merchant since a given time, newest first. */

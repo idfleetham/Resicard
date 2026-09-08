@@ -17,6 +17,19 @@ export interface MembershipInfo {
   plan: MembershipPlan;
   status: "inactive" | "active" | "cancelled";
   expiry: string | null;
+  /** Premium = active paid membership; Free = everything else. */
+  tier: "free" | "premium";
+  /** False once a move to Free at the end of the paid period is scheduled. */
+  renews: boolean;
+  /** The date Premium ends when a downgrade is scheduled. */
+  endsAt: string | null;
+  /** True while the membership is running on the free trial (nothing paid yet). */
+  inTrial: boolean;
+  /** When the free trial ends and the first payment is taken. */
+  trialEndsAt: string | null;
+  /** Trial days this resident would get if they joined now; 0 once they have paid. */
+  trialDaysAvailable: number;
+  pointsKept: boolean;
   fees: { individual: number; household: number };
   currency: string;
   canRedeem: boolean;

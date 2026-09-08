@@ -92,6 +92,14 @@
   .sea-gradient { background-image: linear-gradient(180deg, rgba(15,59,71,0.05) 0%, rgba(15,59,71,0.35) 45%, rgba(15,59,71,0.92) 100%); }
 }
 
+/* Standalone (home screen) mode: keep content clear of the notch and home indicator. */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @media print {
   nav, .no-print {
     display: none !important;

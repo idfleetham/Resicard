@@ -73,16 +73,12 @@ export async function listUsers(role?: UserRole, client: DbClient = db): Promise
   return query;
 }
 
-export async function listUsersByMerchant(merchantId: string, client: DbClient = db): Promise<User[]> {
-  return client.select().from(users).where(eq(users.merchantId, merchantId)).orderBy(users.id);
+export async function listUsersWhere(condition: SQL, limit = 300, client: DbClient = db): Promise<User[]> {
+  return client.select().from(users).where(condition).orderBy(users.surname, users.firstName, users.id).limit(limit);
 }
 
-export async function listPendingDocuments(client: DbClient = db): Promise<User[]> {
-  return client
-    .select()
-    .from(users)
-    .where(and(eq(users.role, "resident"), eq(users.documentStatus, "pending")))
-    .orderBy(users.documentSubmittedAt);
+export async function listUsersByMerchant(merchantId: string, client: DbClient = db): Promise<User[]> {
+  return client.select().from(users).where(eq(users.merchantId, merchantId)).orderBy(users.id);
 }
 
 export async function countUsersWhere(condition: SQL | undefined, client: DbClient = db): Promise<number> {

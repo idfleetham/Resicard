@@ -61,14 +61,36 @@ interface FormProps<T> {
 export function ResidentRegisterForm({ onSubmit }: FormProps<ResidentValues>) {
   const form = useForm<ResidentValues>({
     resolver: zodResolver(registerResidentSchema),
-    defaultValues: { role: "resident", firstName: "", surname: "", username: "", email: "", password: "", postcode: "", profilePhoto: undefined },
+    defaultValues: {
+      role: "resident", firstName: "", surname: "", username: "", email: "", password: "",
+      addressLine1: "", addressLine2: "", town: "St Andrews", postcode: "", profilePhoto: undefined,
+    },
   });
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <AccountFields control={form.control} />
-        <TextField control={form.control} name="postcode" label="Postcode" autoComplete="postal-code" placeholder="e.g. KY16 9AA" />
+        <div className="border-t border-[#E6E9E8] pt-4 space-y-4">
+          <TextField control={form.control} name="addressLine1" label="Address line 1" autoComplete="address-line1" placeholder="House number and street" />
+          <FormField
+            control={form.control}
+            name="addressLine2"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address line 2 (optional)</FormLabel>
+                <FormControl>
+                  <Input autoComplete="address-line2" className="h-12 rounded-xl text-base" {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <TextField control={form.control} name="town" label="Town" autoComplete="address-level2" />
+            <TextField control={form.control} name="postcode" label="Postcode" autoComplete="postal-code" placeholder="e.g. KY16 9AA" />
+          </div>
+        </div>
         <FormField
           control={form.control}
           name="profilePhoto"
@@ -80,7 +102,7 @@ export function ResidentRegisterForm({ onSubmit }: FormProps<ResidentValues>) {
           )}
         />
         <p className="text-sm text-sea bg-sand rounded-xl p-4">
-          Next: upload a proof of your St Andrews address, then pay the annual membership. You can browse offers straight away.
+          Next: we post a card with a code to your address to confirm you live here, then you pay the annual membership. You can browse offers straight away.
         </p>
         <Button type="submit" variant="buoy" className="w-full h-12 text-base" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Creating your account" : "Join Resicard"}

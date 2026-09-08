@@ -16,6 +16,7 @@ interface FormState {
   earnCooldownMinutes: string;
   dailyEarnCap: string;
   expiryDays: string;
+  tierWindowDays: string;
   active: boolean;
 }
 
@@ -28,6 +29,7 @@ function fromProgram(p: LoyaltyProgram | null | undefined): FormState {
     earnCooldownMinutes: String(p?.earnCooldownMinutes ?? 30),
     dailyEarnCap: String(p?.dailyEarnCap ?? 3),
     expiryDays: p?.expiryDays ? String(p.expiryDays) : "",
+    tierWindowDays: String(p?.tierWindowDays ?? 365),
     active: p?.active ?? true,
   };
 }
@@ -39,6 +41,7 @@ const NUMBERS: { key: keyof Omit<FormState, "model" | "active">; label: string; 
   { key: "earnCooldownMinutes", label: "Cooldown (minutes)", hint: "Between earns for one resident" },
   { key: "dailyEarnCap", label: "Daily earn cap", hint: "Earns per resident per day" },
   { key: "expiryDays", label: "Points expire after (days)", hint: "Blank for never" },
+  { key: "tierWindowDays", label: "Tier status window (days)", hint: "Tier is based on points earned in this period. Default 365." },
 ];
 
 export default function ProgramSettings({ program }: { program: LoyaltyProgram | null | undefined }) {
@@ -57,6 +60,7 @@ export default function ProgramSettings({ program }: { program: LoyaltyProgram |
         earnCooldownMinutes: Number(f.earnCooldownMinutes),
         dailyEarnCap: Number(f.dailyEarnCap),
         expiryDays: f.expiryDays ? Number(f.expiryDays) : null,
+        tierWindowDays: Number(f.tierWindowDays) || 365,
         active: f.active,
       },
     }),

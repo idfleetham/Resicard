@@ -19,8 +19,18 @@ import { errorMessage } from "@/components/resident/format";
 const schema = updateProfileSchema.extend({
   firstName: z.string().min(1, "Enter your first name"),
   surname: z.string().min(1, "Enter your surname"),
+  addressLine1: z.string().trim().min(3, "Enter your address").max(80).optional(),
+  addressLine2: z.string().trim().max(80).optional().nullable(),
+  town: z.string().trim().min(2, "Enter your town").max(40).optional(),
 });
 type Values = z.infer<typeof schema>;
+
+const ADDRESS_FIELDS: { name: "addressLine1" | "addressLine2" | "town" | "postcode"; label: string; autoComplete: string }[] = [
+  { name: "addressLine1", label: "Address line 1", autoComplete: "address-line1" },
+  { name: "addressLine2", label: "Address line 2 (optional)", autoComplete: "address-line2" },
+  { name: "town", label: "Town", autoComplete: "address-level2" },
+  { name: "postcode", label: "Postcode", autoComplete: "postal-code" },
+];
 
 export default function EditProfile() {
   const { ready, user } = useRequireRole();
@@ -32,15 +42,19 @@ export default function EditProfile() {
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { firstName: "", surname: "", postcode: "", profilePhoto: undefined },
+    defaultValues: { firstName: "", surname: "", profilePhoto: undefined },
   });
 
   useEffect(() => {
     if (!user) return;
+    const resident = user.role === "resident";
     form.reset({
       firstName: user.firstName ?? "",
       surname: user.surname ?? "",
-      postcode: user.postcode ?? "",
+      addressLine1: resident ? user.addressLine1 ?? "" : undefined,
+      addressLine2: resident ? user.addressLine2 ?? "" : undefined,
+      town: resident ? user.town ?? "St Andrews" : undefined,
+      postcode: resident ? user.postcode ?? "" : undefined,
       profilePhoto: user.profilePhoto ?? undefined,
     });
   }, [user, form]);
@@ -48,7 +62,12 @@ export default function EditProfile() {
   const onSubmit = async (values: Values) => {
     try {
       const body: Values = { firstName: values.firstName, surname: values.surname, profilePhoto: values.profilePhoto };
-      if (isResident && values.postcode) body.postcode = values.postcode;
+      if (isResident) {
+        if (values.postcode) body.postcode = values.postcode;
+        if (values.addressLine1) body.addressLine1 = values.addressLine1;
+        body.addressLine2 = values.addressLine2?.trim() ? values.addressLine2 : null;
+        if (values.town) body.town = values.town;
+      }
       const res = await apiRequest("PUT", "/api/profile", body);
       queryClient.setQueryData(["/api/auth/me"], { ...user, ...(await res.json()) });
       await refresh();
@@ -104,19 +123,26 @@ export default function EditProfile() {
             />
           </div>
           {isResident && (
-            <FormField
-              control={form.control}
-              name="postcode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Postcode</FormLabel>
-                  <FormControl>
-                    <Input autoComplete="postal-code" className="h-12 rounded-xl text-base" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="border-t border-[#E6E9E8] pt-4 space-y-4">
+              <p className="text-sm font-semibold text-sea">Your address</p>
+              {ADDRESS_FIELDS.map((f) => (
+                <FormField
+                  key={f.name}
+                  control={form.control}
+                  name={f.name}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{f.label}</FormLabel>
+                      <FormControl>
+                        <Input autoComplete={f.autoComplete} className="h-12 rounded-xl text-base" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+              <p className="text-xs text-slate-brand">Changing your address means verifying again.</p>
+            </div>
           )}
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="h-12 flex-1" onClick={() => setLocation(homePathForRole(user.role))}>

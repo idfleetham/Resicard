@@ -5,8 +5,9 @@ import * as userStore from "../storage/users";
 import { authenticate, requireRole, currentUser } from "../lib/auth";
 import { asyncHandler, parseBody, badRequest, notFound, forbidden } from "../lib/http";
 import { residentRedeemReasons } from "../lib/offer-rules";
-import { effectiveMembership, householdFeeGbp, isMembershipCurrent, type EffectiveMembership } from "../lib/membership";
-import { uniqueHouseholdCode } from "../lib/stripe";
+import { effectiveMembership, householdFeeGbp, isMembershipCurrent, membershipTier, type EffectiveMembership } from "../lib/membership";
+import { trialDaysFor, uniqueHouseholdCode } from "../lib/stripe";
+import { hasEverPaid } from "../lib/ledger";
 
 // Household plans: the paying adult is the primary; a second adult joins with the
 // primary's code and inherits the primary's membership. The membership payload is
@@ -40,10 +41,21 @@ export async function membershipPayload(user: User) {
   const primary = await userStore.getHouseholdPrimary(user);
   const membership: EffectiveMembership = effectiveMembership(user, primary);
   const reasons = residentRedeemReasons(user, membership);
+  // The paying subject is the household primary when the membership is inherited.
+  const subjectId = String(membership.inherited && primary ? primary.id : user.id);
+  const paidBefore = await hasEverPaid("resident_membership", subjectId);
+  const inTrial = isMembershipCurrent(membership) && !paidBefore;
   return {
     plan: membership.plan,
     status: membership.status,
     expiry: membership.expiry,
+    tier: membershipTier(membership),
+    renews: membership.renews,
+    endsAt: membership.endsAt,
+    inTrial,
+    trialEndsAt: inTrial ? membership.expiry : null,
+    trialDaysAvailable: await trialDaysFor("resident_membership", subjectId),
+    pointsKept: true as const,
     fees: { individual: config.residentAnnualFeeGbp, household: householdFeeGbp(config.residentAnnualFeeGbp) },
     currency: "GBP",
     canRedeem: reasons.length === 0,

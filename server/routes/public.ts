@@ -1,3 +1,4 @@
+import { config } from "../config";
 import { Router } from "express";
 import { and, eq } from "drizzle-orm";
 import { users, merchants, type Offer } from "@shared/schema";
@@ -69,7 +70,7 @@ publicRouter.get(
       redemptionStore.countRedemptionsWhere(undefined),
       userStore.countUsersWhere(and(eq(users.role, "resident"), eq(users.membershipStatus, "active"))),
     ]);
-    res.json({ activeOffers, merchants: merchantCount, redemptions, members });
+    res.json({ activeOffers, merchants: merchantCount, redemptions, members, townName: config.townName });
   }),
 );
 

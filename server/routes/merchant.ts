@@ -11,7 +11,15 @@ import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumericStri
 import { scanUrl, qrDataUrl, posterHtml } from "../lib/qr";
 import { uniqueScanCode } from "../lib/scan-code";
 import { imageUpload, fileToDataUrl, uploadErrorHandler } from "../lib/uploads";
-import { isStripeConfigured, createMerchantPlanCheckout, activateMerchantPlan, deactivateMerchantPlan, cancelSubscription } from "../lib/stripe";
+import {
+  isStripeConfigured,
+  createMerchantPlanCheckout,
+  activateMerchantPlanForCheckout,
+  deactivateMerchantPlan,
+  cancelSubscription,
+  trialDaysFor,
+} from "../lib/stripe";
+import { hasEverPaid } from "../lib/ledger";
 import { canGoLive, planFeatures, planLimitMessage } from "../lib/plan";
 import { assertIdentityAvailable } from "./auth";
 
@@ -215,10 +223,16 @@ merchantRouter.post(
 // Plan
 
 async function planPayload(merchant: Merchant) {
+  // In trial = on Premium but never charged; the trial ends when the plan next renews.
+  const paidBefore = await hasEverPaid("merchant_premium", merchant.id);
+  const inTrial = merchant.planStatus === "premium" && !paidBefore;
   return {
     planStatus: merchant.planStatus ?? "free",
     planStartedAt: merchant.planStartedAt,
     planRenewsAt: merchant.planRenewsAt,
+    inTrial,
+    trialEndsAt: inTrial ? merchant.planRenewsAt : null,
+    trialDaysAvailable: await trialDaysFor("merchant_premium", merchant.id),
     premiumMonthlyFee: config.merchantPremiumMonthlyFeeGbp,
     currency: "GBP",
     freeLiveOfferLimit: config.freePlanLiveOfferLimit,
@@ -244,7 +258,7 @@ merchantRouter.post(
       res.json({ url: await createMerchantPlanCheckout(merchant, owner?.email ?? merchant.email ?? "") });
       return;
     }
-    await activateMerchantPlan(merchant);
+    await activateMerchantPlanForCheckout(merchant);
     res.json({ activated: true });
   }),
 );
@@ -254,7 +268,7 @@ merchantRouter.post(
   asyncHandler(async (req, res) => {
     const merchant = await loadMerchant(currentMerchantId(req));
     await cancelSubscription(merchant.stripeSubscriptionId);
-    const result = await deactivateMerchantPlan(merchant);
+    const result = await deactivateMerchantPlan(merchant, merchant.stripeSubscriptionId ? "stripe" : "dev", "cancelled");
     res.json({ planStatus: result.merchant.planStatus ?? "free", pausedOffers: result.pausedOffers });
   }),
 );

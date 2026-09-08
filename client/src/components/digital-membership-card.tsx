@@ -1,11 +1,19 @@
 import { Check, User } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { useQuery } from "@tanstack/react-query";
 import type { AuthUser } from "@/lib/auth";
 
 interface DigitalMembershipCardProps {
   user: AuthUser;
   /** From /api/membership: the effective plan and status (a household member inherits the primary's). */
-  membership?: { plan: "individual" | "household"; status: "inactive" | "active" | "cancelled"; expiry: string | null } | null;
+  membership?: {
+    plan: "individual" | "household";
+    status: "inactive" | "active" | "cancelled";
+    expiry: string | null;
+    renews?: boolean;
+    /** True while the membership is running on the free trial. */
+    inTrial?: boolean;
+  } | null;
 }
 
 /** "Sep 27" style, as on the card mock-up. */
@@ -24,20 +32,33 @@ function memberNumber(id: number | string): string {
  * Matches the brand card: sea, beach photo, name, verified line, valid-to.
  */
 export default function DigitalMembershipCard({ user, membership }: DigitalMembershipCardProps) {
+  const stats = useQuery<{ townName?: string }>({ queryKey: ["/api/stats"], staleTime: 60 * 60 * 1000 });
+  const townName = stats.data?.townName ?? "St Andrews";
   const name = [user.firstName, user.surname].filter(Boolean).join(" ") || user.username;
   const status = membership?.status ?? user.membershipStatus;
   const rawExpiry = membership ? membership.expiry : user.membershipExpiry;
   const expiry = rawExpiry ? new Date(rawExpiry) : null;
-  const membershipLive = status === "active" && expiry !== null && expiry.getTime() > Date.now();
+  const renews = (membership ? membership.renews : user.membershipRenews) !== false;
+  const premium = status === "active" && expiry !== null && expiry.getTime() > Date.now();
   const verified = Boolean(user.isResidencyVerified);
   const plan = membership?.plan ?? user.membershipPlan ?? "individual";
 
-  const validTo = membershipLive && expiry ? shortMonthYear(expiry) : status === "cancelled" ? "Cancelled" : "Not active";
+  const inTrial = premium && Boolean(membership?.inTrial) && renews;
+
+  // Premium: "Renews Sep 27" or "Ends Sep 27" with a downgrade scheduled, where the
+  // month is enough. A trial ends within weeks, so that one shows the day: "6 Dec".
+  const dateLabel = premium && expiry ? (inTrial ? "Free until" : renews ? "Renews" : "Ends") : "Membership";
+  const dateValue = !premium || !expiry
+    ? "Free"
+    : inTrial
+      ? new Date(expiry).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+      : shortMonthYear(expiry);
+  const pill = "text-[10px] tracking-[0.18em] uppercase font-semibold px-[9px] py-[5px] rounded-full leading-none";
 
   return (
     <div
       className="relative w-full aspect-[1.6/1] rounded-[20px] overflow-hidden bg-sea text-foam shadow-[0_18px_40px_rgba(15,59,71,0.35)]"
-      style={{ filter: membershipLive ? undefined : "grayscale(0.35)" }}
+      style={{ filter: verified ? undefined : "grayscale(0.35)" }}
     >
       <img
         src="/brand/west-sands.jpg"
@@ -52,9 +73,11 @@ export default function DigitalMembershipCard({ user, membership }: DigitalMembe
 
       <div className="absolute left-[22px] top-5">
         <Logo tone="white" size={22} />
+        <p className="mt-1.5 pl-[3px] text-[10px] uppercase tracking-[0.22em] font-semibold text-[#F2F5F4]/75">{townName}</p>
       </div>
-      <div className="absolute right-[22px] top-[22px] text-[10px] tracking-[0.18em] uppercase font-semibold bg-[#F2F5F4]/[0.18] px-[9px] py-[5px] rounded-full leading-none">
-        {plan === "household" ? "Household" : "Resident"}
+      <div className="absolute right-[22px] top-[22px] flex items-center gap-1.5">
+        {premium && plan === "household" && <span className={`${pill} bg-[#F2F5F4]/[0.18] text-foam`}>Household</span>}
+        <span className={`${pill} bg-foam ${premium ? "text-sea" : "text-slate-brand"}`}>{premium ? "Premium" : "Free"}</span>
       </div>
 
       <div className="absolute left-[22px] right-[22px] bottom-[22px] flex items-end gap-4">
@@ -77,8 +100,8 @@ export default function DigitalMembershipCard({ user, membership }: DigitalMembe
           )}
         </div>
         <div className="flex-none text-right flex flex-col gap-0.5">
-          <p className="text-[9px] tracking-[0.18em] uppercase font-semibold opacity-70">Valid to</p>
-          <p className="font-display font-bold text-lg leading-none">{validTo}</p>
+          <p className="text-[9px] tracking-[0.18em] uppercase font-semibold opacity-70">{dateLabel}</p>
+          <p className="font-display font-bold text-lg leading-none">{dateValue}</p>
           <p className="text-[10px] opacity-70 mt-1 tabular-nums">No. {memberNumber(user.id)}</p>
         </div>
       </div>

@@ -11,6 +11,8 @@ export interface RedemptionSummary {
   thisWeek: number;
   thisMonth: number;
   allTime: number;
+  rewardsAllTime: number;
+  rewardsThisMonth: number;
   byOffer: { offerId: string; title: string; count: number }[];
 }
 
@@ -40,6 +42,7 @@ export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void 
   const { data: offers = [] } = useMerchantOffers();
   const liveOffers = offers.filter((o) => o.active && !o.archived);
   const top = [...(summary?.byOffer ?? [])].sort((a, b) => b.count - a.count).slice(0, 5);
+  const premium = plan?.planStatus === "premium";
 
   return (
     <div className="space-y-5">
@@ -54,11 +57,18 @@ export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void 
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 gap-3 ${premium ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
         <Tile label="Today" value={summary?.today} />
         <Tile label="This week" value={summary?.thisWeek} />
         <Tile label="This month" value={summary?.thisMonth} />
         <Tile label="All time" value={summary?.allTime} />
+        {premium && (
+          <Tile
+            label="Rewards claimed"
+            value={summary ? `${summary.rewardsThisMonth}` : undefined}
+            note={summary ? `${summary.rewardsAllTime} all time` : undefined}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">

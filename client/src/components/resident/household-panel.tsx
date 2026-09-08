@@ -90,15 +90,22 @@ export function HouseholdMemberPanel({ data }: { data: MembershipInfo }) {
     error: "Could not leave",
   });
   const first = data.household.primary?.firstName || "the primary member";
+  const premium = data.tier === "premium";
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm">Covered by <span className="font-bold">{first}</span>'s household membership.</p>
+      <p className="text-sm">
+        {premium ? (
+          <>Covered by <span className="font-bold">{first}</span>'s Premium household membership.</>
+        ) : (
+          <>Part of <span className="font-bold">{first}</span>'s household. Their Premium membership is not active, so you are on Free.</>
+        )}
+      </p>
       <Button
         variant="outline"
         className="w-full h-11 bg-transparent border-[#0F3B47]/30"
         disabled={leave.isPending}
         onClick={() => {
-          if (window.confirm("Leave this household? You will need your own membership to keep redeeming.")) leave.mutate();
+          if (window.confirm("Leave this household? You will need your own Premium membership to redeem offers.")) leave.mutate();
         }}
       >
         Leave household
