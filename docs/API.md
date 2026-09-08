@@ -1231,3 +1231,34 @@ it is recorded.
   address, confirm the letter matches, done. One screen, no menus.
 - Admin businesses table: a toggle for whether an outlet verifies.
 - Seed: five of the twenty-four outlets verify, spread across the town.
+
+---
+
+## Product tax codes on checkout (8 September 2026)
+
+Stripe now enables **Managed Payments** by default on new accounts, and a Managed
+Payments account rejects a Checkout Session whose line item builds a product
+inline (`price_data.product_data`) without a `tax_code`. The failure is total —
+checkout never opens — and it reads as an application bug rather than an account
+setting.
+
+Every inline product now carries a tax code, from `server/config.ts`:
+
+| Setting | Default | What it covers |
+|---|---|---|
+| `STRIPE_TAX_CODE_MEMBERSHIP` | `txcd_20030000` (General - Services) | the resident membership, individual and household |
+| `STRIPE_TAX_CODE_MERCHANT_PLAN` | `txcd_10103001` (SaaS, business use) | Standard and Insight, in checkout and in a mid-term tier change |
+
+Three call sites in `server/lib/stripe.ts`: `createMembershipCheckout`,
+`createMerchantPlanCheckout`, and `changeMerchantSubscriptionPrice`, which builds
+a Price the same way when repricing an existing subscription.
+
+The alternative was passing `managed_payments: { enabled: false }` on each
+session, or switching Managed Payments off in the Stripe dashboard. Both were
+rejected: a tax code is what the line item should have carried anyway, and it
+does not leave the application depending on an account setting that a future
+Stripe default could flip back.
+
+Setting a tax code does not on its own charge tax. That needs Stripe Tax turned
+on, and it is a decision to take with an accountant — which is why both codes are
+environment variables rather than constants.

@@ -5,6 +5,27 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Set product tax codes on Stripe checkout line items
+
+New Stripe accounts have Managed Payments on by default, and such an
+account rejects a Checkout Session whose line item creates its product
+inline without a tax_code. Checkout never opens; the resident sees
+"Payment could not start" and it reads as an application bug.
+
+Both codes are configurable, because which code applies is an
+accounting question rather than a code one, and an accountant may
+disagree with these defaults. The two alternatives - passing
+managed_payments: { enabled: false } per session, or switching the
+setting off in the dashboard - were rejected: the line items should
+have carried a tax code anyway, and neither leaves the application
+depending on an account default Stripe could flip back.
+
+Applied at all three sites that build a product inline, including
+changeMerchantSubscriptionPrice, which is easy to miss because it
+creates a Price rather than a Checkout Session.
+
+## Regenerate the changelog
+
 ## Verify at an outlet, and let the postcard code be typed
 
 The postcard panel said a card was being prepared and gave no way to
@@ -501,8 +522,4 @@ installs to the home screen, with an install prompt on the resident card tab.
 ## Light theme only, README, env example, parked notes
 
 ## Rebuild client against the new API
-
-## Rebuild server against the new schema and API contract
-
-## Start tidy: remove dead files, park unused features, new schema and API contract
 

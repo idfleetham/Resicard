@@ -90,6 +90,17 @@ export const config = {
   freeTrialDays: readNumber("FREE_TRIAL_DAYS", 90), // free trial for a first-time resident or merchant; 0 turns trials off
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  // Stripe product tax codes. Accounts with Managed Payments switched on refuse a
+  // checkout whose line item creates a product inline without one, and Stripe now
+  // turns Managed Payments on by default for new accounts. Setting the codes here
+  // rather than switching the account setting off means the checkout keeps working
+  // whatever Stripe's default does next, and it is the honest answer anyway: these
+  // say what is being sold. Overridable because the right code is an accounting
+  // question, and an accountant may disagree with these two.
+  // txcd_20030000  general services       - the resident membership
+  // txcd_10103001  SaaS, business use     - the merchant plans
+  stripeTaxCodeMembership: process.env.STRIPE_TAX_CODE_MEMBERSHIP ?? "txcd_20030000",
+  stripeTaxCodeMerchantPlan: process.env.STRIPE_TAX_CODE_MERCHANT_PLAN ?? "txcd_10103001",
   adminSetupSecret: process.env.ADMIN_SETUP_SECRET ?? "",
   analyticsMinCohort: readNumber("ANALYTICS_MIN_COHORT", 5), // town benchmarks are hidden below this many outlets in a category
   // The public counter stays hidden until both figures clear this, because small

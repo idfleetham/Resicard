@@ -156,6 +156,10 @@ Comments explain reasoning, not mechanics. Do not write `// loop over offers`.
 
 Do not "fix" any of these.
 
+- **Checkout line items carry a `tax_code`.** Stripe accounts with Managed
+  Payments on reject an inline product without one. Do not remove them, and do not
+  replace them with `managed_payments: { enabled: false }`: the codes are correct
+  regardless of that setting, and they are configurable for a reason.
 - **The service worker deliberately does not cache.** A stale cached bundle after a
   deploy is a far worse problem than a slightly slower load.
 - **Merchants never see a resident's name.** They see an alias from
@@ -212,6 +216,8 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=      # webhook must send invoice.paid,
                             # checkout.session.completed,
                             # customer.subscription.deleted
+STRIPE_TAX_CODE_MEMBERSHIP=      # optional; defaults to txcd_20030000
+STRIPE_TAX_CODE_MERCHANT_PLAN=   # optional; defaults to txcd_10103001
 MAP_TILE_URL=               # Ordnance Survey, see below
 MAP_TILE_ATTRIBUTION=
 RESEND_API_KEY=             # email; without it messages print to the log

@@ -186,7 +186,7 @@ export async function changeMerchantSubscriptionPrice(subscriptionId: string, pl
     currency: "gbp",
     unit_amount: toPence(merchantPlanFee(plan)),
     recurring: { interval: "month" },
-    product_data: { name: MERCHANT_PLAN_NAMES[plan] },
+    product_data: { name: MERCHANT_PLAN_NAMES[plan], tax_code: config.stripeTaxCodeMerchantPlan },
   });
   await stripe.subscriptions.update(subscriptionId, {
     items: [{ id: item.id, price: price.id }],
@@ -262,7 +262,10 @@ export async function createMembershipCheckout(user: User, plan: MembershipPlan)
           currency: "gbp",
           unit_amount: toPence(planFeeGbp(plan, config.residentAnnualFeeGbp)),
           recurring: { interval: "year" },
-          product_data: { name: plan === "household" ? "Resicard household membership" : "Resicard individual membership" },
+          product_data: {
+            name: plan === "household" ? "Resicard household membership" : "Resicard individual membership",
+            tax_code: config.stripeTaxCodeMembership,
+          },
         },
       },
     ],
@@ -292,7 +295,7 @@ export async function createMerchantPlanCheckout(merchant: Merchant, ownerEmail:
           currency: "gbp",
           unit_amount: toPence(merchantPlanFee(plan)),
           recurring: { interval: "month" },
-          product_data: { name: MERCHANT_PLAN_NAMES[plan] },
+          product_data: { name: MERCHANT_PLAN_NAMES[plan], tax_code: config.stripeTaxCodeMerchantPlan },
         },
       },
     ],
