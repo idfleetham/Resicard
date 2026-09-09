@@ -289,12 +289,62 @@ function icon(size, bg, ink, coverage) {
   return svg(size, size, `0 0 ${size} ${size}`, ground(size, size, bg) + `<g transform="${t}">${markBody(ink, BUOY)}</g>`);
 }
 
-files["app-icon.svg"] = icon(512, SAND, SEA, 1 - ICON_INSET * 2);
-// Android crops a maskable to a circle, so the mark sits at 60% of the tile and
-// the sand runs to the edge.
+/**
+ * Whether the home screen tile carries the banded mark or the plain seal.
+ *
+ * This is on trial. The banded mark drawn at large size and shrunk is a smudge
+ * at 56px, but redrawn FOR the tile — shorter band, word about a third bigger,
+ * inner ring dropped so the band has less to fight — it holds at 56 and 40 and
+ * says the name, which the plain seal never does. What it costs is the 29px
+ * iOS settings list and anything smaller, where it goes to a lozenge.
+ *
+ * Flip this to false to go back to the plain seal. Nothing else needs changing:
+ * the favicons and the maskable are plain either way.
+ */
+const BANDED_APP_ICON = true;
+
+/** The band, drawn for a tile rather than for a poster. See BANDED_APP_ICON. */
+const TILE_BAND = { w: 66, wordHeight: 11, rot: -13, rx: 2.5 };
+
+function bandedIconBody(ink) {
+  const id = "tileband";
+  const bh = TILE_BAND.wordHeight + 6;
+  const bx = 32 - TILE_BAND.w / 2;
+  const by = 32 - bh / 2;
+  const rect = (fill) =>
+    `<rect x="${bx}" y="${by}" width="${TILE_BAND.w}" height="${bh}" rx="${TILE_BAND.rx}" fill="${fill}"/>`;
+  // A solid scallop, not the ringed seal: at tile size the ring and the band are
+  // two competing horizontals and the mark turns to mush. Dropping the ring is
+  // what buys the word its legibility.
+  return (
+    `<defs><mask id="${id}" maskUnits="userSpaceOnUse" x="-6" y="-6" width="76" height="76">` +
+    `<rect x="-6" y="-6" width="76" height="76" fill="#fff"/>` +
+    `<g transform="rotate(${TILE_BAND.rot} 32 32)">${rect("#000")}</g></mask></defs>` +
+    `<g mask="url(#${id})"><path d="${scallop()}" fill="${ink}"/></g>` +
+    `<g transform="rotate(${TILE_BAND.rot} 32 32)">${wordCentred(32, 32, TILE_BAND.wordHeight, ink, true)}</g>`
+  );
+}
+
+/** Like `icon`, but the artwork box is the wider one the band needs. */
+function bandedIcon(size, bg, ink, coverage) {
+  const inset = (1 - coverage) / 2;
+  const scale = (size * coverage) / 76;
+  const t = `translate(${(size * inset + 6 * scale).toFixed(2)} ${(size * inset + 6 * scale).toFixed(2)}) scale(${scale.toFixed(6)})`;
+  return svg(size, size, `0 0 ${size} ${size}`, ground(size, size, bg) + `<g transform="${t}">${bandedIconBody(ink)}</g>`);
+}
+
+files["app-icon.svg"] = BANDED_APP_ICON
+  ? bandedIcon(512, SAND, SEA, 1 - ICON_INSET * 2)
+  : icon(512, SAND, SEA, 1 - ICON_INSET * 2);
+
+// Always the plain seal, whatever the tile is doing.
+//
+// The maskable, because Android crops it to a circle and a circle through the
+// banded mark cuts both ends off the band. The small favicon, because 32px is
+// below anything the band survives. The SVG favicon, because a browser tab is
+// rendered at 16.
 files["icon-maskable.svg"] = icon(512, SAND, SEA, 0.6);
-// The browser tab gets the mark with no ground at all, so it works in a light
-// and a dark tab strip.
+files["favicon-tile.svg"] = icon(512, SAND, SEA, 1 - ICON_INSET * 2);
 files["favicon.svg"] = svg(64, 64, MARK_VIEWBOX, markBody(SEA, BUOY));
 
 for (const [name, body] of Object.entries(files)) {

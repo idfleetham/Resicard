@@ -5,6 +5,38 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Put the banded mark on the home screen tile, on trial
+
+Not the poster artwork shrunk down, which is a smudge at 56px. Redrawn for
+the tile: the band shorter, the word about a third bigger, and the inner
+ring dropped, because at that size the ring and the band are two competing
+horizontals and the mark turns to mush. Dropping the ring is what buys the
+word its legibility. It holds at 56 and 40 and it says the name, which the
+plain seal never does.
+
+What it costs is the 29px iOS settings list and anything smaller, where it
+goes to a lozenge. So this is a judgement to be made on a real home screen
+over a few days rather than from a contact sheet, and BANDED_APP_ICON in
+scripts/brand-assets.mjs turns it off again in one line.
+
+The maskable stays plain, because Android crops it to a circle and a circle
+through the banded mark cuts both ends off the band. The 32px favicon stays
+plain too and now comes from its own favicon-tile.svg, since 32 is below
+anything the band survives. The brief records which PNG comes from which
+SVG, which was not written down before.
+
+## Fill the app icon: the mark takes 78 per cent of the tile
+
+It was 62, which left the seal marooned in the middle of a sand square.
+Tested at 62, 78 and 88 in a row of real neighbouring icons: 88 pushes the
+scallop tips into the rounded corner, which iOS then masks with a radius of
+its own choosing, so 78 is as much as can be given away while the shape
+still reads as a stamp rather than a texture.
+
+The maskable stays at 60, because Android crops it to a circle.
+
+## Regenerate the changelog
+
 ## The banded seal: the mark says its own name above 72px
 
 The plain seal says nothing, so every application above thumbnail size
@@ -757,10 +789,4 @@ Adds a web app manifest, icons and a non-caching service worker so Resicard
 installs to the home screen, with an install prompt on the resident card tab.
 
 ## Town name on the card, configurable via TOWN_NAME
-
-## Activity tab: summary strip, points blocks, progress bars, coloured feed icons
-
-## Resident Free/Premium with downgrade before cancel
-
-## Contract and schema: resident Free/Premium with downgrade
 
