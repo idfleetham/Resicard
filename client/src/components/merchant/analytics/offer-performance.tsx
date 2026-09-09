@@ -10,7 +10,7 @@ export default function OfferPerformance({ byOffer }: { byOffer: OfferPoint[] })
   const top = byOffer[0]?.redemptions ?? 0;
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <SectionTitle>Offer performance</SectionTitle>
       <p className="text-xs text-slate-brand mt-1 mb-4">Which offers residents actually used, over the last 90 days.</p>
 

@@ -82,7 +82,7 @@ function PlanCard({ title, price, current, features, pill, children }: {
   title: string; price: string; current: boolean; features: string[]; pill?: React.ReactNode; children?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-white rounded-2xl p-5 flex flex-col gap-4 ${current ? "" : "border border-[#E6E9E8]"}`}>
+    <div className={`bg-white rounded-2xl border p-5 flex flex-col gap-4 ${current ? "border-sea" : "border-hairline"}`}>
       <div className="flex items-center justify-between gap-3">
         <SectionTitle>{title}</SectionTitle>
         {pill ?? (current && <Pill tone="sea">Current plan</Pill>)}
@@ -204,7 +204,7 @@ export default function PlanTab() {
   if (isLoading || !plan) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl">
-        {[0, 1, 2].map((i) => <div key={i} className="h-80 bg-white rounded-2xl animate-pulse" />)}
+        {[0, 1, 2].map((i) => <div key={i} className="h-80 bg-white rounded-2xl border border-hairline animate-pulse" />)}
       </div>
     );
   }

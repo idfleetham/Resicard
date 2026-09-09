@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
   if (!ready || !user) {
     return (
-      <div className="min-h-screen bg-foam">
+      <div className="min-h-screen bg-mist">
         <Navigation />
         <div className="max-w-6xl mx-auto px-5 py-6 animate-pulse space-y-4">
           <div className="h-10 bg-white rounded-xl w-1/3" />
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-foam text-sea">
+    <div className="min-h-screen bg-mist text-sea">
       <Navigation />
       <main className="max-w-6xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
         <div className="mb-5">

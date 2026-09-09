@@ -54,6 +54,15 @@
   --rc-buoy-dark: #C9451F;
   --rc-redeemed: #1F8A5B;
   --rc-slate: #5C6F75;
+  /*
+   * Mist is the ground the portals sit on. Foam is only three per cent off
+   * white, which is right behind a photograph on the resident card and wrong
+   * behind a screen of white panels: the panels stop reading as panels and the
+   * whole page washes out on a phone in daylight. Mist is a step darker, and
+   * every panel also carries a hairline edge, so a card is a card.
+   */
+  --rc-mist: #E7EDEC;
+  --rc-hairline: #DCE5E3;
 }
 
 @layer base {
@@ -80,6 +89,8 @@
   .bg-sea { background-color: var(--rc-sea); }
   .bg-sea-deep { background-color: var(--rc-sea-deep); }
   .bg-foam { background-color: var(--rc-foam); }
+  .bg-mist { background-color: var(--rc-mist); }
+  .border-hairline { border-color: var(--rc-hairline); }
   .bg-sand { background-color: var(--rc-sand); }
   .bg-buoy { background-color: var(--rc-buoy); }
   .bg-redeemed { background-color: var(--rc-redeemed); }

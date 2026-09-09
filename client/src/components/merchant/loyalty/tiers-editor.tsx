@@ -88,7 +88,7 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
     setForm({ ...form, [k]: e.target.value });
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <SectionTitle>Tiers</SectionTitle>

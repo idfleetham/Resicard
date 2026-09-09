@@ -30,7 +30,7 @@ export default function ForecastAssumptionsCard({ value, onChange }: Props) {
   const set = (patch: Partial<ForecastAssumptions>) => onChange({ ...value, ...patch });
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="mb-4">
         <SectionTitle>Forecast assumptions</SectionTitle>
         <p className="text-xs text-slate-brand mt-1">Forecast only. Assumptions are not saved.</p>

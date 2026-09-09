@@ -36,7 +36,7 @@ export default function MembersTable() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <SectionTitle>Members ({members.length})</SectionTitle>
         <Input placeholder="Search by alias" className={`${INPUT} sm:max-w-xs`} value={search} onChange={(e) => setSearch(e.target.value)} />

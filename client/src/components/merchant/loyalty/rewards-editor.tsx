@@ -129,7 +129,7 @@ export default function RewardsEditor({ rewards, tiers, enabled }: Props) {
   );
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <SectionTitle>Rewards</SectionTitle>

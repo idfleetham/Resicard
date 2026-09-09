@@ -101,7 +101,7 @@ export default function MerchantSettings() {
   });
 
   if (!form || !merchant) {
-    return <div className="h-64 bg-white rounded-2xl animate-pulse" />;
+    return <div className="h-64 bg-white rounded-2xl border border-hairline animate-pulse" />;
   }
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm({ ...form, [k]: v });
@@ -112,7 +112,7 @@ export default function MerchantSettings() {
       className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start"
       onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}
     >
-      <div className="bg-white rounded-2xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <SectionTitle>Business details</SectionTitle>
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-xl bg-sand overflow-hidden flex items-center justify-center shrink-0">
@@ -154,7 +154,7 @@ export default function MerchantSettings() {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <SectionTitle>Where you are</SectionTitle>
         <p className="text-xs text-[#0F3B47]/70">
           Your pin on the residents' map. Leave it off and you are still listed, just under the map rather than on it.
@@ -165,7 +165,7 @@ export default function MerchantSettings() {
         />
       </div>
 
-      <div className="bg-white rounded-2xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <SectionTitle>Opening hours</SectionTitle>
         <BusinessHoursEditor value={form.hours} onChange={(hours) => set("hours", hours)} />
         <Button type="submit" variant="buoy" className="h-12 w-full" disabled={save.isPending}>{save.isPending ? "Saving" : "Save"}</Button>

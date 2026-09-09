@@ -61,7 +61,10 @@ export default function OverviewTab({ onGoTo }: { onGoTo: (tab: string) => void 
       <div className={`grid grid-cols-2 gap-3 ${showRewards ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}>
         <Tile label="Today" value={summary?.today} />
         <Tile label="This week" value={summary?.thisWeek} />
-        <Tile label="This month" value={summary?.thisMonth} />
+        {/* This month is the figure a merchant actually watches, and the only one
+            on the screen that moves, so it takes the sea ground and the others
+            sit around it. */}
+        <Tile label="This month" value={summary?.thisMonth} lead />
         <Tile label="All time" value={summary?.allTime} />
         <Tile label="Favourites" value={summary?.favourites} note="Residents who have starred you" />
         {showRewards && (

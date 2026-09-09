@@ -330,6 +330,14 @@ and make sure `drizzle-kit push` appears nowhere in any workflow.
   geometry, the colours and the buoy-once rule. Edit the script and re-run it, or
   the next run silently reverts you. The PNG icons are rasterised from those SVGs
   and committed; the script prints what it wrote.
+- Do not use `mark-banded-*.svg` below 72px, and do not use it for an app icon or
+  a favicon. It is the second state of one mark, not a second mark: above 72px the
+  seal carries the word on a band, below it the band drops and the plain seal is
+  what is left. Banded holds as a shape to about 56px and is a grey lozenge under
+  that, which is the whole reason for the line.
+- The `mark-banded-on-*.svg` files fill the band with a colour. Use those over a
+  photograph only. Everywhere else use the knockout files, which take whatever is
+  behind them, so there is one file rather than one per ground.
 - Do not add features that were not asked for. If you think something is missing,
   say so and wait.
 - Do not "improve" copy. The wording is deliberate, it is UK English, it is

@@ -61,7 +61,7 @@ export default function PriceChanges() {
   return (
     <div className="space-y-3">
       {summary.length > 0 && (
-        <div className="bg-white rounded-2xl p-5">
+        <div className="bg-white rounded-2xl border border-hairline p-5">
           <SectionTitle>Outlets with changes that increase a stated saving</SectionTitle>
           <ul className="mt-3 space-y-1.5">
             {summary.map((m) => (
@@ -78,7 +78,7 @@ export default function PriceChanges() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-5">
+      <div className="bg-white rounded-2xl border border-hairline p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <SectionTitle>Price changes</SectionTitle>

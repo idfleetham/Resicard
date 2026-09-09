@@ -8,7 +8,7 @@ export default function RedemptionsTable() {
   const { data: rows = [], isLoading } = useQuery<AdminRedemption[]>({ queryKey: ["/api/admin/redemptions"] });
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="mb-4">
         <SectionTitle>Latest redemptions</SectionTitle>
         <p className="text-xs text-slate-brand mt-1">The most recent 200 across all outlets.</p>

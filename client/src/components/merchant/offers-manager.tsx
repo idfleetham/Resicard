@@ -34,7 +34,7 @@ function OfferRow({ offer, onEdit, onArchive }: { offer: Offer; onEdit: () => vo
   const toggle = useToggleOffer();
   const when = offerWhen(offer);
   return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+    <div className="bg-white rounded-2xl border border-hairline p-5 flex flex-col sm:flex-row sm:items-center gap-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <Link href={`/merchant/offers/${offer.id}`} className="font-bold text-sea hover:underline truncate">

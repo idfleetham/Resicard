@@ -83,7 +83,7 @@ export default function BusinessesTable() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex items-center justify-between gap-3 mb-4">
         <SectionTitle>Businesses</SectionTitle>
         <Select value={status} onValueChange={(v) => setStatus(v as (typeof STATUSES)[number])}>

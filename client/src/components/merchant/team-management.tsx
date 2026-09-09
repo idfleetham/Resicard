@@ -63,7 +63,7 @@ export default function TeamManagement() {
   );
 
   return (
-    <div className="bg-white rounded-2xl p-5 max-w-3xl">
+    <div className="bg-white rounded-2xl border border-hairline p-5 max-w-3xl">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <SectionTitle>Team</SectionTitle>

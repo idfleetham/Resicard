@@ -73,7 +73,7 @@ export default function Postcards() {
 
   return (
     <div className="space-y-3">
-      <div className="bg-white rounded-2xl p-5">
+      <div className="bg-white rounded-2xl border border-hairline p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <SectionTitle>To post ({queue.length})</SectionTitle>
           <Button variant="buoy" className="h-12 px-6" disabled={count === 0 || post.isPending} onClick={() => post.mutate(Array.from(selected))}>
@@ -106,7 +106,7 @@ export default function Postcards() {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl p-5">
+      <div className="bg-white rounded-2xl border border-hairline p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <SectionTitle>Sent ({others.length})</SectionTitle>
           <Select value={status} onValueChange={(v) => setStatus(v as Status)}>

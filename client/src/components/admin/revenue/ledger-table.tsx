@@ -46,7 +46,7 @@ export default function LedgerTable() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
         <div>
           <SectionTitle>Ledger</SectionTitle>

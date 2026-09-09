@@ -23,12 +23,12 @@ export default function LoyaltyTab() {
   const { data, isLoading, error } = useQuery<LoyaltyProgramData | null>({ queryKey: [...PROGRAM_KEY], enabled: !!plan && !gated });
   const program = data?.program;
 
-  if (planLoading) return <div className="h-40 bg-white rounded-2xl animate-pulse max-w-xl" />;
+  if (planLoading) return <div className="h-40 bg-white rounded-2xl border border-hairline animate-pulse max-w-xl" />;
   if (gated || isPlanRequired(error)) return <LoyaltyUpgradeCard />;
 
   return (
     <div className="space-y-3">
-      <div className="bg-white rounded-2xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <SectionTitle>Loyalty programme</SectionTitle>
           {program && (program.active ? <Pill tone="live">Running</Pill> : <Pill tone="sand">Paused</Pill>)}

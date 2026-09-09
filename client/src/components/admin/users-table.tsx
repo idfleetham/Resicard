@@ -34,7 +34,7 @@ export default function UsersTable() {
     : users;
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <SectionTitle>Users ({shown.length})</SectionTitle>
         <div className="flex gap-2">

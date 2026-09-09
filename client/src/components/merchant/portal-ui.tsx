@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * Small shared pieces for the merchant, loyalty and admin screens so they match
- * the resident dashboard: segmented pill tabs, white borderless cards, number
- * tiles, status pills and the table header/row treatment.
+ * the resident dashboard: segmented pill tabs, white cards on the mist ground,
+ * number tiles, status pills and the table header/row treatment.
  */
 
 export const TAB_LIST = "h-12 p-1 rounded-full bg-white inline-flex w-auto";
@@ -47,27 +47,54 @@ export function TabScroller({ children }: { children: ReactNode }) {
         <div
           aria-hidden
           className="pointer-events-none absolute inset-y-0 right-0 w-10"
-          style={{ background: "linear-gradient(90deg, rgba(242,245,244,0) 0%, #F2F5F4 70%)" }}
+          style={{ background: "linear-gradient(90deg, rgba(231,237,236,0) 0%, #E7EDEC 70%)" }}
         />
       )}
     </div>
   );
 }
 
+/**
+ * The one card treatment. White on mist with a hairline edge: without the edge
+ * the panels dissolve into the ground on a phone screen in daylight, which is
+ * where a publican actually reads this.
+ */
+export const CARD = "bg-white rounded-2xl border border-hairline";
+
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`bg-white rounded-2xl p-5 ${className}`}>{children}</div>;
+  return <div className={`${CARD} p-5 ${className}`}>{children}</div>;
 }
 
 export function SectionTitle({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <h2 className={`font-display font-bold text-2xl tracking-[-0.02em] text-sea ${className}`}>{children}</h2>;
 }
 
-export function Tile({ label, value, note }: { label: string; value: ReactNode; note?: ReactNode }) {
+/**
+ * A number tile. `lead` marks the one figure on the screen worth landing on and
+ * gives it the sea ground, so a grid of tiles has somewhere for the eye to go
+ * instead of six identical white boxes, four of which usually read zero.
+ */
+export function Tile({
+  label,
+  value,
+  note,
+  lead = false,
+}: {
+  label: string;
+  value: ReactNode;
+  note?: ReactNode;
+  lead?: boolean;
+}) {
+  const ground = lead ? "bg-sea border-sea" : CARD;
+  const labelInk = lead ? "text-[#B7CBD1]" : "text-slate-brand";
+  const valueInk = lead ? "text-foam" : "text-sea";
   return (
-    <div className="bg-white rounded-2xl p-5">
-      <p className="text-xs text-slate-brand">{label}</p>
-      <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea mt-2">{value ?? "-"}</p>
-      {note && <p className="text-xs text-slate-brand mt-1">{note}</p>}
+    <div className={`${lead ? "rounded-2xl border" : ""} ${ground} p-4`}>
+      <p className={`text-xs ${labelInk}`}>{label}</p>
+      <p className={`font-display font-extrabold text-[30px] leading-none tracking-[-0.03em] ${valueInk} mt-1.5`}>
+        {value ?? "-"}
+      </p>
+      {note && <p className={`text-xs ${labelInk} mt-1`}>{note}</p>}
     </div>
   );
 }
@@ -107,5 +134,5 @@ export function EmptyNote({ children }: { children: ReactNode }) {
 }
 
 export function Skeleton({ className = "h-28" }: { className?: string }) {
-  return <div className={`bg-white rounded-2xl animate-pulse ${className}`} />;
+  return <div className={`${CARD} animate-pulse ${className}`} />;
 }

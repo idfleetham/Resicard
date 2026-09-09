@@ -78,7 +78,7 @@ function MemberGrowth({ town }: { town: TownBlockData }) {
 
 function Card({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <SectionTitle>{title}</SectionTitle>
       <p className="text-xs text-slate-brand mt-1 mb-4">{note}</p>
       {children}

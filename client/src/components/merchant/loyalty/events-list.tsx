@@ -15,7 +15,7 @@ export default function EventsList() {
   const { data: events = [], isLoading } = useQuery<LoyaltyEventRow[]>({ queryKey: ["/api/loyalty/events?limit=30"] });
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <SectionTitle className="mb-3">Recent activity</SectionTitle>
       {isLoading ? (
         <div className="animate-pulse space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-12 bg-foam rounded-xl" />)}</div>

@@ -51,7 +51,7 @@ export default function RevenueChart({ history, forecast }: { history: HistoryMo
   const yearOf = (month: string) => month.slice(0, 4);
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
         <div>
           <SectionTitle>Collected and forecast</SectionTitle>

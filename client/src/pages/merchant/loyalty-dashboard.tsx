@@ -32,7 +32,7 @@ export default function LoyaltyDashboard() {
   const loading = !ready || planLoading || (isLoading && !gated);
 
   return (
-    <div className="min-h-screen bg-foam text-sea">
+    <div className="min-h-screen bg-mist text-sea">
       <Navigation />
       <main className="max-w-6xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
         <Link href="/merchant?tab=loyalty" className="inline-flex items-center gap-1 text-sm font-bold text-slate-brand hover:text-sea mb-4">

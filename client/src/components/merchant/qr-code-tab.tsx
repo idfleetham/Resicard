@@ -55,7 +55,7 @@ export default function QrCodeTab({ merchantName }: { merchantName: string }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <div className="bg-white rounded-2xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <SectionTitle>Your Resicard code</SectionTitle>
         <p className="text-sm text-slate-brand">Residents scan this at the till with their phone, pick an offer and show staff the green screen.</p>
         {isLoading || !data ? (
@@ -68,7 +68,7 @@ export default function QrCodeTab({ merchantName }: { merchantName: string }) {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-3">
         <SectionTitle>Put it on show</SectionTitle>
         <p className="text-sm text-slate-brand">Print the A4 poster for the till or the window. The PNG is for menus and your own signage.</p>
         <Button variant="buoy" className="h-12 w-full" onClick={printPoster} disabled={!data}>

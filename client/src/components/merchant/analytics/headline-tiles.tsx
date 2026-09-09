@@ -30,7 +30,7 @@ function Change({ current, previous }: { current: number; previous: number }) {
 
 function Tile({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <p className="text-xs text-slate-brand">{label}</p>
       <p className="font-display font-extrabold text-[32px] leading-none tracking-[-0.03em] text-sea mt-2">{value}</p>
       {children}

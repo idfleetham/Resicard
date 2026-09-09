@@ -5,6 +5,64 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## The banded seal: the mark says its own name above 72px
+
+The plain seal says nothing, so every application above thumbnail size
+needed the wordmark bolted on beside it. Banded, the seal carries the
+word struck across it the way a rubber stamp does.
+
+This is a second state of one mark, not a second mark. Above 72px the
+band is there; below it the band drops and what is left is the plain
+seal, unchanged. The tile test sets that line: banded holds as a shape to
+about 56px and is a grey lozenge under it, while the plain seal is still
+itself at 24. So the app icon and the favicon stay plain, and nothing
+about them changes.
+
+The buoy moves to the dot on the i. It has to: the band crosses the
+centre where the buoy lives, and the first four attempts all came out
+flat one-colour because the accent had been covered up. That needs no new
+rule, it is the buoy-once rule already - the word is present, so the
+accent goes on the i rather than in the seal.
+
+The band is a mask rather than an evenodd path. Evenodd would have been
+tidier as one path, but the band crosses the knocked-out ring and would
+fill that crossing back in as two ink slabs. Masked, the band takes
+whatever is behind it, so one file sits on white, sand, sea and buoy.
+The mark-banded-on-*.svg files fill the band instead, for a photograph,
+where a knockout puts grass behind the letters.
+
+## Regenerate the changelog
+
+## Give the portals a ground, and replace the date boxes with periods
+
+Two things a merchant reported from a phone in daylight.
+
+The portal washed out. White panels with no edge on foam, which is three
+per cent off white, is a screen with nothing on it: the panels stopped
+reading as panels and six identical number tiles read as empty boxes.
+So the portals now sit on mist, a step darker than foam, every panel
+carries a hairline edge, and the one figure that moves - this month -
+takes the sea ground so the eye has somewhere to land. Foam stays as it
+was on the resident side, where a photograph is doing that job.
+
+The From and To boxes on the redemptions feed failed three ways at once.
+On iOS an empty date input draws nothing at all, so the merchant saw two
+empty rounded boxes with no hint they were anything; on desktop the
+native calendar button was sliced by the edge of a narrow column; and the
+placeholder came out mm/dd/yyyy, because a date field takes its format
+from the browser locale and cannot be told otherwise.
+
+None of that is fixable while the control is a bare date input, and it
+was the wrong question anyway. A merchant wants last week or last month,
+not the third to the eleventh. So the period is now 7, 30, 90 days or
+All, one tap, defaulting to 30 days, and a specific range lives behind
+Custom - where two empty date fields are understood, because you have
+just asked for them. The fields stack on a phone so the calendar button
+has room, the range is restated in words underneath in UK order, and to
+cannot be set before from.
+
+## Regenerate the changelog
+
 ## Brand assets from one script; the app icon goes on sand
 
 Every SVG in client/public/brand is now written by scripts/brand-assets.mjs
@@ -705,12 +763,4 @@ installs to the home screen, with an install prompt on the resident card tab.
 ## Resident Free/Premium with downgrade before cancel
 
 ## Contract and schema: resident Free/Premium with downgrade
-
-## Residency verification by postcard or in person; document upload removed
-
-## Schema and contract: postcard and in-person residency verification
-
-## Admin revenue: subscription ledger, run rate, cliffs, forecast
-
-## Schema and contract: subscription ledger and admin revenue
 

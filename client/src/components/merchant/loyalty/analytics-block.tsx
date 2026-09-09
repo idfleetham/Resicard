@@ -26,7 +26,7 @@ export default function AnalyticsBlock() {
   }));
 
   return (
-    <div className="bg-white rounded-2xl p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
       <SectionTitle>Last 30 days</SectionTitle>
       {isLoading ? (
         <div className="h-40 bg-foam rounded-2xl animate-pulse" />

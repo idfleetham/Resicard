@@ -23,7 +23,7 @@ export default function AnalyticsDashboard({ data, example = false }: { data: An
         </div>
       )}
 
-      <div className="bg-white rounded-2xl px-5 py-4">
+      <div className="bg-white rounded-2xl border border-hairline px-5 py-4">
         <p className="text-xs text-slate-brand">{from} to {to}, against the 90 days before.</p>
       </div>
 

@@ -84,7 +84,7 @@ export default function ProgramSettings({
   );
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex items-center justify-between gap-3 mb-4">
         <SectionTitle>Programme settings</SectionTitle>
         <label className="flex items-center gap-2 text-sm font-bold text-sea">

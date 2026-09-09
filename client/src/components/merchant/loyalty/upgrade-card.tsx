@@ -11,7 +11,7 @@ export function isPlanRequired(err: unknown): boolean {
 /** Shown in place of the loyalty programme UI when the business is on Free. */
 export function LoyaltyUpgradeCard() {
   return (
-    <div className="bg-white rounded-2xl p-5 space-y-4 max-w-xl">
+    <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4 max-w-xl">
       <SectionTitle>Loyalty programme</SectionTitle>
       <p className="text-sm text-slate-brand">
         The loyalty programme is part of Standard and Insight. Residents earn points each time they redeem with

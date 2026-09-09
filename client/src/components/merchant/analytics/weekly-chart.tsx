@@ -40,7 +40,7 @@ export default function WeeklyChart({ byWeek }: { byWeek: WeekPoint[] }) {
   const empty = rows.every((r) => r.redemptions === 0);
 
   return (
-    <div className="bg-white rounded-2xl p-5">
+    <div className="bg-white rounded-2xl border border-hairline p-5">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
           <SectionTitle>Redemptions by week</SectionTitle>
