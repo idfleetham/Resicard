@@ -11,7 +11,7 @@ import { useArchiveOffer, useMerchantOffers, useToggleOffer } from "@/hooks/use-
 import { offerHeadline, offerWhen } from "@/components/resident/format";
 import OfferForm from "./offer-form";
 import { usePlan } from "./plan-tab";
-import { Pill, Skeleton } from "./portal-ui";
+import { CARD, Pill, Skeleton } from "./portal-ui";
 
 function FreePlanNote() {
   const { data: plan } = usePlan();
@@ -96,8 +96,24 @@ export default function OffersManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm text-slate-brand">Residents see live offers on their card and can pick one when they scan your code.</p>
+      {/*
+        The tab opens on the number that matters rather than a sentence of
+        explanation: how many offers a resident can actually see right now.
+      */}
+      <div className={`${CARD} p-5 flex flex-col sm:flex-row sm:items-center gap-4`}>
+        <div className="flex items-baseline gap-3 shrink-0">
+          <span className="font-display font-extrabold text-[44px] leading-none tracking-[-0.03em] text-sea tabular-nums">
+            {isLoading ? "—" : active.length}
+          </span>
+          <span className="font-display font-bold text-lg text-slate-brand">
+            {active.length === 1 ? "offer live" : "offers live"}
+          </span>
+        </div>
+        <p className="text-sm text-slate-brand flex-1 min-w-0">
+          {active.length === 0
+            ? "Residents who scan your code right now see nothing to redeem."
+            : "This is what a resident sees on their card and can pick from when they scan your code."}
+        </p>
         <Button variant="buoy" className="h-12 px-6 shrink-0" onClick={openNew}>
           <Plus className="h-4 w-4" /> New offer
         </Button>

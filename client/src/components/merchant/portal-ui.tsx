@@ -35,11 +35,11 @@ export function TabScroller({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="relative -mx-5 mb-5">
+    <div className="relative -mx-5 lg:mx-0 mb-4">
       <div
         ref={scroller}
         onScroll={check}
-        className="overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="overflow-x-auto px-5 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>

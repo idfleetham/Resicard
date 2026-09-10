@@ -5,6 +5,39 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Stop every merchant tab opening the same way
+
+Shown on a laptop, the portal looked samey, and the contact sheet of all
+ten tabs side by side made the reasons specific.
+
+The header was a MERCHANT PORTAL label, the outlet name at 42px and the
+tab row: about 190px before any content, identical on all ten screens,
+which is a fifth of a laptop viewport spent saying the same thing. The
+label is gone and the name is 30px, so content starts roughly 120px
+higher everywhere.
+
+The four tabs that already looked fine were the ones with a real object
+in them: the chart, the QR, the plan cards, the redemptions table. The
+other six were text in white boxes. So each of those now opens on the
+thing it is actually about.
+
+Loyalty opens with the branded card as a resident sees it, which is what
+a merchant is buying on Standard and was previously described in a list
+of settings rather than shown. QR draws the code as the poster it becomes,
+on sea, rather than as a thumbnail in a form. Offers, Team and Send open
+on the number that decides what you do next: offers a resident can see
+right now, who can award points at the till, how many people a campaign
+would reach and how many sends are left this month. Every one of those
+figures was already in the payload and none of them were on screen.
+
+Settings keeps its form, because a settings screen is allowed to be one,
+but it now opens with the outlet as a resident sees it, which is the only
+reason any of those fields exist.
+
+Checked at 1280 and at 390.
+
+## Regenerate the changelog
+
 ## Put the banded mark on the home screen tile, on trial
 
 Not the poster artwork shrunk down, which is a smudge at 56px. Redrawn for
@@ -777,16 +810,4 @@ starred outlets sort first. Merchants see how many residents have starred
 them; admin sees it per business.
 
 ## Contract and schema: outlets list and favourites
-
-## Three months free on both sides, and home-screen install
-
-Stripe checkout now takes card details with a 90-day trial for anyone who
-has never paid, and an invoice.paid handler converts the trial and handles
-year-two renewals (previously missing). Trial sign-ups record a zero-amount
-ledger row so they do not show as revenue.
-
-Adds a web app manifest, icons and a non-caching service worker so Resicard
-installs to the home screen, with an install prompt on the resident card tab.
-
-## Town name on the card, configurable via TOWN_NAME
 

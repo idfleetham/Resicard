@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { errorMessage } from "@/components/resident/format";
-import { INPUT, Pill, SectionTitle } from "./portal-ui";
+import { CARD, INPUT, Pill, SectionTitle } from "./portal-ui";
 
 interface TeamMember {
   id: number;
@@ -30,6 +30,7 @@ export default function TeamManagement() {
   const [form, setForm] = useState(EMPTY);
   const { data: team = [], isLoading } = useQuery<TeamMember[]>({ queryKey: KEY });
   const ownerId = user?.merchant?.ownerUserId;
+  const withPin = team.filter((m) => m.hasPin).length;
 
   const add = useMutation({
     mutationFn: async () => (await apiRequest("POST", "/api/merchant/team", form)).json(),
@@ -63,14 +64,36 @@ export default function TeamManagement() {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-hairline p-5 max-w-3xl">
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <SectionTitle>Team</SectionTitle>
-          <p className="text-xs text-slate-brand mt-1">Staff sign in to see redemptions and use their PIN to award loyalty points.</p>
+    <div className="max-w-3xl space-y-3">
+      {/*
+        A count and what it means, before the list. One staff row in a box the
+        width of the screen reads as an unfinished feature rather than an outlet
+        that has not added anyone yet.
+      */}
+      <div className={`${CARD} p-5 flex flex-col sm:flex-row sm:items-center gap-4`}>
+        <div className="flex items-baseline gap-3 shrink-0">
+          <span className="font-display font-extrabold text-[44px] leading-none tracking-[-0.03em] text-sea tabular-nums">
+            {isLoading ? "—" : team.length}
+          </span>
+          <span className="font-display font-bold text-lg text-slate-brand">
+            {team.length === 1 ? "person" : "people"}
+          </span>
         </div>
-        <Button variant="outline" className="h-11 px-4 shrink-0 bg-white" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Add staff</Button>
+        <p className="text-sm text-slate-brand flex-1 min-w-0">
+          {withPin === 0
+            ? "Nobody has a PIN yet, so nobody can award loyalty points at the till."
+            : `${withPin} of ${team.length} can award points at the till.`}
+        </p>
+        <Button variant="buoy" className="h-12 px-6 shrink-0" onClick={() => setOpen(true)}>
+          <Plus className="h-4 w-4" /> Add staff
+        </Button>
       </div>
+
+      <div className={`${CARD} p-5`}>
+        <SectionTitle>Who can sign in</SectionTitle>
+        <p className="text-xs text-slate-brand mt-1 mb-3">
+          Staff see redemptions and use their own four-digit PIN at the till. They cannot change offers, plans or settings.
+        </p>
       {isLoading ? (
         <div className="animate-pulse space-y-2">{[0, 1].map((i) => <div key={i} className="h-12 bg-foam rounded-xl" />)}</div>
       ) : (
@@ -96,6 +119,7 @@ export default function TeamManagement() {
           })}
         </ul>
       )}
+      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md rounded-2xl">

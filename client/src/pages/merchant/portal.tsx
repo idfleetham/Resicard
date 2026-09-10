@@ -112,15 +112,19 @@ export default function MerchantPortal() {
   return (
     <div className="min-h-screen bg-mist text-sea">
       <Navigation />
-      <main className="max-w-6xl mx-auto px-5 sm:px-6 py-6 sm:py-10">
-        <div className="mb-5">
-          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-brand mb-2">Merchant portal</p>
-          <h1 className="font-display font-extrabold text-[42px] leading-none tracking-[-0.03em]">{merchant?.name ?? "Your outlet"}</h1>
-        </div>
-
-        <StatusNotice status={merchant?.status ?? null} />
-
+      <main className="max-w-6xl mx-auto px-5 sm:px-6 py-5 sm:py-6">
         <Tabs value={tabs.some((t) => t.key === tab) ? tab : "overview"} onValueChange={changeTab}>
+          {/*
+            The header used to be a "MERCHANT PORTAL" label, the outlet name at
+            42px and then the tab row: about 190px at the top of every one of the
+            ten tabs, which is a fifth of a laptop screen spent saying the same
+            thing, and it made every tab open identically. The label is gone and
+            the name is half the size. Ten tabs will not share a line with a name
+            at 1280px, so they stay stacked rather than clipping.
+          */}
+          <h1 className="font-display font-extrabold text-[26px] sm:text-[30px] leading-none tracking-[-0.03em] mb-3">
+            {merchant?.name ?? "Your outlet"}
+          </h1>
           <TabScroller>
             <TabsList className={TAB_LIST}>
               {tabs.map((t) => (
@@ -131,14 +135,16 @@ export default function MerchantPortal() {
             </TabsList>
           </TabScroller>
 
+          <StatusNotice status={merchant?.status ?? null} />
+
           <TabsContent value="overview" className="mt-0"><OverviewTab onGoTo={changeTab} /></TabsContent>
           <TabsContent value="offers" className="mt-0"><OffersManager /></TabsContent>
           <TabsContent value="redemptions" className="mt-0"><RedemptionsFeed /></TabsContent>
           {merchant?.verifiesResidents && <TabsContent value="verify" className="mt-0"><VerifyResident /></TabsContent>}
-          <TabsContent value="loyalty" className="mt-0"><LoyaltyTab /></TabsContent>
+          <TabsContent value="loyalty" className="mt-0"><LoyaltyTab merchantName={merchant?.name ?? "Your outlet"} /></TabsContent>
           <TabsContent value="send" className="mt-0"><CampaignsTab /></TabsContent>
           <TabsContent value="analytics" className="mt-0"><AnalyticsTab /></TabsContent>
-          <TabsContent value="qr" className="mt-0"><QrCodeTab merchantName={merchant?.name ?? "outlet"} /></TabsContent>
+          <TabsContent value="qr" className="mt-0"><QrCodeTab merchantName={merchant?.name ?? "Your outlet"} /></TabsContent>
           <TabsContent value="team" className="mt-0"><TeamManagement /></TabsContent>
           <TabsContent value="settings" className="mt-0"><MerchantSettings /></TabsContent>
           <TabsContent value="plan" className="mt-0"><PlanTab /></TabsContent>

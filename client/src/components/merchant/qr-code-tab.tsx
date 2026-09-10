@@ -55,17 +55,27 @@ export default function QrCodeTab({ merchantName }: { merchantName: string }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
-        <SectionTitle>Your Resicard code</SectionTitle>
-        <p className="text-sm text-slate-brand">Residents scan this at the till with their phone, pick an offer and show staff the green screen.</p>
+      {/*
+        The code is drawn as the poster rather than as a thumbnail in a form. It
+        is the merchant's entire installation and the only physical thing they
+        get, so the tab should look like the thing that goes on the wall.
+      */}
+      <div className="bg-sea rounded-2xl border border-sea p-6 sm:p-8 text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#B7CBD1]">Resicard accepted here</p>
+        <p className="font-display font-extrabold text-[28px] leading-none tracking-[-0.03em] text-foam mt-2">{merchantName}</p>
         {isLoading || !data ? (
-          <div className="aspect-square max-w-xs bg-foam rounded-2xl animate-pulse" />
+          <div className="mx-auto mt-6 aspect-square w-full max-w-[260px] bg-[#0A2A33] rounded-2xl animate-pulse" />
         ) : (
-          <img src={data.qrDataUrl} alt="Your Resicard QR code" className="w-full max-w-xs rounded-2xl bg-white" />
+          <img
+            src={data.qrDataUrl}
+            alt="Your Resicard QR code"
+            className="mx-auto mt-6 w-full max-w-[260px] rounded-2xl bg-white p-3"
+          />
         )}
-        {data && (
-          <p className="font-mono text-xs text-slate-brand break-all">{data.url}</p>
-        )}
+        <p className="text-sm text-[#F2F5F4]/80 mt-5 max-w-xs mx-auto">
+          Residents scan this with their phone, pick an offer, and show your staff the green screen.
+        </p>
+        {data && <p className="font-mono text-[11px] text-[#F2F5F4]/45 break-all mt-4">{data.url}</p>}
       </div>
 
       <div className="bg-white rounded-2xl border border-hairline p-5 space-y-3">

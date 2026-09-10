@@ -109,9 +109,32 @@ export default function MerchantSettings() {
 
   return (
     <form
-      className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start"
+      className="space-y-3"
       onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}
     >
+      {/*
+        A settings screen is allowed to be a form, but it should say what the
+        form is for. This is the outlet as a resident sees it in the app, which
+        is the only reason any of these fields exist.
+      */}
+      <div className="bg-sea rounded-2xl border border-sea p-5 flex items-center gap-4">
+        <div className="h-14 w-14 rounded-xl bg-sand overflow-hidden flex items-center justify-center shrink-0">
+          {merchant.logoUrl
+            ? <img src={merchant.logoUrl} alt="" className="h-full w-full object-cover" />
+            : <span className="text-[10px] text-sea text-center leading-tight">No logo</span>}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#B7CBD1]">How residents see you</p>
+          <p className="font-display font-extrabold text-2xl leading-tight tracking-[-0.02em] text-foam truncate">
+            {form.name || merchant.name}
+          </p>
+          <p className="text-sm text-[#F2F5F4]/75 truncate">
+            {[form.category ? categoryLabel(form.category) : "", form.address].filter(Boolean).join(" · ") || "No category or address yet"}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
       <div className="bg-white rounded-2xl border border-hairline p-5 space-y-4">
         <SectionTitle>Business details</SectionTitle>
         <div className="flex items-center gap-4">
@@ -169,6 +192,7 @@ export default function MerchantSettings() {
         <SectionTitle>Opening hours</SectionTitle>
         <BusinessHoursEditor value={form.hours} onChange={(hours) => set("hours", hours)} />
         <Button type="submit" variant="buoy" className="h-12 w-full" disabled={save.isPending}>{save.isPending ? "Saving" : "Save"}</Button>
+      </div>
       </div>
     </form>
   );
