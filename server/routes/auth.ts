@@ -128,7 +128,12 @@ authRouter.post(
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    res.json({ user: toPublicUser(user), token: signToken(user) });
+    // Same shape as /api/auth/me. Without the outlet, a merchant who has just
+    // signed in sees "Your outlet" everywhere their own name should be — on the
+    // portal header and, worse, on the QR poster they are about to print —
+    // until something happens to trigger a refetch.
+    const merchant = user.merchantId ? await merchantStore.getMerchantById(user.merchantId) : undefined;
+    res.json({ user: { ...toPublicUser(user), merchant: merchant ?? undefined }, token: signToken(user) });
   }),
 );
 

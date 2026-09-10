@@ -56,6 +56,8 @@ function outletBase(m: {
   logoUrl: string | null;
   reservationProvider: string | null;
   reservationUrl: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
 }) {
   return {
     id: m.id,
@@ -65,6 +67,10 @@ function outletBase(m: {
     logoUrl: m.logoUrl,
     reservationProvider: m.reservationProvider,
     reservationUrl: m.reservationUrl,
+    // Numbers, not the decimal strings the column returns, so the app can do
+    // arithmetic with them without parsing. Null for an outlet with no pin.
+    latitude: m.latitude == null ? null : Number(m.latitude),
+    longitude: m.longitude == null ? null : Number(m.longitude),
   };
 }
 

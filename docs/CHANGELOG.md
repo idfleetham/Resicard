@@ -5,6 +5,56 @@ The Replit brief in `docs/REPLIT-BRIEF.md` describes how the codebase works and
 does not change between archives; this file is where the version-specific detail
 lives.
 
+## Near me: order the outlet list by distance
+
+GET /api/outlets now returns coordinates, so the resident's outlet list can
+be sorted nearest first. Pressing Near me takes one browser location fix
+and reorders the list, with the distance leading each row.
+
+The position never leaves the phone. Coordinates go out, the sort happens
+in the browser, nothing comes back. There is no endpoint that accepts a
+resident's position and there should not be one: a residents' card holding
+a record of who walked past which premises would be worse than the problem
+it set out to solve.
+
+It asks nothing until pressed, a refusal is taken as a decision and not
+asked again, and the fix is never written to storage. With it on, the
+favourites split disappears - sorting by distance and then hoisting
+favourites would put a favourite half a mile away above the pub across the
+road.
+
+The maths lives in shared/distance.ts so the ordinary test run covers it.
+Distances round to the nearest ten metres and never read below 10 m,
+because a phone fix is not accurate to the metre.
+
+Foreground only, and that is the whole feature. A web app gets no location
+while closed, so it cannot tell anyone they are walking past an outlet now.
+
+## Merchant portal: ten tabs down to seven
+
+Ten pills would not share a line with the outlet name at 1280, so the
+header stacked and every tab opened on the same 190px of chrome. Three of
+the ten were not their own idea:
+
+- QR code moves into Offers, as a sidebar beside the offer list. The code
+  and the offers are one thought: this is what a resident scans, that is
+  what they get when they do.
+- Team and Plan become sections inside Settings, under a deliberately
+  quieter second pill row, because they are what an owner sets once.
+
+Seven pills now sit beside the name from lg up. Every old entry point
+still works: ?tab=qr, ?tab=team, ?tab=plan and the /merchant/plan route
+(which Stripe returns to) are mapped by a LEGACY table rather than
+dropped, and Settings takes ?section=business|team|plan.
+
+Found while testing: POST /api/auth/login returned the user without the
+merchant object that GET /api/auth/me includes, so a merchant who had
+just signed in saw "Your outlet" where their own name belonged - on the
+header, and now on the QR poster they were about to print. Login returns
+the same shape as /me.
+
+## Regenerate the changelog
+
 ## Stop every merchant tab opening the same way
 
 Shown on a laptop, the portal looked samey, and the contact sheet of all
@@ -798,16 +848,4 @@ would be buying. Compact reminders on the resident card tab and the
 merchant plan tab link to it.
 
 ## Merchant analytics with a worked example for Free merchants
-
-## Contract: pricing page and merchant analytics
-
-## Outlets list and favourites
-
-Residents can star an outlet. The Offers tab gains an Outlets view listing
-starred places first, and a new outlet page shows one outlet's offers,
-directions, booking link and the resident's points there. Offers from
-starred outlets sort first. Merchants see how many residents have starred
-them; admin sees it per business.
-
-## Contract and schema: outlets list and favourites
 

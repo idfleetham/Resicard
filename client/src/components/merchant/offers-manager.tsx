@@ -10,6 +10,7 @@ import {
 import { useArchiveOffer, useMerchantOffers, useToggleOffer } from "@/hooks/use-merchant-offers";
 import { offerHeadline, offerWhen } from "@/components/resident/format";
 import OfferForm from "./offer-form";
+import QrCodeTab from "./qr-code-tab";
 import { usePlan } from "./plan-tab";
 import { CARD, Pill, Skeleton } from "./portal-ui";
 
@@ -80,7 +81,7 @@ function Group({ title, offers, onEdit, onArchive }: { title: string; offers: Of
   );
 }
 
-export default function OffersManager() {
+export default function OffersManager({ merchantName }: { merchantName: string }) {
   const { data: offers = [], isLoading } = useMerchantOffers();
   const archive = useArchiveOffer();
   const [formOpen, setFormOpen] = useState(false);
@@ -95,6 +96,12 @@ export default function OffersManager() {
   const openEdit = (o: Offer) => { setEditing(o); setFormOpen(true); };
 
   return (
+    /*
+      The code and the offers are one thought — this is what a resident scans,
+      and that is what they get when they do — so the poster sits beside the
+      list rather than in a tab of its own.
+    */
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-3 items-start">
     <div className="space-y-6">
       {/*
         The tab opens on the number that matters rather than a sentence of
@@ -160,6 +167,9 @@ export default function OffersManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+
+      <QrCodeTab merchantName={merchantName} />
     </div>
   );
 }

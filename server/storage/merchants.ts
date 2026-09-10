@@ -60,6 +60,10 @@ export async function listApprovedMerchantsForOutlets(client: DbClient = db) {
       reservationProvider: merchants.reservationProvider,
       reservationUrl: merchants.reservationUrl,
       planStatus: merchants.planStatus,
+      // For sorting the list by distance. The sort happens on the resident's own
+      // phone: these go out to the app, the phone's position never comes back.
+      latitude: merchants.latitude,
+      longitude: merchants.longitude,
     })
     .from(merchants)
     .where(eq(merchants.status, "approved"))

@@ -13,7 +13,7 @@ Merchant-facing routes resolve the merchant from `req.user.merchantId` (never fr
 | Method | Path | Auth | Body | Response |
 |---|---|---|---|---|
 | POST | /api/auth/register | none | `registerSchema` | `{ user: PublicUser, token }`. Merchant registration also creates a `merchants` row (status pending, scanCode generated) and sets `users.merchantId`. Resident postcode must pass `isLocalPostcode()` in `server/lib/postcode.ts`. |
-| POST | /api/auth/login | none | `loginSchema` | `{ user: PublicUser, token }` |
+| POST | /api/auth/login | none | `loginSchema` | `{ user, token }`, where `user` is the same shape as `/api/auth/me` |
 | GET | /api/auth/me | any | | `PublicUser` plus, for merchants, `merchant: Merchant` |
 | POST | /api/auth/forgot-password | none | `{ email }` | `{ message }` always 200 |
 | POST | /api/auth/reset-password | none | `{ token, password }` | `{ message }` |
@@ -1447,3 +1447,81 @@ was ever sent twice, because the failed insert still rolled the transaction back
 but every repeat run of the daily job reported its skipped messages as failures.
 Six failures every morning is how a real failure comes to be ignored. It now walks
 the cause chain.
+
+## 2026-09-10 — Seven tabs in the merchant portal
+
+The portal had grown to ten tabs plus a conditional eleventh. Ten pills will not
+share a line with the outlet name at 1280px, so the name and the row stacked, and
+every tab opened on about 190px of identical chrome. Worse, the row itself had
+stopped saying anything: a merchant scanning it could not tell which three of the
+ten they were ever going to use.
+
+Three tabs were not their own idea:
+
+- **QR code** into **Offers**. The code and the offers are one thought — this is
+  what a resident scans, and that is what they get when they do — so the poster
+  now sits in a sidebar beside the offer list (below it on a phone).
+- **Team** and **Plan** into **Settings**, as sub-sections. These are the things
+  an owner sets once and then leaves alone.
+
+Settings gained a quieter second row (`SUBTAB_LIST` / `SUBTAB_TRIGGER` in
+`portal-ui.tsx`): smaller, sand rather than sea when active, so a screen never
+looks like it has two tab bars of equal weight.
+
+Seven pills fit beside the name from `lg` up, so the header is now one line.
+
+**No route was dropped.** `?tab=qr`, `?tab=team`, `?tab=plan` and the
+`/merchant/plan` route all still arrive in bookmarks, in-app links and Stripe's
+return URL. They are mapped to the new tab (and, for Settings, the right section)
+by the `LEGACY` table in `portal.tsx` rather than 404ing or silently landing on
+Overview. Settings takes an optional `?section=business|team|plan`.
+
+### A bug found while testing this
+
+`POST /api/auth/login` returned the user without the `merchant` object, while
+`GET /api/auth/me` included it. A merchant who had just signed in therefore saw
+"Your outlet" wherever their own name belonged until something triggered a
+refetch — on the portal header, and, once the QR poster moved into Offers, on the
+poster they were about to print. Login now returns the same shape as `/me`.
+
+## 2026-09-10 — Near me on the outlet list
+
+`GET /api/outlets` now returns `latitude` and `longitude` on every outlet, as
+numbers rather than the decimal strings the column holds, and null for an outlet
+that has not set a pin. `/api/outlets/map` already returned them; the list did
+not, so the list could not be ordered by distance.
+
+The resident's outlet list gains a **Near me** control. Pressed, it takes a
+one-shot browser location fix and reorders the list nearest first, with the
+distance in front of the category on each row.
+
+**The position never leaves the phone.** Coordinates go out to the app, the
+sort happens in the browser, and nothing about where the resident is comes back
+to the server. There is no endpoint that accepts a resident position and there
+should not be one. A residents' card that quietly accumulated a record of who
+walked past which premises would be a worse thing than the problem it set out to
+solve, and it would turn a low-risk processing story into one needing a DPIA.
+
+Three deliberate choices in `client/src/lib/nearby.ts`:
+
+- **It asks nothing until it is pressed.** Prompting for location on page load is
+  how an app gets refused permanently.
+- **A refusal is a decision.** On `PERMISSION_DENIED` the button is replaced by
+  one line saying location is off, and the resident is not asked again.
+- **Nothing is stored.** The fix lives in React state for as long as the tab is
+  open. Not localStorage, not the server.
+
+With Near me on, the list is one ranked run and the "Your places" / "All outlets"
+split disappears: sorting by distance and then hoisting favourites would put a
+favourite half a mile away above the pub across the road.
+
+`shared/distance.ts` holds the haversine, the distance wording and the sort, so
+they are covered by the ordinary test run (13 tests in
+`server/lib/__tests__/distance.test.ts`). Distances are rounded to the nearest
+ten metres and never read below "10 m", because a phone fix is not accurate to
+the metre and false precision is worse than none.
+
+**This is foreground only, and it is the whole feature.** A web app gets no
+location while it is closed, on any platform, so it cannot tell a resident they
+are walking past an outlet right now. That needs a native app and is not being
+built.

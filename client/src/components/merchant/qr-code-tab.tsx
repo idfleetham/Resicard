@@ -17,6 +17,11 @@ interface ScanCode {
   qrDataUrl: string;
 }
 
+/**
+ * The QR code no longer has a tab of its own. It lives beside the offer list,
+ * because the code and the offers are the same thought: this is what a resident
+ * scans, and that is what they see when they do.
+ */
 export default function QrCodeTab({ merchantName }: { merchantName: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,13 +59,13 @@ export default function QrCodeTab({ merchantName }: { merchantName: string }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <div className="space-y-3">
       {/*
         The code is drawn as the poster rather than as a thumbnail in a form. It
         is the merchant's entire installation and the only physical thing they
-        get, so the tab should look like the thing that goes on the wall.
+        get, so it should look like the thing that goes on the wall.
       */}
-      <div className="bg-sea rounded-2xl border border-sea p-6 sm:p-8 text-center">
+      <div className="bg-sea rounded-2xl border border-sea p-6 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#B7CBD1]">Resicard accepted here</p>
         <p className="font-display font-extrabold text-[28px] leading-none tracking-[-0.03em] text-foam mt-2">{merchantName}</p>
         {isLoading || !data ? (

@@ -35,7 +35,9 @@ export function TabScroller({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="relative -mx-5 lg:mx-0 mb-4">
+    // min-w-0 so that when this sits beside the outlet name it scrolls rather
+    // than pushing the row wider than the page.
+    <div className="relative -mx-5 lg:mx-0 mb-4 min-w-0">
       <div
         ref={scroller}
         onScroll={check}
@@ -53,6 +55,15 @@ export function TabScroller({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+/**
+ * Sub-tabs inside a tab (Settings is Business / Team / Plan). Deliberately
+ * quieter than the main row — smaller, sand rather than sea when active — so a
+ * screen never looks like it has two tab bars of equal weight.
+ */
+export const SUBTAB_LIST = "h-11 p-1 rounded-full bg-white border border-hairline inline-flex w-auto";
+export const SUBTAB_TRIGGER =
+  "h-9 px-4 sm:px-5 rounded-full text-sm font-bold text-slate-brand whitespace-nowrap data-[state=active]:bg-sand data-[state=active]:text-sea data-[state=active]:shadow-none";
 
 /**
  * The one card treatment. White on mist with a hairline edge: without the edge
