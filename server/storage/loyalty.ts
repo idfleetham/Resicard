@@ -1,4 +1,5 @@
 import { and, desc, eq, gt, gte, inArray, isNotNull, lte, sql, count, type SQL } from "drizzle-orm";
+import { tierColour } from "@shared/tiers";
 import { db } from "../db";
 import {
   loyaltyPrograms,
@@ -48,12 +49,26 @@ export async function updateProgram(id: number, values: Partial<ProgramInsert>, 
 
 // Tiers
 
+/**
+ * Tiers, lowest threshold first, with the colour stamped from the rank.
+ *
+ * Every read of a programme's tiers comes through here, so this is the one place
+ * the rank colour has to be applied for a merchant-chosen colour never to reach
+ * a screen. The stored `color` column is left untouched and ignored.
+ */
 export async function listTiers(programId: number, client: DbClient = db): Promise<LoyaltyTier[]> {
-  return client
+  const rows = await client
     .select()
     .from(loyaltyTiers)
     .where(eq(loyaltyTiers.programId, programId))
     .orderBy(loyaltyTiers.thresholdPoints, loyaltyTiers.sortOrder);
+  return rows.map((tier, i) => ({ ...tier, color: tierColour(i, rows.length) }));
+}
+
+/** How many tiers a programme already has, for the three-tier cap. */
+export async function countTiers(programId: number, client: DbClient = db): Promise<number> {
+  const rows = await client.select({ id: loyaltyTiers.id }).from(loyaltyTiers).where(eq(loyaltyTiers.programId, programId));
+  return rows.length;
 }
 
 export async function getTier(id: string, programId: number, client: DbClient = db): Promise<LoyaltyTier | undefined> {

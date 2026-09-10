@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 import { formatPounds } from "@/components/resident/format";
 import { StaffEarningTool } from "@/components/loyalty/staff-earning-tool";
 import { PROGRAM_KEY, type LoyaltyProgramData } from "./loyalty/types";
@@ -19,6 +20,8 @@ function Fact({ label, value }: { label: string; value: string | number | null |
 }
 
 export default function LoyaltyTab({ merchantName }: { merchantName: string }) {
+  const { user } = useAuth();
+  const logoUrl = user?.merchant?.logoUrl ?? null;
   const { data: plan, isLoading: planLoading } = usePlan();
   const gated = !!plan && !plan.features.loyalty;
   const { data, isLoading, error } = useQuery<LoyaltyProgramData | null>({ queryKey: [...PROGRAM_KEY], enabled: !!plan && !gated });
@@ -42,13 +45,21 @@ export default function LoyaltyTab({ merchantName }: { merchantName: string }) {
           {isLoading ? (
             <div className="w-full aspect-[1.6/1] rounded-[20px] bg-foam animate-pulse" />
           ) : (
+            /*
+              Compact, not full, and the outlet's own logo. "Full" is the card
+              held up at the till: 72px figures and 28px padding, which in this
+              340px column left the name truncated to "The Harrow & ..." and the
+              discount, tier and points fighting for the same corner. This is the
+              same rendering as the preview on the programme page, which is the
+              one that looks right.
+            */
             <LoyaltyCard
               name={merchantName}
+              logoUrl={logoUrl}
               theme={program?.cardTheme}
               pattern={program?.cardPattern}
               points={program ? 240 : 0}
               tier={topTier ? { name: topTier.name, color: topTier.color ?? null, discountPercent: topTier.discountPercent ?? null } : null}
-              size="full"
             />
           )}
           <p className="text-xs text-slate-brand mt-3 px-1">

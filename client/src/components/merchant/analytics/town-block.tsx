@@ -1,19 +1,25 @@
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SectionTitle } from "../portal-ui";
-import { AXIS_TICK, DAY_LABELS, LINE, SEA, monthLabel, percent, type TownBlockData } from "./types";
+import { AXIS_TICK, DAY_LABELS, LINE, SERIES_1, SERIES_2, barWidth, monthLabel, percent, type TownBlockData } from "./types";
 
 /**
- * How the town is trading, with the outlet's own 30 days set against the median of
- * its category. Nothing here names another outlet: the comparison is a median
- * across the whole category, and the block is withheld entirely when too few
- * outlets share it.
+ * How the town is trading, with the outlet's own 30 days set against a typical
+ * outlet in its category. Nothing here names another outlet, and the block is
+ * withheld entirely when too few outlets share the category.
+ *
+ * The comparison figure is a median, not a mean, and the wording says "typical"
+ * rather than either word. With five restaurants in a category, one busy Friday
+ * outlet drags a mean somewhere no real outlet sits, and a publican told they are
+ * "below average" by a number no one in town actually posts has been misled. But
+ * "median" is a word that makes people stop reading, so it does not appear on the
+ * screen: the note says what was done in plain words instead.
  */
 
 function Comparison({ town }: { town: TownBlockData }) {
-  const top = Math.max(town.yourRedemptions30d, town.medianRedemptions30d, 1);
+  const scale = Math.max(town.yourRedemptions30d, town.medianRedemptions30d, 1);
   const rows = [
-    { label: "You", value: town.yourRedemptions30d, className: "bg-sea" },
-    { label: `Median ${town.categoryLabel.toLowerCase()}`, value: town.medianRedemptions30d, className: "bg-sand border border-[#D3C09B]" },
+    { label: "You", value: town.yourRedemptions30d, colour: SERIES_1 },
+    { label: `A typical ${singular(town.categoryLabel)}`, value: town.medianRedemptions30d, colour: SERIES_2 },
   ];
   return (
     <div className="space-y-3">
@@ -21,15 +27,27 @@ function Comparison({ town }: { town: TownBlockData }) {
         <div key={row.label}>
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-sm text-sea">{row.label}</p>
-            <p className="text-sm font-bold text-sea">{row.value}</p>
+            <p className="text-sm font-bold text-sea tabular-nums">{row.value}</p>
           </div>
           <div className="mt-1.5 h-2 rounded-full bg-foam overflow-hidden">
-            <div className={`h-full rounded-full ${row.className}`} style={{ width: `${Math.max(2, (row.value / top) * 100)}%` }} />
+            <div
+              className="h-full rounded-full"
+              style={{ width: barWidth(row.value, scale), backgroundColor: row.colour }}
+            />
           </div>
         </div>
       ))}
     </div>
   );
+}
+
+/** "Restaurants" -> "restaurant", so the row reads "A typical restaurant". */
+function singular(categoryLabel: string): string {
+  const lower = categoryLabel.toLowerCase();
+  if (lower.endsWith("ies")) return `${lower.slice(0, -3)}y`;
+  if (lower.endsWith("ses") || lower.endsWith("shes")) return lower.slice(0, -2);
+  if (lower.endsWith("s")) return lower.slice(0, -1);
+  return lower;
 }
 
 function BusiestDays({ town }: { town: TownBlockData }) {
@@ -40,7 +58,7 @@ function BusiestDays({ town }: { town: TownBlockData }) {
         <li key={d.day} className="flex items-center gap-3">
           <span className="text-sm text-sea w-9 shrink-0">{DAY_LABELS[d.day]}</span>
           <span className="h-2 rounded-full bg-foam flex-1 overflow-hidden">
-            <span className="block h-full rounded-full bg-sea" style={{ width: `${top === 0 ? 0 : Math.max(2, (d.share / top) * 100)}%` }} />
+            <span className="block h-full rounded-full" style={{ width: barWidth(d.share, top), backgroundColor: SERIES_1 }} />
           </span>
           <span className="text-sm text-slate-brand w-10 text-right shrink-0">{percent(d.share)}</span>
         </li>
@@ -69,7 +87,7 @@ function MemberGrowth({ town }: { town: TownBlockData }) {
           <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} minTickGap={8} />
           <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={44} />
           <Tooltip cursor={{ stroke: LINE }} content={<GrowthTooltip />} />
-          <Line type="monotone" dataKey="members" stroke={SEA} strokeWidth={2} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
+          <Line type="monotone" dataKey="members" stroke={SERIES_1} strokeWidth={2} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -91,7 +109,7 @@ export default function TownBlock({ town }: { town: TownBlockData }) {
     <div className="space-y-3">
       <Card
         title={`You against other ${town.categoryLabel.toLowerCase()}`}
-        note={`Redemptions in the last 30 days, against the median of ${town.outletsInCategory} ${town.categoryLabel.toLowerCase()} in the town. No outlet is named.`}
+        note={`Redemptions in the last 30 days. "Typical" is the middle outlet of the ${town.outletsInCategory} ${town.categoryLabel.toLowerCase()} in the town, so one very busy outlet cannot drag the comparison. No outlet is named.`}
       >
         <Comparison town={town} />
       </Card>

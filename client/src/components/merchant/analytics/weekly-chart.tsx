@@ -1,9 +1,9 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SectionTitle } from "../portal-ui";
-import { AXIS_TICK, FOAM, LINE, SAND, SAND_EDGE, SEA, weekLabel, yAxisLabel, type WeekPoint } from "./types";
+import { AXIS_TICK, FOAM, LINE, SERIES_1, SERIES_2, weekLabel, yAxisLabel, type WeekPoint } from "./types";
 
 /**
- * Thirteen weeks of redemptions with new residents alongside. Two grouped columns
+ * The period's redemptions by week, with new residents alongside. Two grouped columns
  * rather than a stack, because the reader's question is "how many of this week's
  * visits came from someone new", which needs both bars measured from the baseline.
  */
@@ -16,18 +16,18 @@ function WeekTooltip({ active, payload }: { active?: boolean; payload?: { payloa
   return (
     <div className="bg-white rounded-xl border border-[#E6E9E8] px-3 py-2 text-xs text-sea">
       <p className="font-bold">Week of {weekLabel(row.weekStart)}</p>
-      <p className="mt-1 flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-sea" /> Redemptions {row.redemptions}</p>
-      <p className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-sand border border-[#D3C09B]" /> New residents {row.newResidents}</p>
+      <p className="mt-1 flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SERIES_1 }} /> Redemptions {row.redemptions}</p>
+      <p className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SERIES_2 }} /> New residents {row.newResidents}</p>
     </div>
   );
 }
 
-export function Legend({ items }: { items: { label: string; className: string }[] }) {
+export function Legend({ items }: { items: { label: string; colour: string }[] }) {
   return (
     <div className="flex flex-wrap gap-4 text-xs text-slate-brand">
       {items.map((i) => (
         <span key={i.label} className="flex items-center gap-1.5">
-          <span className={`h-2.5 w-2.5 rounded-full ${i.className}`} />
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: i.colour }} />
           {i.label}
         </span>
       ))}
@@ -44,12 +44,14 @@ export default function WeeklyChart({ byWeek }: { byWeek: WeekPoint[] }) {
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
           <SectionTitle>Redemptions by week</SectionTitle>
-          <p className="text-xs text-slate-brand mt-1">Thirteen weeks, Monday to Sunday.</p>
+          <p className="text-xs text-slate-brand mt-1">
+            {rows.length} week{rows.length === 1 ? "" : "s"}, Monday to Sunday.
+          </p>
         </div>
         <Legend
           items={[
-            { label: "Redemptions", className: "bg-sea" },
-            { label: "New residents", className: "bg-sand border border-[#D3C09B]" },
+            { label: "Redemptions", colour: SERIES_1 },
+            { label: "New residents", colour: SERIES_2 },
           ]}
         />
       </div>
@@ -63,8 +65,8 @@ export default function WeeklyChart({ byWeek }: { byWeek: WeekPoint[] }) {
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} interval={1} />
               <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
               <Tooltip cursor={{ fill: FOAM }} content={<WeekTooltip />} />
-              <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
-              <Bar dataKey="newResidents" fill={SAND} stroke={SAND_EDGE} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+              <Bar dataKey="redemptions" fill={SERIES_1} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+              <Bar dataKey="newResidents" fill={SERIES_2} radius={[4, 4, 0, 0]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>

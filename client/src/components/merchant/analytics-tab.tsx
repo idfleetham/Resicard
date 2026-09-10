@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { AnalyticsDashboard, EXAMPLE_ANALYTICS, type AnalyticsData } from "./analytics";
+import { DEFAULT_CHOICE, periodQuery, type PeriodChoice } from "./analytics/period-picker";
 import { isPlanRequired } from "./loyalty/upgrade-card";
 import { usePlan } from "./plan-tab";
 import { Skeleton } from "./portal-ui";
@@ -31,9 +33,14 @@ function InsightPanel() {
 export default function AnalyticsTab() {
   const { data: plan, isLoading: planLoading } = usePlan();
   const gated = !!plan && !plan.features.analytics;
+  const [choice, setChoice] = useState<PeriodChoice>(DEFAULT_CHOICE);
+  // The period is part of the key, so switching it is an ordinary fetch and
+  // going back to a period already looked at is instant.
+  const query = periodQuery(choice);
   const { data, isLoading, error } = useQuery<AnalyticsData>({
-    queryKey: ["/api/merchant/analytics"],
+    queryKey: [`/api/merchant/analytics?${query}`],
     enabled: !!plan && !gated,
+    placeholderData: (previous) => previous,
   });
 
   if (planLoading) return <Skeleton className="h-40" />;
@@ -49,5 +56,5 @@ export default function AnalyticsTab() {
 
   if (isLoading || !data) return <Skeleton className="h-64" />;
 
-  return <AnalyticsDashboard data={data} />;
+  return <AnalyticsDashboard data={data} choice={choice} onChoiceChange={setChoice} />;
 }

@@ -59,13 +59,15 @@ export default function Home() {
 
         <div className="relative max-w-6xl mx-auto w-full px-5 sm:px-6 pb-12 sm:pb-16 mt-auto pt-16 sm:pt-24">
           <div className="max-w-2xl flex flex-col gap-[14px]">
+            {/*
+              The line stands on its own. Explaining it underneath ("prices are
+              set for visitors and students...") made the argument twice and
+              turned an opening statement into a complaint. No full stop either:
+              this is a sign, not a sentence.
+            */}
             <h1 className="font-display font-extrabold text-[42px] sm:text-[64px] leading-none tracking-[-0.03em] text-foam" style={{ textWrap: "pretty" }}>
-              Local prices for local people.
+              Local prices for local people
             </h1>
-            <p className="text-[15px] sm:text-lg leading-relaxed text-foam/90 max-w-xl">
-              St Andrews prices are set for visitors and students. Resicard lets the town's outlets give residents a
-              better deal.
-            </p>
             <div className="mt-1">
               {homePath ? (
                 <Button asChild variant="buoy" className="h-[52px] w-full sm:w-auto sm:px-10 text-base">

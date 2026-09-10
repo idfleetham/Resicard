@@ -1,20 +1,20 @@
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
-import type { AnalyticsHeadline } from "./types";
+import type { AnalyticsHeadline, AnalyticsRange } from "./types";
 import { percent } from "./types";
 
 /**
  * The KPI row. Each number is a stat tile rather than a one-bar chart: the number
- * is the chart. Only the redemptions tile carries a change, against the 90 days
- * before this window.
+ * is the chart. Only the redemptions tile carries a change, against whatever
+ * window the chosen period is compared with.
  */
 
 function pounds(value: number): string {
   return `£${value.toFixed(2)}`;
 }
 
-function Change({ current, previous }: { current: number; previous: number }) {
+function Change({ current, previous, compareLabel }: { current: number; previous: number; compareLabel: string }) {
   if (previous === 0) {
-    return <p className="text-xs text-slate-brand mt-1.5">No redemptions in the previous 90 days</p>;
+    return <p className="text-xs text-slate-brand mt-1.5">Nothing to compare with in {compareLabel}</p>;
   }
   const delta = Math.round(((current - previous) / previous) * 100);
   const Icon = delta > 0 ? ArrowUpRight : delta < 0 ? ArrowDownRight : Minus;
@@ -23,7 +23,7 @@ function Change({ current, previous }: { current: number; previous: number }) {
     <p className={`text-xs font-bold mt-1.5 flex items-center gap-1 ${tone}`}>
       <Icon size={14} strokeWidth={2} aria-hidden />
       {delta > 0 ? "+" : ""}{delta}%
-      <span className="font-normal text-slate-brand">on the previous 90 days</span>
+      <span className="font-normal text-slate-brand">on {compareLabel}</span>
     </p>
   );
 }
@@ -38,7 +38,7 @@ function Tile({ label, value, children }: { label: string; value: string; childr
   );
 }
 
-export default function HeadlineTiles({ headline }: { headline: AnalyticsHeadline }) {
+export default function HeadlineTiles({ headline, range }: { headline: AnalyticsHeadline; range: AnalyticsRange }) {
   const tiles: { label: string; value: string }[] = [
     { label: "Residents", value: String(headline.residents) },
     { label: "New residents", value: String(headline.newResidents) },
@@ -51,7 +51,7 @@ export default function HeadlineTiles({ headline }: { headline: AnalyticsHeadlin
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
       <div className="col-span-2 lg:col-span-1">
         <Tile label="Redemptions" value={String(headline.redemptions)}>
-          <Change current={headline.redemptions} previous={headline.redemptionsPrevious} />
+          <Change current={headline.redemptions} previous={headline.redemptionsPrevious} compareLabel={range.compareLabel} />
         </Tile>
       </div>
       {tiles.map((t) => (

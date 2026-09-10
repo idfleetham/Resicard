@@ -1,4 +1,4 @@
-import { readableOn, themeStyle, type CardStyle } from "./card-themes";
+import { readableOn, themeStyle, tuckedEdge, withAlpha, type CardStyle } from "./card-themes";
 
 export interface LoyaltyCardTier {
   name: string;
@@ -43,11 +43,23 @@ function Mark({ name, logoUrl, box, ink }: { name: string; logoUrl?: string | nu
   );
 }
 
-function TierPill({ tier, className }: { tier: LoyaltyCardTier; className: string }) {
+/**
+ * The tier pill. Its fill is the rank — bronze, silver, gold — so a resident can
+ * see where they stand at a glance anywhere in the stack.
+ *
+ * The ring matters: a bronze pill on a rust or buoy card is barely 1.2:1 against
+ * the card and would read as a smudge. A hairline in the card's own foreground
+ * gives the pill an edge on every one of the fourteen card colours.
+ */
+function TierPill({ tier, className, style }: { tier: LoyaltyCardTier; className: string; style: CardStyle }) {
   return (
     <span
       className={`inline-block rounded-full font-bold truncate max-w-full ${className}`}
-      style={{ backgroundColor: tier.color ?? "#E4572E", color: readableOn(tier.color) }}
+      style={{
+        backgroundColor: tier.color ?? "#E4572E",
+        color: readableOn(tier.color),
+        boxShadow: `0 0 0 1px ${withAlpha(style.foreground, 0.35)}`,
+      }}
     >
       {tier.name}
     </span>
@@ -89,7 +101,7 @@ function PeekStrip({
         {name}
       </p>
       <div className="shrink-0 flex flex-col items-end gap-1 max-w-[34%]">
-        {tier ? <TierPill tier={tier} className="px-2.5 py-0.5 text-[11px]" /> : null}
+        {tier ? <TierPill tier={tier} className="px-2.5 py-0.5 text-[11px]" style={style} /> : null}
         {discount ? (
           <span className="text-[13px] font-display font-extrabold" style={{ color: style.foreground }}>
             {discount}% off
@@ -130,7 +142,9 @@ export function LoyaltyCard({
   return (
     <div
       className={`relative w-full aspect-[1.6/1] overflow-hidden ${full ? "rounded-[24px]" : "rounded-[20px]"} ${className}`}
-      style={style.surface}
+      // A tucked card gets a hairline along its top edge so it separates from
+      // the card lying over it, even when both outlets chose the same colour.
+      style={size === "peek" ? { ...style.surface, boxShadow: tuckedEdge(style.def) } : style.surface}
     >
       {style.overlay && <div className="absolute inset-0 pointer-events-none" style={style.overlay} aria-hidden="true" />}
 
@@ -168,7 +182,7 @@ export function LoyaltyCard({
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               {tier ? (
-                <TierPill tier={tier} className={full ? "px-4 py-1.5 text-base" : "px-2.5 py-1 text-[11px]"} />
+                <TierPill tier={tier} className={full ? "px-4 py-1.5 text-base" : "px-2.5 py-1 text-[11px]"} style={style} />
               ) : (
                 <span
                   className={full ? "text-base font-semibold" : "text-[11px] font-semibold"}

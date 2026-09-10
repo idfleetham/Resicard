@@ -43,6 +43,13 @@
       "when": 1788880178926,
       "tag": "0005_calm_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789035315710,
+      "tag": "0006_calm_pepper_potts",
+      "breakpoints": true
     }
   ]
 }

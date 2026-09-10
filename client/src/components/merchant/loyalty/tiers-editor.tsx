@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MAX_TIERS, tierRank } from "@shared/tiers";
 import { useLoyaltyMutation } from "./use-loyalty";
 import { INPUT, SectionTitle } from "../portal-ui";
 
@@ -63,6 +64,8 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
   const [editing, setEditing] = useState<LoyaltyTier | null>(null);
   const [form, setForm] = useState<TierForm>(EMPTY);
   const sorted = [...tiers].sort((a, b) => a.thresholdPoints - b.thresholdPoints);
+  // Rank by position, counted from the top, so the highest tier is always gold.
+  const rankOf = (t: LoyaltyTier) => tierRank(sorted.findIndex((x) => x.id === t.id), sorted.length);
 
   const save = useLoyaltyMutation<{ id?: string; form: TierForm }>(
     ({ id, form: f }) => ({
@@ -92,9 +95,13 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <SectionTitle>Tiers</SectionTitle>
-          <p className="text-xs text-slate-brand mt-1">Residents move up as they collect points. Offers can be limited to a tier.</p>
+          <p className="text-xs text-slate-brand mt-1">
+            Residents move up as they collect points. Offers can be limited to a tier. Name them what you like — the
+            colour is bronze, silver then gold, the same in every outlet, so a resident can see where they stand at a
+            glance. Three at most.
+          </p>
         </div>
-        <Button variant="outline" className="h-11 px-4 shrink-0 bg-white" onClick={openNew} disabled={!enabled}><Plus className="h-4 w-4" /> Add tier</Button>
+        <Button variant="outline" className="h-11 px-4 shrink-0 bg-white" onClick={openNew} disabled={!enabled || sorted.length >= MAX_TIERS}><Plus className="h-4 w-4" /> Add tier</Button>
       </div>
       {!enabled ? (
         <p className="text-sm text-slate-brand">Create the programme first.</p>
@@ -104,7 +111,12 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
         <ul className="divide-y divide-[#E6E9E8]">
           {sorted.map((t) => (
             <li key={t.id} className="flex items-center gap-3 py-3">
-              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color ?? "#E4572E" }} aria-hidden="true" />
+              <span
+                className="h-6 px-2 inline-flex items-center rounded-full text-[10px] font-bold shrink-0"
+                style={{ backgroundColor: rankOf(t).color, color: rankOf(t).ink }}
+              >
+                {rankOf(t).label}
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sea">{t.name}</p>
                 <p className="text-sm text-slate-brand">{tierSummary(t)}</p>
@@ -127,7 +139,6 @@ export default function TiersEditor({ tiers, enabled }: { tiers: LoyaltyTier[]; 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label htmlFor="tier-th" className={LABEL}>Threshold (points)</Label><Input id="tier-th" type="number" min={0} className={INPUT} value={form.thresholdPoints} onChange={set("thresholdPoints")} required /></div>
               <div className="space-y-1"><Label htmlFor="tier-mult" className={LABEL}>Points multiplier</Label><Input id="tier-mult" type="number" min={0.1} step="0.05" className={INPUT} value={form.pointsMultiplier} onChange={set("pointsMultiplier")} /></div>
-              <div className="space-y-1 col-span-2"><Label htmlFor="tier-col" className={LABEL}>Colour</Label><Input id="tier-col" type="color" className={`${INPUT} p-1`} value={form.color} onChange={set("color")} /></div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">

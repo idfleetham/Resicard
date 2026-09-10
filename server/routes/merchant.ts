@@ -8,6 +8,7 @@ import * as userStore from "../storage/users";
 import * as priceChangeStore from "../storage/price-changes";
 import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
+import * as staffStore from "../storage/staff";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
 import { asyncHandler, parseBody, notFound, forbidden, badRequest, toNumericString, HttpError } from "../lib/http";
 import { scanUrl, qrDataUrl, posterHtml } from "../lib/qr";
@@ -39,6 +40,28 @@ const teamMemberSchema = z.object({
   surname: z.string().min(1),
   staffPin: z.string().regex(/^\d{4,8}$/, "Staff PIN must be 4 to 8 digits"),
 });
+
+/*
+  Till staff are not accounts. A name and a PIN is the whole record: no pub is
+  going to create eight logins with eight email addresses for eight bar staff,
+  and when the only way to get a PIN was to create one, nobody had a PIN and the
+  till tool went unused.
+*/
+const PIN_RE = /^\d{4}$/;
+const staffSchema = z.object({
+  name: z.string().trim().min(1, "Give them a name").max(60),
+  pin: z.string().regex(PIN_RE, "The PIN must be 4 digits"),
+});
+const staffUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(60).optional(),
+  pin: z.string().regex(PIN_RE, "The PIN must be 4 digits").optional(),
+  active: z.boolean().optional(),
+});
+
+/** Never returns the PIN, only whether one is set. */
+function staffPublic(row: { id: string; name: string; active: boolean; createdAt: Date | null }) {
+  return { id: row.id, name: row.name, active: row.active, createdAt: row.createdAt };
+}
 
 type OfferInput = z.infer<typeof updateOfferSchema>;
 type OfferRow = Partial<typeof offers.$inferInsert>;
@@ -329,7 +352,59 @@ merchantRouter.post(
   }),
 );
 
-// Team
+// Till staff (no login)
+
+merchantRouter.get(
+  "/api/merchant/staff",
+  asyncHandler(async (req, res) => {
+    res.json((await staffStore.listStaff(currentMerchantId(req))).map(staffPublic));
+  }),
+);
+
+merchantRouter.post(
+  "/api/merchant/staff",
+  asyncHandler(async (req, res) => {
+    const merchantId = currentMerchantId(req);
+    const input = parseBody(staffSchema, req.body);
+    const row = await staffStore.createStaff({
+      merchantId,
+      name: input.name,
+      pin: await bcrypt.hash(input.pin, BCRYPT_ROUNDS),
+    });
+    res.status(201).json(staffPublic(row));
+  }),
+);
+
+merchantRouter.put(
+  "/api/merchant/staff/:id",
+  asyncHandler(async (req, res) => {
+    const merchantId = currentMerchantId(req);
+    if (!UUID_RE.test(req.params.id)) throw notFound("Staff member not found");
+    const existing = await staffStore.getStaff(req.params.id, merchantId);
+    if (!existing) throw notFound("Staff member not found");
+    const input = parseBody(staffUpdateSchema, req.body);
+    const row = await staffStore.updateStaff(existing.id, {
+      ...(input.name === undefined ? {} : { name: input.name }),
+      ...(input.active === undefined ? {} : { active: input.active }),
+      ...(input.pin === undefined ? {} : { pin: await bcrypt.hash(input.pin, BCRYPT_ROUNDS) }),
+    });
+    res.json(staffPublic(row ?? existing));
+  }),
+);
+
+merchantRouter.delete(
+  "/api/merchant/staff/:id",
+  asyncHandler(async (req, res) => {
+    const merchantId = currentMerchantId(req);
+    if (!UUID_RE.test(req.params.id)) throw notFound("Staff member not found");
+    const existing = await staffStore.getStaff(req.params.id, merchantId);
+    if (!existing) throw notFound("Staff member not found");
+    await staffStore.deleteStaff(existing.id);
+    res.json({ ok: true });
+  }),
+);
+
+// Portal logins
 
 merchantRouter.get(
   "/api/merchant/team",

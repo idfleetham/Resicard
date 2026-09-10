@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SectionTitle } from "../portal-ui";
-import { AXIS_TICK, DAY_LABELS, FOAM, LINE, SEA, hourLabel, yAxisLabel, type DayPoint, type HourPoint } from "./types";
+import { AXIS_TICK, DAY_LABELS, FOAM, LINE, SERIES_1, hourLabel, windowLabel, yAxisLabel, type AnalyticsRange, type DayPoint, type HourPoint } from "./types";
 
 /**
  * When people redeem: day of the week and hour of the day. One series each, so
@@ -38,7 +38,7 @@ function DayChart({ byDay }: { byDay: DayPoint[] }) {
           <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} />
           <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
           <Tooltip cursor={{ fill: FOAM }} content={<CountTooltip />} />
-          <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+          <Bar dataKey="redemptions" fill={SERIES_1} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -59,21 +59,21 @@ function HourChart({ byHour }: { byHour: HourPoint[] }) {
           <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: LINE }} tickLine={false} interval="preserveStartEnd" minTickGap={12} />
           <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={64} label={yAxisLabel("Redemptions")} />
           <Tooltip cursor={{ fill: FOAM }} content={<CountTooltip />} />
-          <Bar dataKey="redemptions" fill={SEA} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+          <Bar dataKey="redemptions" fill={SERIES_1} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-export default function TimingCharts({ byDay, byHour }: { byDay: DayPoint[]; byHour: HourPoint[] }) {
+export default function TimingCharts({ byDay, byHour, range }: { byDay: DayPoint[]; byHour: HourPoint[]; range: AnalyticsRange }) {
   const quiet = byDay.every((d) => d.redemptions === 0);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <Card title="Busiest days" note="How many redemptions fell on each weekday. Totals across the last 90 days, not a daily average.">
+      <Card title="Busiest days" note={`How many redemptions fell on each weekday. Totals across the last ${windowLabel(range)}, not a daily average.`}>
         {quiet ? <p className="text-sm text-slate-brand">No redemptions yet.</p> : <DayChart byDay={byDay} />}
       </Card>
-      <Card title="Busiest hours" note="How many redemptions fell in each hour. Totals across the last 90 days, local time.">
+      <Card title="Busiest hours" note={`How many redemptions fell in each hour. Totals across the last ${windowLabel(range)}, local time.`}>
         {quiet ? <p className="text-sm text-slate-brand">No redemptions yet.</p> : <HourChart byHour={byHour} />}
       </Card>
     </div>

@@ -2,10 +2,15 @@ import type { CSSProperties } from "react";
 import { CARD_PATTERNS, CARD_THEMES, type CardPattern, type CardTheme } from "@shared/schema";
 
 /**
- * The six card designs, defined once so the wallet, the presentation view and
- * the merchant preview all draw the same card. Every foreground is checked
- * against its background: the lowest pairing here is 8.6:1 and the lowest muted
- * pairing 5.0:1, well past AA, because this card gets read across a dark bar.
+ * The card designs, defined once so the wallet, the presentation view and the
+ * merchant preview all draw the same card.
+ *
+ * Every foreground is checked against its background with the WCAG formula in
+ * `readableOn` below. The floor is 4.5:1 for both the foreground and the muted
+ * foreground — full AA for body text, not the 3:1 large-text allowance — because
+ * this card gets read at arm's length across a dark bar. The weakest pairing in
+ * the set is 4.61:1. If you add a colour, compute both ratios; do not judge it
+ * by eye.
  */
 export interface CardThemeDef {
   /** Label for the merchant's swatch. */
@@ -25,6 +30,16 @@ export const CARD_THEME_DEFS: Record<CardTheme, CardThemeDef> = {
   rust: { label: "Rust", background: "#7A2D12", foreground: "#FFF3EC", mutedForeground: "#F0BFA6", patternInk: "rgba(255,243,236,0.14)" },
   plum: { label: "Plum", background: "#3D1B3D", foreground: "#F8F0F8", mutedForeground: "#D5B4D5", patternInk: "rgba(248,240,248,0.13)" },
   sand: { label: "Sand", background: "#E6D9BF", foreground: "#0F3B47", mutedForeground: "#4A5C62", patternInk: "rgba(15,59,71,0.10)" },
+
+  // The bright half of the set.
+  lagoon: { label: "Lagoon", background: "#0A6570", foreground: "#FFFFFF", mutedForeground: "#D6EDF0", patternInk: "rgba(255,255,255,0.14)" },
+  kelp: { label: "Kelp", background: "#186340", foreground: "#FFFFFF", mutedForeground: "#D5EDE0", patternInk: "rgba(255,255,255,0.14)" },
+  harbour: { label: "Harbour", background: "#175A96", foreground: "#FFFFFF", mutedForeground: "#DCEAF8", patternInk: "rgba(255,255,255,0.14)" },
+  berry: { label: "Berry", background: "#A32A5E", foreground: "#FFFFFF", mutedForeground: "#F3C9DC", patternInk: "rgba(255,255,255,0.15)" },
+  buoy: { label: "Buoy", background: "#B03A18", foreground: "#FFFFFF", mutedForeground: "#FADACE", patternInk: "rgba(255,255,255,0.15)" },
+  gorse: { label: "Gorse", background: "#F0B429", foreground: "#3A2600", mutedForeground: "#5A3B00", patternInk: "rgba(58,38,0,0.12)" },
+  shell: { label: "Shell", background: "#F6DCCB", foreground: "#5A2410", mutedForeground: "#7A3A22", patternInk: "rgba(90,36,16,0.11)" },
+  haar: { label: "Haar", background: "#CFE3E0", foreground: "#0F3B47", mutedForeground: "#3A5A61", patternInk: "rgba(15,59,71,0.10)" },
 };
 
 export const CARD_PATTERN_LABELS: Record<CardPattern, string> = {
@@ -53,8 +68,10 @@ function patternImage(pattern: CardPattern, ink: string): string | null {
 }
 
 /**
- * Black or white text for an arbitrary tier colour. Merchants pick tier colours
- * freely, so the tier pill has to stay readable whatever they chose.
+ * Black or white text for a pill colour. Tier colours are now fixed by rank
+ * (see `shared/tiers.ts`), but this stays general: it is the guard that keeps
+ * the pill readable whatever colour reaches it, including rows stored before
+ * the ranks were fixed.
  */
 export function readableOn(colour: string | null | undefined): string {
   const hex = /^#[0-9a-f]{6}$/i.test(colour ?? "") ? (colour as string) : "#E4572E";
@@ -65,6 +82,25 @@ export function readableOn(colour: string | null | undefined): string {
   const n = parseInt(hex.slice(1), 16);
   const luminance = 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
   return luminance > 0.4 ? "#0A2A33" : "#FFFFFF";
+}
+
+/** #RRGGBB to rgba(), so a theme's own ink can be used at low opacity. */
+export function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+/**
+ * The top edge of a card that is tucked under another one.
+ *
+ * In the wallet the cards overlap, and two outlets that both chose sea used to
+ * merge into one tall block with no seam. This draws a hairline along the top of
+ * every tucked card in that card's own foreground — which is guaranteed to
+ * contrast with its own background, whatever the theme — so the boundary reads
+ * even when the card above is the identical colour.
+ */
+export function tuckedEdge(def: CardThemeDef): string {
+  return `inset 0 1px 0 ${withAlpha(def.foreground, 0.45)}`;
 }
 
 export interface CardStyle {

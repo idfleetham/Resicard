@@ -312,11 +312,42 @@ export const redemptions = pgTable("redemptions", {
 
 // The merchant's card design, kept to a short list so every card stays legible
 // and the wallet reads as one app. Rendered by client/src/components/loyalty/card-themes.ts.
-export const CARD_THEMES = ["sea", "ink", "moss", "rust", "plum", "sand"] as const;
+/*
+  Card colours. The first six were all deep and desaturated, so a merchant
+  choosing between them was picking between six shades of dark. The eight after
+  them carry real colour. Stored as text, not a database enum, so adding to this
+  list needs no migration — but never REMOVE one: an outlet that chose it would
+  silently fall back to sea and find its card had changed colour overnight.
+*/
+export const CARD_THEMES = [
+  "sea", "ink", "moss", "rust", "plum", "sand",
+  "lagoon", "kelp", "harbour", "berry", "buoy", "gorse", "shell", "haar",
+] as const;
 export type CardTheme = (typeof CARD_THEMES)[number];
 
 export const CARD_PATTERNS = ["plain", "wave", "stripe"] as const;
 export type CardPattern = (typeof CARD_PATTERNS)[number];
+
+/**
+ * Till staff: a name and a four-digit PIN, and nothing else.
+ *
+ * Awarding points at the till used to require a full user account per person —
+ * username, email, password. No pub is going to create eight logins for eight bar
+ * staff, so in practice nobody had a PIN and the till tool went unused. These
+ * rows are not accounts: they cannot sign in anywhere, they have no email, and
+ * the only thing they can do is identify who was on the till.
+ *
+ * Portal access is still a real account (the owner, a manager) and is unchanged.
+ */
+export const merchantStaff = pgTable("merchant_staff", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id").notNull().references(() => merchants.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  /** bcrypt hash. A four-digit PIN is weak by design, so it is never stored in the clear. */
+  pin: text("pin").notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 export const loyaltyPrograms = pgTable("loyalty_programs", {
   id: serial("id").primaryKey(),
@@ -770,6 +801,7 @@ export type Offer = typeof offers.$inferSelect;
 export type InsertOffer = z.infer<typeof insertOfferSchema>;
 export type Redemption = typeof redemptions.$inferSelect;
 export type LoyaltyProgram = typeof loyaltyPrograms.$inferSelect;
+export type MerchantStaff = typeof merchantStaff.$inferSelect;
 export type LoyaltyTier = typeof loyaltyTiers.$inferSelect;
 export type LoyaltyBalance = typeof loyaltyBalances.$inferSelect;
 export type LoyaltyEvent = typeof loyaltyEvents.$inferSelect;

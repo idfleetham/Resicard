@@ -81,8 +81,8 @@ export default function CardDesign({ theme, pattern, onChange, previewTier }: Ca
         </div>
 
         <p className="text-xs text-slate-brand max-w-sm">
-          Six colours and three patterns, and that is the full set. Your logo and your tier colours do the rest, so every
-          card in a resident's wallet stays readable across a busy bar.
+          {CARD_THEME_OPTIONS.length} colours and {CARD_PATTERN_OPTIONS.length} patterns, and that is the full set. Every
+          one has been checked so your name, tier and points stay readable across a busy bar.
         </p>
       </div>
 

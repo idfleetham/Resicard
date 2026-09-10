@@ -58,7 +58,14 @@ export default function CardsTab() {
             <Link
               href={`/loyalty/${m.merchant.id}`}
               aria-label={`${m.merchant.name} loyalty card`}
-              className="block rounded-[20px] shadow-[0_10px_24px_rgba(15,59,71,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              /*
+                Two shadows, doing different jobs. The tight dark one sits right
+                under the card's bottom edge and is what makes the seam: a soft
+                18% wash was invisible where a dark card lay on a dark card, so
+                a sea card over a sea card read as one tall block. The wide one
+                is the ordinary lift off the page.
+              */
+              className="block rounded-[20px] shadow-[0_4px_10px_-2px_rgba(0,0,0,0.45),0_14px_30px_rgba(15,59,71,0.20)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <LoyaltyCard
                 name={m.merchant.name}

@@ -136,8 +136,16 @@ export function posterHtml(merchantName: string, qr: string, url: string): strin
   </div>
 
   <div class="headline-wrap">
-    <div class="display headline">Live here?<br>Scan for the local price.</div>
-    <div class="sub">This outlet gives residents a better deal. Open Resicard, scan the code, pick your offer and show the green screen to staff.</div>
+    <!--
+      This poster hangs in a window where visitors and residents both read it.
+      "Scan for the local price" announced a two-tier price list to the whole
+      street, which puts the outlet in an awkward spot with everyone who is not
+      a resident and makes a quiet discount sound like a grievance. The offer is
+      the same either way; it just no longer picks a fight on the merchant's
+      behalf.
+    -->
+    <div class="display headline">Live here?<br>Scan here.</div>
+    <div class="sub">Open Resicard, scan the code, pick your offer and show the green screen to staff.</div>
   </div>
 
   <div class="body">

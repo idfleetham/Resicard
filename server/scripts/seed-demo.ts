@@ -29,6 +29,7 @@ import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
 import * as offerStore from "../storage/offers";
 import * as loyaltyStore from "../storage/loyalty";
+import * as staffStore from "../storage/staff";
 import { randomHandle } from "../lib/codes";
 import { uniqueScanCode } from "../lib/scan-code";
 import { generateRedemptionCode, isOfferLiveNow, pointsForRedemption } from "../lib/offer-rules";
@@ -43,6 +44,19 @@ import {
 import { menuPdf, offerArt, outletLogo } from "./demo-art";
 
 const PASSWORD = "demo1234";
+/** Everyone in the demo shares one till PIN so it can be typed at a table. */
+const DEMO_PIN = "1234";
+
+/** Invented first names for till staff. Nobody real, like every other name here. */
+const STAFF_NAMES: string[][] = [
+  ["Morven", "Callum", "Iona"],
+  ["Struan", "Eilidh"],
+  ["Rab", "Fiona", "Dougal"],
+  ["Isla", "Hamish"],
+  ["Kenna", "Torin", "Bridie"],
+  ["Lachlan", "Shona"],
+];
+
 const HISTORY_DAYS = 182;
 const DAY_MS = 86_400_000;
 
@@ -200,6 +214,19 @@ async function seedOutlets(hash: string, now: Date): Promise<SeededOutlet[]> {
         expiryDays: loyalty.tierWindowDays >= 730 ? null : 365,
         cardTheme: outlet.theme, cardPattern: outlet.pattern, active: true,
       });
+      /*
+        Till staff, so the demo can actually award points. Real bar staff never
+        got a login, which is the whole reason these exist; the PIN is the same
+        across the demo so it can be typed at a table without a cheat sheet.
+      */
+      for (const name of STAFF_NAMES[index % STAFF_NAMES.length]) {
+        await staffStore.createStaff({
+          merchantId: merchant.id,
+          name,
+          pin: await bcrypt.hash(DEMO_PIN, 10),
+        });
+      }
+
       programId = p.id;
       program = {
         pointsPerCurrency: p.pointsPerCurrency,

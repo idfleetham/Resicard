@@ -33,6 +33,7 @@ export default function CampaignsTab() {
   if (!data.allowed) return <UpgradePanel message={data.planMessage ?? "This is part of Standard and Insight."} />;
 
   const everyone = data.audiences.find((a) => a.audience === "all");
+  const countHidden = !everyone || everyone.suppressed || everyone.size === null;
   const left = Math.max(0, data.limits.monthlyCap - data.sentThisMonth);
 
   return (
@@ -43,17 +44,25 @@ export default function CampaignsTab() {
         are already in the payload; the composer just never showed them.
       */}
       <div className={`${CARD} p-5 flex flex-col sm:flex-row sm:items-center gap-5`}>
-        <div className="flex items-baseline gap-3 shrink-0">
-          <span className="font-display font-extrabold text-[44px] leading-none tracking-[-0.03em] text-sea tabular-nums">
-            {everyone?.suppressed || everyone?.size === null ? "—" : everyone?.size ?? "—"}
-          </span>
-          <span className="font-display font-bold text-lg text-slate-brand">
-            {everyone?.size === 1 ? "member" : "members"}
-          </span>
-        </div>
+        {/*
+          With too few members to report, there is no number: a dash blown up to
+          44px beside the word "members" reads as a broken figure, not as "we are
+          not telling you this yet". The sentence carries it instead, and the
+          sends-left figure on the right is the only number on the row.
+        */}
+        {!countHidden && (
+          <div className="flex items-baseline gap-3 shrink-0">
+            <span className="font-display font-extrabold text-[44px] leading-none tracking-[-0.03em] text-sea tabular-nums">
+              {everyone?.size ?? 0}
+            </span>
+            <span className="font-display font-bold text-lg text-slate-brand">
+              {everyone?.size === 1 ? "member" : "members"}
+            </span>
+          </div>
+        )}
         <p className="text-sm text-slate-brand flex-1 min-w-0">
-          {everyone?.suppressed
-            ? `Too few members to report a count yet. It appears once there are ${everyone.minimum}.`
+          {countHidden
+            ? `Your audience is too small to report a count yet — it appears once ${everyone?.minimum ?? 5} members have joined you. You can still send.`
             : "would get this. You can narrow it to people who have starred you or redeemed with you before."}
         </p>
         <div className="shrink-0 text-right">

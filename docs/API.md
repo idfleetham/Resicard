@@ -1525,3 +1525,195 @@ the metre and false precision is worse than none.
 location while it is closed, on any platform, so it cannot tell a resident they
 are walking past an outlet right now. That needs a native app and is not being
 built.
+
+## 2026-09-10 — Analytics colour, honest bars, and a wider card palette
+
+Five things from a review of the merchant portal's charts and loyalty screens.
+
+**Offer performance bars were lying.** Each bar was drawn as a fraction of the
+leader, so the top offer filled its track every single time — reading as 100%
+while the number printed beside it said 75%. Bars are now drawn at the offer's
+actual share of redemptions. `barWidth()` in `analytics/types.ts` also keeps 8%
+headroom on comparison bars, so no bar ever slams into the end of its track and
+reads as a completed progress bar.
+
+**Sea is no longer a chart fill.** `#0F3B47` is the brand's ink and it was the
+fill for every bar and line on the page, which is why nine charts read as nine
+grey-black blocks: sea has almost no chroma. The data now wears three colours,
+assigned in fixed order and never cycled:
+
+| Slot | Hex | Used for |
+|---|---|---|
+| `SERIES_1` | `#0E9AA7` | the outlet's own numbers, and every single-series chart |
+| `SERIES_2` | `#E4572E` | the second series (new residents; the town comparison) |
+| `SERIES_3` | `#A32A5E` | held for a third series |
+
+Checked with a palette validator against a white card: all three clear the chroma
+floor and 3:1 against the surface, worst colour-blind adjacent pair ΔE 16.0
+(tritan), worst normal-vision pair ΔE 18.6. **Do not substitute a colour by eye.**
+Text stays in the ink tokens throughout — a value never wears its series colour.
+
+The old second series was sand with a sand-edge border, which on a white card was
+very nearly invisible.
+
+**"Median restaurants" became "A typical restaurant".** The maths is unchanged and
+deliberately still a median: with five restaurants in a category, one busy outlet
+drags a mean somewhere no real outlet sits, and telling a publican they are below
+an average that nobody posts is worse than not telling them anything. But nobody
+reads the word "median", so it no longer appears — the note explains "the middle
+outlet of the 5 restaurants in the town" in plain words instead.
+
+**The loyalty tab's card preview was rendering at `size="full"`** — the 72px,
+held-up-at-the-till size — inside a 340px column, so the outlet name truncated to
+"The Harrow & ..." and the discount, tier and points fought over one corner. It
+now uses the same compact rendering as the preview on the programme page, and it
+passes `logoUrl`, which it never did: the preview showed a grey initial while the
+programme page beside it showed the real logo.
+
+**Card colours went from six to fourteen.** The original six were all deep and
+desaturated — two of them, sea and ink, are nearly the same card — so a merchant
+was choosing between shades of dark. Eight brighter ones are added: lagoon, kelp,
+harbour, berry, buoy, gorse, shell, haar.
+
+`CARD_THEMES` is a `text` column, not a database enum, so **this needs no
+migration** — but never remove a theme: an outlet that chose it would fall back to
+sea and find its card had changed colour overnight.
+
+Every pairing is held to 4.5:1 for both the foreground and the muted foreground —
+full AA for body text, not the 3:1 large-text allowance, because this card is read
+at arm's length across a dark bar. The weakest in the set is 4.61:1. That promise
+is now a test rather than a comment: `server/lib/__tests__/card-themes.test.ts`
+(36 cases) fails the build on a theme that misses the floor, duplicates another
+theme's background, or exists in one of the two lists but not the other. It also
+asserts at least three genuinely light backgrounds, so the set cannot quietly
+drift back to fourteen shades of dark.
+
+`vitest.config.ts` gained an `@` alias so pure client modules like the card
+palette can be covered by the ordinary test run.
+
+### Wallet cards needed a seam
+
+Adjacent cards in the resident's wallet merged into one tall block whenever two
+outlets had chosen the same colour — two sea cards in a row read as a single
+card with two names on it. The stack already had a drop shadow, but it was a
+soft 18% wash of sea, which is invisible where a dark card lies on a dark card.
+
+Two changes, and the fix works whatever colours the outlets picked:
+
+- Every tucked card draws a hairline along its own top edge, in **that card's
+  own foreground** at 45% (`tuckedEdge()` in `card-themes.ts`). The foreground is
+  the one colour guaranteed to contrast with its own background — that is the
+  4.5:1 floor the palette is already held to — so the seam cannot fail.
+- The stack's drop shadow became two shadows: a tight dark one under the bottom
+  edge that makes the seam, and the wide soft one that lifts the card off the
+  page.
+
+Reordering the stack to keep same-coloured cards apart was considered and not
+done. The order is meaningful (favourites first), and with the seam drawn the
+duplicate colours no longer matter.
+
+## 2026-09-10 — Tier ranks, a chosen analytics period, and poster copy
+
+### Tiers are bronze, silver, gold, and merchants no longer pick the colour
+
+A resident carries cards from a dozen outlets, each with its own tier names —
+Harbourmaster, Cellar Key, House Guest. Charming, and completely opaque: with
+merchant-chosen colours there was no way to glance at the stack and see where you
+stood anywhere.
+
+- **The names stay.** Merchants still name their tiers whatever they like.
+- **The colour is the rank**, from `shared/tiers.ts`, counted from the top so gold
+  always means top of the house. Three tiers is bronze/silver/gold; two is
+  silver/gold; one is gold.
+- **A programme is capped at three tiers** (`MAX_TIERS`), enforced on
+  `POST /api/loyalty/tiers` and not only in the form. The cap is what lets the
+  colour mean the same thing everywhere.
+- **The colour picker is gone** from the tier editor.
+
+The colour is derived, never stored. `listTiers()` stamps it on every read, which
+is the one place all reads funnel through, so a colour chosen before this change
+can never reach a screen. `loyalty_tiers.color` is left in the database and
+ignored — **no migration**, and nothing destroyed.
+
+The ranks get lighter from bronze to gold so the scale reads as a scale. A first
+pass had bronze and silver at almost the same lightness and they separated at only
+ΔE 13.5, below the floor where a full-colour reader can tell two swatches apart at
+pill size; the shipped set is ΔE 20.4 normal, 18.3 worst colour-blind. The tier
+pill also gained a hairline ring in the card's own foreground, because a bronze
+pill on a rust card is 1.2:1 against it and would otherwise read as a smudge.
+
+### The analytics period is chosen, and defaults to this quarter
+
+`GET /api/merchant/analytics` takes `?period=` — `quarter` (default),
+`last-quarter`, `month`, `last-month`, `30d`, `90d`, `year`, or `custom` with
+`?from=`/`?to=`. An unknown value falls back to the default rather than erroring;
+an unparseable custom date falls back to a 30-day window.
+
+`range` in the response gained `period`, `days` and `compareLabel`, so every note
+on the page that used to say "the last 90 days" now says what the window actually
+is, and the weekly chart is sized from the period rather than fixed at thirteen.
+
+**The comparison window follows two different rules**, in `shared/periods.ts`:
+
+- A **period to date** is compared with the same number of elapsed days from the
+  start of the previous one. Six weeks into a quarter you are measured against the
+  first six weeks of last quarter — not against all thirteen of its weeks, which
+  would report a collapse every quarter until its final day.
+- A **finished rolling window** is compared with the equally long window before it.
+- A **calendar period** (last quarter, last month) is compared with the whole
+  calendar period before it. Not the same as subtracting its length: Q2 is 91 days
+  and Q1 is 90, so "91 days before 1 April" reaches back into December. A test
+  pins this.
+
+### Smaller things
+
+- **The poster.** "Live here? Scan for the local price" became "Live here? Scan
+  here", and "This outlet gives residents a better deal" is gone. The poster hangs
+  in a window that visitors read too; announcing a two-tier price list to the
+  street puts the outlet in an awkward spot with everyone who is not a resident,
+  and makes a quiet discount sound like a grievance.
+- **The Send tab** rendered an em dash at 44px beside the word "members" when the
+  audience was too small to report, which reads as a broken number rather than as
+  "we are not telling you this yet". The figure is now omitted and the sentence
+  carries it.
+- **Demo card colours** were reassigned across all fourteen themes — every theme
+  used, no two outlets in the same category sharing one.
+
+## 2026-09-10 — Till staff without logins
+
+**This one needs a migration: `0006_calm_pepper_potts.sql`.** It creates one
+table and touches nothing existing.
+
+Awarding points at the till required a full user account per person — username,
+email, password. No pub is going to create eight logins with eight email
+addresses for eight bar staff, so in practice nobody had a PIN and the till tool
+went unused. The feature was gated behind an onboarding cost nobody would pay.
+
+**Till staff are now a name and a four-digit PIN, and nothing else.** They are
+not accounts: they cannot sign in anywhere, they hold no email address, and the
+only thing the row can do is identify who was on the till.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | /api/merchant/staff | | Never returns the PIN, only whether the person is active |
+| POST | /api/merchant/staff | `{ name, pin }` | PIN is 4 digits, stored bcrypt-hashed |
+| PUT | /api/merchant/staff/:id | `{ name?, pin?, active? }` | Omitting `pin` keeps the existing one |
+| DELETE | /api/merchant/staff/:id | | |
+
+`POST /api/loyalty/earn` now accepts a PIN belonging to **either** a till staff
+member or a portal login. Deactivated till staff are excluded by the query, so
+taking someone off the rota stops their PIN working immediately without deleting
+the record of who awarded what. Verified end to end: a switched-off PIN returns
+403, a live one is accepted.
+
+The Team section is now two panels, because they are two different things:
+
+- **Who works the till** — names and PINs, fully editable. Names get spelled
+  wrong, PINs get shared and need changing, and people leave, so editing was the
+  point. The switch is preferred over deletion in the copy, so the history stays.
+- **Who can sign in** — the real accounts, for the one or two people who manage
+  the outlet. The copy now says plainly that bar staff do not need one.
+
+The demo seed creates two or three named till staff per outlet with a loyalty
+programme, all on PIN `1234`, so the till tool can be demonstrated without
+setting anything up first.

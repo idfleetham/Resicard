@@ -17,7 +17,7 @@
 import type { AnalyticsData } from "./types";
 
 export const EXAMPLE_ANALYTICS: AnalyticsData = {
-  range: { from: "2026-06-10T00:00:00.000Z", to: "2026-09-08T00:00:00.000Z" },
+  range: { from: "2026-06-10T00:00:00.000Z", to: "2026-09-08T00:00:00.000Z" , period: "90d", days: 90, compareLabel: "the 90 days before" },
 
   headline: {
     redemptions: 428,

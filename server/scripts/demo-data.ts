@@ -279,14 +279,13 @@ export const OUTLETS: DemoOutlet[] = [
       earnCooldownMinutes: 45, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Deckhand", threshold: 0, multiplier: 1 },
-        { name: "Bosun", threshold: 600, multiplier: 1.1 },
         { name: "Skipper", threshold: 1300, multiplier: 1.25 },
         { name: "Harbourmaster", threshold: 4000, multiplier: 1.5, discountPercent: 12 },
       ],
       rewards: [
         { name: "Dessert of the day", costPoints: 900, claimRule: "monthly" },
         { name: "Bottle of house wine", costPoints: 2400, claimRule: "unlimited" },
-        { name: "Harbourmaster's table wine", claimRule: "weekly", tier: 3 },
+        { name: "Harbourmaster's table wine", claimRule: "weekly", tier: 2 },
         { name: "Welcome glass of fizz", costPoints: 400, claimRule: "once" },
       ],
     },
@@ -321,7 +320,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "Kinnaird Table", slug: "kinnaird-table", category: "restaurant", street: "market", t: 0.62, side: -1,
-    houseNumber: "71", phone: "01334 470224", plan: "standard", theme: "ink", pattern: "plain",
+    houseNumber: "71", phone: "01334 470224", plan: "standard", theme: "berry", pattern: "plain",
     hours: HOURS.restaurant,
     reservation: { provider: "resdiary", url: "https://reservations.kinnaird-table.test/book" },
     loyalty: {
@@ -361,7 +360,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "Saltgrass Kitchen", slug: "saltgrass-kitchen", category: "restaurant", street: "bell", t: 0.4, side: 1,
-    houseNumber: "14", phone: "01334 470336", plan: "standard", theme: "moss", pattern: "stripe",
+    houseNumber: "14", phone: "01334 470336", plan: "standard", theme: "kelp", pattern: "stripe",
     hours: HOURS.restaurantSeven,
     reservation: { provider: "sevenrooms", url: "https://tables.saltgrass-kitchen.test" },
     loyalty: {
@@ -369,14 +368,13 @@ export const OUTLETS: DemoOutlet[] = [
       earnCooldownMinutes: 30, dailyEarnCap: 3, tierWindowDays: 180,
       tiers: [
         { name: "Sprout", threshold: 0, multiplier: 1 },
-        { name: "Grower", threshold: 700, multiplier: 1.15 },
         { name: "Cropper", threshold: 1900, multiplier: 1.3 },
         { name: "Head Gardener", threshold: 3500, multiplier: 1.45, discountPercent: 10 },
       ],
       rewards: [
         { name: "Side dish on the house", costPoints: 700, claimRule: "weekly" },
         { name: "Sunday lunch for one", costPoints: 2600, claimRule: "unlimited" },
-        { name: "Head Gardener's tasting plate", claimRule: "monthly", tier: 3 },
+        { name: "Head Gardener's tasting plate", claimRule: "monthly", tier: 2 },
         { name: "First-visit brownie", costPoints: 300, claimRule: "once" },
       ],
     },
@@ -402,7 +400,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "The Copper Quay", slug: "copper-quay", category: "restaurant", street: "north", t: 0.55, side: -1,
-    houseNumber: "93", phone: "01334 470447", plan: "free", theme: "rust", pattern: "plain",
+    houseNumber: "93", phone: "01334 470447", plan: "free", theme: "buoy", pattern: "plain",
     hours: HOURS.restaurantSeven,
     reservation: { provider: "website", url: "https://copper-quay.test/book-a-table" },
     offers: [
@@ -463,14 +461,13 @@ export const OUTLETS: DemoOutlet[] = [
       earnCooldownMinutes: 20, dailyEarnCap: 4, tierWindowDays: 365,
       tiers: [
         { name: "Caddie", threshold: 0, multiplier: 1 },
-        { name: "Club Member", threshold: 450, multiplier: 1.15 },
         { name: "Course Record", threshold: 1300, multiplier: 1.3 },
         { name: "Honours Board", threshold: 5000, multiplier: 1.6, discountPercent: 15 },
       ],
       rewards: [
         { name: "Pint of the week", costPoints: 700, claimRule: "weekly" },
         { name: "Whisky of the month dram", costPoints: 1800, claimRule: "monthly" },
-        { name: "Honours Board dram", claimRule: "weekly", tier: 3 },
+        { name: "Honours Board dram", claimRule: "weekly", tier: 2 },
         { name: "First round toastie", costPoints: 400, claimRule: "once" },
       ],
     },
@@ -499,7 +496,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "The Bell & Brambles", slug: "bell-brambles", category: "pub", street: "bell", t: 0.75, side: -1,
-    houseNumber: "27", phone: "01334 471214", plan: "standard", theme: "plum", pattern: "stripe",
+    houseNumber: "27", phone: "01334 471214", plan: "standard", theme: "gorse", pattern: "stripe",
     hours: HOURS.pub,
     reservation: { provider: "website", url: "https://bell-brambles.test/book" },
     loyalty: {
@@ -585,7 +582,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "The Netmaker's Arms", slug: "netmakers-arms", category: "pub", street: "abbey", t: 0.5, side: -1,
-    houseNumber: "11", phone: "01334 471540", plan: "standard", theme: "sea", pattern: "plain",
+    houseNumber: "11", phone: "01334 471540", plan: "standard", theme: "lagoon", pattern: "plain",
     hours: HOURS.pub,
     loyalty: {
       pointsPerCurrency: 14, pointsPerRedemption: 290, minBasketEarn: 5,
@@ -618,21 +615,20 @@ export const OUTLETS: DemoOutlet[] = [
   // Cafes ------------------------------------------------------------------
   {
     name: "Bramble & Beam", slug: "bramble-beam", category: "cafe", street: "market", t: 0.45, side: -1,
-    houseNumber: "55", phone: "01334 472101", plan: "insight", theme: "sand", pattern: "wave",
+    houseNumber: "55", phone: "01334 472101", plan: "insight", theme: "shell", pattern: "wave",
     hours: HOURS.cafe,
     loyalty: {
       pointsPerCurrency: 20, pointsPerRedemption: 170, minBasketEarn: 0,
       earnCooldownMinutes: 30, dailyEarnCap: 3, tierWindowDays: 365,
       tiers: [
         { name: "First Cup", threshold: 0, multiplier: 1 },
-        { name: "Morning Regular", threshold: 350, multiplier: 1.15 },
         { name: "Barista's Own", threshold: 550, multiplier: 1.35 },
         { name: "House Roast", threshold: 1000, multiplier: 1.5, discountPercent: 15 },
       ],
       rewards: [
         { name: "Any filter coffee", costPoints: 400, claimRule: "weekly" },
         { name: "Coffee and a traybake", costPoints: 900, claimRule: "monthly" },
-        { name: "House Roast bag of beans", claimRule: "monthly", tier: 3 },
+        { name: "House Roast bag of beans", claimRule: "monthly", tier: 2 },
         { name: "First-visit cinnamon bun", costPoints: 200, claimRule: "once" },
       ],
     },
@@ -662,7 +658,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "The Blue Kettle", slug: "blue-kettle", category: "cafe", street: "church", t: 0.4, side: 1,
-    houseNumber: "8", phone: "01334 472213", plan: "standard", theme: "sea", pattern: "stripe",
+    houseNumber: "8", phone: "01334 472213", plan: "standard", theme: "harbour", pattern: "stripe",
     hours: HOURS.cafe,
     loyalty: {
       pointsPerCurrency: 15, pointsPerRedemption: 70, minBasketEarn: 3,
@@ -693,7 +689,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "Ladebraes Coffee House", slug: "ladebraes-coffee", category: "cafe", street: "north", t: 0.25, side: 1,
-    houseNumber: "40", phone: "01334 472325", plan: "free", theme: "moss", pattern: "plain",
+    houseNumber: "40", phone: "01334 472325", plan: "free", theme: "haar", pattern: "plain",
     hours: HOURS.cafeEarly,
     offers: [
       {
@@ -717,14 +713,13 @@ export const OUTLETS: DemoOutlet[] = [
       earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 365,
       tiers: [
         { name: "Sea Air", threshold: 0, multiplier: 1 },
-        { name: "Cliff Path", threshold: 300, multiplier: 1.15 },
         { name: "Lighthouse", threshold: 600, multiplier: 1.3 },
         { name: "Beacon", threshold: 900, multiplier: 1.45, discountPercent: 10 },
       ],
       rewards: [
         { name: "Hot chocolate", costPoints: 500, claimRule: "weekly" },
         { name: "Brunch plate", costPoints: 1200, claimRule: "unlimited" },
-        { name: "Beacon members' cake", claimRule: "monthly", tier: 3 },
+        { name: "Beacon members' cake", claimRule: "monthly", tier: 2 },
         { name: "Welcome flat white", costPoints: 250, claimRule: "once" },
       ],
     },
@@ -748,7 +743,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "The Wee Pantry", slug: "wee-pantry", category: "cafe", street: "greyfriars", t: 0.5, side: 1,
-    houseNumber: "3", phone: "01334 472549", plan: "free", theme: "sand", pattern: "plain",
+    houseNumber: "3", phone: "01334 472549", plan: "free", theme: "gorse", pattern: "plain",
     hours: HOURS.cafeEarly,
     offers: [
       {
@@ -820,7 +815,7 @@ export const OUTLETS: DemoOutlet[] = [
   // Takeaways --------------------------------------------------------------
   {
     name: "Harbour Fry", slug: "harbour-fry", category: "takeaway", street: "bridge", t: 0.4, side: 1,
-    houseNumber: "5", phone: "01334 474104", plan: "standard", theme: "sea", pattern: "stripe",
+    houseNumber: "5", phone: "01334 474104", plan: "standard", theme: "buoy", pattern: "stripe",
     hours: HOURS.takeaway,
     loyalty: {
       pointsPerCurrency: 10, pointsPerRedemption: 90, minBasketEarn: 5,
@@ -884,7 +879,7 @@ export const OUTLETS: DemoOutlet[] = [
   // Hotel ------------------------------------------------------------------
   {
     name: "Windward House Hotel", slug: "windward-house", category: "hotel", street: "scores", t: 0.2, side: 1,
-    houseNumber: "4", phone: "01334 475107", plan: "standard", theme: "sand", pattern: "stripe",
+    houseNumber: "4", phone: "01334 475107", plan: "standard", theme: "haar", pattern: "stripe",
     hours: HOURS.hotel,
     reservation: { provider: "website", url: "https://windward-house.test/reservations" },
     loyalty: {
@@ -892,14 +887,13 @@ export const OUTLETS: DemoOutlet[] = [
       earnCooldownMinutes: 60, dailyEarnCap: 2, tierWindowDays: 730,
       tiers: [
         { name: "Day Guest", threshold: 0, multiplier: 1 },
-        { name: "Weekender", threshold: 250, multiplier: 1.15 },
         { name: "House Resident", threshold: 550, multiplier: 1.3 },
         { name: "Long Stay", threshold: 900, multiplier: 1.5, discountPercent: 10 },
       ],
       rewards: [
         { name: "Afternoon tea for one", costPoints: 500, claimRule: "monthly" },
         { name: "Sunday lunch for two", costPoints: 1500, claimRule: "unlimited" },
-        { name: "Long Stay late checkout", claimRule: "monthly", tier: 3 },
+        { name: "Long Stay late checkout", claimRule: "monthly", tier: 2 },
         { name: "Welcome drink", costPoints: 150, claimRule: "once" },
       ],
     },
@@ -928,7 +922,7 @@ export const OUTLETS: DemoOutlet[] = [
   // Retail -----------------------------------------------------------------
   {
     name: "Tolbooth Books", slug: "tolbooth-books", category: "retail", street: "south", t: 0.2, side: 1,
-    houseNumber: "31", phone: "01334 476109", plan: "free", theme: "moss", pattern: "wave",
+    houseNumber: "31", phone: "01334 476109", plan: "free", theme: "sand", pattern: "wave",
     hours: HOURS.retail,
     offers: [
       {
@@ -946,7 +940,7 @@ export const OUTLETS: DemoOutlet[] = [
   },
   {
     name: "Wynd & Willow Gifts", slug: "wynd-willow", category: "retail", street: "market", t: 0.8, side: 1,
-    houseNumber: "88", phone: "01334 476211", plan: "free", theme: "plum", pattern: "stripe",
+    houseNumber: "88", phone: "01334 476211", plan: "free", theme: "berry", pattern: "stripe",
     hours: HOURS.retail,
     offers: [
       {
@@ -965,7 +959,7 @@ export const OUTLETS: DemoOutlet[] = [
   // Services ---------------------------------------------------------------
   {
     name: "Turret Lane Barbers", slug: "turret-lane-barbers", category: "services", street: "north", t: 0.8, side: -1,
-    houseNumber: "112", phone: "01334 477102", plan: "free", theme: "ink", pattern: "plain",
+    houseNumber: "112", phone: "01334 477102", plan: "free", theme: "lagoon", pattern: "plain",
     hours: HOURS.services,
     offers: [
       {
@@ -985,7 +979,7 @@ export const OUTLETS: DemoOutlet[] = [
   // Experience -------------------------------------------------------------
   {
     name: "Eastshore Sea Kayak", slug: "eastshore-kayak", category: "experience", street: "bridge", t: 0.75, side: -1,
-    houseNumber: "12", phone: "01334 478104", plan: "free", theme: "sea", pattern: "wave",
+    houseNumber: "12", phone: "01334 478104", plan: "free", theme: "kelp", pattern: "wave",
     hours: HOURS.experience,
     offers: [
       {

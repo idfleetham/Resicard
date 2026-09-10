@@ -16,11 +16,13 @@ import {
   type RewardClaim,
   type User,
 } from "@shared/schema";
+import { MAX_TIERS } from "@shared/tiers";
 import { expiryState } from "../lib/points-expiry";
 import { db } from "../db";
 import * as userStore from "../storage/users";
 import * as merchantStore from "../storage/merchants";
 import * as loyaltyStore from "../storage/loyalty";
+import * as staffStore from "../storage/staff";
 import * as redemptionStore from "../storage/redemptions";
 import type { DbClient } from "../storage/types";
 import { authenticate, requireRole, currentUser, currentMerchantId } from "../lib/auth";
@@ -122,6 +124,11 @@ loyaltyRouter.post(
   asyncHandler(async (req, res) => {
     const program = await requireProgram(currentMerchantId(req));
     const input = parseBody(insertLoyaltyTierSchema, req.body);
+    // Three tiers, bronze to gold. The cap is what lets the colour mean the same
+    // thing in every outlet, so it is enforced here and not only in the form.
+    if ((await loyaltyStore.countTiers(program.id)) >= MAX_TIERS) {
+      throw badRequest(`A programme can have at most ${MAX_TIERS} tiers. Remove one before adding another.`);
+    }
     res.status(201).json(await loyaltyStore.createTier({ ...input, programId: program.id }));
   }),
 );
@@ -296,11 +303,24 @@ loyaltyRouter.post(
     if (!program.active) throw badRequest("The loyalty programme is not active");
     const input = parseBody(earnSchema, req.body);
 
-    // The PIN must belong to a staff member of this merchant.
-    const staff = await userStore.listUsersByMerchant(merchantId);
+    /*
+      The PIN must belong to this merchant. Two places to look: the till staff,
+      who have a name and a PIN and no account, and the portal logins, whose
+      users can also carry one. Deactivated till staff are excluded by the query,
+      so taking somebody off the rota stops their PIN working without deleting
+      the history of who awarded what.
+    */
+    const [tillStaff, portalUsers] = await Promise.all([
+      staffStore.listActiveStaff(merchantId),
+      userStore.listUsersByMerchant(merchantId),
+    ]);
+    const hashes = [
+      ...tillStaff.map((s) => s.pin),
+      ...portalUsers.map((u) => u.staffPin).filter((p): p is string => Boolean(p)),
+    ];
     let pinOk = false;
-    for (const member of staff) {
-      if (member.staffPin && (await bcrypt.compare(input.staffPin, member.staffPin))) {
+    for (const hash of hashes) {
+      if (await bcrypt.compare(input.staffPin, hash)) {
         pinOk = true;
         break;
       }
